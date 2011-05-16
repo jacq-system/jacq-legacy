@@ -1,0 +1,115 @@
+<?php
+require("inc/functions.php");
+require_once ("../inc/xajax/xajax.inc.php");
+
+/**
+ * connects to the used database
+ */
+function connect() {
+    // Dummy function for compatibility reasons
+}
+
+/**
+ * xajax-function to generate the Collection-dropdown
+ *
+ * @param array $data form-value of 'source_name'
+ * @return xajaxResponse
+ */
+function getCollection($data) {
+  connect();
+
+  if (trim($data['source_name'])) {
+    $sql = "SELECT collection
+            FROM tbl_management_collections, herbarinput.meta
+            WHERE tbl_management_collections.source_id=herbarinput.meta.source_id
+             AND source_name='".mysql_escape_string($data['source_name'])."'
+            ORDER BY collection";
+  } else {
+    $sql = "SELECT collection FROM tbl_management_collections ORDER BY collection";
+  }
+  $result = mysql_query($sql);
+  $selectData = "<select size=\"1\" name=\"collection\">\n".
+                "<option value=\"\"></option>\n";
+  while ($row=mysql_fetch_array($result)) {
+    $selectData .= "<option value=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['collection'])."</option>\n";
+  }
+  $selectData .= "</select>\n";
+
+  $objResponse = new xajaxResponse();
+  $objResponse->addAssign("ajax_collection", "innerHTML", $selectData);
+  return $objResponse;
+}
+
+/**
+ * xajax-function to generate the Country-dropdown
+ *
+ * @param array $data form-value of both 'geo_general' and 'geo_region'
+ * @return xajaxResponse
+ */
+function getCountry($data) {
+  connect();
+
+  if (trim($data['geo_general']) || trim($data['geo_region'])) {
+    $sql = "SELECT nation_engl
+            FROM tbl_geo_nation, tbl_geo_region
+            WHERE tbl_geo_nation.regionID_fk=tbl_geo_region.regionID ";
+    if ($data['geo_general']) $sql .= "AND geo_general='".mysql_escape_string($data['geo_general'])."' ";
+    if ($data['geo_region']) $sql .= "AND geo_region='".mysql_escape_string($data['geo_region'])."' ";
+    $sql .= "ORDER BY nation_engl";
+    $result = mysql_query($sql);
+    $selectData = "<select size=\"1\" name=\"nation_engl\" onchange=\"xajax_getProvince(xajax.getFormValues('ajax_f',0,'nation_engl'))\">\n".
+                  "<option value=\"\"></option>\n";
+    while ($row=mysql_fetch_array($result)) {
+      $selectData .= "<option value=\"".htmlspecialchars($row['nation_engl'])."\">".htmlspecialchars($row['nation_engl'])."</option>\n";
+    }
+    $selectData .= "</select>\n";
+  }
+  else {
+    $selectData = "<input type=\"text\" name=\"nation_engl\" size=\"26\">";
+  }
+
+  $objResponse = new xajaxResponse();
+  $objResponse->addAssign("ajax_nation_engl", "innerHTML", $selectData);
+  return $objResponse;
+}
+
+/**
+ * xajax-function to generate the Province-dropdown
+ *
+ * @param array $data form-value of 'nation_engl'
+ * @return xajaxResponse
+ */
+function getProvince($data) {
+  connect();
+
+  if (trim($data['nation_engl'])) {
+    $sql = "SELECT provinz
+            FROM tbl_geo_province, tbl_geo_nation
+            WHERE tbl_geo_province.nationID=tbl_geo_nation.nationID
+             AND nation_engl='".mysql_escape_string($data['nation_engl'])."'
+            ORDER BY provinz";
+    $result = mysql_query($sql);
+    $selectData = "<select size=\"1\" name=\"provinz\">\n<option value=\"\"></option>\n";
+    while ($row=mysql_fetch_array($result)) {
+      $selectData .= "<option value=\"".htmlspecialchars($row['provinz'])."\">".htmlspecialchars($row['provinz'])."</option>\n";
+    }
+    $selectData .= "</select>\n";
+  }
+  else {
+    $selectData = "<input type=\"text\" name=\"provinz\" size=\"26\">";
+  }
+
+  $objResponse = new xajaxResponse();
+  $objResponse->addAssign("ajax_provinz", "innerHTML", $selectData);
+  return $objResponse;
+}
+
+/**
+ * register all xajax-functions in this file
+ */
+$xajax = new xajax();
+$xajax->registerFunction("getCollection");
+$xajax->registerFunction("getCountry");
+$xajax->registerFunction("getProvince");
+$xajax->processRequests();
+?>

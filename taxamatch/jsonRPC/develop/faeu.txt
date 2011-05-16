@@ -1,0 +1,17 @@
+Nach einem neuen Import ist folgendes zu tun:
+
+1. die folgenden SQL-Befehle ausführen
+
+ALTER TABLE `scientific_names`  ADD `author` VARCHAR(255) NULL,  ADD `year` VARCHAR(255) NULL,  ADD `brackets` VARCHAR(255) NULL;
+ALTER TABLE `scientific_names` ADD INDEX ( `author` ) ;
+ALTER TABLE `scientific_names` ADD `pid` INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+
+CREATE TABLE `ref_faunaeuropaea`.`genera` (
+  `GENUS_NAME` VARCHAR( 255 ) NOT NULL ,
+  `GENUS_ID` DOUBLE NOT NULL ,
+  PRIMARY KEY ( `GENUS_ID` )
+) ENGINE = MYISAM ;
+INSERT INTO genera (GENUS_NAME, GENUS_ID) SELECT GENUS_NAME, GENUS_ID FROM scientific_names GROUP BY GENUS_ID
+
+2. den Konverter faeu_konvert.php starten
+http://131.130.131.9/taxamatch/faeu_konvert.php?secret=55AA

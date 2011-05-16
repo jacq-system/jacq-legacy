@@ -1,0 +1,28 @@
+body { background-color: lightgreen; font-family: sans-serif; font-size: 83%; }
+div.label { font-family: sans-serif; font-weight: bold; font-size: 100%; text-align: right }
+div.input { font-family: sans-serif; font-size: 100% }
+div.text  { font-family: sans-serif; font-size: 100% }
+input { font-family: sans-serif; font-size: 100%; padding-left: 0.3em }
+input.button { font-family: sans-serif; font-weight: bold; font-size: 100%; padding-left: 0 }
+input.button:hover { background-color: #abffab }
+textarea { font-family: sans-serif; font-size: 100%; padding-left: 0.3em }
+select { font-family: sans-serif; font-size: 100% }
+
+table.out { border: 1px solid black; border-collapse:collapse; width: 100% }
+tr.out { }
+tr.outMark { background-color: #00AA33; }
+th.out { font-style: italic; background-color: #AA0000; border-bottom: 4px double black; border-left: 1px solid black }
+td.out { border:1px solid black; padding: 2px; }
+td.outNobreak { border:1px solid black; padding: 2px; white-space: nowrap; }
+td.outCenter { border:1px solid black; padding: 2px; text-align: center; }
+td.outInactive { border:1px solid black; padding: 2px; font-style: italic; color:#993333; }
+
+table.list { background-color: white; border-spacing: 0px; border-collapse: collapse }
+th.list { background-color: #cccccc }
+td.list { padding: 3px; border-width: 1px; border-color: gray; border-style: solid }
+
+a:link { font-weight:bold; color:#ffff00; text-decoration:none }
+a:visited { font-weight:bold; color:#ffff00; text-decoration:none }
+a:hover { font-weight:bold; color:#66FF66; text-decoration:none }
+a:active { font-weight:bold; color:#66FF66; text-decoration:underline }
+a:focus { font-weight:bold; color:#00E000; text-decoration:underline }

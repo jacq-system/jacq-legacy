@@ -1,0 +1,13 @@
+The files and directories here have to be put in the root directory of the webserver (usually /srv/www/htdocs).
+
+Some of them will be accessed by other scripts placed on other servers and will produce NO html-output whatsoever.
+These are:
+database/detail_server.php
+database/inc/connect.php (a service file for detail_server.php)
+database/json_rpc_scanPictures.php
+
+Some of them are just normal php-scripts referenced to by various scripts in the input and output part.
+These are:
+api/copyImagesWithXML.php
+api/copyWebImages.php
+database/img/....   (everything)
