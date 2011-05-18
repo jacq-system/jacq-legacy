@@ -1,14 +1,13 @@
 <?php
-$host = "localhost";  // hostname
-$db   = "herbarinput";   // database
+require_once( 'variables.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     header("Location: login.php");
     exit();
-} else if (!@mysql_connect($host,$_SESSION['username'], $_SESSION['password'])) {
+} else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
     header("Location: login.php");
     exit();
-} else if (!@mysql_select_db($db)) {
+} else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
        . "<html>\n"
        . "<head><titel>Sorry, no connection ...</title></head>\n"
@@ -17,7 +16,6 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     exit();
 }
 
-//mysql_query("SET character_set_results='utf8'");
 mysql_query("SET character set utf8");
 
 function no_magic()   // PHP >= 4.1

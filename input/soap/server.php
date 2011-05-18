@@ -28,10 +28,10 @@ public function __construct ()
 {
     global $_CONFIG;
     
-    $this->host = $_CONFIG['DATABASES']['INPUT']['host'];
-    $this->db   = $_CONFIG['DATABASES']['INPUT']['db'];
-    $this->user = $_CONFIG['DATABASES']['INPUT']['readonly']['user'];
-    $this->pass = $_CONFIG['DATABASES']['INPUT']['readonly']['pass'];
+    $this->host = $_CONFIG['DATABASE']['INPUT']['host'];
+    $this->db   = $_CONFIG['DATABASE']['INPUT']['name'];
+    $this->user = $_CONFIG['DATABASE']['INPUT']['readonly']['user'];
+    $this->pass = $_CONFIG['DATABASE']['INPUT']['readonly']['pass'];
 
     @mysql_connect($this->host, $this->user, $this->pass);
     @mysql_select_db($this->db);

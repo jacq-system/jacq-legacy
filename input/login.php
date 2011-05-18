@@ -1,20 +1,19 @@
 <?php
-$secure = true;  // set to false if no secure server available
+require_once( 'inc/variables.php' );
+
+$secure = $_CONFIG['CONNECTION']['secure'];  // set to false if no secure server available
 
 session_set_cookie_params(0, "/", "", $secure);
 session_start();
 
-$user_read = "hdb_read";
-$pass_read = "kgf74327";
-
 function getUnamePw($username, $password)
 {
-    global $user_read, $pass_read;
+    global $_CONFIG;
 
-    $ident = @mysql_connect("localhost", $user_read, $pass_read);
+    $ident = @mysql_connect("localhost", $_CONFIG['DATABASE']['LOG']['readonly']['user'], $_CONFIG['DATABASE']['LOG']['readonly']['pass']);
     mysql_query("SET character set utf8");
     $sql = "SELECT username, iv, secret
-            FROM herbarinput_log.tbl_herbardb_users
+            FROM " . $_CONFIG['DATABASE']['LOG']['name'] . ".tbl_herbardb_users
             WHERE username='".mysql_escape_string($username)."'";
     $result = mysql_query($sql);
     $row = mysql_fetch_array($result);
