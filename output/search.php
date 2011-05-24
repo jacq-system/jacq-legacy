@@ -401,10 +401,19 @@ tbl_wu_generale
                     <select size="1" name="source_name" onchange="xajax_getCollection(xajax.getFormValues('ajax_f',0,'source_name'))">
                     <option value=""></option>
                     <?php
-                      $sql = "SELECT source_name ".
-                             "FROM tbl_management_collections, herbarinput.meta ".
-                             "WHERE tbl_management_collections.source_id=herbarinput.meta.source_id ".
-                             "GROUP BY source_name ORDER BY source_name";
+                      $sql = "
+                          SELECT `source_name` 
+                          FROM `meta` 
+                          WHERE `source_id` 
+                          IN (
+                            SELECT `source_id`
+                            FROM `tbl_management_collections`
+                            WHERE `collectionID`
+                            IN ( 
+                              SELECT `collectionID`
+                              FROM `tbl_specimens`
+                            )
+                          )";
                       $result = mysql_query($sql);
                       while ($row=mysql_fetch_array($result)) {
                         echo "<option value=\"{$row['source_name']}\"";
@@ -425,7 +434,14 @@ tbl_wu_generale
                     <select size="1" name="collection">
                     <option value=""></option>
                     <?php
-                      $sql = "SELECT collection FROM tbl_management_collections ORDER BY collection";
+                      $sql = "
+                          SELECT `collection`
+                          FROM `tbl_management_collections`
+                          WHERE `collectionID`
+                          IN ( 
+                            SELECT `collectionID`
+                            FROM `tbl_specimens`
+                          )";
                       $result = mysql_query($sql);
                       while ($row=mysql_fetch_array($result)) {
                         echo "<option value=\"{$row['collection']}\"";
