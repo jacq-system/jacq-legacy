@@ -247,7 +247,7 @@ if ($batchID) {
             @mkdir($dir);
 
             $xml = new XML_api("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!-- edited with php -->\n<!--" . date('j F Y') . "-->\n");
-            $xml->addMultiBegin("DataSet","xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://extranet.aluka.org/xsd/AfricanTypesv2.xsd\"");
+            $xml->addMultiBegin("DataSet","xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://aluka.ithaka.org/plants/AfricanTypesv2.xsd\"");
 
             $xml->addSingle("InstitutionCode", $row['source_code']);
             $xml->addSingle("InstitutionName", $row['source_name']);
