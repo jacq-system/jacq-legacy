@@ -12,52 +12,6 @@ $xajax->setRequestURI("ajax/editLitTaxaServer.php");
 
 $xajax->registerFunction("setSource");
 
-
-function makeTaxon($search)
-{
-    global $cf;
-
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $pieces = explode(chr(194) . chr(183), $search);
-        $pieces = explode(" ", $pieces[0]);
-        $sql = "SELECT taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE ts.external = 0
-                 AND tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
-        if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
-        }
-        $sql .= "ORDER BY tg.genus, te.epithet, epithet1, epithet2, epithet3, epithet4, epithet5";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = taxon($row);
-                }
-            }
-        }
-    }
-    return $results;
-}
-
-
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
            FROM tbl_lit l
@@ -277,7 +231,7 @@ if (isset($_GET['new'])) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script type="text/javascript" language="JavaScript"> 
+  <script type="text/javascript" language="JavaScript">
     function hideParts() {
       var source = '<?php echo $p_source; ?>';
       if (source == 'literature') {

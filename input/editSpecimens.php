@@ -65,11 +65,10 @@ function makeTaxon2($search)
             $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'\n";
         }
         $sql .= "ORDER BY tg.genus, te.epithet, epithet1, epithet2, epithet3";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = (($row['synID']) ? '-' : '') . taxon($row);
-                }
+        $result = db_query($sql);
+        if ($result && mysql_num_rows($result) > 0) {
+            while ($row = mysql_fetch_array($result)) {
+                $results[] = (($row['synID']) ? '-' : '') . taxon($row);
             }
         }
 
@@ -108,12 +107,10 @@ function makeTaxon2($search)
                       OR tep2.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%')\n";
         }
         $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
-
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = (($row['synID']) ? '-' : '') . taxonWithHybrids($row);
-                }
+        $result = db_query($sql);
+        if ($result && mysql_num_rows($result) > 0) {
+            while ($row = mysql_fetch_array($result)) {
+                $results[] = (($row['synID']) ? '-' : '') . taxonWithHybrids($row);
             }
         }
         //sort($results);
@@ -139,16 +136,15 @@ function makeSammler2($search, $nr)
                     WHERE Sammler LIKE '".mysql_escape_string($pieces[0])."%'
                     ORDER BY Sammler";
         }
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row=mysql_fetch_array($result)) {
-                    if ($nr == 2) {
-                        $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
-                    } else {
-                        $res = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
-                    }
-                    $results[] = $res;
+        $result = db_query($sql);
+        if ($result && mysql_num_rows($result) > 0) {
+            while ($row=mysql_fetch_array($result)) {
+                if ($nr == 2) {
+                    $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
+                } else {
+                    $res = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
                 }
+                $results[] = $res;
             }
         }
     }
@@ -222,8 +218,10 @@ if (isset($_GET['sel'])) {
         $p_nation      = $row['NationID'];
         $p_province    = $row['provinceID'];
 
-        $p_sammler     = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
-        $p_sammler2    = ($row['Sammler_2']) ? $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">" : "";
+        $p_sammler       = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
+        $p_sammlerIndex  = $row['SammlerID'];
+        $p_sammler2      = ($row['Sammler_2']) ? $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">" : "";
+        $p_sammler2Index = $row['Sammler_2ID'];
 
         if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
             $p_lat_deg = $row['Coord_S'];
@@ -282,8 +280,10 @@ if (isset($_GET['sel'])) {
                 $row3 = mysql_fetch_array($result2);
                 $p_taxon = ($row3['parent_1_ID'] && $row3['parent_2_ID']) ? taxonWithHybrids($row3) : taxon($row2);
             }
+            $p_taxonIndex = $row['taxonID'];
         } else {
             $p_taxon = "";
+            $p_taxonIndex = 0;
             $p_external = null;
         }
     } else {
@@ -299,6 +299,7 @@ if (isset($_GET['sel'])) {
         $p_digital_image = $p_digital_image_obs = $p_garten = $p_voucher = $p_ncbi = "";
         $p_typus = $p_nation = $p_province = "";
         $p_sammler = $p_sammler2 = "";
+        $p_taxonIndex = $p_sammlerIndex = $p_sammler2Index = 0;
         $p_institution = $_SESSION['sid'];
         if ($p_institution) {
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '$p_institution' ORDER BY collection";
@@ -349,12 +350,15 @@ if (isset($_GET['sel'])) {
     $p_voucher           = $_POST['voucher'];
     $p_ncbi              = $_POST['ncbi'];
     $p_taxon             = $_POST['taxon'];
+    $p_taxonIndex        = (strlen(trim($_POST['taxon']))>0) ? $_POST['taxonIndex'] : 0;
     $p_external          = $_POST['external'];
     $p_typus             = $_POST['typus'];
     $p_nation            = $_POST['nation'];
     $p_province          = $_POST['province'];
     $p_sammler           = $_POST['sammler'];
+    $p_sammlerIndex      = (strlen(trim($_POST['sammler']))>0) ? $_POST['sammlerIndex'] : 0;
     $p_sammler2          = $_POST['sammler2'];
+    $p_sammler2Index     = (strlen(trim($_POST['sammler2']))>0) ? $_POST['sammler2Index'] : 0;
     $p_lat               = $_POST['lat'];
     $p_lat_deg           = $_POST['lat_deg'];
     $p_lat_min           = $_POST['lat_min'];
@@ -818,13 +822,11 @@ if (isset($_GET['sel'])) {
 
 <?php
 unset($institution);
-$sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $institution[0][] = $row['source_id'];
-            $institution[1][] = substr($row['source_code'], 0, 3);
-        }
+$result = db_query("SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $institution[0][] = $row['source_id'];
+        $institution[1][] = substr($row['source_code'], 0, 3);
     }
 }
 
@@ -840,86 +842,73 @@ if ($p_institution) {
             ORDER BY collection";
 }
 $collection[0][] = 0; $collection[1][] = "";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $collection[0][] = $row['collectionID'];
-            $collection[1][] = $row['collection'];
-        }
+$result = db_query($sql);
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $collection[0][] = $row['collectionID'];
+        $collection[1][] = $row['collection'];
     }
 }
 
 unset($typus);
 $typus[0][] = 0; $typus[1][] = "";
-$sql = "SELECT typus_lat, typusID FROM tbl_typi ORDER BY typus_lat";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $typus[0][] = $row['typusID'];
-            $typus[1][] = $row['typus_lat'];
-        }
+$result = db_query("SELECT typus_lat, typusID FROM tbl_typi ORDER BY typus_lat");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $typus[0][] = $row['typusID'];
+        $typus[1][] = $row['typus_lat'];
     }
 }
 
 unset($identstatus);
 $identstatus[0][] = 0; $identstatus[1][] = "";
-$sql = "SELECT identstatusID, identification_status FROM tbl_specimens_identstatus ORDER BY identification_status";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $identstatus[0][] = $row['identstatusID'];
-            $identstatus[1][] = $row['identification_status'];
-        }
+$result = db_query("SELECT identstatusID, identification_status FROM tbl_specimens_identstatus ORDER BY identification_status");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $identstatus[0][] = $row['identstatusID'];
+        $identstatus[1][] = $row['identification_status'];
     }
 }
 
 unset($series);
 $series[0][] = 0; $series[1][] = "";
-$sql = "SELECT seriesID, series FROM tbl_specimens_series ORDER BY series";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $series[0][] = $row['seriesID'];
-            $series[1][] = (strlen($row['series']) > 50) ? substr($row['series'], 0, 50) . "..." : $row['series'];
-        }
+$result = db_query("SELECT seriesID, series FROM tbl_specimens_series ORDER BY series");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $series[0][] = $row['seriesID'];
+        $series[1][] = (strlen($row['series']) > 50) ? substr($row['series'], 0, 50) . "..." : $row['series'];
     }
 }
 
 unset($nation);
 $nation[0][] = 0; $nation[1][] = "";
-$sql = "SELECT nation_engl, nationID FROM tbl_geo_nation ORDER BY nation_engl";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $nation[0][] = $row['nationID'];
-            $nation[1][] = $row['nation_engl'];
-        }
+$result = db_query("SELECT nation_engl, nationID FROM tbl_geo_nation ORDER BY nation_engl");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $nation[0][] = $row['nationID'];
+        $nation[1][] = $row['nation_engl'];
     }
 }
 
 unset($province);
 $province[0][] = 0; $province[1][] = "";
-$sql = "SELECT provinz, provinceID FROM tbl_geo_province
-        WHERE nationID = '" . intval($p_nation) . "'
-        ORDER BY provinz";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $province[0][] = $row['provinceID'];
-            $province[1][] = $row['provinz'];
-        }
+$result = db_query("SELECT provinz, provinceID FROM tbl_geo_province
+                    WHERE nationID = '" . intval($p_nation) . "'
+                    ORDER BY provinz");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $province[0][] = $row['provinceID'];
+        $province[1][] = $row['provinz'];
     }
 }
 
 unset($voucher);
 $voucher[0][] = 0; $voucher[1][] = "";
-$sql = "SELECT voucherID, voucher FROM tbl_specimens_voucher ORDER BY voucher";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $voucher[0][] = $row['voucherID'];
-            $voucher[1][] = $row['voucher'];
-        }
+$result = db_query("SELECT voucherID, voucher FROM tbl_specimens_voucher ORDER BY voucher");
+if ($result && mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)) {
+        $voucher[0][] = $row['voucherID'];
+        $voucher[1][] = $row['voucher'];
     }
 }
 
@@ -1027,7 +1016,8 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
 } else {
     $cf->labelMandatory(9, $y, 8, "taxon");
 }
-$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
+//$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
+$cf->inputJqAutocomplete(9, $y, 46, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(9, $y + 1.5, "multi", "#\" onclick=\"xajax_editMultiTaxa('$p_specimen_ID');");
 
@@ -1051,7 +1041,8 @@ $cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 
 $y += 2;
 $cf->labelMandatory(9, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
-$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
+//$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
+$cf->inputJqAutocomplete(9, $y, 46, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
 $cf->label(9, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;
@@ -1066,7 +1057,8 @@ $cf->inputText(49.5, $y, 5.5, "Datum2", $p_Datum2, 25);
 
 $y += 2;
 $cf->label(9, $y, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
-$cf->editDropdown(9, $y, 46, "sammler2", $p_sammler2, makeSammler2($p_sammler2, 2), 270);
+//$cf->editDropdown(9, $y, 46, "sammler2", $p_sammler2, makeSammler2($p_sammler2, 2), 270);
+$cf->inputJqAutocomplete(9, $y, 46, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
 $cf->label(9, $y + 1.7, "search", "javascript:searchCollector2()");
 
 $y += 3.25;

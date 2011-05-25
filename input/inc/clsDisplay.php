@@ -182,7 +182,7 @@ public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = fa
         $dbst->execute(array(":taxonID" => $taxonID));
         $rows = $dbst->fetchAll();
         if (count($rows) > 0) {
-            return $this->taxon($rows[0]['parent_1_ID'], $withSeperator) . " x " . $this->taxon($rows[0]['parent_2_ID']) . (($withID) ? " <" . $row['taxon_ID_fk'] . ">" : "");
+            return $this->taxon($rows[0]['parent_1_ID'], $withSeperator) . " x " . $this->taxon($rows[0]['parent_2_ID']) . (($withID) ? " <" . $rows[0]['taxon_ID_fk'] . ">" : "");
         } else {
             return $this->taxon($taxonID, $withSeperator, false, $withID);
         }

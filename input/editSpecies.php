@@ -410,7 +410,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   </style>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script type="text/javascript" language="JavaScript"> 
+  <script type="text/javascript" language="JavaScript">
     reload = false;
 
     function editGenera(sel) {
@@ -773,33 +773,33 @@ $cf->dropdown(36, 9.5, "statusIndex", $p_statusIndex, $status[0], $status[1]);
 $cf->labelMandatory(9, 12.5, 6, "Species", "javascript:editEpithet(document.f.speciesIndex,'e')");
 $cf->inputJqAutocomplete(9, 12.5, 20, "species", $p_species, $p_speciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->labelMandatory(40, 12.5, 6, "Author", "javascript:editAuthor(document.f.authorIndex,'a')");
-$cf->inputJqAutocomplete(40, 12.5, 20, "author", $p_author, $p_authorIndex, "index_jq_autocomplete.php?field=authorNoExternals",650, 2);
+$cf->inputJqAutocomplete(40, 12.5, 20, "author", $p_author, $p_authorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals",650, 2);
 $cf->label(40, 14, "search", "javascript:searchAuthor()");
 
 $cf->label(9, 16, "Subspecies","javascript:editEpithet(document.f.subspeciesIndex,'s')");
 $cf->inputJqAutocomplete(9, 16, 20, "subspecies", $p_subspecies, $p_subspeciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->label(40, 16, "Author","javascript:editAuthor(document.f.subauthorIndex,'s')");
-$cf->inputJqAutocomplete(40, 16, 20, "subauthor", $p_subauthor, $p_subauthorIndex, "index_jq_autocomplete.php?field=authorNoExternals", 650, 2);
+$cf->inputJqAutocomplete(40, 16, 20, "subauthor", $p_subauthor, $p_subauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
 $cf->label(9, 19, "Variety","javascript:editEpithet(document.f.varietyIndex,'v')");
 $cf->inputJqAutocomplete(9, 19, 20, "variety", $p_variety, $p_varietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->label(40, 19, "Author","javascript:editAuthor(document.f.varauthorIndex,'v')");
-$cf->inputJqAutocomplete(40, 19, 20, "varauthor", $p_varauthor, $p_varauthorIndex, "index_jq_autocomplete.php?field=authorNoExternals", 650, 2);
+$cf->inputJqAutocomplete(40, 19, 20, "varauthor", $p_varauthor, $p_varauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
 $cf->label(9, 22, "Subvariety","javascript:editEpithet(document.f.subvarietyIndex,'sv')");
 $cf->inputJqAutocomplete(9, 22, 20, "subvariety", $p_subvariety, $p_subvarietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->label(40 ,22, "Author","javascript:editAuthor(document.f.subvarauthorIndex,'sv')");
-$cf->inputJqAutocomplete(40, 22, 20, "subvarauthor", $p_subvarauthor, $p_subvarauthorIndex, "index_jq_autocomplete.php?field=authorNoExternals", 650, 2);
+$cf->inputJqAutocomplete(40, 22, 20, "subvarauthor", $p_subvarauthor, $p_subvarauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
 $cf->label(9, 25, "Forma","javascript:editEpithet(document.f.formaIndex,'f')");
 $cf->inputJqAutocomplete(9, 25, 20, "forma", $p_forma, $p_formaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->label(40, 25, "Author","javascript:editAuthor(document.f.forauthorIndex,'f')");
-$cf->inputJqAutocomplete(40, 25, 20, "forauthor", $p_forauthor, $p_forauthorIndex, "index_jq_autocomplete.php?field=authorNoExternals", 650, 2);
+$cf->inputJqAutocomplete(40, 25, 20, "forauthor", $p_forauthor, $p_forauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
 $cf->label(9, 28, "Subforma", "javascript:editEpithet(document.f.subformaIndex,'sf')");
 $cf->inputJqAutocomplete(9, 28, 20, "subforma", $p_subforma, $p_subformaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
 $cf->label(40, 28, "Author","javascript:editAuthor(document.f.subforauthorIndex,'sf')");
-$cf->inputJqAutocomplete(40, 28, 20, "subforauthor", $p_subforauthor, $p_subforauthorIndex, "index_jq_autocomplete.php?field=authorNoExternals", 650, 2);
+$cf->inputJqAutocomplete(40, 28, 20, "subforauthor", $p_subforauthor, $p_subforauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
 $cf->label(9, 31, "accepted Taxon", "javascript:listTaxSynonymy('$p_taxonID');");
 $cf->inputJqAutocomplete(9, 31, 51, "syn", $p_syn, $p_synIndex, "index_jq_autocomplete.php?field=taxonWithDT", 650, 2);

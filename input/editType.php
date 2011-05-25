@@ -49,12 +49,29 @@ function makeSammler($search, $x, $y, $nr)
   <title>herbardb - edit Type</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
     th.out { font-style: italic }
     td.out { background-color: #669999; }
+	.ui-autocomplete {
+        font-size: 0.9em;  /* smaller size */
+		max-height: 200px;
+		overflow-y: auto;
+		/* prevent horizontal scrollbar */
+		overflow-x: hidden;
+		/* add padding to account for vertical scrollbar */
+		padding-right: 20px;
+	}
+	/* IE 6 doesn't support max-height
+	 * we use height instead, but this forces the menu to always be this tall
+	 */
+	* html .ui-autocomplete {
+		height: 200px;
   </style>
+  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function editCollector(sel) {
       target = "editCollector.php?sel=" + encodeURIComponent(sel.value);
@@ -101,6 +118,7 @@ if (isset($_GET['new'])) {
     $p_taxon = taxon(mysql_fetch_array($result));
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
+    $p_sammlerIndex = $p_sammler2Index = 0;
 } elseif (extractID($_GET['ID']) !== "NULL") {
     $sql ="SELECT typecollID, taxonID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
@@ -119,8 +137,10 @@ if (isset($_GET['new'])) {
         $p_duplicates       = $row['duplicates'];
         $p_annotation       = $row['annotation'];
 
-        $p_sammler   = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
-        $p_sammler2  = ($row['Sammler_2']) ? $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">" : "";
+        $p_sammler       = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
+        $p_sammlerIndex  = $row['SammlerID'];
+        $p_sammler2      = ($row['Sammler_2']) ? $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">" : "";
+        $p_sammler2Index = $row['Sammler_2ID'];
 
         $sql = "SELECT taxonID, tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -147,6 +167,7 @@ if (isset($_GET['new'])) {
     } else {
         $p_taxon = $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
         $p_typecollID = $p_sammler = $p_sammler2 ="";
+        $p_sammlerIndex = $p_sammler2Index = 0;
     }
 } elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
     $series = $_POST['series'];
@@ -199,7 +220,9 @@ if (isset($_GET['new'])) {
     $p_duplicates       = $_POST['duplicates'];
     $p_annotation       = $_POST['annotation'];
     $p_sammler          = $_POST['sammler'];
+    $p_sammlerIndex     = (strlen(trim($_POST['sammler']))>0) ? $_POST['sammlerIndex'] : 0;
     $p_sammler2         = $_POST['sammler2'];
+    $p_sammler2Index    = (strlen(trim($_POST['sammler2']))>0) ? $_POST['sammler2Index'] : 0;
     $p_typecollID       = $_POST['typecollID'];
 }
 ?>
@@ -217,10 +240,12 @@ echo "<input type=\"hidden\" name=\"taxon\" value=\"$p_taxon\">\n";
 $cf->label(9, 2, "taxon");
 $cf->text(9, 2, "&nbsp;" . $p_taxon);
 $cf->label(9, 7.5, "first collector", "javascript:editCollector(document.f.sammler)");
-$cf->editDropdown(9, 7.5, 28, "sammler", $p_sammler, makeSammler($p_sammler, 9, 6, 1), 270);
+//$cf->editDropdown(9, 7.5, 28, "sammler", $p_sammler, makeSammler($p_sammler, 9, 6, 1), 270);
+$cf->inputJqAutocomplete(9, 7.5, 28, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 270, 2);
 $cf->label(9, 9.2, "search", "javascript:searchCollector()");
 $cf->label(9, 13, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
-$cf->editDropdown(9, 13, 28, "sammler2", $p_sammler2, makeSammler($p_sammler2, 9, 11.5, 2), 270);
+//$cf->editDropdown(9, 13, 28, "sammler2", $p_sammler2, makeSammler($p_sammler2, 9, 11.5, 2), 270);
+$cf->inputJqAutocomplete(9, 13, 28, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 270, 2);
 $cf->label(9, 17, "series");
 $cf->inputText(9, 17, 28, "series", $p_series, 250);
 $cf->label(9, 19, "number");

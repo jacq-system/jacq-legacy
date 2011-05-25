@@ -358,7 +358,7 @@ if (checkRight('unlock_tbl_tax_genera')) {
 $cf->labelMandatory(8,4,4,"Genus");
 $cf->inputText(8,4,25,"genus",$p_genus,100);
 $cf->label(8,6.5,"Author","javascript:editAuthor(document.f.author,'a')");
-$cf->inputJqAutocomplete(8,6.5,25,"author",$p_author,$p_authorIndex,"index_jq_autocomplete.php?field=author",520,2);
+$cf->inputJqAutocomplete(8,6.5,25,"author",$p_author,$p_authorIndex,"index_jq_autocomplete.php?field=taxAuthor",520,2);
 $cf->label(8,8.0,"search","javascript:searchAuthor()");
 $cf->label(8,10.5,"Ref No.");
 $cf->inputText(8,10.5,7,"DTID",$p_DTID,11);

@@ -66,13 +66,13 @@ protected function __construct () {}
 \********************/
 
 /**
- * autocomplete an author entry field
+ * autocomplete a taxonomy author entry field
  *
  * @param string $value text to search for
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function author ($value, $noExternals = false)
+public function taxAuthor ($value, $noExternals = false)
 {
     $results = array();
     if ($value && strlen($value) > 1) {
@@ -115,11 +115,68 @@ public function author ($value, $noExternals = false)
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function authorNoExternals ($value)
+public function taxAuthorNoExternals ($value)
 {
-    return $this->author($value, true);
+    return $this->taxAuthor($value, true);
 }
 
+
+/**
+ * autocomplete a collector entry field
+ *
+ * @param string $value text to search for
+ * @param bool[optional] $second if true use tbl_collector2 (default = false)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function collector ($value, $second = false)
+{
+    $results = array();
+    if ($value && strlen($value) > 1) {
+        $pieces = explode(" <", $value);
+        try {
+            /* @var $db clsDbAccess */
+            $db = clsDbAccess::Connect('INPUT');
+            if ($second) {
+                $sql = "SELECT Sammler_2 AS Sammler, Sammler_2ID AS SammlerID
+                        FROM tbl_collector_2
+                        WHERE Sammler_2 LIKE " . $db->quote ($pieces[0] . '%') . "
+                        ORDER BY Sammler_2";
+            } else {
+                $sql = "SELECT Sammler, SammlerID
+                        FROM tbl_collector
+                        WHERE Sammler LIKE " . $db->quote ($pieces[0] . '%') . "
+                        ORDER BY Sammler";
+            }
+            /* @var $dbst PDOStatement */
+            $dbst = $db->query($sql);
+            $rows = $dbst->fetchAll();
+            if (count($rows) > 0) {
+                foreach ($rows as $row) {
+                    $results[] = array('id'    => $row['SammlerID'],
+                                       'label' => $row['Sammler'] . " <" . $row['SammlerID'] . ">",
+                                       'value' => $row['Sammler'] . " <" . $row['SammlerID'] . ">",
+                                       'color' => '');
+                }
+            }
+        }
+        catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+    }
+
+    return $results;
+}
+
+
+/**
+ * autocomplete a second collector entry field (tbl_collector_2)
+ *
+ * @param string $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function collector2 ($value) {
+    return $this->collector($value, true);
+}
 
 /**
  * autocomplete a person entry field
@@ -531,7 +588,7 @@ public function taxonWithHybrids ($value, $noExternals = false)
             /* @var $db clsDbAccess */
             $db = clsDbAccess::Connect('INPUT');
 
-            $sql = "SELECT taxonID, ts.synID
+            $sql = "SELECT taxonID, ts.synID, ts.external
                     FROM tbl_tax_species ts
                      LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
                      LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
@@ -553,10 +610,17 @@ public function taxonWithHybrids ($value, $noExternals = false)
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
+                    if ($row['synID']) {
+                        $color = 'red';
+                    } elseif ($row['external']) {
+                        $color = 'blue';
+                    } else {
+                        $color = '';
+                    }
                     $results[] = array('id'    => $row['taxonID'],
                                        'label' => $display->taxon($row['taxonID'], true, false, true),
                                        'value' => $display->taxon($row['taxonID'], true, false, true),
-                                       'color' => ($row['synID']) ? 'red' : '');
+                                       'color' => $color);
                 }
             }
 
@@ -590,10 +654,17 @@ public function taxonWithHybrids ($value, $noExternals = false)
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
+                    if ($row['synID']) {
+                        $color = 'red';
+                    } elseif ($row['external']) {
+                        $color = 'blue';
+                    } else {
+                        $color = '';
+                    }
                     $results[] = array('id'    => $row['taxonID'],
-                                       'label' => $display->taxon($row['taxonID'], true, false, true),
-                                       'value' => $display->taxon($row['taxonID'], true, false, true),
-                                       'color' => ($row['synID']) ? 'red' : '');
+                                       'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                                       'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                                       'color' => $color);
                 }
             }
 
