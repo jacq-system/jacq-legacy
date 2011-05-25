@@ -316,7 +316,13 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
 	  . "      minLength: {$minLength},\n"
       . "      delay: 500, \n"
 	  . "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
-	  . "    });\n"
+	  . "    })\n"
+      . "    .data('autocomplete')._renderItem = function( ul, item ) {\n"
+      . "      return $('<li></li>')\n"
+      . "        .data('item.autocomplete', item)\n"
+      . "        .append('<a' + ((item.color) ? ' style=\"background-color:' + item.color + ';\">' : '>') + item.label + '</a>')\n"
+      . "        .appendTo(ul);\n"
+      . "    };\n"
 	  . "  });\n"
       . "</script>\n";
 }

@@ -210,11 +210,9 @@ if ($p_type == 1) {
     $cf->text(7, 2.5, $p_taxon);
     $cf->label(7, 6, "citation");
     $cf->inputJqAutocomplete(7, 6, 28, "citation", $p_citation, $p_citationIndex, "index_jq_autocomplete.php?field=citation", 520, 2);
-    //$cf->editDropdown(7, 6, 28, "citation", $p_citation, makeProtolog($p_citation, 7, 4.5), 520);
 } else {
     $cf->label(7, 2.5, "taxon");
     $cf->inputJqAutocomplete(7, 2.5, 28, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxon", 520, 2);
-    //$cf->editDropdown(7, 4, 28, "taxon", $p_taxon, makeTaxon($p_taxon, 7, 2.5), 520);
     $cf->label(7, 6, "citation");
     $cf->text(7, 6, "&nbsp;" . $p_citation);
     echo "<input type=\"hidden\" name=\"citation\" value=\"$p_citation\">\n";

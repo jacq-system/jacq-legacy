@@ -95,7 +95,8 @@ public function author ($value, $noExternals = false)
                     if ($row['Brummit_Powell_full']) $res .= chr(194) . chr(183) . " [" . replaceNewline($row['Brummit_Powell_full']) . "]";
                     $results[] = array('id'    => $row['authorID'],
                                        'label' => $res . " <" . $row['authorID'] . ">",
-                                       'value' => $res . " <" . $row['authorID'] . ">");
+                                       'value' => $res . " <" . $row['authorID'] . ">",
+                                       'color' => '');
                 }
             }
         }
@@ -170,7 +171,8 @@ public function person ($value)
                     $text = $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
                     $results[] = array('id'    => $row['person_ID'],
                                        'label' => $text,
-                                       'value' => $text);
+                                       'value' => $text,
+                                       'color' => '');
                 }
             }
         }
@@ -226,7 +228,8 @@ public function citation ($value)
                 foreach ($rows as $row) {
                     $results[] = array('id'    => $row['citationID'],
                                        'label' => $display->protolog($row['citationID'], true),
-                                       'value' => $display->protolog($row['citationID'], true));
+                                       'value' => $display->protolog($row['citationID'], true),
+                                       'color' => '');
                 }
             }
         }
@@ -264,7 +267,8 @@ public function periodical ($value)
                 foreach ($rows as $row) {
                     $results[] = array('id'    => $row['periodicalID'],
                                        'label' => $row['periodical'] . " <" . $row['periodicalID'] . ">",
-                                       'value' => $row['periodical'] . " <" . $row['periodicalID'] . ">");
+                                       'value' => $row['periodical'] . " <" . $row['periodicalID'] . ">",
+                                       'color' => '');
                 }
             }
         }
@@ -302,7 +306,8 @@ public function family ($value)
                 foreach ($rows as $row) {
                     $results[] = array('id'    => $row['familyID'],
                                        'label' => $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">",
-                                       'value' => $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">");
+                                       'value' => $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">",
+                                       'color' => '');
                 }
             }
         }
@@ -345,7 +350,8 @@ public function genus ($value)
                           . " <" . $row['genID'] . ">";
                     $results[] = array('id'    => $row['genID'],
                                        'label' => $text,
-                                       'value' => $text);
+                                       'value' => $text,
+                                       'color' => '');
                 }
                 foreach ($results as $k => $v) {
                     $results[$k]['label'] = preg_replace("/ [\s]+/"," ",$v['label']);
@@ -388,7 +394,8 @@ public function epithet ($value, $noExternals = false)
                 foreach ($rows as $row) {
                     $results[] = array('id'    => $row['epithetID'],
                                        'label' => $row['epithet'] . " <" . $row['epithetID'] . ">",
-                                       'value' => $row['epithet'] . " <" . $row['epithetID'] . ">");
+                                       'value' => $row['epithet'] . " <" . $row['epithetID'] . ">",
+                                       'color' => '');
                 }
             }
         }
@@ -432,7 +439,7 @@ public function taxon ($value, $noExternals = false, $withDT = false)
         try {
             /* @var $db clsDbAccess */
             $db = clsDbAccess::Connect('INPUT');
-            $sql = "SELECT taxonID
+            $sql = "SELECT taxonID, ts.external
                     FROM tbl_tax_species ts
                      LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
                      LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
@@ -457,7 +464,8 @@ public function taxon ($value, $noExternals = false, $withDT = false)
                 foreach ($rows as $row) {
                     $results[] = array('id'    => $row['taxonID'],
                                        'label' => $display->taxon($row['taxonID'], true, $withDT, true),
-                                       'value' => $display->taxon($row['taxonID'], true, $withDT, true));
+                                       'value' => $display->taxon($row['taxonID'], true, $withDT, true),
+                                       'color' => ($row['external']) ? 'red' : '');
                 }
                 foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
                     $results[$k]['label'] = preg_replace("/ [\s]+/"," ",$v['label']);
@@ -502,6 +510,120 @@ public function taxonWithDT ($value)
 {
     return $this->taxon($value, false, true);
 }
+
+/**
+ * autocomplete a taxon entry field with hybrid at the end of the list
+ * If the searchstring has only one part before the separator only taxa with empty species are presented.
+ * If the searchstring consists of two parts the first one is used for genus, the second one for species
+ *
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonWithHybrids ($value, $noExternals = false)
+{
+    $results = array();
+    if ($value && strlen($value) > 1) {
+        $pieces = explode(chr(194) . chr(183), $value);
+        $pieces = explode(" ",$pieces[0]);
+        try {
+            $display = clsDisplay::Load();
+            /* @var $db clsDbAccess */
+            $db = clsDbAccess::Connect('INPUT');
+
+            $sql = "SELECT taxonID, ts.synID
+                    FROM tbl_tax_species ts
+                     LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                     LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                    WHERE tg.genus LIKE " . $db->quote ($pieces[0] . '%');
+            if ($noExternals) $sql .= " AND ts.external = 0";
+            if (!empty($pieces[1])) {
+                $sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
+            } else {
+                $sql .= " AND te0.epithet IS NULL";
+            }
+            $sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+            /* @var $dbst PDOStatement */
+            $dbst = $db->query($sql);
+            $rows = $dbst->fetchAll();
+            if (count($rows) > 0) {
+                foreach ($rows as $row) {
+                    $results[] = array('id'    => $row['taxonID'],
+                                       'label' => $display->taxon($row['taxonID'], true, false, true),
+                                       'value' => $display->taxon($row['taxonID'], true, false, true),
+                                       'color' => ($row['synID']) ? 'red' : '');
+                }
+            }
+
+            $sql = "SELECT ts.taxonID, ts.synID
+                    FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                     LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                     LEFT JOIN tbl_tax_species tsp1 ON tsp1.taxonID = th.parent_1_ID
+                     LEFT JOIN tbl_tax_epithets tep1 ON tep1.epithetID = tsp1.speciesID
+                     LEFT JOIN tbl_tax_genera tgp1 ON tgp1.genID = tsp1.genID
+                     LEFT JOIN tbl_tax_species tsp2 ON tsp2.taxonID = th.parent_2_ID
+                     LEFT JOIN tbl_tax_epithets tep2 ON tep2.epithetID = tsp2.speciesID
+                     LEFT JOIN tbl_tax_genera tgp2 ON tgp2.genID = tsp2.genID
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE th.taxon_ID_fk = ts.taxonID
+                     AND (tg.genus LIKE " . $db->quote ($pieces[0] . '%') . "
+                      OR tgp1.genus LIKE " . $db->quote ($pieces[0] . '%') . "
+                      OR tgp2.genus LIKE " . $db->quote ($pieces[0] . '%') . ")\n";
+            if ($noExternals) $sql .= " AND ts.external = 0\n";
+            if (!empty($pieces[1])) {
+                $sql .= " AND (tep1.epithet LIKE " . $db->quote ($pieces[1] . '%') . "
+                           OR tep2.epithet LIKE " . $db->quote ($pieces[1] . '%') . ")\n";
+            }
+            $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
+            /* @var $dbst PDOStatement */
+            $dbst = $db->query($sql);
+            $rows = $dbst->fetchAll();
+            if (count($rows) > 0) {
+                foreach ($rows as $row) {
+                    $results[] = array('id'    => $row['taxonID'],
+                                       'label' => $display->taxon($row['taxonID'], true, false, true),
+                                       'value' => $display->taxon($row['taxonID'], true, false, true),
+                                       'color' => ($row['synID']) ? 'red' : '');
+                }
+            }
+
+            foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
+                $results[$k]['label'] = preg_replace("/ [\s]+/"," ",$v['label']);
+                $results[$k]['value'] = preg_replace("/ [\s]+/"," ",$v['value']);
+            }
+        }
+        catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete a taxon entry field without external entries (external=0)
+ * If the searchstring has only one part before the separator only taxa with empty species are presented.
+ * If the searchstring consists of two parts the first one is used for genus, the second one for species
+ *
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonWithHybridsNoExternals ($value)
+{
+    return $this->taxonWithHybrids($value, true);
+}
+
 
 /***********************\
 |                       |
