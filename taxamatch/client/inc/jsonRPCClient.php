@@ -92,7 +92,8 @@ class jsonRPCClient {
 	 * @return array
 	 */
 	public function __call($method,$params) {
-
+		$debug='';
+		
 		// check
 		if (!is_scalar($method)) {
 			throw new Exception('Method name has no scalar value');
@@ -120,8 +121,9 @@ class jsonRPCClient {
 						'id' => $currentId
 						);
 		$request = json_encode($request);
-		$this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
-
+		if ($this->debug){
+			$debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+		}
 		// performs the HTTP POST
 		$opts = array ('http' => array (
 							'method'  => 'POST',
@@ -134,7 +136,10 @@ class jsonRPCClient {
 			while($row = fgets($fp)) {
 				$response.= trim($row)."\n";
 			}
-			$this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
+
+			if ($this->debug){
+				$debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
+			}
 			$response = json_decode($response,true);
 		} else {
 			throw new Exception('Unable to connect to '.$this->url);

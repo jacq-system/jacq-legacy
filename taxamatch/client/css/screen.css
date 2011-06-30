@@ -26,3 +26,5 @@ a:visited { font-weight:bold; color:#ffff00; text-decoration:none }
 a:hover { font-weight:bold; color:#66FF66; text-decoration:none }
 a:active { font-weight:bold; color:#66FF66; text-decoration:underline }
 a:focus { font-weight:bold; color:#00E000; text-decoration:underline }
+
+#dbext{float:left;margin-right:10px;}

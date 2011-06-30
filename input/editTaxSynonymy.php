@@ -12,6 +12,16 @@ $xajax->setRequestURI("ajax/editTaxSynonymyServer.php");
 
 $xajax->registerFunction("setSource");
 
+function dateconvert($date,$tomysql=false){
+	/*if($tomysql){
+		$date=explode('/',$date);
+		return $date[2].'-'.$date[1].'-'.$date[0];
+	}else{
+		$date=explode('-',$date);
+		return $date[2].'/'.$date[1].'/'.$date[0];
+	}*/
+	return $date;
+}
 
 if (isset($_GET['new'])) {
     $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
@@ -47,9 +57,14 @@ if (isset($_GET['new'])) {
     $p_sourceService = "";
     $p_timestamp = "";
     $p_user = "";
+    $p_ref_date="";
+    $p_source_specimen="";
+    $p_source_specimenIndex="";
+
+
 } elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT ts.tax_syn_ID, ts.taxonID, ts.acc_taxon_ID, ts.annotations, ts.preferred_taxonomy,
-             ts.source, ts.source_citationID, ts.source_person_ID, ts.source_serviceID, ts.timestamp,
+             ts.source, ts.source_citationID, ts.source_person_ID, ts.source_serviceID,ts.ref_date,ts.source_specimenID, ts.timestamp,
              hu.firstname, hu.surname
             FROM tbl_tax_synonymy ts
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON ts.userID = hu.userID
@@ -62,7 +77,8 @@ if (isset($_GET['new'])) {
         $p_annotations = $row['annotations'];
         $p_timestamp   = $row['timestamp'];
         $p_user        = $row['firstname'] . " " . $row['surname'];
-
+        $p_ref_date=dateconvert($row['ref_date']);
+		
         $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -111,7 +127,31 @@ if (isset($_GET['new'])) {
         $result = db_query($sql);
         $p_taxonAcc = taxon(mysql_fetch_array($result));
         $p_taxonAccIndex = $row['acc_taxon_ID'];
-
+       
+ 	   $sql = "SELECT taxonID, tg.genus,
+                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                 ta4.author author4, ta5.author author5,
+                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                 te4.epithet epithet4, te5.epithet epithet5
+                FROM tbl_tax_species ts
+                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                WHERE taxonID = '" . $row['source_specimenID'] . "'";
+        $result = db_query($sql);
+        $p_source_specimen=taxon(mysql_fetch_array($result));
+        $p_source_specimenIndex=$row['source_specimenID'];
+		
         $p_source = $row['source'];
         if ($p_source == "literature") {
             $sql = "SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -137,6 +177,7 @@ if (isset($_GET['new'])) {
             $p_sourcePersIndex = $row['source_person_ID'];
             $p_sourceLit = $p_sourceLitIndex = $p_sourceService = "";
         }
+        
     }
     else {
         $p_taxon = $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
@@ -147,7 +188,8 @@ if (isset($_GET['new'])) {
         $p_sourceLit = $p_sourceLitIndex = $p_sourceService = $p_timestamp = $p_user = "";
     }
 } elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
-    if (!empty($_POST['preferred'])) {
+
+   if (!empty($_POST['preferred'])) {
         db_query("UPDATE tbl_tax_synonymy SET
                    preferred_taxonomy = 0
                   WHERE taxonID = " . extractID($_POST['taxon']));
@@ -157,6 +199,8 @@ if (isset($_GET['new'])) {
                 acc_taxon_ID = '" . intval($_POST['taxonAccIndex']) . "',
                 preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                 annotations = " . quoteString($annotations) . ",
+                ref_date = '" . dateconvert($_POST['ref_date'],true) . "',
+                source_specimenID = '" . intval($_POST['source_specimenIndex']) . "',
                 userID = '" . intval($_SESSION['uid']) . "'";
     if ($_POST['source'] == 'literature') {
         $sqldata .= ", source = 'literature',
@@ -184,6 +228,7 @@ if (isset($_GET['new'])) {
                 $sqldata";
         $updated = 0;
     }
+
     $result = db_query($sql);
     $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : mysql_insert_id();
     //logTaxSynonymy($p_tax_syn_ID, $updated);
@@ -206,6 +251,9 @@ if (isset($_GET['new'])) {
     $p_timestamp       = $_POST['timestamp'];
     $p_tax_syn_ID      = $_POST['tax_syn_ID'];
     $p_source          = $_POST['source'];
+    $p_ref_date        = $_POST['ref_date'];
+    $p_source_specimen = $_POST['source_specimen'];
+    $p_source_specimenIndex= $_POST['source_specimenIndex'];
     if ($p_source == 'literature') {
         $p_sourceLit       = $_POST['sourceLit'];
         $p_sourceLitIndex  = $_POST['sourceLitIndex'];
@@ -259,20 +307,38 @@ if (isset($_GET['new'])) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="inc/jQuery/jquery.inputmask.js" type="text/javascript"></script>
+  
   <script type="text/javascript" language="JavaScript">
-    function hideParts() {
-      var source = '<?php echo $p_source; ?>';
-      if (source == 'literature') {
-        document.getElementById('ajax_sourcePers').style.display = 'none';
-        document.getElementById('sourceService').style.display = 'none';
-      } else if (source == 'service') {
-        document.getElementById('ajax_sourcePers').style.display = 'none';
-        document.getElementById('ajax_sourceLit').style.display = 'none';
-      } else {
-        document.getElementById('ajax_sourceLit').style.display = 'none';
-        document.getElementById('sourceService').style.display = 'none';
-      }
+
+	$(document).ready(function() {
+		$("#ref_date").inputmask("y-m-d");
+		var source = '<?php echo $p_source; ?>';
+		if (source == 'literature') {
+			document.getElementById('ajax_sourcePers').style.display = 'none';
+			document.getElementById('sourceService').style.display = 'none';
+		} else if (source == 'service') {
+			document.getElementById('ajax_sourcePers').style.display = 'none';
+			document.getElementById('ajax_sourceLit').style.display = 'none';
+		} else {
+			document.getElementById('ajax_sourceLit').style.display = 'none';
+			document.getElementById('sourceService').style.display = 'none';
+		}
+	});
+	function checkdate() {
+		val=$("#ref_date").val();
+		if(!val.match(/^\d\d\d\d?-\d\d?-\d\d$/) && !val.match(/^YYYY-MM-DD$/) && val!=''){
+			alert("\nMistake in Reference Date.\n\nPlease insert blank or correct Date.\n");
+			$("#ref_date").focus();
+		}
     }
+	function hideParts() {
+
+    }
+	
+
+
+
     function setSource() {
       xajax_setSource(xajax.getFormValues('f'));
     }
@@ -325,16 +391,23 @@ $cf->inputJqAutocomplete(7, 12, 28, "sourceLit", $p_sourceLit, $p_sourceLitIndex
 $cf->inputJqAutocomplete(7, 12, 28, "sourcePers", $p_sourcePers, $p_sourcePersIndex, "index_jq_autocomplete.php?field=person", 100, 2);
 $cf->dropdown(7, 12, "sourceService", $p_sourceService, $service[0], $service[1]);
 
-$cf->label(7, 16, "annotations");
-$cf->textarea(7, 16, 28, 4, "annotations", $p_annotations);
+$cf->label(7, 16, "Ref Date");
+$cf->inputText(7, 16, 8,  "ref_date\" onBlur=\"checkdate()\"", $p_ref_date,10);
+
+$cf->label(7, 19, "annotations");
+$cf->textarea(7, 19, 28, 4, "annotations", $p_annotations);
+
+$cf->label(7, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIndex>\" target=\"Species");
+$cf->inputJqAutocomplete(7, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
+
 
 if (($_SESSION['editControl'] & 0x20) != 0) {
     $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
-    $cf->buttonSubmit(2, 22, "reload", " Reload ");
-    $cf->buttonReset(10, 22, " Reset ");
-    $cf->buttonSubmit(20, 22, "submitUpdate", $text);
+    $cf->buttonSubmit(2, 31, "reload", " Reload ");
+    $cf->buttonReset(10, 31, " Reset ");
+    $cf->buttonSubmit(20, 31, "submitUpdate", $text);
 }
-$cf->buttonJavaScript(28, 22, " Cancel ", "self.close()");
+$cf->buttonJavaScript(28, 31, " Cancel ", "self.close()");
 ?>
 
 </form>

@@ -1,0 +1,72 @@
+*************************************************************
+* Project: MySQL-mdld (UDF-function for MySQL (C++))        *
+*                                                           *
+* Author: Johannes Schachner                                *
+* Date:   07 / 2010                                         *
+*************************************************************
+
+Description
+===========
+Calculates the Damerau-Levenshtein-distance between two strings
+two variants are provided:
+- dld calculates the normal distance
+- mdld has two more parameters (the second one being optional) which can change the behavior of the algorithm
+  the first parameter is "block-limit" and supports block transpositions of multiple characters (if set to 1 the
+    function behaves identically to the dld-function)
+  the second parameter is "limit", is optional and limits the calculated distance to a given value (if a condition
+    follows the function call and everything with a distance larger than something is discarded anyway the calculation
+    can be speeded up by giving this limit to the mdld-function which aborts calculation when reaching this limit)
+
+DLD algorithm based on the work of Sean Collins (sean at lolyco.com) 27Aug2008
+Adapted from Josh Drew's levenshtein code using pseudo
+code from http://en.wikipedia.org/wiki/Damerau-Levenshtein_distance - an optimal string alignment algorithm, as
+  opposed to 'edit distance' as per the notes in the wp article
+
+Levenshtein Distance Algorithm implementation as MySQL UDF by Joshua Drew for SpinWeb Net Designs, Inc. on 2003-12-28.
+
+MDLD algorithm based on the DLD algorithm and on the work of Tony Rees, November 2008 (Tony.Rees@csiro.au)
+
+Both algorithms were enhanced by the ability to use unicode strings encoded in UTF-8.
+ 
+
+How to add UDF-function to MySQL:
+=================================
+prerequisite: libmysqlclient-devel
+
+OpenSuse 11.3 (mysql-community-server-5.1.46-2.18.i586):
+  g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp
+  cp libmysqlmdldutf8.so /usr/lib/mysql/plugin
+
+OpenSuse 11.0:
+  g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp
+  cp libmysqlmdldutf8.so /usr/lib/mysql/
+  cd /usr/lib/
+  ln -s mysql/libmysqlmdldutf8.so .
+  ldconfig
+
+Suse Linux Enterprise Server 10:
+  g++ -fPIC -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp
+  cp libmysqlmdldutf8.so /usr/lib64/mysql/
+  cd /usr/lib64/
+  ln -s mysql/libmysqlmdldutf8.so .
+  ldconfig
+
+
+Add or update the UDF-function in MySQL:
+========================================
+DROP FUNCTION mdld
+CREATE FUNCTION mdld RETURNS INT SONAME 'libmysqlmdldutf8.so';
+DROP FUNCTION dld
+CREATE FUNCTION dld RETURNS INT SONAME 'libmysqlmdldutf8.so';
+
+ins bin verzeichnis...
+DROP FUNCTION mdld
+CREATE FUNCTION mdld RETURNS INT SONAME 'mdldutf8.dll';
+DROP FUNCTION dld
+CREATE FUNCTION dld RETURNS INT SONAME 'mdldutf8.dll';
+
+
+Example how to invoke UDF ngram from MySQL:
+===========================================
+SELECT dld("TestMe", genus) as distance FROM tbl_tax_genera;
+SELECT mdld("TestMe", genus, 2, 4) as distance FROM tbl_tax_genera;

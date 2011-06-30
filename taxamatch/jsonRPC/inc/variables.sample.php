@@ -6,14 +6,23 @@ $options['hrdb']['dbhost'] = "host";        // hostname for heimo reiners databa
 $options['hrdb']['dbname'] = "dbname";      // database name for heimo reiners database
 $options['hrdb']['dbuser'] = "username";    // username for heimo reiners database
 $options['hrdb']['dbpass'] = "password";    // password for heimo reiners database
-$options['col']['dbhost']  = "host";        // hostname for catalogue of life
+$options['col']['dbhost']  = "dbhost";      // hostname for catalogue of life
 $options['col']['dbname']  = "dbname";      // database name for catalogue of life
-$options['col']['dbuser']  = "username";    // username for catalogue of life
-$options['col']['dbpass']  = "password";    // password for catalogue of life
+$options['col']['dbuser']  = "dbuser";      // username for catalogue of life
+$options['col']['dbpass']  = "dbpass";      // password for catalogue of life
+$options['col2011']['dbhost']  = "dbhost";  // hostname for catalogue of life
+$options['col2011']['dbname']  = "dbname";  // database name for catalogue of life
+$options['col2011']['dbuser']  = "dbuser";  // username for catalogue of life
+$options['col2011']['dbpass']  = "dbpass";  // password for catalogue of life
 $options['fe']['dbhost']  = "host";         // hostname for fauna europea
 $options['fe']['dbname']  = "dbname";       // database name for fauna europea
 $options['fe']['dbuser']  = "username";     // username for fauna europea
 $options['fe']['dbpass']  = "password";     // password for fauna europea
+
+$options['fev2']['dbhost']  = "host";       // hostname for fauna europeaV2
+$options['fev2']['dbname']  = "dbname";     // database name for fauna europeaV2
+$options['fev2']['dbuser']  = "username";   // username for fauna europeaV2
+$options['fev2']['dbpass']  = "password";   // password for fauna europeaV2
 
 $options['log']['dbhost'] = 'host';         // hostname for logging
 $options['log']['dbname'] = "dbname";       // database for logging
