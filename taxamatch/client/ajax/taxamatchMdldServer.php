@@ -48,59 +48,59 @@ function showMatchJsonRPC($formData){
 		
 		if ($formData['database'] == 'vienna') {
 		//getMatches('vienna',$searchtext,$showSynonyms,$useNearMatch)
-			$matches = $service->getMatches('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
+			$matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
 		}else if ($formData['database'] == 'vienna_common') {
 			
-			$matches = $service->getMatches('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
+			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
 		} else if ($formData['database'] == 'col2010ac') {
 			
-			$matches = $service->getMatches('col2010ac',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('col2010ac',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>true));
 			}
 
 		} else if ($formData['database'] == 'col2011ac') {
 			
-			$matches = $service->getMatches('col2011ac',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('col2011ac',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>true));
 			}
 			
 
 		} else if ($formData['database'] == 'fe') {
 			
-			$matches = $service->getMatches('fe',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('fe',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('fe',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('fe',$searchtext,array('NearMatch'=>true));
 			}
 		
 		} else if ($formData['database'] == 'fev2') {
 			
-			$matches = $service->getMatches('fev2',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('fev2',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('fev2',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('fev2',$searchtext,array('NearMatch'=>true));
 			}
 
 		} else{
 			
-			$matches = $service->getMatches($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
+			$matches = $service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 		}
 
@@ -145,59 +145,59 @@ function dumpMatchJsonRPC($formData){
 		
 		if ($formData['database'] == 'vienna') {
 		//getMatches('vienna',$searchtext,$showSynonyms,$useNearMatch)
-			$matches = $service->getMatches('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
+			$matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
 		}else if ($formData['database'] == 'vienna_common') {
 			
-			$matches = $service->getMatches('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
+			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
 		} else if ($formData['database'] == 'col2010ac') {
 			
-			$matches = $service->getMatches('col2010ac',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('col2010ac',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>true));
 			}
 
 		} else if ($formData['database'] == 'col2011ac') {
 			
-			$matches = $service->getMatches('col2011ac',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('col2011ac',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>true));
 			}
 			
 
 		} else if ($formData['database'] == 'fe') {
 			
-			$matches = $service->getMatches('fe',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('fe',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('fe',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('fe',$searchtext,array('NearMatch'=>true));
 			}
 		
 		} else if ($formData['database'] == 'fev2') {
 			
-			$matches = $service->getMatches('fev2',$searchtext,array('NearMatch'=>false));
+			$matches = $service->getMatchesService('fev2',$searchtext,array('NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches('fev2',$searchtext,array('NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService('fev2',$searchtext,array('NearMatch'=>true));
 			}
 
 		} else{
 			
-			$matches = $service->getMatches($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
+			$matches = $service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatches($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 		}
 

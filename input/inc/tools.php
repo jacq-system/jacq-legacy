@@ -29,6 +29,20 @@ function extractID ($text)
     }
 }
 
+function extractID2($text)
+{
+    $pos1 = strrpos($text, "<");
+    $pos2 = strrpos($text, ">");
+    if ($pos1!==false && $pos2 !== false) {
+        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
+            return  intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+}
 
 /**
  * remove the ID from a string if present and returns the remaining part. ID must be enclosed in "<>" brackets and be positioned at the end

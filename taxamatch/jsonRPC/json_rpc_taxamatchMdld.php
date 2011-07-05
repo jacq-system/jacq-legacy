@@ -158,7 +158,7 @@ public function getDatabases(){
  * @param string[optional] $herbarium use this database (freud, col or faeu or all, default is freud)
  * @return array result of all searches
  */
-public function getMatches($database='', $searchitem='', $params=array()){
+public function getMatchesService($database='', $searchitem='', $params=array()){
 
 
 	
@@ -218,7 +218,7 @@ public function getMatches($database='', $searchitem='', $params=array()){
  * @param string[optional] $herbarium use this database (freud, col or faeu or all, default is freud)
  * @return array result of all searches
  */
-public function getMatchesMulti ($searchtext, $withNearMatch = false, $herbarium = 'freud'){
+public function getMatches($searchtext, $withNearMatch = false, $herbarium = 'freud'){
 	if ($herbarium == 'all') $herbarium = 'freud,col,faeu';
 	$herbs = explode(',', $herbarium);
 	// split the input at newlines into several queries

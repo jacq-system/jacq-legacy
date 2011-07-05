@@ -1,0 +1,13 @@
+# Please update to right destination to correct folder
+# /freud/trunk/input/geonames/ (=http://www.domain.com/freud/trunk/input/geonames/)
+#
+
+RewriteEngine on
+RewriteBase    /
+RewriteCond %{REQUEST_URI} .*
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !d-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule ^(maps|export|img)/(.*) http://www.geonames.org/$1/$2 [L,R]
+RewriteRule ^(servlet)/(.*) /freud/trunk/input/geonames/$1.php?$2 [L,QSA]
+#RewriteRule ^(servlet)/(.*) /freud/trunk/input/geonames/$1.php?$2 [L,QSA]
