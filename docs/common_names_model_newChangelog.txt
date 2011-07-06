@@ -1,0 +1,66 @@
++--------------------------------------------+
+| Catalog Diff Report                        |
++--------------------------------------------+
+Table `default_schema`.`tbl_language_cache` was created
+  columns:
+  - iso639_6 of type VARCHAR
+  - parent_id of type VARCHAR
+  - name of type VARCHAR
+  __
+  indices:
+  - iso639-6_UNIQUE with columns: iso639_6
+  __
+  attributes:
+  - engine: InnoDB
+  - default character set: utf8
+  - default collate: latin1_swedish_ci
+  __
+Table `default_schema`.`tbl_search_cache` was created
+  columns:
+  - search_val of type VARCHAR
+  - search_group of type INT
+  - timestamp of type TIMESTAMP
+  - result of type TEXT
+  __
+  indices:
+  - PRIMARY with columns: search_val
+  __
+  attributes:
+  - engine: MyISAM
+  - default character set: latin1
+  - default collate: latin1_swedish_ci
+  __
+Table `default_schema`.`tbl_geonames_cache` was modified
+Table `default_schema`.`tbl_name_applies_to` was modified
+Table `default_schema`.`tbl_name_commons` was modified
+Table `default_schema`.`tbl_name_entities` was modified
+Table `default_schema`.`tbl_name_languages` was modified
+Table `default_schema`.`tbl_name_taxon` was modified
+Table `default_schema`.`tbl_geonames_cache` was modified
+  indices:
+  __
+Table `default_schema`.`tbl_name_applies_to` was modified
+  indices:
+  __
+Table `default_schema`.`tbl_name_commons` was modified
+  indices:
+  __
+Table `default_schema`.`tbl_name_entities` was modified
+  columns:
+  - modified column entity_id
+  __
+Table `default_schema`.`tbl_name_languages` was modified
+  columns:
+  - added column iso639_6 of type VARCHAR(4)
+  - added column namecache of type VARCHAR(50)
+  - removed column iso639-6
+  __
+  indices:
+  - added index iso639-6_UNIQUE with columns: iso639_6
+  - removed index iso639-6_UNIQUE
+  __
+Table `default_schema`.`tbl_name_taxon` was modified
+  indices:
+  __
+----------------------------------------------
+End of MySQL Workbench Report

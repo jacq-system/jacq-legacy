@@ -1,7 +1,13 @@
 <?php
 
-$value="purkersdorf";
+$value='';
+$JSinitGeonameId='';
 
+if($_GET['geonameID']!=''){
+	$JSinitGeonameId="searchGeonameID('{$_GET['geonameID']}');";
+}else if($_GET['geoname']!=''){
+	$value=$_GET['geoname'];
+}
 
 $src=file_get_contents("http://www.geonames.org/maps/showOnMap?q=".$value);
 
@@ -21,6 +27,21 @@ function fulltextsearch3(val){
 	 document.searchForm2.q2.value=val;
 	 fulltextsearch();
 }
+function searchGeonameID(geonameID){
+	reset();
+	setDatasource(1000,geonameID,'Geonames',0);
+	mapHandler();
+
+}
+function UpdateGeography(gn,gi){
+
+	if(gi!=''){
+		searchGeonameID(gi);
+	}else if(gn!=''){
+		fulltextsearch3(gn)
+	}
+}
+
 </script>
 <style>
 #list {
@@ -46,6 +67,12 @@ Suche: <input class="topmenu" name="q2" size="20" value="{$value}" type="text">
 
 EOF;
 
+$js3=<<<EOF
+<script>
+{$JSinitGeonameId}
+</script>
+EOF;
+
 $src=str_replace(
 	array(
 		"src=\"/maps/gmaps2.js\"",
@@ -53,7 +80,8 @@ $src=str_replace(
 		"src=/",
 		"href=\"/",
 		"</head>",
-		"<div id=\"list\">"
+		"<div id=\"list\">",
+		"</body>"
 	),
 	array(
 		"src=\"geonames/gmaps2_nhm.js\"",
@@ -61,7 +89,8 @@ $src=str_replace(
 		"src=http://www.geonames.org/",
 		"href=\"http://www.geonames.org/",
 		$js1."</head>",
-		$js2."<div id=\"list\">"
+		$js2."<div id=\"list\">",
+		$js3."</body>",
 	)
 ,$src);
 
@@ -73,31 +102,5 @@ function p($var){
 	print_r($var);
 	echo "</pre>";
 }
-/*
-$js1=<<<EOF
-<script src="geonames/ZeroClipboard.js" type="text/javascript"></script>
-<script>
-function toClipBoard(str){
-	alert(str);
-	const gClipboardHelper = Components.classes["@mozilla.org/widget/clipboardhelper;1"].
-	getService(Components.interfaces.nsIClipboardHelper);
-	gClipboardHelper.copyString("Put me on the clipboard, please.");
-}
-function fulltextsearch2(){
-	 document.searchForm.q.value = document.searchForm2.q2.value;
-	 fulltextsearch();
-}
-</script>
-<style>
-#list {
-top:530px;
-}
-.geonameid1{
-text-decoration:underline;
-text-weight:bold;
-color:#00F;
-}
-</style>
-EOF;
-*/
+
  ?>

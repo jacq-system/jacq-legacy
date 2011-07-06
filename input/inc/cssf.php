@@ -327,6 +327,35 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
       . "</script>\n";
 }
 
+function inputJqAutocompleteTextarea($x, $y, $w, $h, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "rgb(255, 255, 153);", $title = "") {
+
+  $this->_divclass($x, $y, "cssfinput");
+  print "<textarea class='cssftextAutocomplete' style='width: {$w}em; height: {$h}em;";
+  if ($bgcol) print " background-color: $bgcol;";
+  print "' name='{$name}' id='ajax_{$name}' wrap='virtual'";
+  if ($maxsize) print " maxlength='{$maxsize}'";
+  if ($title) print " title='{$title}'";
+  print ">".htmlspecialchars($value, ENT_QUOTES) . "</textarea>"
+      . "</div>\n"
+      . "<input type='hidden' name='{$name}Index' id='{$name}Index' value='{$index}'>\n"
+      . "<script type='text/javascript' language='JavaScript'>\n"
+      . "  $(function() {\n"
+	  . "    $('#ajax_{$name}').autocomplete ({\n"
+	  . "      source: '{$serverScript}',\n"
+	  . "      minLength: {$minLength},\n"
+      . "      delay: 500, \n"
+	  . "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
+	  . "    })\n"
+      . "    .data('autocomplete')._renderItem = function( ul, item ) {\n"
+      . "      return $('<li></li>')\n"
+      . "        .data('item.autocomplete', item)\n"
+      . "        .append('<a' + ((item.color) ? ' style=\"background-color:' + item.color + ';\">' : '>') + item.label + '</a>')\n"
+      . "        .appendTo(ul);\n"
+      . "    };\n"
+	  . "  });\n"
+      . "</script>\n";
+}
+
 function inputDate($x,$y,$name,$value,$us) {
 
   $tmp = explode("-",$value);

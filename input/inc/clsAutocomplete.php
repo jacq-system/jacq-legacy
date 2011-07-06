@@ -51,7 +51,7 @@ public static function Load()
 |  variables  |
 |             |
 \*************/
-
+			
 
 /***************\
 |               |
@@ -93,7 +93,17 @@ protected function __construct () {}
 		}
 		return $d;
 	}
-
+	
+	function getCacheOption(){
+		global $_OPTIONS;
+		
+		$cache_type_valid=array('MICROSECOND','SECOND','MINUTE','HOUR','DAY','WEEK','MONTH','QUARTER','YEAR');
+	
+		if(in_array($_OPTIONS['TYPINGCACHE']['SETTING']['type'],$cache_type_valid) && intval($_OPTIONS['TYPINGCACHE']['SETTING']['val'])!==0){
+			return "and timestamp>TIMESTAMPADD({$_OPTIONS['TYPINGCACHE']['SETTING']['type']},-{$_OPTIONS['TYPINGCACHE']['SETTING']['val']},NOW())";
+		}
+		return '';
+	}
 /**
  * autocomplete a taxonomy author entry field
  *
@@ -679,10 +689,13 @@ public function cname_commonname ($value){
 			
 			if (count($rows) > 0) {
 				foreach ($rows as $row) {
+					$id=$row['common_id'];
+					$label=$row['common_name'];
+					
 					$results[] = array(
-						'id'	=> $row['common_id'],
-						'label' => $row['common_name'],
-						'value' => $row['common_name'],
+						'id'	=> $id,
+						'label' => "{$label} &lt;{$id}&gt;",
+						'value' => $label,
 						'color' => ''
 					);
 				}
@@ -728,7 +741,7 @@ public function cname_geoname ($value){
 							
 					$results_intern[] = array(
 						'id'	=> $id,
-						'label' => $label,
+						'label' => "{$label} &lt;{$id}&gt;",
 						'value' => $label,
 						'color' => ''
 					);
@@ -737,7 +750,8 @@ public function cname_geoname ($value){
 			}
 			
 			// Get TypeCache
-			$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='1' and search_val=" . $db->quote($value)." LIMIT 1";	
+			$cacheoption=$this->getCacheOption();
+			$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='1' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
 			
 			$dbst = $db->query($sql);
 			$row = $dbst->fetch();
@@ -749,9 +763,8 @@ public function cname_geoname ($value){
 			
 			// Else retrieve data from geonames.org
 			}else{
-				$url=$_OPTIONS['GEONAMES']['geonameAPIUrl'];
+				$url='http://api.geonames.org';
 				
-				$where='';
 				if($id){
 					$url.="/getJSON?";
 					$url.="style=full";
@@ -762,9 +775,7 @@ public function cname_geoname ($value){
 					$url.="&q=".$value;
 				}
 				$url.="&username=".$_OPTIONS['GEONAMES']['username'];
-				/*
-
-				*/
+				
 				$ctx = stream_context_create(  array( 'http' => array('timeout' => 2) )	); 
 /*
 http://www.geonames.org/export/JSON-webservices.html
@@ -802,12 +813,12 @@ london:
 					}
 					if (count($json['geonames']) > 0) {
 						foreach($json['geonames'] as $row) {
-							$label="{$row['toponymName']}, {$row['name']} ({$row['fcodeName']}: {$row['fclName']}), ({$row['continentCode']}, {$row['countryName']},{$row['countryCode']}, {$row['adminName1']}, {$row['adminCode1']}) <{$row['geonameId']}>";
+							$label="{$row['toponymName']}, {$row['name']} ({$row['fcodeName']}: {$row['fclName']}), ({$row['continentCode']}, {$row['countryName']},{$row['countryCode']}, {$row['adminName1']}, {$row['adminCode1']})";
 							$id=$row['geonameId'];
 							
 							$results[] = array(
 								'id'	=> $id,
-								'label' => $label,
+								'label' => "{$label} &lt;{$id}&gt;",
 								'value' => $label,
 								'color' => ''
 							);
@@ -827,6 +838,8 @@ london:
 		}catch (Exception $e){
 		echo $e->getMessage();
 			error_log($e->getMessage());
+			print_r($e);
+			exit;
 		}
 	}
 
@@ -915,17 +928,19 @@ public function cname_language ($value){
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			
+			$fetched=array();
+			
 			$search=$db->quote($value."%");
 			// Get Geolang out of database first
 			$sql = "
 SELECT
  language_id,
  iso639_6,
- name
+ namecache
 FROM
  {$this->common_name_dB}.tbl_name_languages
 WHERE
-    name LIKE {$search}
+    namecache LIKE {$search}
  or iso639_6 LIKE {$search}
 LIMIT
  20
@@ -933,23 +948,27 @@ LIMIT
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
-			//echo $sql;print_r($rows);exit;
+			
 			if (count($rows) > 0) {
 				foreach ($rows as $row) {
-					$label=$this->getLangLabel($row['iso639_6'])." <{$row['language_id']}>";
-					
-					$results_intern[] = array(
-						'id'	=> "{$row['iso639_6']},{$row['language_id']}",
-						'label' => $label,
-						'value' => $label,
-						'color' => ''
-					);
+					$id=$row['iso639_6'];
+					if(!isset($fetched[$id])){
+						$fetched[$id]=1;
+						$label=$this->getLangLabel($id);
+						$results_intern[] = array(
+							'id'	=> "{$id},{$row['language_id']}",
+							'label' => "{$label} &lt;{$row['language_id']}&gt;",
+							'value' => $label,
+							'color' => ''
+						);
+					}
 				}
 			}
 
 			
 			// Get TypingCache
-			$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." LIMIT 1";	
+			$cacheoption=$this->getCacheOption();
+			$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
 			
 			$dbst = $db->query($sql);
 			$row = $dbst->fetch();
@@ -961,7 +980,7 @@ LIMIT
 			
 			// Else retrieve data from geolang.org
 			}else{
-				
+				//
 				$source=$this->_get('www.geolang.com', '80',
 					'/iso639-6/resultsLN.asp',
 					array(
@@ -969,21 +988,79 @@ LIMIT
 						'searchLangName'=>'Search'
 					)
 				);
+				
 				if($source){
 					$table=strstr($source,'<td colspan="2"><div align="left" class="style6">Language Reference Name</div></td>');
 					preg_match_all('/<div align="left">(.*)<\/div>/msU',$table,$parsed);
 					$parsed=$parsed[1];
 					$a=count($parsed);
 					for($i=0;$i<$a;$i+=3){
-						$label=$this->getLangLabel($parsed[$i],$parsed[$i+1],$parsed[$i+2]);
-						$results[]=array(
-							'id'	=> $parsed[$i].',',
+						$id=$parsed[$i];
+						
+						if(!isset($fetched[$id])){
+							$fetched[$id]=1;
+							
+							$label=$this->getLangLabel($id,$parsed[$i+1],$parsed[$i+2]);
+							$results[]=array(
+								'id'	=> "{$id},",
+								'label' => $label,
+								'value' => $label,
+								'color' => ''
+							);
+						}
+					}
+				}
+				
+				// unfortunately, the search cannot search iso639-6 Codes.... so we search for it here...
+				
+				// Search iso639-6 on geolang.org
+				/*$id=$value;
+				$label=$this->getLangLabel($id);
+				if($label[0]!=',' && isset($fetched[$id]) ){
+					$fetched[$id]=1;
+					
+					$results[]=array(
+						'id'	=> $id.',',
+						'label' => $label,
+						'value' => $label,
+						'color' => ''
+					);
+				}*/
+				
+				// Search iso639-6 in our language cache table...
+				$sql = "
+SELECT
+ iso639_6
+ 
+FROM
+ {$this->common_name_dB}.tbl_language_cache
+WHERE
+    name LIKE {$search}
+ or iso639_6 LIKE {$search}
+LIMIT
+ 20
+ ";
+			/* @var $dbst PDOStatement */
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$id=$row['iso639_6'];
+						
+					if(!isset($fetched[$id])){
+								
+						$label=$this->getLangLabel($row['iso639_6']);
+						
+						$results_intern[] = array(
+							'id'	=> "{$id},",
 							'label' => $label,
 							'value' => $label,
 							'color' => ''
 						);
 					}
 				}
+			}
 				
 				// Insert Geonames Search Cache
 				$sql = "INSERT INTO {$this->common_name_dB}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
@@ -994,6 +1071,7 @@ LIMIT
 			
 		}catch (Exception $e){
 			error_log($e->getMessage());
+			
 		}
 	}
 
@@ -1115,7 +1193,7 @@ WHERE
 					
 					$results[] = array(
 						'id'	=> $id,
-						'label' => $label,
+						'label' => "{$label} &lt;{$id}&gt;",
 						'value' => $label,
 						'color' => ''
 					);
