@@ -14,7 +14,7 @@ error_reporting(E_ALL);
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <link rel="stylesheet" href="inc/jQuery/css/blue/style.css" type="text/css" id="" media="print, projection, screen" />
+  <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" id="" media="print, projection, screen" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
