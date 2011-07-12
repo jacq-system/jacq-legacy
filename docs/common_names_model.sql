@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS `tbl_search_cache` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   `result` text,
   PRIMARY KEY  (`search_val`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Constraints der exportierten Tabellen
