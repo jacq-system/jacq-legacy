@@ -13,7 +13,7 @@ no_magic();
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <script type="text/javascript" language="JavaScript">
     function showHUH(sel) {
-      target = "http://asaweb.huh.harvard.edu:8080/databases/botanists?id=" + encodeURIComponent(sel.value);
+      target = "selectCollector.php?id=" + encodeURIComponent(sel.value);
       MeinFenster = window.open(target,"showHUH");
       MeinFenster.focus();
     }
