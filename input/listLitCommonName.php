@@ -267,7 +267,7 @@ if ($result = db_query($sql)) {
 </head>
 <script type='text/javascript' language='JavaScript'>
 function selectCitationID(citationID){
-	window.opener.UpdateCitation(citationID);
+	window.opener.UpdateLiterature(citationID);
 	self.close();
 }
 </script>

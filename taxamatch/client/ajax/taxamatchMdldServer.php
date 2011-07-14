@@ -216,9 +216,8 @@ function prettyPrintMatches($matches,$start,$stop,
 							$formData,$searchtext,$showSyns,
 							$matchesNearMatch=array(),$useNearMatch=false) {
 							
-	if (!empty($matches['error'])) {
-		$out = $matches['error'];
-	} elseif (!empty($matchesNearMatch['error'])) {
+	
+	if (!empty($matchesNearMatch['error'])) {
 		$out = $matchesNearMatch['error'];
 	} else {
 		$out = "";
@@ -344,14 +343,17 @@ function prettyPrintMatches($matches,$start,$stop,
 			 . "&db=" . $formData['database']
 			 . "&showSyn=" . $showSyns
 			 . "' target='_blank'>export csv</a><br>\n"
-			 . "<big>" . number_format(($stop - $start), 2) . " seconds needed</big><br>\n"
-			 . "<table rules='all' border='1'>\n"
+			 . "<big>" . number_format(($stop - $start), 2) . " seconds needed</big><br><br>\n"
+			 . "<table id=\"resulta\" cellpadding=\"2\" rules='all' border='0' style=\"border-collapse:collapse;\">\n"
 			 . "<tr><th>&nbsp;search for&nbsp;</th><th>result</th><th>Dist.</th><th>Ratio</th>"
 			 . (($useNearMatch) ? "<th>&nbsp;search for&nbsp;</th><th>result near match</th><th>Dist.n.m.</th><th>Ratio n.m.</th>" : "")
 			 . "</tr>\n"
 			 . $out
 			 . "</table>\n";
 	}
+	if (!empty($matches['error'])) {
+		$out .= $matches['error'];
+	} 
 	return $out;
 }
 

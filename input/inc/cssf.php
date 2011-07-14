@@ -298,8 +298,7 @@ function inputAutocomplete($x,$y,$w,$name,$value,$index,$serverScript,$maxsize=0
  * deprecated
  */
 
-function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "") {
-
+function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false) {
   $this->_divclass($x, $y, "cssfinput");
   print "<input class='cssftextAutocomplete' style='width: {$w}em;";
   if ($bgcol) print " background-color: $bgcol;";
@@ -314,8 +313,10 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
 	  . "    $('#ajax_{$name}').autocomplete ({\n"
 	  . "      source: '{$serverScript}',\n"
 	  . "      minLength: {$minLength},\n"
-      . "      delay: 500, \n"
-	  . "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
+      . "      delay: 500, \n";
+
+  if ($autoFocus)print " autoFocus: true,\n";  
+  print "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
 	  . "    })\n"
       . "    .data('autocomplete')._renderItem = function( ul, item ) {\n"
       . "      return $('<li></li>')\n"

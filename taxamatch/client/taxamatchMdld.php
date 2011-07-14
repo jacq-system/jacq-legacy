@@ -1,8 +1,8 @@
 <?PHP
-$debug=1;
+$debug=0;
 $databases_cache='databases_cache.inc';
 
-if($_POST['update'] || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
+if(isset($_POST['update']) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
 	require_once('inc/jsonRPCClient.php');
 	require_once('inc/variables.php');   // BP, 07.2010
 
@@ -51,18 +51,12 @@ $(function() {
 	});
 	$.ajaxSetup({
 		error:function(x,e){
-			if(x.status==0){
-			alert('You are offline!!\n Please Check Your Network.');
-			}else if(x.status==404){
-			alert('Requested URL not found.');
-			}else if(x.status==500){
-			alert('Internel Server Error.');
-			}else if(e=='parsererror'){
-			alert('Error.\nParsing JSON Request failed.');
-			}else if(e=='timeout'){
-			alert('Request Time out.');
-			}else {
-			alert('Unknow Error.\n'+x.responseText);
+			if(x.status==0){alert('Taxamatch System Information:\nYou are offline!!\n Please Check Your Network.');
+			}else if(x.status==404){alert('Taxamatch System Information:\n Requested URL not found.');
+			}else if(x.status==500){alert('Taxamatch System Information:\nInternel Server Error.');
+			}else if(e=='parsererror'){alert('Taxamatch System Information:\nError.\nParsing JSON Request failed.');
+			}else if(e=='timeout'){alert('Taxamatch System Information:\nRequest Time out.');
+			}else {alert('Taxamatch System Information:\nUnknow Error.\n'+x.responseText);
 			}
 		}
 	});
@@ -166,6 +160,8 @@ In case we assume the resulting match to be a synonym in our locally adopted tax
           <label for="database_vienna">Virtual Herbarium Vienna</label>
           <input type="radio" name="database"  value="extern" >
           <label for="database_col">Extern </label>
+		  <div id="loading" style="margin:10 0 10 20;"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
+
 </div>
 		  <select name="database_extern" id="database_extern" size="5">
 <?PHP
@@ -191,7 +187,6 @@ foreach($services as $k=>$v){
     </table>
   </form>
 </p>
-<div id="loading"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
 
 <div id="ajaxTarget"></div>
 

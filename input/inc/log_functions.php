@@ -1,4 +1,28 @@
 <?php
+
+require_once('variables.php');
+
+function logCommonNamesAppliesTo($var,$updated) {
+	global $_OPTIONS;
+
+	$sql=	"INSERT INTO herbarinput_log.log_commonnames_name_applies_to ".
+			"(geonameId,language_id,period_id,entity_id,reference_id,name_id, ".
+			"userID, updated, timestamp) VALUES (".
+	$var['geonameID'].', '.
+	$var['language_id'].', '.
+	$var['period_id'].', '.
+	$var['entity_id'].', '.
+	$var['reference_id'].', '.
+	$var['name_id'].', '.
+    
+	$_SESSION['uid'].', '.
+    $updated.',
+	NULL)';
+	
+	mysql_query($sql);
+}
+
+
 function logSpecimen($ID,$updated) {
 
   if ($updated) {
