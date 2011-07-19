@@ -13,8 +13,9 @@ error_reporting(E_ALL);
   <title>herbardb - edit Index</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" id="" media="print, projection, screen" />
+  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+   <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
+   <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -35,21 +36,28 @@ error_reporting(E_ALL);
 	* html .ui-autocomplete {
 		height: 200px;
 	}
+.working{background:url('css/loading.gif') no-repeat right center;}
+.wrongItem{background:url('css/wrong.gif') no-repeat right center; background-color:rgb(255, 185,79) !important;}
+
+.thover1 td{
+ background-color:rgb(255, 185,79) !important;
+}
   </style>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="inc/jQuery/jquery-autocomplete/jquery.autocomplete_nhm.js" type="text/javascript"></script>
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
 		
   <script type="text/javascript" language="JavaScript">
 var geowin;
-
+// windows...
 function selectTaxon() {
 	//taxonID=$('#taxonIndex').val();
 	taxwin = window.open("listTaxCommonName.php", "selectTaxon", "width=600, height=500, top=50, right=50, scrollbars=yes, resizable=yes");
 	taxwin.focus();
 }
 function UpdateTaxon(taxonID) {
-	$('#ajax_taxon').data('selFirst',true).autocomplete( "search",'<'+taxonID+'>');
+	$('#ajax_taxon').searchID(taxonID);
 }
 
 
@@ -59,7 +67,7 @@ function selectLiterature() {
 	citwin.focus();
 }
 function UpdateLiterature(literatureID) {
-	$('#ajax_literature').data('selFirst',true).autocomplete( "search",'<'+literatureID+'>');
+	$('#ajax_literature').searchID(literatureID);
 }
 
 /*
@@ -69,7 +77,7 @@ function selectService() {
 	serwin.focus();
 }
 function UpdateService(serviceID) {
-	$('#ajax_service').data('selFirst',true).autocomplete( "search",'<'+serviceID+'>');
+	$('#ajax_service').searchID(serviceID);
 }
 
 function selectPerson() {
@@ -78,7 +86,7 @@ function selectPerson() {
 	perwin.focus();
 }
 function UpdatePerson(personID) {
-	$('#ajax_person').data('selFirst',true).autocomplete( "search",'<'+personID+'>');
+	$('#ajax_person').searchID(personID);
 }
 */
 
@@ -94,46 +102,67 @@ function selectGeoname() {
 	geowin.focus();
 }
 function UpdateGeoname(geonameID) {
-	$('#ajax_geoname').data('selFirst',true).autocomplete( "search",'<'+geonameID+'>');
+	$('#ajax_geoname').searchID(geonameID);
 }
 
-function appendSelFirst(objid){
-	$('#ajax_'+objid).data('selFirst',false).bind( 'autocompleteopen', function(event, ui) {
-		if($(this).data('selFirst')){
-			c=$(this).data('autocomplete').menu;
-			c._trigger('selected',event,{item:$(c.element[0].firstChild)});
+
+// Autocompleter
+function prepareWithID(nam,startval,mustMatch1){
+	if(mustMatch1){
+		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
+			extraParams:{field:'cname_'+nam},
+  			autoFill:1,
+			loadingClass: 'working',
+			selectFirst: true,
+			delay:100,
+			formatItem: function(row) { $('#'+nam+'Index').val(''); return row[0]; }
+  		}).change(function() {
+			if($('#'+nam+'Index').val()==''){
+				$('#ajax_'+nam).addClass('wrongItem');
+			}
+		});
+	}else{
+		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
+			extraParams:{field:'cname_'+nam},
+  			loadingClass: 'working',
+			selectFirst: true,
+			delay:100,
+  		});
+	}
+    
+	$('#ajax_'+nam).result(function(event, data, formatted) {
+		if(data){
+			$('#'+nam+'Index').val(data[1]);
+			$('#ajax_'+nam).val(data[0]).removeClass('wrongItem');
 		}
-	}).bind( 'autocompleteselect', function(event, ui) {
-		$(this).data('selFirst',false);
-	}).bind( 'autocompletesearch', function(event, ui) {
-		$('#'+objid+'Index').val('');
 	});
+
+	if(startval!=''){	
+		$('#ajax_'+nam).searchID(startval);
+	}
 }
-/*
-function setDefault(objn,vals){
-	$('#ajax_'objn).data('selFirst',true).autocomplete( "search",'<'+vals+'>');
-	$('#'+objid+'Index').val(vals);
-}	
-function setDefaults(taxonID,geonameID,language_id,literatur_id,serviceID,personID){
-	setDefault("taxon",taxonID);
-	setDefault("geoname",geonameID);
-	setDefault("language",language_id);
-	setDefault("literature",literatureID);
-	setDefault("service",serviceID);
-	setDefault("person",personID);
-}*/	
+
+function initAjaxVal(initObj,initObj2){
+	jQuery.each(initObj, function(key, val) {
+		prepareWithID(key, val,1);
+    });
+	jQuery.each(initObj2, function(key, val) {
+		prepareWithID(key, val,0);
+    });
+	$("#ajax_taxon").focus();
+}
+
+
 
 $(document).ready(function() {
-	appendSelFirst("taxon");
-	appendSelFirst("geoname");
-	appendSelFirst("language");
-	appendSelFirst("literature");
-	appendSelFirst("service");
-	appendSelFirst("person");
+	// selection
 	$("#ajax_literature").change(function() {$('input[name=source][value=literature]').attr('checked','checked');});
 	$("#ajax_person").change(function() {$('input[name=source][value=person]').attr('checked','checked');});
 	$("#ajax_service").change(function() {$('input[name=source][value=service]').attr('checked','checked');});
+	
+	// Validation
 	$('input[type=submit]').bind('click', function(){
+
 		n=$(this).val();
 		if(n==' Update'){
 			return doCheck(false);
@@ -165,7 +194,9 @@ $(document).ready(function() {
 		return true;
 	
 	});
+
 });
+
 
 function doCheck(doInsert){
 	var msg='';
@@ -270,7 +301,7 @@ $_dvar=array(
 	'source'			=> '',
 	
 	'literatureIndex'	=> '',
-	'literature'			=> '',
+	'literature'		=> '',
 	'serviceIndex'		=> '',
 	'service'			=> '',
 	'personIndex'		=> '',
@@ -292,8 +323,13 @@ $_dvar=array(
 	'oldselection'		=> '',
 );
 
+if(isset($_POST['submitDelete']))$_POST['action']='doDelete';
+if(isset($_POST['submitUpdate']))$_POST['action']='doUpdate';
+if(isset($_POST['submitInsert']))$_POST['action']='doInsert';
+if(isset($_POST['doSearch']))$_POST['action']='doSearch';
+if(!isset($_POST['action']))$_POST['action']='';
 
-if(isset($_POST['submitUpdate'])  || isset($_POST['submitDelete']) || isset($_POST['submitInsert']) || isset($_POST['submitSearch']) || $_POST['action']=='doDelete' || $_POST['action']=='doInsert' || $_POST['action']=='doUpdate' ){
+if( $_POST['action']=='doDelete' || $_POST['action']=='doSearch' || $_POST['action']=='doInsert' || $_POST['action']=='doUpdate'){
 	
 	$_dvar=array_merge($_dvar, array(
 		'taxonIndex'=>$_POST['taxonIndex'],
@@ -306,7 +342,7 @@ if(isset($_POST['submitUpdate'])  || isset($_POST['submitDelete']) || isset($_PO
 		'literature'			=> $_POST['literature'],
 		'serviceIndex'		=> $_POST['serviceIndex'],
 		'service'			=> $_POST['service'],
-		'personIndex'		=> $_POST['periodIndex'],
+		'personIndex'		=> $_POST['personIndex'],
 		'person'			=> $_POST['person'],
 		
 		'geonameIndex'=>$_POST['geonameIndex'],
@@ -333,18 +369,16 @@ if(isset($_POST['submitUpdate'])  || isset($_POST['submitDelete']) || isset($_PO
 	cleanPair('geoname',1);
 	
 	// Delete action
-	if ($_POST['submitDelete']==' Delete' || $_POST['action']=='doDelete'  ) {
+	if ($_POST['action']=='doDelete'  ) {
 		list($msg['err'],$msg['result'])=deleteCommonName($_dvar);
 	// Insert/Update
-	}else if( $_POST['submitUpdate'] || $_POST['submitInsert'] || $_POST['action']=='doInsert' || $_POST['action']=='doUpdate') {
+	}else if($_POST['action']=='doInsert' || $_POST['action']=='doUpdate') {
+
 		
-		$update1= ($_POST['submitUpdate']==' Update') || $_POST['action']=='doUpdate';
-		
-		
-		list($msg['err'],$msg['result'])=InsertUpdateCommonName($_dvar,$update1);
+		list($msg['err'],$msg['result'])=InsertUpdateCommonName($_dvar,$_POST['action']=='doUpdate');
 		$doSearch=true;
 	// Do Search
-	}else if(isset($_POST['submitSearch'])){
+	}else if($_POST['action']=='doSearch'){
 		$doSearch=true;	
 	}
 
@@ -392,15 +426,14 @@ if(isset($_POST['submitUpdate'])  || isset($_POST['submitDelete']) || isset($_PO
 		'oldselection'=>'',
 	));
 }
-$_dvar['taxon']=(intval($_dvar['taxonIndex'])!=0)?getTaxon($_dvar['taxonIndex']):'';
-$_dvar['literature']=(intval($_dvar['literatureIndex'])!=0)?getLiterature($_dvar['literatureIndex']):'';
-$_dvar['person']=(intval($_dvar['personIndex'])!=0)?getPerson($_dvar['personIndex']):'';
-$_dvar['service']=(intval($_dvar['serviceIndex'])!=0)?getService($_dvar['serviceIndex']):'';
-$_dvar['language']=getLanguage($_dvar['languageIndex']);
 
-//$init="({$_dvar['taxonIndex']},{geonameID},{$_dvar['languageIndex']},{$_dvar['literatureIndex']},{$_dvar['serviceIndex']},{$_dvar['personIndex']});";
+$init="
+var init={taxon:'{$_dvar['taxonIndex']}',geoname:'{$_dvar['geonameIndex']}',language:'{$_dvar['languageIndex']}',literature:'{$_dvar['literatureIndex']}',service:'{$_dvar['serviceIndex']}',person:'{$_dvar['personIndex']}'};
+var init2={period:'',common_name:''};
+";
 	
 $_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
+
 if(!isset($_dvar['source']))$_dvar['source']='literature';
 $source_sel[$_dvar['source']]=' checked';
 
@@ -418,6 +451,19 @@ $msg=implode('<br>',$msg);
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="sendto">
 
+<?PHP
+echo <<<EOF
+<script type="text/javascript" language="JavaScript">
+{$init}
+
+$(document).ready(function() {
+	initAjaxVal(init,init2);
+});
+
+</script>
+EOF;
+?>
+
 <?php
 $cf = new CSSF();
 
@@ -430,32 +476,39 @@ if($_dvar['enableClose']){
 }
 
 $cf->label(10, 5, "Entity","javascript:selectTaxon()");
-$cf->inputJqAutocomplete(11, 5, 50, "taxon", $_dvar['taxon'], $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon_commonname", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 5, 50, "taxon", "", $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon_commonname", 520, 2,0,"",true);
 
 $cf->label(10, 8, "Common Name");
-$cf->inputJqAutocomplete(11, 8, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 8, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
 
 
 $cf->label(10, 11, "Geography","javascript:selectGeoname()");
-$cf->inputJqAutocomplete(11, 11, 50, "geoname", $_dvar['geoname'], $_dvar['geonameIndex'], "index_jq_autocomplete.php?field=cname_geoname", 520, 2,"",0,true);
+$cf->inputJqAutocomplete2(11, 11, 50, "geoname", "", $_dvar['geonameIndex'], "index_jq_autocomplete.php?field=cname_geoname", 520, 2,"",0,true);
+
+/*
+$cf->text(11, 11, "<input type=\"text\" style=\"width: 200px;\" value=\"\" id=\"ajax_geoname\" class=\"ac_input\"/>");
+echo "<input type=\"hidden\" name=\"geonameIndex\" id=\"geonameIndex\"  value=\"0\">\n";
+*/
+
+
 
 $cf->label(10, 14, "Language");
-$cf->inputJqAutocomplete(11, 14, 50, "language", $_dvar['language'], $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 14, 50, "language", "", $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
 
 $cf->label(10, 17, "Period");
-$cf->inputJqAutocompleteTextarea(11,17, 50, 3, "period", $_dvar['period'], $_dvar['periodIndex'], "index_jq_autocomplete.php?field=cname_period", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11,17, 50, "period", $_dvar['period'], $_dvar['periodIndex'], "index_jq_autocomplete.php?field=cname_period", 520, 2,0,"",true);
 
 $cf->label(10, 22, "Literature","javascript:selectLiterature()");
 $cf->label(62, 22, "<input type=\"radio\" name=\"source\" value=\"literature\"{$source_sel['literature']}>");
-$cf->inputJqAutocomplete(11, 22, 48, "literature", $_dvar['literature'], $_dvar['literatureIndex'], "index_jq_autocomplete.php?field=cname_literature", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 22, 48, "literature", "", $_dvar['literatureIndex'], "index_jq_autocomplete.php?field=cname_literature", 520, 2,0,"",true);
 
 $cf->label(10, 25, "Service");
 $cf->label(62, 25, "<input type=\"radio\" name=\"source\"  value=\"service\"{$source_sel['service']}>");
-$cf->inputJqAutocomplete(11, 25, 48, "service", $_dvar['service'], $_dvar['serviceIndex'], "index_jq_autocomplete.php?field=cname_service", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 25, 48, "service", "", $_dvar['serviceIndex'], "index_jq_autocomplete.php?field=cname_service", 520, 2,0,"",true);
 
-$cf->label(10, 28, "Person"/*,"javascript:selectPerson()"*/);
+$cf->label(10, 28, "Person");
 $cf->label(62, 28, "<input type=\"radio\" name=\"source\"  value=\"person\"{$source_sel['person']}>");
-$cf->inputJqAutocomplete(11, 28, 48, "person", $_dvar['person'], $_dvar['personIndex'], "index_jq_autocomplete.php?field=cname_person", 520, 2,0,"",true);
+$cf->inputJqAutocomplete2(11, 28, 48, "person", "", $_dvar['personIndex'], "index_jq_autocomplete.php?field=cname_person", 520, 2,0,"",true);
 
 if(checkRight('commonnameInsert')){
 	echo "<input style=\"display:none\" type=\"submit\" name=\"submitInsert\" value=\" Insert New\">";
@@ -886,22 +939,36 @@ function doSearch($_dvar){
 	while($row = mysql_fetch_array($result)){
 		$taxon			=	getTaxon($row['taxonID']);
 		
-		
+		$literature='';
 		if($row['source']=='service'){
-			$literature	=getService($row['serviceID']);
+			if($row['serviceID']!=''){
+				$literature	=getService($row['serviceID']);
+			}
 		}else if($row['source']=='person'){
-			$literature	=getPerson($row['personID']);
+			if($row['personID']!=''){		
+				$literature	=getPerson($row['personID']);
+			}
 		}else{
-			$literature	=getLiterature($row['literatureID']);
+			if($row['literatureID']!=''){
+				$literature	=getLiterature($row['literatureID']);
+			}
 		}
+		$lan=($row['iso639-6']!="")?"{$row['iso639-6']} ({$row['language']})":"";
+		$geo=($row['geoname']!='')?"{$row['geoname']} &lt;{$row['geoname_id']}&gt;":"";
 		
 		$trclass=($i%2)?'odd':'even';
 		$eo=($i%2)?'o':'e';
+/*
+//dbeug
+<td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$row['geoname']} &lt;{$row['geoname_id']}&gt;</td><td class="{$eo}{$class['lang']}"> {$row['iso639-6']} ({$row['language']})</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td>
+*/
+		
+		
 		$search_result.=<<<EOF
 
 <tr onclick="selectA('{$row['taxonID']}','{$row['name_id']}','{$row['geoname_id']}','{$row['language_id']}','{$row['period_id']}','{$row['reference_id']}')" >
 
-<td class="{$eo}{$class['ent']}">{$taxon} &lt;{$row['entity_id']}&gt;</td><td class="{$eo}{$class['com']}">{$row['common_name']} &lt;{$row['name_id']}&gt;</td><td class="{$eo}{$class['geo']}">{$row['geoname']} &lt;{$row['geoname_id']}&gt;</td><td class="{$eo}{$class['lang']}"> {$row['iso639-6']} ({$row['language']}) &lt;{$row['language_id']}&gt;</td><td class="{$eo}{$class['per']}">{$row['period']} &lt;{$row['period_id']}&gt;</td><td class="{$eo}{$class['ref']}">{$literature} &lt;{$row['reference_id']}&gt;</td>
+<td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td>
 </tr>
 EOF;
 		$i++;
@@ -915,29 +982,22 @@ EOF;
 	$search_result=<<<EOF
 {$msg2}
 <style>
-.oac{
- background-color:#DAEEDD;
+.oac{ background-color:#DAEEDD;}
+.eac{ background-color:#e7fae6;}
+.o{ background-color:#f0f0f6;}
+.e{ background-color:#fff;}
+.lac{
+
 }
-.eac{
- background-color:#e7fae6;
-}
-.o{
- background-color:#f0f0f6;
-}
-.e{
- background-color:#fff;
+.l{
+  background-color:#ffff99 !important;
 }
 </style>
 <table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter">
 <colgroup><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"></colgroup>
 <thead>
 <tr>
-<th><span>Entity </span></th>
-<th><span>Common Name</span></th>
-<th><span>Geography</span></th>
-<th><span>Language</span></th>
-<th><span>Period</span></th>
-<th><span>Reference</span></th>
+ <th class="l{$class['ent']}"><span>Entity </span></th><th class="l{$class['com']}"><span>Common Name</span></th><th class="l{$class['geo']}"><span>Geography</span></th><th class="l{$class['lang']}"><span>Language</span></th><th class="l{$class['per']}"><span>Period</span></th><th class="l{$class['ref']}"><span>Reference</span></th>
 </tr>
 </thead>
 <tbody>
@@ -948,13 +1008,15 @@ EOF;
 </table>
 <script>
 $(function(){
-	$("#sorttable tbody tr").hover(function(){
-		$(this).addClass("thover");
-	},
-	function(){
-		$(this).removeClass("thover");
-	})
-
+	$("#sorttable tbody tr").hover(
+		function () {
+			$(this).find('td').css('background-color', '#ffff99');
+		}, 
+		function () {
+			$(this).find('td').css('background-color', '');
+		}
+	);
+  
 	$("#sorttable").tablesorter();
 });
 		
@@ -980,10 +1042,6 @@ function doDBQuery($sql,$debug=false){
 	}
 	return db_query($sql);
 }	
-
-
-
-
 
 
 

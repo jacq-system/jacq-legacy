@@ -37,8 +37,10 @@ $_OPTIONS['serviceTaxamatch'] = 'http://131.130.131.9/taxamatch/json_rpc_taxamat
 
 $_OPTIONS['GEONAMES']=array(
 	'username'=>'demo',
-	'password'=>''
+	'password'=>'',
+	'cookieFile'=>dirname(__FILE__)."/tmp_cookie.txt"
 );
+
 $_OPTIONS['TYPINGCACHE']['SETTING']=array(
 	'type'=>'DAY', 	// Valid: MICROSECOND, SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, YEAR
 	'val'=> 3 		// e.g. type=Day, val=3 => max 3 days Caching

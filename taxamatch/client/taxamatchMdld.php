@@ -1,5 +1,5 @@
 <?PHP
-$debug=0;
+$debug=isset($_GET['debug']);
 $databases_cache='databases_cache.inc';
 
 if(isset($_POST['update']) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
@@ -30,7 +30,7 @@ $services=unserialize(file_get_contents($databases_cache));
   <title>herbardb - taxamatch MDLD</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link type="text/css" href="css/screen.css" rel="stylesheet">
-  <link type="text/css" href="css/le-frog/jquery-ui-1.8.13.custom.css" rel="stylesheet" />	
+  <link type="text/css" href="css/south-street/jquery-ui-1.8.14.custom.css" rel="stylesheet" />	
   <script type="text/javascript" src="ajax/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="ajax/jquery-ui-1.8.13.custom.min.js"></script>
 
@@ -60,7 +60,7 @@ $(function() {
 			}
 		}
 	});
-	$("#loading").hide().ajaxStart(function(){
+	$("#loading").ajaxStart(function(){
 		$(this).show();
 		tims=0;timerA();
 	}).ajaxStop(function(){
@@ -160,7 +160,7 @@ In case we assume the resulting match to be a synonym in our locally adopted tax
           <label for="database_vienna">Virtual Herbarium Vienna</label>
           <input type="radio" name="database"  value="extern" >
           <label for="database_col">Extern </label>
-		  <div id="loading" style="margin:10 0 10 20;"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
+		  <div id="loading" style="text-align:center;margin-top:7px;display:none"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
 
 </div>
 		  <select name="database_extern" id="database_extern" size="5">

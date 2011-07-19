@@ -89,9 +89,10 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 
 			$matches['result'][] = array('searchtext'		  => $searchItem,
 										'searchtextNearmatch' => $searchItemNearmatch,
-										 'rowsChecked'		 => $ctr,
+										// 'rowsChecked'		 => $ctr,
+										'rowsChecked'		 => '',
 										 'type'				=> $type,
-										 'database'			=> 'faeu',
+										 'database'			=> 'faeuv2',
 										 'searchresult'		=> $searchresult);
 		}
 		$matches['error'] = ob_get_clean();
@@ -125,7 +126,7 @@ SELECT
 FROM
  fuzzy_fastsearch_name_element1 f
 WHERE
- mdld('{$genus[0]}', genus_name, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(genus_name)/2,{$lenGenuslim[0]})
+ mdld('{$genus[0]}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenGenuslim[0]})
 
 UNION ALL
 
@@ -134,7 +135,7 @@ SELECT
 FROM
  fuzzy_fastsearch_name_element2 f
 WHERE
- mdld('{$genus[1]}', subgenus_name, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenGenuslim[1]})
+ mdld('{$genus[1]}', subgenus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenGenuslim[1]})
  ";
 		$res = mysql_query($query);
 		
@@ -178,13 +179,13 @@ WHERE
 			
 				$distance=$row['mdld_e'];
 				// we've hit a species
-				if( ($distance + $row['mdld_g']) <= $this->limit && $distance <= min($lenEpithet, mb_strlen($row['SPECIES_EPITHET'], "UTF-8")) / 2 ){
+				if( ($distance + $row['mdld_g']) < $this->limit && $distance < min($lenEpithet, mb_strlen($row['SPECIES_EPITHET'], "UTF-8")) / 2 ){
 					
 					// if epithet
 					if($epithet && $rank){
 					
 						// we've hit an epithet
-						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] <= min($lenEpithet2, mb_strlen($row['INFRASPECIES_EPITHET'], "UTF-8")) / 2 ) {                         // 4th limit of the search
+						if ($row['mdld_i'] < $this->limit && $row['mdld_i'] < min($lenEpithet2, mb_strlen($row['INFRASPECIES_EPITHET'], "UTF-8")) / 2 ) {                         // 4th limit of the search
 							$found = true;  
 							$ratio = 1
 									- $row['mdld_e'] / max(mb_strlen($row['SPECIES_EPITHET'], "UTF-8"), $lenEpithet)
@@ -247,7 +248,7 @@ WHERE
 		$ctr=0;
 		
 		$lenUninomial=mb_strlen(trim($uninomial));
-		$lenlim=min((int)( $lenUninomial/2),$this->limit-1);
+		$lenlim=min( $lenUninomial/2,$this->limit);
 
 		
 		$query="
@@ -259,7 +260,7 @@ FROM
  fuzzy_fastsearch_name_element1 f
  LEFT JOIN hierarchy_faeu_v2 h on h.TAXONID=f.familyids
 WHERE
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
 
 UNION ALL
 
@@ -271,7 +272,7 @@ FROM
  fuzzy_fastsearch_name_element2 f
  LEFT JOIN hierarchy_faeu_v2 h on h.TAXONID=f.familyids
 WHERE
- mdld('{$uninomial}', subgenus_name, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
+ mdld('{$uninomial}', subgenus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
  ";
  //echo $query;exit;
 		$res = mysql_query($query);

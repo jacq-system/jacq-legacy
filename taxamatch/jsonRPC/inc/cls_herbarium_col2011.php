@@ -85,15 +85,14 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 		
 				if ($withNearMatch) {
 					$searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
-					$uninomial		   = ucfirst(trim($searchItemNearmatch));
+					$uninomial		   = strtolower(trim($searchItemNearmatch));
 				} else {
 					$searchItemNearmatch = '';
-					$uninomial		   = ucfirst(trim($searchItem));
+					$uninomial		   = strtolower(trim($searchItem));
 				}
 				
-				$searchresult=$this->getUninomial($uninomial);
-				
 
+				$searchresult=$this->getUninomial($uninomial);
 			/***********************************************
 			 * MULTI
 			 *
@@ -115,16 +114,16 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 					$searchItemNearmatch = '';
 				}
 				
-				$searchresult=array_merge($searchresult, $this->getMultinomal($parts));
+				$searchresult= $this->getMultinomal($parts);
 			}
 		
 			$matches['result'][] = array(
 				'searchtext'   => $searchItem,
 				'searchtextNearmatch' => $searchItemNearmatch,
 				// 'rowsChecked'		 => $ctr,
-				'rowsChecked'		 =>  '510.897',//134399+376498,
+				'rowsChecked'		 =>  '',//134399+376498,
 				'type'				=> $type,
-				'database'			=> 'col',
+				'database'			=> 'col2011ac',
 				'searchresult'		=> $searchresult
 			);
 		}
@@ -137,17 +136,17 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 	
 	function getMultinomal($parts){
 		$lev=array();
-		$genus	= $parts['genus']; // Uniominal = genus
+		$genus	= strtolower(trim($parts['genus'])); // Uniominal = genus
 		$lenGenus=mb_strlen($genus);
 		
 		
 		//$subgenus	= strtolower($parts['subgenus']);			  // subgenus (if any)
 		
-		$species	 = trim($parts['epithet']); // Binomial = species
+		$species	 = strtolower(trim($parts['epithet'])); // Binomial = species
 		$lenSpecies=mb_strlen($species);
 		
 		$rank		= $parts['rank'];						// Trinomial
-		$epithet	= trim($parts['subepithet']);
+		$epithet	= strtolower(trim($parts['subepithet']));
 		$lenEpithet=mb_strlen($epithet);
 		
 		// Search Uniominal FAST in Names (g=1 => this name refers to a genus
@@ -196,13 +195,13 @@ WHERE
 			
 				$distance=$row['mdld_s'];
 				// we've hit a species
-				if( ($distance + $row['mdld_g']) <= $this->limit && $row['mdld_s'] <= min($lenSpecies, mb_strlen($row['s_name'], "UTF-8")) / 2 ){
+				if( ($distance + $row['mdld_g']) < $this->limit && $row['mdld_s'] < min($lenSpecies, mb_strlen($row['s_name'], "UTF-8")) / 2 ){
 					
 					// if epithet
 					if($epithet && $rank){
 					
 						// we've hit an epithet
-						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] <= min($lenEpithet, mb_strlen($row['i_name'], "UTF-8")) / 2 ) {                         // 4th limit of the search
+						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] < min($lenEpithet, mb_strlen($row['i_name'], "UTF-8")) / 2 ) {                         // 4th limit of the search
 							$found = true;  
 							$ratio = 1
 									- $row['mdld_s'] / max(mb_strlen($row['s_name'], "UTF-8"), $lenSpecies)
@@ -277,7 +276,7 @@ WHERE
 		$ctr=0;
 		
 		$lenUninomial=mb_strlen(trim($uninomial));
-		$lenlim=min(ceil($lenUninomial/2),$this->limit-1);
+		$lenlim=min($lenUninomial/2,$this->limit);
 
 
 		// getGenusIds out of genusNamesCache
@@ -288,8 +287,9 @@ SELECT
 FROM
  fuzzy_fastsearch_scientific_name_element2
 WHERE
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
+//echo $query;exit;
 		$res = mysql_query($query);
 		
 		$s="'0'";
@@ -302,6 +302,7 @@ WHERE
 			return $s;
 		}
 		
+		$uninomial=ucfirst($uninomial);
 		// "Fill" Out Genus...
 $query2="
 SELECT
@@ -341,9 +342,10 @@ SELECT
 FROM
  fuzzy_fastsearch_scientific_name_element1		
 WHERE
- mdld('{$uninomial}', name_element, {$this->block_limit}, {$this->limit}) <=  LEAST(CHAR_LENGTH(name_element)/2,{$lenlim})
+ mdld('{$uninomial}', name_element, {$this->block_limit}, {$this->limit}) < LEAST(CHAR_LENGTH(name_element)/2,{$lenlim})
 
 ";
+//echo $query2;exit;
 		$res = mysql_query($query2);
 		while ($row = mysql_fetch_array($res)) {
 			$sr = array(

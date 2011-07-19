@@ -575,6 +575,9 @@ function displaySearchCriteria() {
   }
   if (datasourceUserId >0) {
     html = 'displaying ' + datasourceName + ' id : ' + datasourceNameId;
+    if(datasourceName=='Geonames'){
+        html +=  '<br>(<a href="javascript:selectGeoname(\'' + datasourceNameId + '\')">Select '+datasourceNameId+'</a>)';
+    }
     html += '<br/><a href="javascript:refresh();">refresh</a> to display all features in area';
     isOpeningInfoWindow =true;
   }

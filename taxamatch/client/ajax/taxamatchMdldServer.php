@@ -217,9 +217,7 @@ function prettyPrintMatches($matches,$start,$stop,
 							$matchesNearMatch=array(),$useNearMatch=false) {
 							
 	
-	if (!empty($matchesNearMatch['error'])) {
-		$out = $matchesNearMatch['error'];
-	} else {
+	
 		$out = "";
 		$indexMatch = 0;
 		while ($indexMatch < count($matches['result'])) {
@@ -350,7 +348,11 @@ function prettyPrintMatches($matches,$start,$stop,
 			 . "</tr>\n"
 			 . $out
 			 . "</table>\n";
+	
+	if (!empty($matchesNearMatch['error'])) {
+		$out .= $matchesNearMatch['error'];
 	}
+	
 	if (!empty($matches['error'])) {
 		$out .= $matches['error'];
 	} 

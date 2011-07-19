@@ -42,7 +42,7 @@ class CSSF
 var $fontSize;               // default fontsize
 var $nameIsID;               // when set to true, the param $name is used to set the id
 var $cssfImages;             // path to the used images
-
+var $tabindex=1;
 /****************************************************************************
 *                                                                           *
 *                              Public methods                               *
@@ -133,41 +133,45 @@ function buttonLink($x,$y,$text,$link,$newwindow,$bgcol="") {
   $this->_divclass($x,$y,"cssfinput");
   print "<a href=\"$link\"";
   if ($newwindow) print " target=\"_blank\"";
-  print "><input class=\"cssfbutton\"";
+  print "><input tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
   if ($bgcol) print " style=\"background-color: $bgcol;\"";
   print " type=\"button\" value=\"$text\"></a>";
   print "</div>\n";
+  $this->tabindex++;
 }
 
 function buttonJavaScript($x,$y,$text,$js,$bgcol="",$name="") {
 
   $this->_divclass($x,$y,"cssfinput");
-  print "<input class=\"cssfbutton\"";
+  print "<input tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
   if ($bgcol) print " style=\"background-color: $bgcol;\"";
   print " type=\"button\" value=\"$text\" ";
   if ($name) print " name=\"$name\"";
   print "onClick=\"$js\">";
   print "</div>\n";
+  $this->tabindex++;
 }
 
 function buttonSubmit($x,$y,$name,$text,$bgcol="") {
 
   $this->_divclass($x,$y,"cssfinput");
-  print "<input class=\"cssfbutton\"";
+  print "<input tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
   if ($bgcol) print " style=\"background-color: $bgcol;\"";
   print " type=\"submit\" name=\"$name\"";
   if ($this->nameIsID) print " id=\"$name\"";
   print " value=\"$text\">";
   print "</div>\n";
+  $this->tabindex++;
 }
 
 function buttonReset($x,$y,$text,$bgcol="") {
 
   $this->_divclass($x,$y,"cssfinput");
-  print "<input class=\"cssfbutton\"";
+  print "<input tabindex=\"{$this->tabindex}\" tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
   if ($bgcol) print " style=\"background-color: $bgcol;\"";
   print " type=\"reset\" value=\"$text\">";
   print "</div>\n";
+  $this->tabindex++;
 }
 
 function checkbox($x,$y,$name,$ischecked) {
@@ -328,35 +332,23 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
       . "</script>\n";
 }
 
-function inputJqAutocompleteTextarea($x, $y, $w, $h, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "rgb(255, 255, 153);", $title = "") {
 
-  $this->_divclass($x, $y, "cssfinput");
-  print "<textarea class='cssftextAutocomplete' style='width: {$w}em; height: {$h}em;";
-  if ($bgcol) print " background-color: $bgcol;";
-  print "' name='{$name}' id='ajax_{$name}' wrap='virtual'";
-  if ($maxsize) print " maxlength='{$maxsize}'";
-  if ($title) print " title='{$title}'";
-  print ">".htmlspecialchars($value, ENT_QUOTES) . "</textarea>"
-      . "</div>\n"
-      . "<input type='hidden' name='{$name}Index' id='{$name}Index' value='{$index}'>\n"
-      . "<script type='text/javascript' language='JavaScript'>\n"
-      . "  $(function() {\n"
-	  . "    $('#ajax_{$name}').autocomplete ({\n"
-	  . "      source: '{$serverScript}',\n"
-	  . "      minLength: {$minLength},\n"
-      . "      delay: 500, \n"
-	  . "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
-	  . "    })\n"
-      . "    .data('autocomplete')._renderItem = function( ul, item ) {\n"
-      . "      return $('<li></li>')\n"
-      . "        .data('item.autocomplete', item)\n"
-      . "        .append('<a' + ((item.color) ? ' style=\"background-color:' + item.color + ';\">' : '>') + item.label + '</a>')\n"
-      . "        .appendTo(ul);\n"
-      . "    };\n"
-	  . "  });\n"
-      . "</script>\n";
+function inputJqAutocomplete2($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false) {
+
+	
+	$this->_divclass($x, $y, "cssfinput");
+	$val=htmlspecialchars($value, ENT_QUOTES);
+	
+	echo<<<EOF
+<input type="hidden" name="{$name}Index" id="{$name}Index"  value="{$index}"/>
+<input tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;' type="text" style="width: 200px;"  type="text" value="{$value}" name="{$name}" id="ajax_{$name}" maxlength="{$maxsize}" title="{$title}" />
+</div>
+
+EOF;
+
+	$this->tabindex++;
+
 }
-
 function inputDate($x,$y,$name,$value,$us) {
 
   $tmp = explode("-",$value);
