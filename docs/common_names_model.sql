@@ -6,6 +6,8 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL';
 -- -----------------------------------------------------
 -- Table `tbl_geonames_cache`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_geonames_cache` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_geonames_cache` (
   `geonameId` INT(11) NOT NULL ,
   `name` TEXT NULL DEFAULT NULL ,
@@ -18,6 +20,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_languages`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_languages` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_languages` (
   `language_id` INT(11) NOT NULL AUTO_INCREMENT ,
   `iso639-6` VARCHAR(4) NOT NULL ,
@@ -32,6 +36,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_periods`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_periods` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_periods` (
   `period_id` INT(11) NOT NULL AUTO_INCREMENT ,
   `period` VARCHAR(255) NOT NULL ,
@@ -44,6 +50,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_entities`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_entities` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_entities` (
   `entity_id` INT(11) NOT NULL AUTO_INCREMENT ,
   PRIMARY KEY (`entity_id`) )
@@ -54,6 +62,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_references`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_references` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_references` (
   `reference_id` INT(11) NOT NULL AUTO_INCREMENT ,
   PRIMARY KEY (`reference_id`) )
@@ -64,6 +74,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_names`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_names` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_names` (
   `name_id` INT(11) NOT NULL AUTO_INCREMENT ,
   PRIMARY KEY (`name_id`) )
@@ -74,6 +86,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_applies_to`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_applies_to` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_applies_to` (
   `geonameId` INT(11) NOT NULL ,
   `language_id` INT(11) NOT NULL ,
@@ -125,6 +139,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_commons`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_commons` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_commons` (
   `common_id` INT(11) NOT NULL ,
   `common_name` VARCHAR(255) NOT NULL ,
@@ -143,6 +159,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_literature`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_literature` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_literature` (
   `literature_id` INT(11) NOT NULL ,
   `citationID` INT(11) NOT NULL ,
@@ -160,6 +178,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_taxa`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_taxa` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_taxa` (
   `taxon_id` INT(11) NOT NULL ,
   `taxonID` INT(11) NOT NULL ,
@@ -178,6 +198,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_search_cache`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_search_cache` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_search_cache` (
   `search_val` VARCHAR(20) NOT NULL ,
   `search_group` INT(2) NOT NULL ,
@@ -191,11 +213,13 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_persons`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_persons` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_persons` (
   `person_id` INT(11) NOT NULL ,
-  `person_ID` INT(11) NOT NULL COMMENT 'Pointer to tbl_person' ,
+  `personID` INT(11) NOT NULL COMMENT 'Pointer to tbl_person' ,
   PRIMARY KEY (`person_id`) ,
-  UNIQUE INDEX `person_ID_UNIQUE` (`person_ID` ASC) ,
+  UNIQUE INDEX `person_ID_UNIQUE` (`personID` ASC) ,
   CONSTRAINT `fk_tbl_name_person_tbl_name_references1`
     FOREIGN KEY (`person_id` )
     REFERENCES `tbl_name_references` (`reference_id` )
@@ -208,6 +232,8 @@ DEFAULT CHARACTER SET = utf8;
 -- -----------------------------------------------------
 -- Table `tbl_name_webservices`
 -- -----------------------------------------------------
+DROP TABLE IF EXISTS `tbl_name_webservices` ;
+
 CREATE  TABLE IF NOT EXISTS `tbl_name_webservices` (
   `webservice_id` INT(11) NOT NULL ,
   `serviceID` INT(11) NOT NULL COMMENT 'Pointer to tbl_nom_service' ,
