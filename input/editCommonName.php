@@ -126,7 +126,7 @@ function prepareWithID(nam,startval,mustMatch1){
 			extraParams:{field:'cname_'+nam},
   			loadingClass: 'working',
 			selectFirst: true,
-			delay:100,
+			delay:100
   		});
 	}
     
@@ -564,7 +564,7 @@ EOF;
  * @return sql string 
  */
 function getAppliesQuery($p_taxonIndex, $p_taxon, $p_refIndex, $p_refVal, $p_source, $p_common_nameIndex, $p_common_name, $p_languageIndex, $p_language, $p_geonameIndex, $p_geoname, $p_periodIndex, $p_period){
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 
 	$sql="
 SELECT
@@ -642,7 +642,7 @@ WHERE
  * @return sql string 
  */
 function checkRowExists($p_entityIndex,$p_common_nameIndex,$p_geonameIndex,$p_languageIndex,$p_periodIndex,$p_referenceIndex){
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 	
 	$result=doDBQuery("
 SELECT
@@ -666,7 +666,7 @@ WHERE
 
 
 function InsertUpdateCommonName(&$_dvar, $update=false){	
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 	$msg=array();
 	if(!$update && !checkRight('commonnameInsert')){
 		return array("You have no Rights for Insert",0);
@@ -858,7 +858,7 @@ WHERE
 	return array("Error ".mysql_errno() . ": " . mysql_error() . "",0);
 }
 function deleteCommonName($_dvar){
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 	
 	if(!checkRight('admin')){
 		return array("You have to be admin for deletation",0);
@@ -1069,7 +1069,7 @@ WHERE
 }
 
 function getLanguage($languageIndex){
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 	
 	$sql = "
 SELECT

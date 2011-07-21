@@ -389,7 +389,7 @@ SELECT
 FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to a
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxon tax ON tax.taxon_id = ent.entity_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
  
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam ON  nam.name_id = a.name_id
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com ON  com.common_id = nam.name_id
