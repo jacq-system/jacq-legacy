@@ -342,9 +342,9 @@ public function cname_geoname ($value){
 			$row = $dbst->fetch();
 			
 			// If TypeCache
-			if (false &&isset($row['result']) && $row['result'] !='') {
+			if (isset($row['result']) && $row['result'] !='') {
 
-				$results=json_decode($row['result']);
+				$results=json_decode($row['result'],1);
 			
 			// Else retrieve data from geonames.org
 			}else{
@@ -531,7 +531,7 @@ public function cname_language ($value){
 				// If TypingCache
 				if (isset($row['result']) && $row['result'] !='') {
 
-					$results=json_decode($row['result']);
+					$results=json_decode($row['result'],1);
 				
 				// Else generate
 				}else{
