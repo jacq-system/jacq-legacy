@@ -258,6 +258,7 @@ public function cname_taxon ($value)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function cname_common_name ($value){
+    global $_CONFIG;
 	
 	$results = array();
 	if ($value && strlen($value)>1){
@@ -298,7 +299,7 @@ public function cname_common_name ($value){
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function cname_geoname ($value){
-	global $_OPTIONS;
+	global $_OPTIONS, $_CONFIG;
 	$results = array();
 	$results_intern=array();
 	$fetched=array();
@@ -511,6 +512,8 @@ public function cname_literature ($value)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function cname_language ($value){
+    global $_CONFIG;
+    
 	$results = array();
 	$fetched=array();
 			
@@ -679,6 +682,7 @@ function getLangLabel($iso,$isoparent='',$name='',$row=array()){
 }
 
 function getLang($iso,$isoparent='',$name=''){
+    global $_CONFIG;
 	
 	$db = clsDbAccess::Connect('INPUT');
 	
@@ -737,7 +741,7 @@ WHERE
 				.$db->quote($row['name']).")";
 			$dbst = $db->query($sql);
 			
-			$row['language_id']=$db::lastInsertId();
+			$row['language_id']=$db->lastInsertId();
 			return $row;
 		}
 	}
@@ -810,6 +814,8 @@ WHERE
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function cname_period ($value){
+    global $_CONFIG;
+    
 	$results = array();
 	if ($value && strlen($value)>1){
 		try{
