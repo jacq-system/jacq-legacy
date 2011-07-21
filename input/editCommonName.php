@@ -321,7 +321,7 @@ $_dvar=array(
 if(isset($_POST['submitDelete']))$_POST['action']='doDelete';
 if(isset($_POST['submitUpdate']))$_POST['action']='doUpdate';
 if(isset($_POST['submitInsert']))$_POST['action']='doInsert';
-if(isset($_POST['doSearch']))$_POST['action']='doSearch';
+if(isset($_POST['submitSearch']))$_POST['action']='doSearch';
 if(!isset($_POST['action']))$_POST['action']='';
 
 if( $_POST['action']=='doDelete' || $_POST['action']=='doSearch' || $_POST['action']=='doInsert' || $_POST['action']=='doUpdate'){
@@ -381,45 +381,56 @@ if( $_POST['action']=='doDelete' || $_POST['action']=='doSearch' || $_POST['acti
 }else if(isset($_GET['show'])) {
 	
 	$_dvar=array_merge($_dvar, array(
-		'taxonIndex'=>isset($_GET['taxonID'])?$_GET['taxonID']:'',
-		'nameIndex'=>isset($_GET['name_id'])?$_GET['name_id']:'',
-		'geonameIndex'=>isset($_GET['geoname_id'])?$_GET['geoname_id']:'',
-		'languageIso'=>isset($_GET['iso639_6'])?$_GET['iso639_6']:'',
-		'periodIndex'=>isset($_GET['period_id'])?$_GET['period_id']:'',
-		'referenceIndex'=>isset($_GET['reference_id'])?$_GET['reference_id']:'',
+		'taxonIndex'=>isset($_GET['taxonID'])?$_GET['taxonID']:'0',
+		'nameIndex'=>isset($_GET['name_id'])?$_GET['name_id']:'0',
+		'geonameIndex'=>isset($_GET['geoname_id'])?$_GET['geoname_id']:'0',
+		'languageIso'=>isset($_GET['iso639_6'])?$_GET['iso639_6']:'0',
+		'periodIndex'=>isset($_GET['period_id'])?$_GET['period_id']:'0',
+		'referenceIndex'=>isset($_GET['reference_id'])?$_GET['reference_id']:'0',
 		'source'=>'reference',
-		'refIndex'=>isset($_GET['reference_id'])?$_GET['reference_id']:'',
+		'refIndex'=>isset($_GET['reference_id'])?$_GET['reference_id']:'0',
 	));
+	
 	$sql=getAppliesQuery($_dvar['taxonIndex'], '1', $_dvar['refIndex'], '1',$_dvar['source'], $_dvar['nameIndex'], '1', $_dvar['languageIso'], '1', $_dvar['geonameIndex'], '1', $_dvar['periodIndex'], '1');
+
 	$result = doDBQuery($sql);
 	$row = mysql_fetch_array($result);
+	
+	if(mysql_num_rows($result)==1){
+		$_dvar=array_merge($_dvar, array(
+			'entityIndex'=>$row['entity_id'],
+			'referenceIndex'=>$row['reference_id'],
+			
+			'taxonIndex'=>isset($row['taxonID'])?$row['taxonID']:$_dvar['taxonIndex'],
+			
+			'geonameIndex'=>isset($row['geoname_id'])?$row['geoname_id']:$_dvar['geonameIndex'],
+			'geoname'=>$row['geoname'],
 
-	$_dvar=array_merge($_dvar, array(
-		'entityIndex'=>$row['entity_id'],
-		'referenceIndex'=>$row['reference_id'],
-		
-		'taxonIndex'=>isset($row['taxonID'])?$row['taxonID']:$_dvar['taxonIndex'],
-		
-		'geonameIndex'=>isset($row['geoname_id'])?$row['geoname_id']:$_dvar['geonameIndex'],
-		'geoname'=>$row['geoname'],
+			'languageIndex'=>$row['language_id'],
+			'language'=>$row['language'],
 
-		'languageIndex'=>$row['language_id'],
-		'language'=>$row['language'],
+			'periodIndex'=>isset($row['period_id'])?$row['period_id']:$_dvar['periodIndex'],
+			'period'=>$row['period'],
 
-		'periodIndex'=>isset($row['period_id'])?$row['period_id']:$_dvar['periodIndex'],
-		'period'=>$row['period'],
+			'nameIndex'=>isset($row['name_id'])?$row['name_id']:$_dvar['nameIndex'],
+			'common_nameIndex'=>isset($row['name_id'])?$row['name_id']:$_dvar['common_nameIndex'],
+			'common_name'=>$row['common_name'],
+			'source'=>$row['source'],
+			
+			'literatureIndex'=>isset($row['literatureID'])?$row['literatureID']:$_dvar['literatureIndex'],
+			'personIndex'=>isset($row['personID'])?$row['personID']:$_dvar['personIndex'],
+			'serviceIndex'=>isset($row['serviceID'])?$row['serviceID']:$_dvar['serviceIndex'],
+			
+			'oldselection'=>'',
+		));
+	// If no row found, prepare for search vars;
+	}else{
+		if($_dvar['taxonIndex']!=0){
+			$_dvar['taxon']=1;
+			$doSearch=true;
+		}
+	}
 
-		'nameIndex'=>isset($row['name_id'])?$row['name_id']:$_dvar['nameIndex'],
-		'common_nameIndex'=>isset($row['name_id'])?$row['name_id']:$_dvar['common_nameIndex'],
-		'common_name'=>$row['common_name'],
-		'source'=>$row['source'],
-		
-		'literatureIndex'=>isset($row['literatureID'])?$row['literatureID']:$_dvar['literatureIndex'],
-		'personIndex'=>isset($row['personID'])?$row['personID']:$_dvar['personIndex'],
-		'serviceIndex'=>isset($row['serviceID'])?$row['serviceID']:$_dvar['serviceIndex'],
-		
-		'oldselection'=>'',
-	));
 }
 
 $init="
@@ -566,6 +577,7 @@ EOF;
 function getAppliesQuery($p_taxonIndex, $p_taxon, $p_refIndex, $p_refVal, $p_source, $p_common_nameIndex, $p_common_name, $p_languageIndex, $p_language, $p_geonameIndex, $p_geoname, $p_periodIndex, $p_period){
 	global $_OPTIONS, $_CONFIG;
 
+	//echo "$p_taxonIndex, $p_taxon, $p_refIndex, $p_refVal, $p_source, $p_common_nameIndex, $p_common_name, $p_languageIndex, $p_language, $p_geonameIndex, $p_geoname, $p_periodIndex, $p_period";
 	$sql="
 SELECT
  a.entity_id as 'entity_id',
@@ -898,7 +910,7 @@ WHERE
 
 function doSearch($_dvar){
 	global $_OPTIONS;
-	
+
 	// Mark collums that was searched...
 	$class=array();
 	$a='ac"';
@@ -925,9 +937,10 @@ function doSearch($_dvar){
 		$refIndex=$_dvar['literatureIndex'];
 	}
 	
-	
+
 	// get search query
 	$sql=getAppliesQuery($_dvar['taxonIndex'], $_dvar['taxon'], $refIndex, $refVar, $refType, $_dvar['common_nameIndex'], $_dvar['common_name'], $_dvar['languageIndex'], $_dvar['language'], $_dvar['geonameIndex'], $_dvar['geoname'], $_dvar['periodIndex'], $_dvar['period']);
+
 	$result = doDBQuery($sql);
 	
 	$i=0;$search_result='';

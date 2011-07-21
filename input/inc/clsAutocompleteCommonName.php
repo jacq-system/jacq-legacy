@@ -196,15 +196,7 @@ public function cname_taxon ($value)
 		$pieces = explode(" ",$pieces[0]);
 		try {
 			$db = clsDbAccess::Connect('INPUT');
-			
-			
-			$where='';
-			if($id=extractID2($value)){
-				$where="ts.taxonID='{$id}'";
-			}else{
-				$where="tg.genus LIKE " . $db->quote ($pieces[0] . '%');
-			}
-			
+
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			$sql = "SELECT taxonID, ts.external
@@ -216,17 +208,21 @@ public function cname_taxon ($value)
 					 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
 					 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-					WHERE {$where}";
-			$sql .= " AND ts.external = 0";
+					WHERE ";
+			if($id=extractID2($value)){
+				$sql.=" ts.taxonID='{$id}'";
+			}else{
+				$sql.=" tg.genus LIKE " . $db->quote ($pieces[0] . '%');
+				$sql .= " AND ts.external = 0";
 			
-			if (!empty($pieces[1])) {
-				$sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
-			} else {
-				$sql .= " AND te0.epithet IS NULL";
+				if (!empty($pieces[1])) {
+					$sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
+				} else {
+					$sql .= " AND te0.epithet IS NULL";
+				}
+				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
 			}
-			$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
-			
-			
+			//echo $sql;
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
