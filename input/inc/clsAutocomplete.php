@@ -31,8 +31,6 @@ private static $instance = null;
 |					|
 \********************/
 
-var $common_name_dB='names';
-
 /**
  * instances the class clsAutocomplete
  *

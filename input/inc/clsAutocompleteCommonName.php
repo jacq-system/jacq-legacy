@@ -31,8 +31,6 @@ private static $instance = null;
 |					|
 \********************/
 
-var $common_name_dB='names';
-
 /**
  * instances the class clsAutocomplete
  *
@@ -266,7 +264,7 @@ public function cname_common_name ($value){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			$sql = "SELECT common_name,common_id FROM {$this->common_name_dB}.tbl_name_commons WHERE common_name LIKE " . $db->quote ($value . '%')."";	
+			$sql = "SELECT common_name,common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE common_name LIKE " . $db->quote ($value . '%')."";	
 			
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
@@ -317,7 +315,7 @@ public function cname_geoname ($value){
 				$where="name LIKE ".$db->quote($value .'%');
 			}
 			
-			$sql = "SELECT geonameId,name FROM {$this->common_name_dB}.tbl_geonames_cache WHERE {$where}";	
+			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";	
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
 			
@@ -341,7 +339,7 @@ public function cname_geoname ($value){
 			
 			// Get TypeCache
 			$cacheoption=$this->getCacheOption();
-			$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='1' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
+			$sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='1' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
 			
 			$dbst = $db->query($sql);
 			$row = $dbst->fetch();
@@ -419,7 +417,7 @@ london:
 					}
 					
 					// Insert Geonames Search Cache
-					$sql = "INSERT INTO {$this->common_name_dB}. tbl_search_cache (search_group,search_val,result) VALUES ('1',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
+					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache (search_group,search_val,result) VALUES ('1',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
 					$dbst = $db->query($sql);
 					
 				}
@@ -526,7 +524,7 @@ public function cname_language ($value){
 			
 				// Get TypingCache
 				$cacheoption=$this->getCacheOption();
-				$sql = "SELECT result FROM {$this->common_name_dB}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
+				$sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
 				
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
@@ -599,8 +597,8 @@ SELECT
  `p`.`name` as 'pname',
  `l`.`name`
 FROM
- {$this->common_name_dB}.tbl_name_languages l
- LEFT JOIN {$this->common_name_dB}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages l
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
 WHERE
 	`l`.`name` LIKE {$search}
  or `l`.`iso639-6` LIKE {$search}
@@ -626,7 +624,7 @@ LIMIT
 					}
 					
 					// Insert Geonames Search Cache
-					$sql = "INSERT INTO {$this->common_name_dB}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
+					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
 					$dbst = $db->query($sql);
 				}
 			}else{
@@ -638,8 +636,8 @@ SELECT
  `p`.`name` as 'pname',
  `l`.`name`
 FROM
- {$this->common_name_dB}.tbl_name_languages l
- LEFT JOIN {$this->common_name_dB}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages l
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
 WHERE
 	`l`.`language_id`='$id'
  ";
@@ -693,7 +691,7 @@ SELECT
  `name`
   
 FROM
- {$this->common_name_dB}.tbl_name_languages
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages
 WHERE
  `iso639-6`='$iso'
  ";
@@ -733,7 +731,7 @@ WHERE
 		// If data available: insert it.
 		if (isset($row['iso639-6'])) {
 	
-			$sql="INSERT IGNORE INTO  {$this->common_name_dB}. tbl_name_languages (`iso639-6`,`parent_iso639-6`,`name`) VALUES ("
+			$sql="INSERT IGNORE INTO  {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_languages (`iso639-6`,`parent_iso639-6`,`name`) VALUES ("
 				.$db->quote($row['iso639-6'])  .","
 				.$db->quote($row['parent_iso639-6']).","
 				.$db->quote($row['name']).")";
@@ -830,7 +828,7 @@ SELECT
  period_id,
  period
 FROM
- {$this->common_name_dB}.tbl_name_periods
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
 WHERE
  {$where}
 ";

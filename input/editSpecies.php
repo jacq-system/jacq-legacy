@@ -14,7 +14,6 @@ if (!empty($_GET['nr'])) {
     $nr = 0;
 }
 $linkList = $_SESSION['txLinkList'];
-$common_name_dB='names.';
 
 /**
  * checks if the item with the given ID is still marked as "external" and clear this flag if set
@@ -388,12 +387,12 @@ $sql="
 SELECT
  com.common_name as 'common_name'
 FROM
- {$common_name_dB}tbl_name_applies_to a
- LEFT JOIN {$common_name_dB}tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN {$common_name_dB}tbl_name_taxon tax ON tax.taxon_id = ent.entity_id
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to a
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxon tax ON tax.taxon_id = ent.entity_id
  
- LEFT JOIN {$common_name_dB}tbl_name_names nam ON  nam.name_id = a.name_id
- LEFT JOIN {$common_name_dB}tbl_name_commons com ON  com.common_id = nam.name_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam ON  nam.name_id = a.name_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com ON  com.common_id = nam.name_id
 WHERE
  a.entity_id = ent.entity_id and ent.entity_id = tax.taxon_id  and tax.taxonID='{$p_taxonID}'
 LIMIT 5 

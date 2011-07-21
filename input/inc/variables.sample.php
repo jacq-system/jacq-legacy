@@ -19,6 +19,11 @@ $_CONFIG['DATABASE']['LOG'] = array(
     )
 );
 
+// Names databases (doesn't need a own user actually, but instead it uses the login user)
+$_CONFIG['DATABASE']['NAME'] = array(
+    "name" => "names",
+);
+
 // Force HTTPS
 $_CONFIG['CONNECTION']['secure'] = true;
 

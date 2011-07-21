@@ -278,11 +278,6 @@ function doCheck(doInsert){
 <body>
 
 <?php
-
-$_OPTIONS['commonnamedB']='names.';
-
-	
-$_OPTIONS['commonnamedB']='names.';
 $search_result='';
 $_dvar['searchorder']='';
 $doSearch=isset($_GET['search']);
@@ -602,22 +597,22 @@ SELECT
  ser.serviceID as 'serviceID'
 
 FROM
- {$_OPTIONS['commonnamedB']}tbl_name_applies_to a
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to a
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
  
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_names nam ON nam.name_id = a.name_id
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_commons com ON com.common_id = nam.name_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam ON nam.name_id = a.name_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com ON com.common_id = nam.name_id
  
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_geonames_cache geo ON geo.geonameId = a.geonameId
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_languages lan ON  lan.language_id = a.language_id
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_periods per ON per.period_id= a.period_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache geo ON geo.geonameId = a.geonameId
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages lan ON  lan.language_id = a.language_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods per ON per.period_id= a.period_id
 
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_references ref ON ref.reference_id = a.reference_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_references ref ON ref.reference_id = a.reference_id
 
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_persons pers ON pers.person_id = ref.reference_id
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_literature lit ON lit.literature_id = ref.reference_id
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_webservices ser ON ser.webservice_id = ref.reference_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_persons pers ON pers.person_id = ref.reference_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_literature lit ON lit.literature_id = ref.reference_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_webservices ser ON ser.webservice_id = ref.reference_id
 
 WHERE
  1=1
@@ -653,7 +648,7 @@ function checkRowExists($p_entityIndex,$p_common_nameIndex,$p_geonameIndex,$p_la
 SELECT
  COUNT(*) as 'count'
 FROM
- {$_OPTIONS['commonnamedB']}tbl_name_applies_to
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to
 WHERE
       entity_id = '{$p_entityIndex}'
  and reference_id = '{$p_referenceIndex}'
@@ -708,14 +703,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 			$_dvar2['literatureIndex']=$_dvar['literatureIndex'];
 			$_dvar2['literature']=$_dvar['literature'];
 			
-			$result = doDBQuery("SELECT literature_id FROM {$_OPTIONS['commonnamedB']}tbl_name_literature WHERE citationID='{$_dvar['literatureIndex']}'");
+			$result = doDBQuery("SELECT literature_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_literature WHERE citationID='{$_dvar['literatureIndex']}'");
 			if($row=mysql_fetch_array($result)){
 				$_dvar['referenceIndex']=$row['literature_id'];
 			}
 			if($_dvar['referenceIndex']==0){
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_references (reference_id) VALUES (NULL)");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_references (reference_id) VALUES (NULL)");
 				$_dvar['referenceIndex']=mysql_insert_id();
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_literature (literature_id,citationID) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['literatureIndex']}')");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_literature (literature_id,citationID) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['literatureIndex']}')");
 			}
 			break;
 		
@@ -723,14 +718,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 			$_dvar2['personIndex']=$_dvar['personIndex'];
 			$_dvar2['person']=$_dvar['person'];
 			
-			$result = doDBQuery("SELECT person_id FROM {$_OPTIONS['commonnamedB']}tbl_name_persons WHERE personID='{$_dvar['personIndex']}'");
+			$result = doDBQuery("SELECT person_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_persons WHERE personID='{$_dvar['personIndex']}'");
 			if($row=mysql_fetch_array($result)){
 				$_dvar['referenceIndex']=$row['person_id'];
 			}
 			if($_dvar['referenceIndex']==0){
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_references (reference_id) VALUES (NULL)");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_references (reference_id) VALUES (NULL)");
 				$_dvar['referenceIndex']=mysql_insert_id();
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_persons (person_id,personId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['personIndex']}')");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_persons (person_id,personId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['personIndex']}')");
 			}
 			break;
 		
@@ -738,14 +733,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 			$_dvar2['serviceIndex']=$_dvar['serviceIndex'];
 			$_dvar2['service']=$_dvar['service'];
 			
-			$result = doDBQuery("SELECT webservice_id FROM {$_OPTIONS['commonnamedB']}tbl_name_webservices WHERE serviceID='{$_dvar['serviceIndex']}'");
+			$result = doDBQuery("SELECT webservice_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_webservices WHERE serviceID='{$_dvar['serviceIndex']}'");
 			if($row=mysql_fetch_array($result)){
 				$_dvar['referenceIndex']=$row['webservice_id'];
 			}
 			if($_dvar['referenceIndex']==0){
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_references (reference_id) VALUES (NULL)");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_references (reference_id) VALUES (NULL)");
 				$_dvar['referenceIndex']=mysql_insert_id();
-				$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_webservices (webservice_id,serviceId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['serviceIndex']}')");
+				$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_webservices (webservice_id,serviceId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['serviceIndex']}')");
 			}
 			break;
 	}
@@ -753,42 +748,42 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	$_dvar=array_merge($_dvar,$_dvar2);
 
 	//Cache geoname
-	$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_geonames_cache (geonameId, name) VALUES ('{$_dvar['geonameIndex']}','{$_dvar['geoname']}') ON DUPLICATE KEY UPDATE  geonameId=VALUES(geonameId)");
+	$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache (geonameId, name) VALUES ('{$_dvar['geonameIndex']}','{$_dvar['geoname']}') ON DUPLICATE KEY UPDATE  geonameId=VALUES(geonameId)");
 	
 	// Language
 	// is already in the database by autocompleter.
 		
 	//period
-	$sql="INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)";
+	$sql="INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)";
 	$result = doDBQuery($sql);
 	$_dvar['periodIndex']=mysql_insert_id();
 	
 	//NAMES
 	//commonname
 	$_dvar['nameIndex']=0;
-	$result = doDBQuery("SELECT common_id FROM {$_OPTIONS['commonnamedB']}tbl_name_commons WHERE common_name='{$_dvar['common_name']}'");
+	$result = doDBQuery("SELECT common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE common_name='{$_dvar['common_name']}'");
 	if($row=mysql_fetch_array($result)){
 		$_dvar['nameIndex']=$row['common_id'];
 	}
 	
 	if($_dvar['nameIndex']==0){
-		$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_names (name_id) VALUES (NULL)");
+		$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names (name_id) VALUES (NULL)");
 		$_dvar['nameIndex']=mysql_insert_id();
-		$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_commons (common_id, common_name) VALUES ('{$_dvar['nameIndex']}','{$_dvar['common_name']}')");
+		$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons (common_id, common_name) VALUES ('{$_dvar['nameIndex']}','{$_dvar['common_name']}')");
 	}
 	$_dvar['common_nameIndex']=$_dvar['nameIndex'];
 	
 	// ENTITY
 	// taxon
 	$_dvar['entityIndex']=0;
-	$result = doDBQuery("SELECT taxon_id FROM {$_OPTIONS['commonnamedB']}tbl_name_taxa WHERE taxonID='{$_dvar['taxonIndex']}'");
+	$result = doDBQuery("SELECT taxon_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa WHERE taxonID='{$_dvar['taxonIndex']}'");
 	if($row=mysql_fetch_array($result)){
 		$_dvar['entityIndex']=$row['taxon_id'];
 	}
 	if($_dvar['entityIndex']==0){
-		$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_entities (entity_id) VALUES (NULL)");
+		$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities (entity_id) VALUES (NULL)");
 		$_dvar['entityIndex']=mysql_insert_id();
-		$result = doDBQuery("INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
+		$result = doDBQuery("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
 	}
 	
 	// Insert Array
@@ -813,7 +808,7 @@ reference_id =  {$var['reference_id']}";
 	// insert new dataset
 	if(!$update){
 		$sql="
-INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_applies_to SET
+INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to SET
  {$sql}
 ";
 		$result = @doDBQuery($sql);
@@ -834,7 +829,7 @@ INSERT INTO {$_OPTIONS['commonnamedB']}tbl_name_applies_to SET
 		}
 		
 		$sql="
-UPDATE {$_OPTIONS['commonnamedB']}tbl_name_applies_to SET
+UPDATE {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to SET
  {$sql}
 WHERE
      entity_id = '{$ids[0]}'
@@ -879,7 +874,7 @@ function deleteCommonName($_dvar){
 	}
 
 	$sql="
-DELETE FROM {$_OPTIONS['commonnamedB']}tbl_name_applies_to
+DELETE FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to
 WHERE
      entity_id = '{$ids[0]}'
  and name_id = '{$ids[1]}'
@@ -1084,8 +1079,8 @@ SELECT
  p.name as 'pname'
   
 FROM
- {$_OPTIONS['commonnamedB']}tbl_name_languages l
- LEFT JOIN {$_OPTIONS['commonnamedB']}tbl_name_languages p ON p.`iso639-6`=l.`parent_iso639-6`
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages l
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages p ON p.`iso639-6`=l.`parent_iso639-6`
 WHERE
  l.language_id='{$languageIndex}'
  ";
