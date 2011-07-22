@@ -90,7 +90,7 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 			$matches['result'][] = array('searchtext'		  => $searchItem,
 										'searchtextNearmatch' => $searchItemNearmatch,
 										// 'rowsChecked'		 => $ctr,
-										'rowsChecked'		 => '',
+										'rowsChecked'		 => '28289',
 										 'type'				=> $type,
 										 'database'			=> 'faeuv2',
 										 'searchresult'		=> $searchresult);
@@ -139,10 +139,11 @@ WHERE
  ";
 		$res = mysql_query($query);
 		
-		$s="'0'";
+		$s="";
 		while ($row = mysql_fetch_array($res)) {
 			$s.=",".$row['taxonids']."";
 		}
+		$s=substr($s,1);
 
 /*
 id 	FULLNAMECACHE 	GENUS_NAME 	INFRAGENUS_NAME 	SPECIES_EPITHET 	INFRASPECIES_EPITHET 	AUTHOR_NAME 	YEAR 	BRACKETS 	FAEU_TAXON_ID 	TAXON_ID_SPECIES_PARENT 	TAXON_ID_GENUS_PARENT 	TAXON_ID_FAMILY 	FAEU_TAXON_LSID 	FAEU_URL 	PESI_URL 	STATUS
@@ -258,7 +259,7 @@ SELECT
  h.TAXON_NAME as 'family_name'
 FROM
  fuzzy_fastsearch_name_element1 f
- LEFT JOIN hierarchy_faeu_v2 h on h.TAXONID=f.familyids
+ LEFT JOIN Hierarchy_FaEu_v2 h on h.TAXONID=f.familyids
 WHERE
  mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
 
@@ -270,7 +271,7 @@ SELECT
  h.TAXON_NAME as 'family_name'
 FROM
  fuzzy_fastsearch_name_element2 f
- LEFT JOIN hierarchy_faeu_v2 h on h.TAXONID=f.familyids
+ LEFT JOIN Hierarchy_FaEu_v2 h on h.TAXONID=f.familyids
 WHERE
  mdld('{$uninomial}', subgenus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
  ";

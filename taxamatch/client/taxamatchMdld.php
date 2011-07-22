@@ -64,8 +64,7 @@ $(function() {
 		$(this).show();
 		tims=0;timerA();
 	}).ajaxStop(function(){
-		$(this).hide();
-		timerAC();
+		
 	}); 
  
 	$('#showMatchJsonRPC').click(function(){
@@ -76,6 +75,8 @@ $(function() {
 			/*timeout: 1000,*/
 			success: function(msg){
 				$("#ajaxTarget").html(msg);
+				$("#loading").hide();
+				timerAC();
 			}
 		});
 		return false;
@@ -90,6 +91,8 @@ $(function() {
 			/*timeout: 1000,*/
 			success: function(msg){
 				$("#ajaxTarget").html(msg);
+				$("#loading").hide();
+				timerAC();
 			}
 		});
 		return false;
@@ -104,9 +107,9 @@ $(function() {
 	
 });
 function timerA(){
-	$('#tim').html(tims+"s");
+	if(tims%1==0)$('#tim').html((tims/100).toFixed(2)+"s");
 	tims++;
-	timid= window.setTimeout(timerA, 1000);
+	timid= window.setTimeout(timerA, 10);
 }
 function timerAC(){
 	window.clearTimeout(timid);

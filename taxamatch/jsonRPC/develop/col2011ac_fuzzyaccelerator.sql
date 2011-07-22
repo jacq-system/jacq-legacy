@@ -13,6 +13,8 @@ CREATE TABLE `fuzzy_fastsearch_scientific_name_element2` (
   PRIMARY KEY  (`genus_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Individual elements used to generate a scientific name';
 
+ALTER TABLE `_species_details` ADD INDEX ( `genus_id` );
+
 INSERT INTO
  fuzzy_fastsearch_scientific_name_element1 (rank,name_element,ids)
  

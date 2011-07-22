@@ -48,6 +48,7 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 	 */
 	public function getMatches ($searchtext, $withNearMatch = false){
 	
+
 		global $options;
 		
 		// catch all output to the console
@@ -121,7 +122,7 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 				'searchtext'   => $searchItem,
 				'searchtextNearmatch' => $searchItemNearmatch,
 				// 'rowsChecked'		 => $ctr,
-				'rowsChecked'		 =>  '',//134399+376498,
+				'rowsChecked'		 =>  '134906',//134399+376498,
 				'type'				=> $type,
 				'database'			=> 'col2011ac',
 				'searchresult'		=> $searchresult
@@ -179,7 +180,7 @@ FROM
 WHERE
  genus_id in ({$genusids})
 ";
-		//echo $query;exit;
+		echo $query;exit;
 		$res = mysql_query($query);
 		while ($row = mysql_fetch_array($res)) {
 			// If no infraspecies was given but found... discard
@@ -289,13 +290,14 @@ FROM
 WHERE
  mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
-//echo $query;exit;
+
 		$res = mysql_query($query);
-		
-		$s="'0'";
+	
+		$s="";
 		while ($row = mysql_fetch_array($res)) {
 			$s.=",".$row['genusids']."";
 		}
+		$s=substr($s,1);
 		
 		// For Multinomials
 		if($getGenusIds){
@@ -317,7 +319,9 @@ FROM
 WHERE
 genus_id in ({$s})
 ";
+//echo "$query2 s";exit;
 		$res = mysql_query($query2);
+	
 		while ($row = mysql_fetch_array($res)) {
 			$sr = array(
 				'genus'	=> $row['genus_name'],
