@@ -1,11 +1,11 @@
-# ===========================================
-#
-# view_sourcedatabase
-#
-# ===========================================
+-- ===========================================
+-- ready
+-- view_sourcedatabase
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_sourcedatabase'
+ VIEW `view_sourcedatabase`
  AS
  
 SELECT
@@ -26,275 +26,315 @@ SELECT
  mdb.supplier_person  as 'ContactPerson'
  
 FROM
- herbarinput.meta m,
- herbarinput.metadb mdb
-WHERE
- m.source_id=mdb.source_id_fk
-
+ herbarinput.meta m
+ LEFT JOIN  herbarinput.metadb mdb on mdb.source_id_fk=m.source_id
 ;
 
-# ===========================================
-#
-# view_acceptedspecies
-#
-# ===========================================
+-- ===========================================
+-- ready
+-- view_acceptedspecies
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_acceptedspecies'
+ VIEW `view_acceptedspecies`
  AS
 
 SELECT
- ts.taxonID as 'AcceptedTaxonID',
  
- 'Plantae' as 'Kingdom',
- 'Magnoliophyta' as 'Phylum',
- 'Magnoliopsida' as 'Class',
- 'Magnoliales' as 'Order',
- '' as 'Superfamily',
+ ts.taxonID AS 'AcceptedTaxonID',
  
- tf.family as 'Family',
- tg.genus as 'Genus',
+ 'Plantae' AS 'Kingdom',
+ 'Magnoliophyta' AS 'Phylum',
+ 'Magnoliopsida' AS 'Class',
+ 'Magnoliales' AS 'Order',
+ '' AS 'Superfamily',
+ 
+ tf.family AS 'Family',
+ tg.genus AS 'Genus',
 
- '' as 'SubGenusName',
- te.epithet as 'Species',
+ '' AS 'SubGenusName',
+ te.epithet AS 'Species',
+ 
+ ta.author AS 'AuthorString',
 
- CONCAT(
-  IF(te.epithetID ,CONCAT(' ',         te.epithet ,' ',ta.author ),'')
- ) as 'AuthorString',
+ '' AS 'GSDNameStatus',
+ tts.status_sp2000 AS 'Sp2000NameStatus',
+ 
+ 'No' AS 'IsFossil',
+ 'terrestial' AS 'LifeZone',
+ '' AS 'AdditionalData',
+ 
+ 'LTSSpecialist' AS 'LTSSpecialist',
+ 'LTSDate' AS 'LTSDate',
+ 
+ CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
+ 
+ 'GSDTaxonGUI' AS 'GSDTaxonGUI',
+ 'GSDNameGUI' AS 'GSDNameGUI'
 
- '' as 'GSDNameStatus',
- tts.status_sp2000 as 'Sp2000NameStatus',
- 
- 'No' as 'IsFossil',
- 'terrestial' as 'LifeZone',
- '' as 'AdditionalData',
- 
- 'LTSSpecialist' as 'LTSSpecialist',
- 'LTSDate' as 'LTSDate',
- 
- CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) as 'SpeciesURL',
- 
- 'GSDTaxonGUI' as 'GSDTaxonGUI',
- 'GSDNameGUI' as 'GSDNameGUI'
-
-FROM (
-  herbarinput.tbl_tax_species ts,
-  herbarinput.tbl_tax_rank ttr
- )
- LEFT JOIN herbarinput.tbl_tax_authors ta ON ta.authorID=ts.authorID
- LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts.speciesID
+FROM
+ herbarinput.tbl_tax_species ts
+ LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
+ LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
  
  LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
  LEFT JOIN herbarinput.tbl_tax_families tf ON tf.familyID=tg.familyID
- LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
+ 
+ LEFT JOIN herbarinput.tbl_tax_authors ta ON ta.authorID=ts.authorID
+ LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts.speciesID
+ 
 
 WHERE
- ts.tax_rankID=ttr.tax_rankID
- AND tf.familyID='30'
- AND ts.statusID!='2'
- AND ttr.tax_rankID!='24'
- AND ttr.tax_rankID!='8'
-;
+     tg.familyID='30' --  tf.family='Annonaceae' 
+ AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+ AND(
+   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  and ts.speciesID is null) -- ttr.rank='species' or ( genus and species = Null)
+ )
 
-# ===========================================
-#
-# view_acceptedinfraspecifictaxa
-#
-# ===========================================
+ 
+-- ===========================================
+-- ready
+-- view_acceptedinfraspecifictaxa
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_acceptedinfraspecifictaxa'
+ VIEW `view_acceptedinfraspecifictaxa`
  AS
 
-SELECT
- '' as 'AcceptedTaxonID',
- ts.taxonID as 'ParentSpeciesID',
- te.epithet as 'InfraSpeciesEpithet',
+SELECT 
+ ts.taxonID AS 'AcceptedTaxonID',
+ acc.AcceptedTaxonID AS 'ParentSpeciesID',
 
- CONCAT('',  te.epithet,' ',ta.author) as 'InfraSpecificAuthorString',
+ CASE ts.tax_rankID
+  WHEN 2 THEN te1.epithet
+  WHEN 3 THEN te2.epithet
+  WHEN 4 THEN te3.epithet
+  WHEN 5 THEN te4.epithet
+  ELSE te5.epithet
+ END AS 'InfraSpeciesEpithet',
  
- ttr.rank_abbr as 'InfraSpecificMarker',
- '' as 'GSDNameStatus',
- tts.status_sp2000 as 'Sp2000NameStatus',
-
- 'No' as 'IsFossil',
- 'terrestial' as 'LifeZone',
- '' as 'AdditionalData',
-
- 'LTSSpecialist' as 'LTSSpecialist',
- 'LTSDate' as 'LTSDate',
-
- CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) as 'InfraSpeciesURL',
+ CASE ts.tax_rankID
+  WHEN 2 THEN ta1.author
+  WHEN 3 THEN ta2.author
+  WHEN 4 THEN ta3.author
+  WHEN 5 THEN ta4.author
+  ELSE ta5.author
+ END AS 'InfraSpecificAuthorString',
  
- 'GSDTaxonGUI' as 'GSDTaxonGUI',
- 'GSDNameGUI' as 'GSDNameGUI'
+ ttr.rank_abbr AS 'InfraSpecificMarker',
+ '' AS 'GSDNameStatus',
+ tts.status_sp2000 AS 'Sp2000NameStatus',
 
-FROM (
-  sp2000views.view_acceptedspecies acc,
-  herbarinput.tbl_tax_species ts,
-  herbarinput.tbl_tax_epithets te,
-  herbarinput.tbl_tax_authors ta
- )
+ 'No' AS 'IsFossil',
+ 'terrestial' AS 'LifeZone',
+ '' AS 'AdditionalData',
+
+ 'LTSSpecialist' AS 'LTSSpecialist',
+ 'LTSDate' AS 'LTSDate',
+
+ CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
+ 
+ 'GSDTaxonGUI' AS 'GSDTaxonGUI',
+ 'GSDNameGUI' AS 'GSDNameGUI'
+
+FROM
+ herbarinput.view_acceptedspecies acc
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=acc.AcceptedTaxonID
+ LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
+ 
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
-
+ 
+ LEFT JOIN herbarinput.tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+ 
+ LEFT JOIN herbarinput.tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+ LEFT JOIN herbarinput.tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+ LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
  
 WHERE
- ts.taxonID=acc.AcceptedTaxonID
- and te.epithetID=ts.subspeciesID
- and (ts.subspecies_authorID=NULL or ta.authorID=ts.subspecies_authorID)
+     ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+ AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
 
-;
-
-# ===========================================
-#
-# view_synonyms
-#
-# ===========================================
+ ;
+-- ===========================================
+-- almost ready
+-- view_synonyms
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_synonyms'
+ VIEW `view_synonyms`
  AS
+SELECT 
+ '' AS 'ID',
+ taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
+ tg.genus AS 'Genus',
+ '' AS 'SubGenusName',
+ te.epithet AS 'Species',
+ 
+ ta.author AS 'AuthorString',
+ 
+ CASE ts.tax_rankID
+  WHEN 2 THEN te1.epithet
+  WHEN 3 THEN te2.epithet
+  WHEN 4 THEN te3.epithet
+  WHEN 5 THEN te4.epithet
+  ELSE te5.epithet
+ END AS 'InfraSpecies',
+ 
+ '' AS 'InfraSpecificMarker',
+ 
+ CASE ts.tax_rankID
+  WHEN 2 THEN ta1.author
+  WHEN 3 THEN ta2.author
+  WHEN 4 THEN ta3.author
+  WHEN 5 THEN ta4.author
+  ELSE ta5.author
+ END AS 'InfraSpecificAuthorString',
 
-SELECT
- sy.tax_syn_ID as 'ID',
- sy.acc_taxon_ID as 'AcceptedTaxonID',
- tg.genus as 'Genus',
- 'SubGenusName' as 'SubGenusName',
- te.epithet as 'Species',
- 
- CONCAT(
-  IF(ate.epithetID ,CONCAT(' ',         ate.epithet ,' ',ata.author ),''),
-  IF(ate1.epithetID,CONCAT(' subsp. ',  ate1.epithet,' ',ata1.author),''),
-  IF(ate2.epithetID,CONCAT(' var. ',    ate2.epithet,' ',ata2.author),''),
-  IF(ate3.epithetID,CONCAT(' subvar. ', ate3.epithet,' ',ata3.author),''),
-  IF(ate4.epithetID,CONCAT(' forma ',   ate4.epithet,' ',ata4.author),''),
-  IF(ate5.epithetID,CONCAT(' subforma ',ate5.epithet,' ',ata5.author),'')
- ) as 'AuthorString',
- 
- '' as 'InfraSpecies',
- '' as 'InfraSpecificMarker',
- 
- CONCAT(
-  IF(ite.epithetID ,CONCAT(' ',         ite.epithet ,' ',ita.author ),''),
-  IF(ite1.epithetID,CONCAT(' subsp. ',  ite1.epithet,' ',ita1.author),''),
-  IF(ite2.epithetID,CONCAT(' var. ',    ite2.epithet,' ',ita2.author),''),
-  IF(ite3.epithetID,CONCAT(' subvar. ', ite3.epithet,' ',ita3.author),''),
-  IF(ite4.epithetID,CONCAT(' forma ',   ite4.epithet,' ',ita4.author),''),
-  IF(ite5.epithetID,CONCAT(' subforma ',ite5.epithet,' ',ita5.author),'')
- ) as 'InfraSpecificAuthorString',
- 
- '' as 'GSDNameStatus',
- tts.status_sp2000 as 'Sp2000NameStatus',
+ '' AS 'GSDNameStatus',
+ tts.status_sp2000 AS 'Sp2000NameStatus',
 
- 'GSDNameGUI' as 'GSDNameGUI'
- 
-FROM (
-  tbl_tax_species ts,
-  tbl_tax_rank ttr
- )
- LEFT JOIN tbl_atax_authors ata ON ata.authorID=ts.authorID
- LEFT JOIN tbl_atax_authors ata1 ON ata1.authorID=ts.subspecies_authorID
- LEFT JOIN tbl_atax_authors ata2 ON ata2.authorID=ts.variety_authorID
- LEFT JOIN tbl_atax_authors ata3 ON ata3.authorID=ts.subvariety_authorID
- LEFT JOIN tbl_atax_authors ata4 ON ata4.authorID=ts.forma_authorID
- LEFT JOIN tbl_atax_authors ata5 ON ata5.authorID=ts.subforma_authorID
- 
- LEFT JOIN tbl_atax_epithets ate ON ate.epithetID=ts.speciesID
- LEFT JOIN tbl_atax_epithets ate1 ON ate1.epithetID=ts.subspeciesID
- LEFT JOIN tbl_atax_epithets ate2 ON ate2.epithetID=ts.varietyID
- LEFT JOIN tbl_atax_epithets ate3 ON ate3.epithetID=ts.subvarietyID
- LEFT JOIN tbl_atax_epithets ate4 ON ate4.epithetID=ts.formaID
- LEFT JOIN tbl_atax_epithets ate5 ON ate5.epithetID=ts.subformaID
- 
- LEFT JOIN tbl_itax_authors ita ON ita.authorID=ts.authorID
- LEFT JOIN tbl_itax_authors ita1 ON ita1.authorID=ts.subspecies_authorID
- LEFT JOIN tbl_itax_authors ita2 ON ita2.authorID=ts.variety_authorID
- LEFT JOIN tbl_itax_authors ita3 ON ita3.authorID=ts.subvariety_authorID
- LEFT JOIN tbl_itax_authors ita4 ON ita4.authorID=ts.forma_authorID
- LEFT JOIN tbl_itax_authors ita5 ON ita5.authorID=ts.subforma_authorID
- 
- LEFT JOIN tbl_itax_epithets ite ON ite.epithetID=ts.speciesID
- LEFT JOIN tbl_itax_epithets ite1 ON ite1.epithetID=ts.subspeciesID
- LEFT JOIN tbl_itax_epithets ite2 ON ite2.epithetID=ts.varietyID
- LEFT JOIN tbl_itax_epithets ite3 ON ite3.epithetID=ts.subvarietyID
- LEFT JOIN tbl_itax_epithets ite4 ON ite4.epithetID=ts.formaID
- LEFT JOIN tbl_itax_epithets ite5 ON ite5.epithetID=ts.subformaID
- 
- 
- LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
- LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
- LEFT JOIN tbl_tax_status tts ON tts.statusID=ts.statusID
-
-WHERE
- ts.tax_rankID=ttr.tax_rankID
- AND tf.familyID='30'
- AND ts.statusID!='2'
- AND ttr.tax_rankID!='24'
- AND ttr.tax_rankID!='8'
-
-;
-
-# ===========================================
-#
-# view_commonnames
-#
-# ===========================================
-CREATE OR REPLACE
- ALGORITHM = UNDEFINED
- VIEW 'view_commonnames'
- AS
-
-SELECT
- 'AcceptedTaxonID' as 'AcceptedTaxonID',
- 'CommonName' as 'CommonName',
- 'Transliteration' as 'Transliteration',
- 'Language' as 'Language',
- 'Country' as 'Country',
- 'Area' as 'Area',
- 'ReferenceID' as 'ReferenceID'
- 
+ 'GSDNameGUI' AS 'GSDNameGUI'
 FROM
- tbl_tax_species sp
+ (
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedspecies acc 
+  UNION ALL
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedinfraspecifictaxa acc 
+ ) AS taxonids 
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=taxonids.AcceptedTaxonID
+ CROSS JOIN herbarinput.tbl_tax_species ts
+ CROSS JOIN herbarinput.tbl_tax_species ts2
+
+ -- status, rank
+ LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts2.statusID
+ LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts2.tax_rankID
+ 
+ -- genus
+ LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts2.genID
+ LEFT JOIN herbarinput.tbl_tax_authors ta ON ta.authorID=ts2.authorID
+ LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts2.speciesID
+  
+ -- infraspecific
+ LEFT JOIN herbarinput.tbl_tax_authors ta1 ON ta1.authorID=ts2.subspecies_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta2 ON ta2.authorID=ts2.variety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta3 ON ta3.authorID=ts2.subvariety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta4 ON ta4.authorID=ts2.forma_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors ta5 ON ta5.authorID=ts2.subforma_authorID
+ 
+ LEFT JOIN herbarinput.tbl_tax_epithets te1 ON te1.epithetID=ts2.subspeciesID
+ LEFT JOIN herbarinput.tbl_tax_epithets te2 ON te2.epithetID=ts2.varietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets te3 ON te3.epithetID=ts2.subvarietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=ts2.formaID
+ LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=ts2.subformaID
  
 WHERE
- 
-ORDER BY
 
+-- Umsetzung aus listsynonyms.php
+(
+   ( ts.synID=tso.taxonID AND ( IF(tso.basID IS NULL, (ts.basID=tso.taxonID), ( (tso.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID= tso.basID ) ) ) )
+ OR
+   ( ts.synID=tso.taxonID AND ( IF(tso.basID IS NULL, (ts.basID IS NULL),     ( (tso.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID<>tso.basID ) ) ) )
+)
+AND
+(
+   ( ts2.synID=tso.taxonID AND ts2.basID=ts.taxonID )
+ OR
+   ( ts2.taxonID=ts.taxonID )
+)
+
+AND tso.taxonID=11329
+
+-- ts2 has correct data!
+-- todo: enable recursion to this Rows, View can do loops, next tso.taxonID = ts.synID#
+-- unique id??
 ;
 
-# ===========================================
-#
-# view_distribution
-#
-# ===========================================
+-- ===========================================
+-- ready
+-- view_commonnames
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_distribution'
+ VIEW `view_commonnames`
+ AS
+SELECT
+ taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
+ co.common_name AS 'CommonName',
+ '' AS 'Transliteration',
+ lan.name AS 'Language',
+ '' AS 'Country',
+ geo.name AS 'Area',
+ ap.reference_id AS 'ReferenceID'
+/*
+ CASE
+  WHEN lit.citationID is NOT NULL THEN CONCAT('l:',lit.citationID)
+  WHEN ser.serviceID  is not null THEN CONCAT('s:',ser.serviceID)
+  WHEN pers.personID  is not null THEN CONCAT('p:',pers.personID)
+  ELSE ''
+ END as 'ReferenceID'
+ */
+FROM
+ (
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedspecies acc 
+  UNION ALL
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedinfraspecifictaxa acc 
+ ) AS taxonids 
+ CROSS JOIN names.tbl_name_applies_to ap ON ap.entity_id=taxonids.AcceptedTaxonID
+ 
+ LEFT JOIN names.tbl_name_commons co ON co.common_id=ap.name_id
+ LEFT JOIN names.tbl_name_languages lan ON lan.language_id = ap.language_id
+ LEFT JOIN names.tbl_geonames_cache geo ON geo.geonameId= ap.geonameId
+
+ /*
+ LEFT JOIN names.tbl_name_literature lit ON lit.literature_id=ap.reference_id
+ LEFT JOIN names.tbl_name_person pers ON pers.person_id=ap.reference_id
+ LEFT JOIN names.tbl_name_webservice ser ON ser.webservice_id=ap.reference_id
+*/
+
+-- ===========================================
+-- ready
+-- view_distribution
+--
+-- ===========================================
+CREATE OR REPLACE
+ ALGORITHM = UNDEFINED
+ VIEW `view_distribution`
  AS
 
 SELECT
- taxonID... as 'AcceptedTaxonID',
- gn.iso_alpha_2_code as 'DistributionElement',
- 'ISO2Alpha' as 'StandardInUse',
- 'native' as 'DistributionStatus'
- 
+ taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
+ gn.iso_alpha_2_code AS 'DistributionElement',
+ 'ISO2Alpha' AS 'StandardInUse',
+ 'native' AS 'DistributionStatus'
 FROM
-  tbl_geo_nation gn
- 
+ (
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedspecies acc 
+  UNION ALL
+  SELECT AcceptedTaxonID FROM herbarinput.view_acceptedinfraspecifictaxa
+ ) AS taxonids
+ LEFT JOIN tbl_specimens sp ON sp.taxonID=taxonids.AcceptedTaxonID
+ LEFT JOIN tbl_geo_nation gn ON gn.NationID = sp.NationID
 WHERE
- gn.nationID=...
+ gn.iso_alpha_2_code IS NOT NULL
 
-;
-
-# ===========================================
-#
-# view_namereferenceslinks
-#
-# ===========================================
+-- ===========================================
+-- todo
+-- view_namereferenceslinks
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_namereferenceslinks'
+ VIEW `view_namereferenceslinks`
  AS
 
 SELECT
@@ -324,18 +364,17 @@ FROM
  
 WHERE
  
-ORDER BY
  
 ;
 
-# ===========================================
-#
-# view_references
-#
-# ===========================================
+-- ===========================================
+-- todo
+-- view_references
+--
+-- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW 'view_eferences'
+ VIEW `view_eferences`
  AS
 
 SELECT
