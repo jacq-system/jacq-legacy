@@ -108,7 +108,12 @@ function selectGeoname() {
 	geowin.focus();
 }
 function UpdateGeoname(geonameID) {
-	$('#ajax_geoname').searchID(geonameID);
+	$('#ajax_geoname').searchID(geonameID).result(function(event, data, formatted) {
+		if(!data){
+				$('#ajax_geoname').val('geonames.org databases not synced yet for ID '+geonameID+'. But you can store it anyway.');
+				$('#geonameIndex').val(geonameID);
+		}
+	});
 }
 
 function selectID(active_id){
