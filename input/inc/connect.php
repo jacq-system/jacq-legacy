@@ -108,10 +108,11 @@ function checkRight($right)
     }
 }
 
-function isLocked($table, $id)
-{
-    if (intval($id)) {
-        $lock = "locked";
+function isLocked($table, $id){
+	$lock = "locked";
+	if (is_numeric($id)) {
+		print_r($id);
+       
         $PID = "";
         $result = mysql_query("SHOW INDEX FROM $table");
         while ($row=mysql_fetch_array($result)) {
@@ -125,6 +126,15 @@ function isLocked($table, $id)
         if ($row[$lock]) {
             return true;
         }
+    }else if(is_object($id)){
+		if(! $where=$id->getWhere() ) return false;
+		$res=mysql_query("SELECT {$lock} FROM {$table} WHERE {$where}");
+		
+		if($res && $row = mysql_fetch_array($res)){
+			if(isset($row[$lock]) && $row[$lock]){
+				return true;
+			}
+		}
     }
 
     return false;

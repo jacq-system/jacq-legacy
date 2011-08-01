@@ -50,8 +50,8 @@ $sql = "SELECT ID, `table`
 $result = db_query($sql);
 while ($row=mysql_fetch_array($result)) {
     echo "<tr class=\"out\">";
-    echo "<td class=\"out\"><a href=\"listGroupUnlock.php?sel=$groupID&del=" . $row['ID'] . "\" style=\"background-color:red\">del</a></td>";
-    echo "<td class=\"out\"><a href=\"editGroupUnlock.php?id=$groupID&sel=" . $row['ID'] . "\">edit</a></td>";
+    echo "<td class=\"out\"><a href=\"listGroupUnlock.php?sel=$groupID&del=" . $row['ID'] . "\" style=\"background-color:red\">del {$row['table']}</a></td>";
+    echo "<td class=\"out\"><a href=\"editGroupUnlock.php?id=$groupID&sel=" . $row['ID'] . "\">edit {$row['table']}</a></td>";
     echo "</tr>\n";
 }
 ?>

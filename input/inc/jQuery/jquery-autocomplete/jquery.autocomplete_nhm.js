@@ -311,6 +311,8 @@ $.Autocompleter = function(input, options) {
 		currentValue = lastWord(currentValue);
 		if ( currentValue.length >= options.minChars) {
 			$input.addClass(options.loadingClass);
+			if(options.LoadingAction)options.LoadingAction();
+			
 			if (!options.matchCase)
 				currentValue = currentValue.toLowerCase();
 			request(currentValue, receiveData, hideResultsNow);

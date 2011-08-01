@@ -529,7 +529,7 @@ $comnames="&nbsp;".substr($comnames,2);
         return true;
     }
 	function editCommonNames(sel) {
-		target  = "editCommonName.php?enableClose=1&search=1&show=1&taxonID="+sel;
+		target  = "editCommonNames.php?enableClose=1&search=1&taxonIndex="+sel;
 		options = "width=900,height=700,top=50,left=50,scrollbars=yes,resizable=yes";
 		MeinFenster = window.open(target,"edit Common Names",options);
 		MeinFenster.focus();

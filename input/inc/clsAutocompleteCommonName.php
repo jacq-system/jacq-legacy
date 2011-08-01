@@ -95,9 +95,9 @@ protected function __construct () {}
 	function getCacheOption(){
 		global $_OPTIONS;
 		
-		$cache_type_valid=array('MICROSECOND','SECOND','MINUTE','HOUR','DAY','WEEK','MONTH','QUARTER','YEAR');
-	
-		if(in_array($_OPTIONS['TYPINGCACHE']['SETTING']['type'],$cache_type_valid) && intval($_OPTIONS['TYPINGCACHE']['SETTING']['val'])!==0){
+		if( in_array($_OPTIONS['TYPINGCACHE']['SETTING']['type'],array('MICROSECOND','SECOND','MINUTE','HOUR','DAY','WEEK','MONTH','QUARTER','YEAR')) 
+			&& intval($_OPTIONS['TYPINGCACHE']['SETTING']['val'])!==0
+		){
 			return "and timestamp>TIMESTAMPADD({$_OPTIONS['TYPINGCACHE']['SETTING']['type']},-{$_OPTIONS['TYPINGCACHE']['SETTING']['val']},NOW())";
 		}
 		return '';
@@ -209,6 +209,7 @@ public function cname_taxon ($value)
 					 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE ";
+			
 			if($id=extractID2($value)){
 				$sql.=" ts.taxonID='{$id}'";
 			}else{
@@ -261,7 +262,15 @@ public function cname_common_name ($value){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			$sql = "SELECT common_name,common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE common_name LIKE " . $db->quote ($value . '%')."";	
+			
+			$where='';
+			if($id=extractID2($value)){
+				$where="common_id ='$id'";
+			}else{
+				$where="common_name LIKE " . $db->quote($value . '%');
+			}
+			
+			$sql = "SELECT common_name,common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE {$where}";	
 			
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
@@ -529,7 +538,7 @@ public function cname_language ($value){
 				$row = $dbst->fetch();
 				
 				// If TypingCache
-				if (isset($row['result']) && $row['result'] !='') {
+				if (false && isset($row['result']) && $row['result'] !='') {
 
 					$results=json_decode($row['result'],1);
 				
@@ -551,6 +560,7 @@ public function cname_language ($value){
 						$parsed=$parsed[1];
 						$a=count($parsed);
 						
+			
 						// Every triple
 						// iso, iso parent, name
 						for($i=0;$i<$a;$i+=3){
@@ -568,7 +578,7 @@ public function cname_language ($value){
 							}
 						}
 					}
-					
+
 					// unfortunately, the search cannot search iso639-6 Codes.... so we search for it here...
 					
 					// Search iso639-6 on geolang.org
@@ -643,8 +653,10 @@ WHERE
 				/* @var $dbst PDOStatement */
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
+				
 				if($row){
 					list($did, $label)=$this->getLangLabel('','','',$row);
+					
 					$results[] = array(
 						'id'	=> $did,
 						'label' => "{$label} &lt;{$row['language_id']}&gt;",
@@ -665,7 +677,7 @@ WHERE
 
 function getLangLabel($iso,$isoparent='',$name='',$row=array()){
 	
-	if(!isset($row['iso639-6'])){
+	if(!isset($row['iso639-6']) ){
 		$row=$this->getLang($iso,$isoparent,$name);
 	}
 	
@@ -673,7 +685,9 @@ function getLangLabel($iso,$isoparent='',$name='',$row=array()){
 		$rowp=$this->getLang($row['parent_iso639-6']);
 		$row['pname']=$rowp['name'];
 	}
-	if($row['iso639-6']=='')return array($row['language_id'], "");
+	if($row['iso639-6']==''){
+			return array($row['language_id'], "{$row['name']}");
+	}
 	return array($row['language_id'], "{$row['iso639-6']}, {$row['name']} (-> {$row['parent_iso639-6']}, {$row['pname']})");
 }
 
@@ -707,10 +721,11 @@ WHERE
 	}else{
 		// parent and name already given
 		if($isoparent!='' && $name!=''){
-			$row=array('iso639_6'=>$iso,'parent_iso639-6'=>$isoparent,'name'=>$name);	
+			$row=array('iso639-6'=>$iso,'parent_iso639-6'=>$isoparent,'name'=>$name);	
 		
 		// else: get it from geolang...
 		}else{
+			
 			$source=$this->_get('www.geolang.com', '80',
 				'/iso639-6/resultsA4.asp',
 				array(
@@ -731,7 +746,7 @@ WHERE
 		// If data available: insert it.
 		if (isset($row['iso639-6'])) {
 	
-			$sql="INSERT IGNORE INTO  {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_languages (`iso639-6`,`parent_iso639-6`,`name`) VALUES ("
+			$sql="INSERT IGNORE INTO  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages (`iso639-6`,`parent_iso639-6`,`name`) VALUES ("
 				.$db->quote($row['iso639-6'])  .","
 				.$db->quote($row['parent_iso639-6']).","
 				.$db->quote($row['name']).")";

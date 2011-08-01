@@ -240,15 +240,15 @@ WHERE
 
 -- Umsetzung aus listsynonyms.php
 (
-   ( ts.synID=tso.taxonID AND ( IF(tso.basID IS NULL, (ts.basID=tso.taxonID), ( (tso.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID= tso.basID ) ) ) )
- OR
-   ( ts.synID=tso.taxonID AND ( IF(tso.basID IS NULL, (ts.basID IS NULL),     ( (tso.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID<>tso.basID ) ) ) )
+ ts.synID=tso.taxonID
+ AND(
+      ( IF(tso.basID IS NULL, (ts.basID=tso.taxonID), ( (ts.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID= tso.basID ) ) )
+   OR ( IF(tso.basID IS NULL, (ts.basID IS NULL),     ( (ts.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID<>tso.basID ) ) )
+ )
 )
-AND
-(
-   ( ts2.synID=tso.taxonID AND ts2.basID=ts.taxonID )
- OR
-   ( ts2.taxonID=ts.taxonID )
+AND(
+    ( ts2.synID=tso.taxonID AND ts2.basID=ts.taxonID )
+ OR ( ts2.taxonID=ts.taxonID )
 )
 
 AND tso.taxonID=11329
@@ -387,4 +387,65 @@ SELECT
 FROM
  tbl_lit tl
  LEFT JOIN tbl_lit_authors ta ON ta.autorID = tl.autorID 
+ 
+ ;
 
+ 
+ -- ===========================================
+-- todo
+-- recursion via stored procedure??
+--
+-- ===========================================
+ CREATE PROCEDURE synonymids()
+BEGIN
+ DECLARE done BOOLEAN DEFAULT 0;
+ DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET done=1;
+   
+ DECLARE taxon_search INT DEFAULT 48465 ; 
+ DECLARE taxonID,synID INT;
+
+ DECLARE taxsyn_cursor CURSOR
+  FOR
+SELECT 
+ ts2.taxonID,
+ ts2.synID
+FROM
+  herbarinput.tbl_tax_species tso
+ CROSS JOIN herbarinput.tbl_tax_species ts
+ CROSS JOIN herbarinput.tbl_tax_species ts2
+WHERE
+
+-- Umsetzung aus listsynonyms.php
+(
+ ts.synID=tso.taxonID
+ AND(
+      ( IF(tso.basID IS NULL, (ts.basID=tso.taxonID), ( (ts.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID= tso.basID ) ) )
+   OR ( IF(tso.basID IS NULL, (ts.basID IS NULL),     ( (ts.basID IS NULL OR ts.basID=tso.taxonID) AND ts.taxonID<>tso.basID ) ) )
+ )
+)
+AND(
+    ( ts2.synID=tso.taxonID AND ts2.basID=ts.taxonID )
+ OR ( ts2.taxonID=ts.taxonID )
+)
+AND tso.taxonID=taxon_search;
+
+/*IF ts2.synID IS NOT NULL THEN
+   taxon_search=ts2.synID;
+  ELSE
+   LEAVE taxsyn_loop;
+  END IF;*/
+  
+ OPEN taxsyn_cursor;
+
+ taxsyn_loop: LOOP
+  FETCH taxsyn_cursor INTO taxonID,synID;
+  IF done THEN
+   LEAVE taxsyn_loop;
+  END IF;
+  
+  
+ END LOOP taxsyn_loop;
+
+ CLOSE taxsyn_cursor;
+ 
+END;

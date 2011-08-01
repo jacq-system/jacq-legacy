@@ -30,13 +30,13 @@ curl_close ($curl);
 		
 
 /*
-FF
-about:config
-dom.disable_window_flip => auf false
+<b>Firefox:</b><br>
+url: about:config<br>
+dom.disable_window_flip => set to false
 
-opera
-about:config
-Allow script to lower window
+<b>Opera:</b>
+url: about:config<br>
+Allow script to lower window<br>
 Allow script to raise window	
 */
 
@@ -83,13 +83,10 @@ color:#00F;
 </style>
 EOF;
 
-$searchextennsion=<<<EOF
+$searchextension=<<<EOF
 <div style="font-size: 10px;left: 230px;position: absolute;text-align: center;top: 500px;width: 730px;">
    <form onSubmit="javascript:fulltextsearch2();return false;" name="searchForm2">
-
-      
 Suche: <input class="topmenu" name="q2" size="20" value="{$value}" type="text">
-
    </form> 
 </div>
 
@@ -127,7 +124,7 @@ $src=str_replace(
 		'src="geonames/gmaps2_nhm.js"',
 		$js_head.'</head>',
 		$js_body.'</body>',
-		$searchextennsion.'<div id="list">',
+		$searchextension.'<div id="list">',
 	)
 ,$src);
 

@@ -71,6 +71,7 @@ $table[] = 'tbl_tax_genera';
 $table[] = 'tbl_tax_index';
 $table[] = 'tbl_tax_species';
 $table[] = 'tbl_tax_typecollections';
+$table[] = 'tbl_name_applies_to';
 
 $cf = new CSSF();
 

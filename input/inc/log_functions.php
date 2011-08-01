@@ -2,23 +2,72 @@
 
 require_once('variables.php');
 
-function logCommonNamesAppliesTo($var,$updated) {
-	global $_OPTIONS;
-
-	$sql=	"INSERT INTO herbarinput_log.log_commonnames_name_applies_to ".
-			"(geonameId,language_id,period_id,entity_id,reference_id,name_id, ".
-			"userID, updated, timestamp) VALUES (".
-	$var['geonameID'].', '.
-	$var['language_id'].', '.
-	$var['period_id'].', '.
-	$var['entity_id'].', '.
-	$var['reference_id'].', '.
-	$var['name_id'].', '.
-    
-	$_SESSION['uid'].', '.
-    $updated.',
-	NULL)';
+function logCommonNamesAppliesTo($id,$updated,$old='') {
+	global $_CONFIG;
+	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 	
+	$sql = "SELECT * FROM {$dbprefix}tbl_name_applies_to
+WHERE 
+".$id->getWhere();
+	
+	$result = mysql_query($sql);
+	$row = mysql_fetch_array($result);
+	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to ".
+		"(geonameId,language_id,period_id,entity_id,reference_id,name_id,locked,oldid,".
+		"userID, updated, timestamp) VALUES (".
+		$row['geonameId'].', '.
+		$row['language_id'].', '.
+		$row['period_id'].', '.
+		$row['entity_id'].', '.
+		$row['reference_id'].', '.
+		$row['name_id'].', '.
+		$row['locked'].', '.
+		'\''.$old.'\', '.
+		
+		$_SESSION['uid'].', '.
+		$updated.',
+		NULL)';
+	mysql_query($sql);
+}
+
+function logCommonNamesCommonName($id,$updated) {
+	global $_CONFIG;
+	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+	
+	$sql = "SELECT * FROM {$dbprefix}tbl_name_commons WHERE common_id='{$id}'";
+	$result = mysql_query($sql);
+	$row = mysql_fetch_array($result);
+
+	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_commons ".
+		 "(common_id, common_name, userID, updated, timestamp) VALUES (".
+		$row['common_id'].', '.
+		"'".$row['common_name']."', ".
+			
+		$_SESSION['uid'].', '.
+		$updated.',
+		NULL)';
+	mysql_query($sql);
+}
+
+function logCommonNamesLanguage($id,$updated) {
+	global $_CONFIG;
+	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+	
+	$sql = "SELECT * FROM {$dbprefix}tbl_name_languages WHERE language_id='{$id}'";
+	$result = mysql_query($sql);
+	$row = mysql_fetch_array($result);
+
+	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_languages ".
+		 "(language_id, `iso639-6`, `parent_iso639-6`, name, userID, updated, timestamp) VALUES (".
+		$row['language_id'].', '.
+		"'".$row['iso639-6']."', ".
+		"'".$row['parent_iso639-6']."', ".
+		"'".$row['name']."', ".
+		
+		$_SESSION['uid'].', '.
+		$updated.',
+		NULL)';
+
 	mysql_query($sql);
 }
 
