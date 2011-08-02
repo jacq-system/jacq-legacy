@@ -13,7 +13,7 @@ WHERE
 	$result = mysql_query($sql);
 	$row = mysql_fetch_array($result);
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to ".
-		"(geonameId,language_id,period_id,entity_id,reference_id,name_id,locked,oldid,".
+		"(geonameId,language_id,period_id,entity_id,reference_id,name_id,locked,oldid,geospecification,annotation,".
 		"userID, updated, timestamp) VALUES (".
 		$row['geonameId'].', '.
 		$row['language_id'].', '.
@@ -21,6 +21,8 @@ WHERE
 		$row['entity_id'].', '.
 		$row['reference_id'].', '.
 		$row['name_id'].', '.
+		$row['geospecification'].', '.
+		$row['annotation'].', '.
 		$row['locked'].', '.
 		'\''.$old.'\', '.
 		

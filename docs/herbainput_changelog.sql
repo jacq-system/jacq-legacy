@@ -7,5 +7,11 @@ ALTER TABLE `tbl_herbardb_groups`
  ADD `commonnameUpdate` INT( 4 ) NOT NULL ,
  ADD `commonnameInsert` INT( 4 ) NOT NULL
 
-# 21.7.2011 16:44
-ALTER TABLE `log_commonnames_name_applies_to` ADD `locked` TINYTEXT NOT NULL AFTER `reference_id`
+-- 2.8.2011
+
+ALTER TABLE `log_commonnames_tbl_name_applies_to`
+ADD `oldid` VARCHAR( 100 ) NOT NULL AFTER `name_id` ,
+ADD `annotation` TEXT NULL AFTER `oldid` ,
+ADD `locked` TINYINT NULL AFTER `annotation`
+ADD `geospecification` TEXT NOT NULL AFTER `oldid`
+ 

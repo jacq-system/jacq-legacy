@@ -878,6 +878,58 @@ WHERE
 }
 
 
+/**
+ * Common Names: Period
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function cname_geospecification ($value){
+    global $_CONFIG;
+    
+	$results = array();
+	if ($value && strlen($value)>1){
+		try{
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			
+			$sql = "
+SELECT
+ DISTINCT geospecification
+FROM
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to
+WHERE
+ geospecification like " . $db->quote ($value . '%')."
+";
+			
+			
+			/* @var $dbst PDOStatement */
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					
+					$label=$row['geospecification'];
+					$id=$row['geospecification'];
+					
+					$results[] = array(
+						'id'	=> $id,
+						'label' => $label,
+						'value' => $label,
+						'color' => ''
+					);
+				}
+			}
+		}catch (Exception $e){
+			error_log($e->getMessage());
+		}
+	}
+
+	return $results;
+}
+
+
 
 
 /***********************\

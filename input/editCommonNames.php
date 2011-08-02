@@ -185,6 +185,8 @@ $(document).ready(function() {
 	$("#ajax_person").change(function() {$('input[name=source][value=person]').attr('checked','checked');});
 	$("#ajax_service").change(function() {$('input[name=source][value=service]').attr('checked','checked');});
 
+	$( "#ajax_geospecification").resizable({handles:"se"});//.css('z-index','10000');
+	
 	// Validation
 	$('input[type=submit]').bind('click', function(){
 
@@ -336,7 +338,9 @@ $_dvar=array(
 	'nameIndex'			=> '',
 	'common_nameIndex'	=> '',
 	'common_name'		=> '',
-
+	
+	'geospecification'=> '',
+	'annotation'		=> '',
 	'locked'			=> '',
 	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id'))
 );
@@ -382,7 +386,9 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate')) ){
 		'nameIndex'			=> $_POST['common_nameIndex'],
 		'common_nameIndex'	=> $_POST['common_nameIndex'],
 		'common_name'		=> $_POST['common_name'],
-
+		
+		'geospecification'	=> $_POST['geospecification'],
+		'annotation'		=> $_POST['annotation'],
         'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:0,
 
 		
@@ -452,7 +458,9 @@ if ($action=='doDelete' ) {
 			'personIndex'=>isset($row['personID'])?$row['personID']:0,
 			'serviceIndex'=>isset($row['serviceID'])?$row['serviceID']:0,
 			
-			'locked'=>isset($row['locked'])?$row['locked']:$_dvar['locked']
+			'geospecification'=> isset($row['geospecification'])?$row['geospecification']:$_dvar['geospecification'],
+			'annotation'=>isset($row['annotation'])?$row['annotation']:$_dvar['annotation'],
+			'locked'=>isset($row['locked'])?$row['locked']:$_dvar['locked'],
 		));
 
 	// If no row found, prepare for search vars;
@@ -473,7 +481,7 @@ if($doSearch){
 
 $init="
 var init={taxon:'{$_dvar['taxonIndex']}',geoname:'{$_dvar['geonameIndex']}',literature:'{$_dvar['literatureIndex']}',service:'{$_dvar['serviceIndex']}',person:'{$_dvar['personIndex']}'};
-var init2={period:'',common_name:'',language:'{$_dvar['languageIndex']}'};
+var init2={period:'',common_name:'',language:'{$_dvar['languageIndex']}',geospecification:''};
 ";
 
 $_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
@@ -530,62 +538,69 @@ if($unlock_tbl_name_applies_to) {
     $cf->label(23,2,"locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"{$_dvar['locked']}\">\n";
 }
-$cf->label(35, 2, "Edit Commoname","javascript:editCommoname()");
 
 $cf->label(10, 5, "Entity","javascript:selectTaxon()");
 $cf->inputJqAutocomplete2(11, 5, 50, "taxon", "", $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon_commonname", 520, 2,0,"",true);
 
-$cf->label(10, 8, "Common Name");
-$cf->inputJqAutocomplete2(11, 8, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
+$cf->label(10, 7.5, "Common Name","javascript:editCommoname()");
+$cf->inputJqAutocomplete2(11, 7.5, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
 
 
-$cf->label(10, 11, "Geography","javascript:selectGeoname()");
-$cf->label(10.5, 11, "*","javascript:showGeonameInfo()");
-$cf->inputJqAutocomplete2(11, 11, 50, "geoname", "", $_dvar['geonameIndex'], "index_jq_autocomplete.php?field=cname_geoname", 520, 2,"",0,true);
+$cf->label(10, 10, "Geography","javascript:selectGeoname()");
+$cf->label(10.5, 10, "*","javascript:showGeonameInfo()");
+$cf->inputJqAutocomplete2(11, 10, 50, "geoname", "", $_dvar['geonameIndex'], "index_jq_autocomplete.php?field=cname_geoname", 520, 2,"",0,true);
 
-$cf->label(10, 14, "Language");
-$cf->inputJqAutocomplete2(11, 14, 50, "language", "", $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
+$cf->label(10, 12.5, "Geo Specification");
+$cf->inputJqAutocomplete2(14, 12.5, 47, "geospecification", $_dvar['geospecification'],"", "index_jq_autocomplete.php?field=cname_geospecification", 520, 2,0,"",true,true,1);
 
-$cf->label(10, 17, "Period");
-$cf->inputJqAutocomplete2(11,17, 50, "period", $_dvar['period'], $_dvar['periodIndex'], "index_jq_autocomplete.php?field=cname_period", 520, 2,0,"",true);
 
-$cf->label(10, 22, "Literature","javascript:selectLiterature()");
-$cf->label(62, 22, "<input type=\"radio\" name=\"source\" value=\"literature\"{$source_sel['literature']}>");
-$cf->inputJqAutocomplete2(11, 22, 48, "literature", "", $_dvar['literatureIndex'], "index_jq_autocomplete.php?field=cname_literature", 520, 2,0,"",true);
 
-$cf->label(10, 25, "Service");
-$cf->label(62, 25, "<input type=\"radio\" name=\"source\"  value=\"service\"{$source_sel['service']}>");
-$cf->inputJqAutocomplete2(11, 25, 48, "service", "", $_dvar['serviceIndex'], "index_jq_autocomplete.php?field=cname_service", 520, 2,0,"",true);
+$cf->label(10, 15, "Language");
+$cf->inputJqAutocomplete2(11, 15, 50, "language", "", $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
 
-$cf->label(10, 28, "Person");
-$cf->label(62, 28, "<input type=\"radio\" name=\"source\"  value=\"person\"{$source_sel['person']}>");
-$cf->inputJqAutocomplete2(11, 28, 48, "person", "", $_dvar['personIndex'], "index_jq_autocomplete.php?field=cname_person", 520, 2,0,"",true);
+$cf->label(10, 17.5, "Period");
+$cf->inputJqAutocomplete2(11,17.5, 50, "period", $_dvar['period'], $_dvar['periodIndex'], "index_jq_autocomplete.php?field=cname_period", 520, 2,0,"",true);
+
+$cf->label(10, 21, "Literature","javascript:selectLiterature()");
+$cf->label(62, 21, "<input type=\"radio\" name=\"source\" value=\"literature\"{$source_sel['literature']}>");
+$cf->inputJqAutocomplete2(11, 21, 48, "literature", "", $_dvar['literatureIndex'], "index_jq_autocomplete.php?field=cname_literature", 520, 2,0,"",true);
+
+$cf->label(10, 23.5, "Service");
+$cf->label(62, 23.5, "<input type=\"radio\" name=\"source\"  value=\"service\"{$source_sel['service']}>");
+$cf->inputJqAutocomplete2(11, 23.5, 48, "service", "", $_dvar['serviceIndex'], "index_jq_autocomplete.php?field=cname_service", 520, 2,0,"",true);
+
+$cf->label(10, 26, "Person");
+$cf->label(62, 26, "<input type=\"radio\" name=\"source\"  value=\"person\"{$source_sel['person']}>");
+$cf->inputJqAutocomplete2(11, 26, 48, "person", "", $_dvar['personIndex'], "index_jq_autocomplete.php?field=cname_person", 520, 2,0,"",true);
+
+
+$cf->label(10, 29.5, "annotation");
+$cf->textarea(11, 29.5, 50,2.5, "annotation", $_dvar['annotation'], "", "", "");
 
 if(checkRight('commonnameInsert')){
 	echo "<input style=\"display:none\" type=\"submit\" name=\"submitInsert\" value=\" Insert New\">";
 }
 
 if (($_SESSION['editControl'] & 0x200) != 0) {
-	$cf->buttonSubmit(11, 31, "reload", " Reload ");
-	//$cf->buttonReset(17, 31, " Reset ");
+	$cf->buttonSubmit(11, 34, "reload", " Reload ");
+	//$cf->buttonReset(17, 34, " Reset ");
 	if($_dvar['update'] &&  checkRight('commonnameUpdate') && ($unlock_tbl_name_applies_to || !$isLocked) ){
-		$cf->buttonSubmit(22, 31, "submitUpdate", " Update");
-		$cf->buttonSubmit(28, 31, "submitDelete", " Delete");
+		$cf->buttonSubmit(22, 34, "submitUpdate", " Update");
+		$cf->buttonSubmit(28, 34, "submitDelete", " Delete");
 	}
 	if(checkRight('commonnameInsert')){
-		$cf->buttonSubmit(33, 31, "submitInsert", " Insert New");
+		$cf->buttonSubmit(33, 34, "submitInsert", " Insert New");
 	}
 }
-$cf->buttonSubmit(40, 31, "submitSearch", " Search");
+$cf->buttonSubmit(40, 34, "submitSearch", " Search");
 
 
 
 echo<<<EOF
-<div style="position: absolute; left: 11em; top: 34em; width:672px;">
+<div style="position: absolute; left: 11em; top: 36em; width:672px;">
 {$msgs}
 </div>
-
-<div style="position: absolute; left: 11em; top: 37em; width:660px;">
+<div style="position: absolute; left: 11em; top: 38em; width:660px;">
 {$search_result}
 </div>
 EOF;
@@ -653,6 +668,9 @@ SELECT
  lit.citationID as 'literatureID',
  pers.personID as 'personID',
  ser.serviceID as 'serviceID',
+ 
+ a.geospecification as 'geospecification',
+ a.annotation as 'annotation',
  
  a.locked as 'locked'
 FROM
@@ -801,9 +819,13 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 
 	// Language
 	if($_dvar['languageIndex']==0 || $_dvar['languageIndex']==''){
-		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}') ON DUPLICATE KEY UPDATE language_id=LAST_INSERT_ID(language_id)");
-		$_dvar['languageIndex']=mysql_insert_id();
-		logCommonNamesLanguage($_dvar['languageIndex'],0);
+		$result = doDBQuery("SELECT language_id FROM {$dbprefix}tbl_name_languages WHERE name='{$_dvar['language']}'");
+		if($result && $row=mysql_fetch_array($result)){
+			$_dvar['languageIndex']=$row['language_id'];
+		}else{
+			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
+			$_dvar['languageIndex']=mysql_insert_id();
+		}
 	}
 	
 	//period
@@ -859,10 +881,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	// Update fields
 	$sql = $_dvar['active_id']->getIDFields();
 	
+	$sql.=", annotation='".doQuote($_dvar['annotation'])."'"
+		 .", geospecification='".doQuote($_dvar['geospecification'])."'";
+
 	if(checkRight('unlock_tbl_name_applies_to')){
 		$sql .= ", locked = '{$_dvar['locked']}'";
 	}
 
+	
 	// insert new dataset
 	if($update){
 		$sql="UPDATE {$dbprefix}tbl_name_applies_to SET {$sql} WHERE {$where} ";
@@ -909,7 +935,7 @@ function deleteCommonName($_dvar){
 	}
 	
 	$whereID=$_dvar['active_id']->getWhere();
-	$sql="DELETE FROM {$dbprefix}tbl_name_applies_to WHERE {whereID}";
+	$sql="DELETE FROM {$dbprefix}tbl_name_applies_to WHERE {$whereID}";
 	$result = doDBQuery($sql);
 
 	if($result){
@@ -933,12 +959,14 @@ function doSearch($_dvar,$get=false){
 	$a='ac"';
 	$b='';
 	$class=array(
+		'lock'=>'',
 		'ent'=>(!checkempty($_dvar,$get,'taxon'))?$a:$b,
 		'geo'=>(!checkempty($_dvar,$get,'geoname',1))?$a:$b,
 		'lang'=>(!checkempty($_dvar,$get,'language',1))?$a:$b,
 		'com'=>(!checkempty($_dvar,$get,'common_name'))?$a:$b,
 		'per'=>(!checkempty($_dvar,$get,'period'))?$a:$b,
 		'ref'=>(!checkempty($_dvar,$get,'literature')||!checkempty($_dvar,$get,'person')||!checkempty($_dvar,$get,'service'))?$a:$b,
+		'ann'=>(!checkempty($_dvar,$get,'annotation'))?$a:$b,
 	);
 
 	// get search query
@@ -959,8 +987,15 @@ function doSearch($_dvar,$get=false){
 		}
 
 		$lan=$row['iso639-6']!=""?"{$row['iso639-6']} ({$row['language']})":($row['language']!=""?"{$row['language']}":"");
-		$geo=$row['geoname']!=''?"{$row['geoname']} &lt;{$row['geoname_id']}&gt;":"";
-
+		
+		$geo="";
+		if($row['geoname']!='' || $row['geospecification']!=''){
+			$geo=strstr($row['geoname'],',',true);
+			if($row['geospecification']){
+				$geo.="<br><em> ({$row['geospecification']})</em>";
+			}
+		}
+		
 		$trclass=($i%2)?'odd':'even';
 		$eo=($i%2)?'o':'e';
 /*
@@ -973,7 +1008,8 @@ function doSearch($_dvar,$get=false){
 
 		$locked=$row['locked']?'<b>&lt;locked&gt;</b><br>':'';
 		$search_result.=<<<EOF
-<tr onclick="selectID('{$row['entity_id']}:{$row['name_id']}:{$row['geoname_id']}:{$row['language_id']}:{$row['period_id']}:{$row['reference_id']}')" ><td class="{$eo}{$class['ent']}">{$locked}{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td></tr>
+<tr onclick="selectID('{$row['entity_id']}:{$row['name_id']}:{$row['geoname_id']}:{$row['language_id']}:{$row['period_id']}:{$row['reference_id']}')" >
+<td class="{$eo}{$class['lock']}">{$locked}</td><td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td><td class="{$eo}{$class['ann']}">{$row['annotation']}</td></tr>
 EOF;
 		$i++;
 	}
@@ -986,10 +1022,10 @@ EOF;
 	$search_result=<<<EOF
 {$msg2}
 <table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter" border="1" style="border: 1px solid #000;border-collapse:collapse" width="700">
-<colgroup><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"></colgroup>
+<colgroup><col width="10px"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"></colgroup>
 <thead>
 <tr>
- <th class="l{$class['ent']}"><span>Entity </span></th><th class="l{$class['com']}"><span>Common Name</span></th><th class="l{$class['geo']}"><span>Geography</span></th><th class="l{$class['lang']}"><span>Language</span></th><th class="l{$class['per']}"><span>Period</span></th><th class="l{$class['ref']}"><span>Reference</span></th>
+ <th class="l{$class['lock']}"><span>Locked</span></th><th class="l{$class['ent']}"><span>Entity</span></th><th class="l{$class['com']}"><span>Common Name</span></th><th class="l{$class['geo']}"><span>Geography</span></th><th class="l{$class['lang']}"><span>Language</span></th><th class="l{$class['per']}"><span>Period</span></th><th class="l{$class['ref']}"><span>Reference</span></th><th class="l{$class['ann']}"><span>Annotation </span></th>
 </tr>
 </thead>
 <tbody>
@@ -1035,7 +1071,7 @@ function cleanPair($name,$def=0){
  */
 function checkempty(&$_dvar,$strict=true,$name='',$not=''){
 
-	if(intval($_dvar[$name.'Index'])>0 && ($_dvar[$name]!='' || !$strict)){
+	if(isset($_dvar[$name.'Index']) && intval($_dvar[$name.'Index'])>0 && ($_dvar[$name]!='' || !$strict)){
 		if($not=='' || ($not!='' && $_dvar[$name.'Index']!=$not))
 			return false;
 	}
@@ -1073,6 +1109,15 @@ function doDBQuery($sql,$debug=false){
 	return $res;
 }
 
+/**
+ * doDBQuery:
+ * @param 
+ * @param 
+ * @return sql string
+ */
+function doQuote($var){
+	return mysql_real_escape_string($var);
+}
 
 // Natural ID
 class natID{
