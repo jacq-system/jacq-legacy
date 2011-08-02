@@ -49,7 +49,9 @@ error_reporting(E_ALL);
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
 
   <script type="text/javascript" language="JavaScript">
-
+	$(document).ready(function() {
+	  $("#new_common_name").select();
+	});
   </script>
 </head>
 <body>
@@ -62,8 +64,9 @@ $dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 // dataVar
 $_dvar=array(
 	'common_nameIndex'		=> '',
+	'common_name'			=> '',
 	'new_common_name'		=> '',
-	'locked'			=> '1',
+	'locked'				=> '1',
 );
 
 $action=isset($_POST['submitUpdate'])?'doUpdate':(isset($_POST['action'])?$_POST['action']:'');
@@ -95,12 +98,9 @@ if( $action=='doUpdate'){
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="sendto">
 
-
-
 <?php
 $dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 	
-
 $_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
 
 $msgs='';
@@ -109,7 +109,6 @@ if($msg['result']=="0"){
 }else if(strlen($msg['result'])>0){
 	$msgs=" Success:<br>{$msg['result']} ";
 }
-
 
 $cf = new CSSF();
 
@@ -133,7 +132,7 @@ $cf->text(12, 3, "{$_dvar['common_name']}");
 
 
 $cf->label(11, 5, "New Common Name");
-$cf->inputText(12, 5, 50, "new_common_name", $_dvar['new_common_name']);
+$cf->inputText(12, 5, 50, "new_common_name", ($_dvar['new_common_name']!='')?$_dvar['new_common_name']:$_dvar['common_name'],"0","","\" id=\"new_common_name");
 
 
 if (($_SESSION['editControl'] & 0x200) != 0) {
@@ -147,8 +146,6 @@ if (($_SESSION['editControl'] & 0x200) != 0) {
 
 }
 $cf->buttonJavaScript(18, 8, " Close Window", "self.close()");
-
-
 
 echo<<<EOF
 <div style="position: absolute; left: 12em; top: 12em; width:672px;">
@@ -193,7 +190,7 @@ function UpdateCommonName(&$_dvar, $update=false){
 	// Already the same???
 	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
 	if($row=mysql_fetch_array($result)){
-		return array("The selected Common Name is already in the Database.",0);
+		return array("The typed in Common Name is already in the Database.",0);
 	}
 	
 	$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}',locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");

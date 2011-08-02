@@ -770,8 +770,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		$msg=implode("<br>",$msg);
 		return array($msg,0);
 	}
-	
-	
+
 	// reference
 	$_dvar['referenceIndex']=0;
 	switch($_dvar['source']){
