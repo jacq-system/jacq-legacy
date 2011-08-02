@@ -402,7 +402,7 @@ $result = db_query($sql);
 while($row = mysql_fetch_array($result)){
 	$comnames.=", ".$row['common_name'];
 }
-$comnames="&nbsp;".substr($comnames,2);
+$comnames=substr($comnames,2);
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -773,7 +773,7 @@ $cf->label(9, 2, "edit Index", "javascript:taxIndex('$p_taxonID')");
 $cf->label(9, 3.5, "edit Type", "javascript:taxType('$p_taxonID')");
 $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
-$cf->text(9, 5, $comnames);
+$cf->text(9+strlen($p_taxonID), 5, $comnames);
 
 $res = mysql_query("SELECT specimens_types_ID FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
 if (mysql_num_rows($res) > 0) {
@@ -855,7 +855,7 @@ if (($_SESSION['editControl'] & 0x1) != 0) {
     if ($p_taxonID) {
         if ($edit) {
             $cf->buttonJavaScript(22, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");
-            $cf->buttonSubmit(31, 5, "submitUpdate", " Update ");
+            $cf->buttonSubmit(31, 50, "submitUpdate", " Update ");
         } else {
             $cf->buttonJavaScript(22, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">'");
             $cf->buttonJavaScript(31, 50, " Edit ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");

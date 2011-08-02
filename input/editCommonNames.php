@@ -124,7 +124,7 @@ function editCommoname(){
 	cid='?a=b';
 	if($('#common_nameIndex').val()!='')cid+='&common_nameIndex='+$('#common_nameIndex').val();
 	
-	comwin = window.open("editCommonName.php"+cid, "editCommonName", "width=900, height=250, top=50, right=50, scrollbars=auto, resizable=yes");
+	comwin = window.open("editCommonName.php"+cid, "editCommonName", "width=850 height=150, top=50, right=50, scrollbars=auto, resizable=yes");
 	comwin.focus();
 }
 
@@ -390,7 +390,7 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==0 ){
 		
 		'geospecification'	=> $_POST['geospecification'],
 		'annotation'		=> $_POST['annotation'],
-        'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
+		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 
 		
 	));
@@ -554,8 +554,6 @@ $cf->inputJqAutocomplete2(11, 10, 50, "geoname", "", $_dvar['geonameIndex'], "in
 $cf->label(10, 12.5, "Geo Specification");
 $cf->inputJqAutocomplete2(14, 12.5, 47, "geospecification", $_dvar['geospecification'],"", "index_jq_autocomplete.php?field=cname_geospecification", 520, 2,0,"",true,true,1);
 
-
-
 $cf->label(10, 15, "Language");
 $cf->inputJqAutocomplete2(11, 15, 50, "language", "", $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
 
@@ -583,8 +581,10 @@ if(checkRight('commonnameInsert')){
 }
 
 if (($_SESSION['editControl'] & 0x200) != 0) {
-	$cf->buttonSubmit(11, 34, "reload", " Reload ");
+	//$cf->buttonSubmit(11, 34, "reload", " Reload ");
+	
 	//$cf->buttonReset(17, 34, " Reset ");
+	$cf->buttonJavaScript(17, 34, " Reset ", "document.location.reload(true);");
 	if($_dvar['update'] &&  checkRight('commonnameUpdate') && ($unlock_tbl_name_applies_to || !$isLocked) ){
 		$cf->buttonSubmit(22, 34, "submitUpdate", " Update");
 		$cf->buttonSubmit(28, 34, "submitDelete", " Delete");
@@ -824,7 +824,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		if($result && $row=mysql_fetch_array($result)){
 			$_dvar['languageIndex']=$row['language_id'];
 		}else{
-			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
+			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name,locked) VALUES ('{$_dvar['language']}','1')");
 			$_dvar['languageIndex']=mysql_insert_id();
 		}
 	}

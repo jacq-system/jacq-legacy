@@ -42,9 +42,10 @@ function logCommonNamesCommonName($id,$updated) {
 	$row = mysql_fetch_array($result);
 
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_commons ".
-		 "(common_id, common_name, userID, updated, timestamp) VALUES (".
+		 "(common_id, common_name, locked, userID, updated, timestamp) VALUES (".
 		$row['common_id'].', '.
 		"'".$row['common_name']."', ".
+		"'".$row['locked']."', ".
 			
 		$_SESSION['uid'].', '.
 		$updated.',

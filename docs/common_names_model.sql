@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 02. August 2011 um 08:53
+-- Erstellungszeit: 02. August 2011 um 12:45
 -- Server Version: 5.0.41
 -- PHP-Version: 5.3.4
 
@@ -25,7 +25,6 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- Tabellenstruktur für Tabelle `tbl_geonames_cache`
 --
 
-DROP TABLE IF EXISTS `tbl_geonames_cache`;
 CREATE TABLE IF NOT EXISTS `tbl_geonames_cache` (
   `geonameId` int(11) NOT NULL,
   `name` text,
@@ -39,7 +38,6 @@ CREATE TABLE IF NOT EXISTS `tbl_geonames_cache` (
 -- Tabellenstruktur für Tabelle `tbl_name_applies_to`
 --
 
-DROP TABLE IF EXISTS `tbl_name_applies_to`;
 CREATE TABLE IF NOT EXISTS `tbl_name_applies_to` (
   `geonameId` int(11) NOT NULL,
   `language_id` int(11) NOT NULL,
@@ -65,10 +63,10 @@ CREATE TABLE IF NOT EXISTS `tbl_name_applies_to` (
 -- Tabellenstruktur für Tabelle `tbl_name_commons`
 --
 
-DROP TABLE IF EXISTS `tbl_name_commons`;
 CREATE TABLE IF NOT EXISTS `tbl_name_commons` (
   `common_id` int(11) NOT NULL,
   `common_name` varchar(255) NOT NULL,
+  `locked` tinyint(4) NOT NULL,
   PRIMARY KEY  (`common_id`),
   UNIQUE KEY `common_name_UNIQUE` (`common_name`),
   KEY `fk_tbl_names_common_tbl_names_name` (`common_id`)
@@ -80,11 +78,10 @@ CREATE TABLE IF NOT EXISTS `tbl_name_commons` (
 -- Tabellenstruktur für Tabelle `tbl_name_entities`
 --
 
-DROP TABLE IF EXISTS `tbl_name_entities`;
 CREATE TABLE IF NOT EXISTS `tbl_name_entities` (
   `entity_id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`entity_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 -- --------------------------------------------------------
 
@@ -92,7 +89,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_entities` (
 -- Tabellenstruktur für Tabelle `tbl_name_languages`
 --
 
-DROP TABLE IF EXISTS `tbl_name_languages`;
 CREATE TABLE IF NOT EXISTS `tbl_name_languages` (
   `language_id` int(11) NOT NULL auto_increment,
   `iso639-6` varchar(4) NOT NULL,
@@ -107,7 +103,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_languages` (
 -- Tabellenstruktur für Tabelle `tbl_name_literature`
 --
 
-DROP TABLE IF EXISTS `tbl_name_literature`;
 CREATE TABLE IF NOT EXISTS `tbl_name_literature` (
   `literature_id` int(11) NOT NULL,
   `citationID` int(11) NOT NULL,
@@ -121,11 +116,10 @@ CREATE TABLE IF NOT EXISTS `tbl_name_literature` (
 -- Tabellenstruktur für Tabelle `tbl_name_names`
 --
 
-DROP TABLE IF EXISTS `tbl_name_names`;
 CREATE TABLE IF NOT EXISTS `tbl_name_names` (
   `name_id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`name_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=4 ;
 
 -- --------------------------------------------------------
 
@@ -133,7 +127,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_names` (
 -- Tabellenstruktur für Tabelle `tbl_name_periods`
 --
 
-DROP TABLE IF EXISTS `tbl_name_periods`;
 CREATE TABLE IF NOT EXISTS `tbl_name_periods` (
   `period_id` int(11) NOT NULL auto_increment,
   `period` varchar(255) NOT NULL,
@@ -147,7 +140,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_periods` (
 -- Tabellenstruktur für Tabelle `tbl_name_persons`
 --
 
-DROP TABLE IF EXISTS `tbl_name_persons`;
 CREATE TABLE IF NOT EXISTS `tbl_name_persons` (
   `person_id` int(11) NOT NULL,
   `personID` int(11) NOT NULL COMMENT 'Pointer to tbl_person',
@@ -161,11 +153,10 @@ CREATE TABLE IF NOT EXISTS `tbl_name_persons` (
 -- Tabellenstruktur für Tabelle `tbl_name_references`
 --
 
-DROP TABLE IF EXISTS `tbl_name_references`;
 CREATE TABLE IF NOT EXISTS `tbl_name_references` (
   `reference_id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`reference_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=2 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=3 ;
 
 -- --------------------------------------------------------
 
@@ -173,7 +164,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_references` (
 -- Tabellenstruktur für Tabelle `tbl_name_taxa`
 --
 
-DROP TABLE IF EXISTS `tbl_name_taxa`;
 CREATE TABLE IF NOT EXISTS `tbl_name_taxa` (
   `taxon_id` int(11) NOT NULL,
   `taxonID` int(11) NOT NULL,
@@ -188,7 +178,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_taxa` (
 -- Tabellenstruktur für Tabelle `tbl_name_webservices`
 --
 
-DROP TABLE IF EXISTS `tbl_name_webservices`;
 CREATE TABLE IF NOT EXISTS `tbl_name_webservices` (
   `webservice_id` int(11) NOT NULL,
   `serviceID` int(11) NOT NULL COMMENT 'Pointer to tbl_nom_service',
@@ -202,7 +191,6 @@ CREATE TABLE IF NOT EXISTS `tbl_name_webservices` (
 -- Tabellenstruktur für Tabelle `tbl_search_cache`
 --
 
-DROP TABLE IF EXISTS `tbl_search_cache`;
 CREATE TABLE IF NOT EXISTS `tbl_search_cache` (
   `search_val` varchar(20) NOT NULL,
   `search_group` int(2) NOT NULL,

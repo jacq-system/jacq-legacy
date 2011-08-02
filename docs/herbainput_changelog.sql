@@ -14,4 +14,7 @@ ADD `oldid` VARCHAR( 100 ) NOT NULL AFTER `name_id` ,
 ADD `annotation` TEXT NULL AFTER `oldid` ,
 ADD `locked` TINYINT NULL AFTER `annotation`
 ADD `geospecification` TEXT NOT NULL AFTER `oldid`
- 
+
+-- 2.8.2011
+ALTER TABLE `tbl_name_commons` ADD `locked` TINYINT NOT NULL
+ALTER TABLE `log_commonnames_tbl_name_commons` ADD `locked` TINYINT NOT NULL AFTER `common_name`

@@ -49,53 +49,7 @@ error_reporting(E_ALL);
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
 
   <script type="text/javascript" language="JavaScript">
-//Autocompleter
-function prepareWithID(nam,startval,mustMatch1){
-	if(mustMatch1){
-		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
-			extraParams:{field:'cname_'+nam},
-  			autoFill:1,
-			loadingClass: 'working',
-			selectFirst: true,
-			delay:100,
-			LoadingAction: function() { $('#'+nam+'Index').val(''); }
-  		}).change(function() {
-			if($('#'+nam+'Index').val()==''){
-				$('#ajax_'+nam).addClass('wrongItem');
-			}
-		});
-		if($('#ajax_'+nam)!='' && startval!='')$('#ajax_'+nam).addClass('wrongItem');
-	}else{
-		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
-			extraParams:{field:'cname_'+nam},
-  			loadingClass: 'working',
-			selectFirst: true,
-			LoadingAction: function() { $('#'+nam+'Index').val(''); },
-			delay:100
-  		});
-	}
 
-	$('#ajax_'+nam).result(function(event, data, formatted) {
-		if(data){
-			$('#'+nam+'Index').val(data[1]);
-			$('#ajax_'+nam).val(data[0]).removeClass('wrongItem');
-		}
-	});
-
-	if(startval!=''){
-		$('#ajax_'+nam).searchID(startval);
-	}
-}
-
-function initAjaxVal(initObj,initObj2){
-	jQuery.each(initObj, function(key, val) {
-		prepareWithID(key, val,1);
-    });
-	jQuery.each(initObj2, function(key, val) {
-		prepareWithID(key, val,0);
-    });
-	$("#ajax_taxon").focus();
-}
   </script>
 </head>
 <body>
@@ -108,10 +62,8 @@ $dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 // dataVar
 $_dvar=array(
 	'common_nameIndex'		=> '',
-	'common_name'			=> '',
-
-	'new_common_nameIndex'	=> '',
 	'new_common_name'		=> '',
+	'locked'			=> '1',
 );
 
 $action=isset($_POST['submitUpdate'])?'doUpdate':(isset($_POST['action'])?$_POST['action']:'');
@@ -119,19 +71,24 @@ $action=isset($_POST['submitUpdate'])?'doUpdate':(isset($_POST['action'])?$_POST
 
 if( $action=='doUpdate'){
 	$_dvar=array_merge($_dvar, array(
-		'common_nameIndex'	=>$_POST['common_nameIndex'],
-		'common_name'		=>$_POST['common_name'],
-		
-		'new_common_nameIndex'	=>$_POST['new_common_nameIndex'],
-		'new_common_name'		=>$_POST['new_common_name'],
+		'common_nameIndex'	=> $_POST['common_nameIndex'],
+		'new_common_name'	=> $_POST['new_common_name'],
+		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 	));
-
+	
+	print_r($_POST);
+	print_r($_dvar);
 	// Insert/Update
 	if($action=='doUpdate') {
 		list($msg['err'],$msg['result'])=UpdateCommonName($_dvar);
 	}
 }else if(isset($_GET['common_nameIndex'])){
 	$_dvar['common_nameIndex']=$_GET['common_nameIndex'];
+	
+	$result = doDBQuery("SELECT common_name FROM {$dbprefix}tbl_name_commons WHERE common_id='{$_dvar['common_nameIndex']}'");
+	if($row=mysql_fetch_array($result)){
+		$_dvar['common_name']=$row['common_name'];
+	}
 }
 //print_r($_dvar);
 ?>
@@ -141,6 +98,9 @@ if( $action=='doUpdate'){
 
 
 <?php
+$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+	
+
 $_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
 
 $msgs='';
@@ -150,45 +110,45 @@ if($msg['result']=="0"){
 	$msgs=" Success:<br>{$msg['result']} ";
 }
 
-$init="
-	var init={common_name:'{$_dvar['common_nameIndex']}'};
-	var init2={new_common_name:'{$_dvar['new_common_nameIndex']}'};
-";
 
-
-
-echo <<<EOF
-
-	<script type="text/javascript" language="JavaScript">
-	{$init}
-
-	$(document).ready(function() {
-		initAjaxVal(init,init2);
-	});
-	</script>
-EOF;
-	
 $cf = new CSSF();
 
 echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
+echo "<input type=\"hidden\" name=\"common_nameIndex\" id=\"common_nameIndex\" value=\"{$_dvar['common_nameIndex']}\">\n";
 
-$cf->buttonJavaScript(12, 2, " Close Window", "window.opener.location.reload(true);self.close()");
 
-$cf->label(11, 5, "Common Name");
-$cf->inputJqAutocomplete2(12, 5, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
+$isLocked=isLocked($dbprefix.'tbl_name_commons', $_dvar['common_nameIndex']);
+$unlock_tbl_name_commons=checkRight('unlock_tbl_name_commons');
 
-$cf->label(11, 7, "New Common Name");
-$cf->inputJqAutocomplete2(12, 7, 50, "new_common_name", $_dvar['new_common_name'], $_dvar['new_common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
+if($unlock_tbl_name_commons){
+    $cf->label(11,1,"locked");
+    $cf->checkbox(12,1,"locked",$_dvar['locked']);
+}else if($isLocked){
+    $cf->label(23,2,"locked");
+    echo "<input type=\"hidden\" name=\"locked\" value=\"{$_dvar['locked']}\">\n";
+}
 
+$cf->label(11, 3, "Common Name");
+$cf->text(12, 3, "{$_dvar['common_name']}");
+
+
+$cf->label(11, 5, "New Common Name");
+$cf->inputText(12, 5, 50, "new_common_name", $_dvar['new_common_name']);
 
 
 if (($_SESSION['editControl'] & 0x200) != 0) {
-	$cf->buttonSubmit(12, 10, "reload", " Reload ");
-	$cf->buttonReset(18, 10, " Reset ");
-	//if(checkRight('commonnameUpdate')){
-		$cf->buttonSubmit(23,10, "submitUpdate", " Update");
-	//}
+	//$cf->buttonSubmit(12, 10, "reload", " Reload ");
+	//$cf->buttonReset(18, 10, " Reset ");
+	//$cf->buttonJavaScript(17, 34, " Reset ", "document.location.reload(true);");
+	
+	if(/* checkRight('commonnameUpdate') && */($unlock_tbl_name_commons || !$isLocked) ){
+		$cf->buttonSubmit(12,8, "submitUpdate", " Update");
+	}
+
 }
+$cf->buttonJavaScript(18, 8, " Close Window", "self.close()");
+
+
 
 echo<<<EOF
 <div style="position: absolute; left: 12em; top: 12em; width:672px;">
@@ -227,39 +187,31 @@ function UpdateCommonName(&$_dvar, $update=false){
 	if($_dvar['common_nameIndex']==''){
 		return array("Wrong original Common name",0);
 	}
+	if(strlen($_dvar['new_common_name'])<3){
+		return array("Wrong New Common name",0);
+	}
 	// Already the same???
-	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}' and common_id='{$_dvar['common_nameIndex']}'");
+	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
 	if($row=mysql_fetch_array($result)){
-		return array("The selected Common Name has already the typed in new common Name.",0);
+		return array("The selected Common Name is already in the Database.",0);
 	}
 	
-	$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
+	$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}',locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
 	if($result){
 		echo mysql_insert_id();
 		
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],1);
 		
-		// add info:
-		$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}' and common_id<>'{$_dvar['common_nameIndex']}'");
-		
-		$s='';
-		while($row=mysql_fetch_array($result)){
-			$s.="<br>{$row['common_id']}";
-		}
-		if($s!=''){
-			$s="IDs with same CommonNames like {$_dvar['new_common_name']}:{$s}";
-		}
-		echo $s;
-		
+		echo <<<EOF
+<script>
+window.opener.location.reload(true);
+self.close()
+</script>
+EOF;
 		return array(0,"Successfully updated");
 	
 	}
-	// If no insertion because of already there: Print Error Message
-	if(mysql_errno()=='1062'){
-		return array("already in database",0);
-	}
-
 	return array("Error ".mysql_errno() . ": " . mysql_error() . "",0);
 }
 
