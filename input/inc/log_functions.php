@@ -29,7 +29,7 @@ WHERE
 		$_SESSION['uid'].', '.
 		$updated.',
 		NULL)';
-		echo $sql;
+
 	mysql_query($sql);
 }
 
