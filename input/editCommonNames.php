@@ -341,7 +341,7 @@ $_dvar=array(
 	
 	'geospecification'=> '',
 	'annotation'		=> '',
-	'locked'			=> '',
+	'locked'			=> '1',
 	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id'))
 );
 
@@ -357,7 +357,8 @@ $action=isset($_POST['submitDelete'])?'doDelete':(isset($_POST['submitUpdate'])?
 		(isset($_POST['submitSearch'])||isset($_GET['search']))?'doSearch':(isset($_GET['show'])?'doShow':(isset($_POST['action'])?$_POST['action']:'')))));
 //echo $action;
 //print_r($_POST);
-if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate')) ){
+
+if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==0 ){
 	
 	$errr=error_reporting($debuger);
 	$_dvar=array_merge($_dvar, array(
@@ -389,7 +390,7 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate')) ){
 		
 		'geospecification'	=> $_POST['geospecification'],
 		'annotation'		=> $_POST['annotation'],
-        'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:0,
+        'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 
 		
 	));
@@ -410,10 +411,10 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate')) ){
 		cleanPair('literature');
 		
 	}	
-	//print_r($_dvar);
+
 	error_reporting($errr);
 }
-
+//print_r($_dvar);
 
 // Delete action
 if ($action=='doDelete' ) {
@@ -539,7 +540,7 @@ if($unlock_tbl_name_applies_to) {
     echo "<input type=\"hidden\" name=\"locked\" value=\"{$_dvar['locked']}\">\n";
 }
 
-$cf->label(10, 5, "Entity","javascript:selectTaxon()");
+$cf->label(10, 5, "Scientific Name","javascript:selectTaxon()");
 $cf->inputJqAutocomplete2(11, 5, 50, "taxon", "", $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon_commonname", 520, 2,0,"",true);
 
 $cf->label(10, 7.5, "Common Name","javascript:editCommoname()");
@@ -990,7 +991,8 @@ function doSearch($_dvar,$get=false){
 		
 		$geo="";
 		if($row['geoname']!='' || $row['geospecification']!=''){
-			$geo=strstr($row['geoname'],',',true);
+			//$geo=strstr($row['geoname'],',',true);
+			$geo=substr($row['geoname'],0,strpos($row['geoname'],','));
 			if($row['geospecification']){
 				$geo.="<br><em> ({$row['geospecification']})</em>";
 			}

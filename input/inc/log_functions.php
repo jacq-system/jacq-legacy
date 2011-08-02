@@ -21,14 +21,15 @@ WHERE
 		$row['entity_id'].', '.
 		$row['reference_id'].', '.
 		$row['name_id'].', '.
-		$row['geospecification'].', '.
-		$row['annotation'].', '.
+		'\''.$row['geospecification'].'\', '.
+		'\''.$row['annotation'].'\', '.
 		$row['locked'].', '.
 		'\''.$old.'\', '.
 		
 		$_SESSION['uid'].', '.
 		$updated.',
 		NULL)';
+		echo $sql;
 	mysql_query($sql);
 }
 

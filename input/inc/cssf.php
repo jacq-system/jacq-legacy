@@ -341,7 +341,7 @@ function inputJqAutocomplete2($x, $y, $w, $name, $value, $index, $serverScript, 
 	if($textarea){
 		echo<<<EOF
 <input type="hidden" name="{$name}Index" id="{$name}Index"  value="{$index}"/>
-<textarea  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;background-color: rgb(255, 255, 153);' rows="{$rows} type="text" type="text" name="{$name}" id="ajax_{$name}" maxlength="{$maxsize}" title="{$title}">{$value}</textarea>
+<textarea  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;background-color: rgb(255, 255, 153);' rows="{$rows}" type="text" type="text" name="{$name}" id="ajax_{$name}" maxlength="{$maxsize}" title="{$title}">{$value}</textarea>
 </div>
 
 EOF;
