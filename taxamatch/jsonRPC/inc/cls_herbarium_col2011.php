@@ -180,7 +180,7 @@ FROM
 WHERE
  genus_id in ({$genusids})
 ";
-		echo $query;exit;
+		//echo $query;exit;
 		$res = mysql_query($query);
 		while ($row = mysql_fetch_array($res)) {
 			// If no infraspecies was given but found... discard
