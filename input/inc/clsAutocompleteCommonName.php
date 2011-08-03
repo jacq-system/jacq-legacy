@@ -8,7 +8,18 @@
  * @version 1.0
  * @package clsAutocomplete
  */
-
+function p($var,$exit=false){
+	
+	$a=print_r($var,1);
+	echo <<<EOF
+<pre>
+$a
+</pre>
+EOF;
+	if($exit){
+		exit;
+	}
+}
 error_reporting(E_ALL^E_NOTICE);
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
@@ -518,6 +529,7 @@ public function cname_literature ($value)
  */
 public function cname_language ($value){
     global $_CONFIG;
+    $this->dbprefix=$_CONFIG['DATABASE']['NAME']['name'].".";
     
 	$results = array();
 	$fetched=array();
@@ -538,99 +550,142 @@ public function cname_language ($value){
 				$row = $dbst->fetch();
 				
 				// If TypingCache
-				if (false && isset($row['result']) && $row['result'] !='') {
+				if (isset($row['result']) && $row['result'] !='') {
 
 					$results=json_decode($row['result'],1);
 				
 				// Else generate
 				}else{
 
-					//retrieve data from geolang.org
-					$source=$this->_get('www.geolang.com', '80',
-						'/iso639-6/resultsLN.asp',
-						array(
-							'textfieldLN'=>$value,
-							'searchLangName'=>'Search'
-						)
-					);
-					
-					if($source){
-						$table=strstr($source,'<td colspan="2"><div align="left" class="style6">Language Reference Name</div></td>');
-						preg_match_all('/<div align="left">(.*)<\/div>/msU',$table,$parsed);
-						$parsed=$parsed[1];
-						$a=count($parsed);
-						
-			
-						// Every triple
-						// iso, iso parent, name
-						for($i=0;$i<$a;$i+=3){
-							$id=$parsed[$i];
-							
-							if(!isset($fetched[$id])){
-								$fetched[$id]=1;
-								list($did, $label)=$this->getLangLabel($id,$parsed[$i+1],$parsed[$i+2]);
-								$results[]=array(
-									'id'	=> $did,
-									'label' => $label,
-									'value' => $label,
-									'color' => ''
-								);
-							}
-						}
-					}
-
-					// unfortunately, the search cannot search iso639-6 Codes.... so we search for it here...
-					
-					// Search iso639-6 on geolang.org
-					$id=$value;
-					list($did, $label)=$this->getLangLabel($id);
-					if($label[0]!=',' && isset($fetched[$id]) ){
-						$fetched[$id]=1;
-						
-						$results[]=array(
-							'id'	=> $did,
-							'label' => $label,
-							'value' => $label,
-							'color' => ''
-						);
-					}
-					
-					$search=$db->quote($value."%");
+					$d=$this->dbprefix;
 					
 					// Get Geolang out of database first
+					$pebenen=3;
+					$cebenen=3;
+					/*
+					for($i=$pebenen-1;$i>0;$i--){					
+						$f.="
+ p{$i}.name as 'pn{$i}',
+ p{$i}.`iso639-6` as 'pi{$i}',";
+ 
+ 						$j.="
+  LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`
+ ";
+					}
+					
+					for($i=2;$i<=$cebenen;$i++){					
+						$f.="
+ s{$i}.name as 'sn{$i}',
+ s{$i}.`iso639-6` as 'si{$i}',";
+ 
+ 						$j.="
+ LEFT JOIN {$d}tbl_name_languages s{$i} ON s{$i}.`parent_iso639-6` = s".($i-1).".`iso639-6`
+ ";
+					}
+					*/
+						
 					$sql = "
 SELECT
- `l`.`language_id`,
- `l`.`iso639-6`,
- `l`.`parent_iso639-6`,
- `p`.`name` as 'pname',
- `l`.`name`
+ p3.name as 'pn3',
+ p3.`iso639-6` as 'pi3',
+ p3.language_id as 'pii3',
+ 
+ p2.name as 'pn2',
+ p2.`iso639-6` as 'pi2',
+ p2.language_id as 'pii2',
+ 
+ p1.name as 'pn1',
+ p1.`iso639-6` as 'pi1',
+ p1.language_id as 'pii1',
+ 
+ l.name as 'n',
+ l.`iso639-6` as 'i',
+ l.language_id as 'id',
+ 
+ s1.name as 'sn1',
+ s1.`iso639-6` as 'si1',
+ s1.language_id as 'sii1',
+
+ s2.name as 'sn2',
+ s2.`iso639-6` as 'si2',
+ s2.language_id as 'sii2',
+ 
+ s3.name as 'sn3',
+ s3.`iso639-6` as 'si3',
+ s3.language_id as 'sii3'
+
 FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages l
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
+ {$d}tbl_name_languages l
+ LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`
+ LEFT JOIN {$d}tbl_name_languages p2 ON p2.`iso639-6` = p1.`parent_iso639-6`
+ LEFT JOIN {$d}tbl_name_languages p3 ON p3.`iso639-6` = p2.`parent_iso639-6`
+ 
+ LEFT JOIN {$d}tbl_name_languages s1 ON s1.`parent_iso639-6` = l.`iso639-6`
+ LEFT JOIN {$d}tbl_name_languages s2 ON s2.`parent_iso639-6` = s1.`iso639-6`
+ LEFT JOIN {$d}tbl_name_languages s3 ON s3.`parent_iso639-6` = s2.`iso639-6`
+ 
 WHERE
-	`l`.`name` LIKE {$search}
- or `l`.`iso639-6` LIKE {$search}
+	l.name LIKE ".$db->quote('%'.$value."%")."
+ or l.`iso639-6` LIKE ".$db->quote($value."%")."
+
+ORDER BY
+ l.`iso639-6`,
+ l.name
+
 LIMIT
- 20
+ 100
  ";
+
 					/* @var $dbst PDOStatement */
 					$dbst = $db->query($sql);
 					$rows = $dbst->fetchAll();
-					
+					$namcache=array();
+					$namcache2=array();
+					$r=array();
 					foreach ($rows as $row) {
-						$id=$row['iso639-6'];
-						if(!isset($fetched[$id])){
-							$fetched[$id]=1;
-							list($did, $label)=$this->getLangLabel('','','',$row);
-							$results[] = array(
-								'id'	=> $did,
-								'label' => "{$label} &lt;{$row['language_id']}&gt;",
-								'value' => $label,
-								'color' => ''
-							);
+						$rp=&$r;
+						
+						for($i=$pebenen;$i>0;$i--){					
+							$rp=&$rp[$row['pi'.$i]];
+							$namcache[$row['pi'.$i]]=$row['pn'.$i];
+							$namcache2[$row['pi'.$i]]=$row['pii'.$i];
+						}
+						
+						$rp=&$rp[$row['i']];
+						$namcache[$row['i']]=$row['n'];
+						$namcache2[$row['i']]=$row['id'];
+						
+						for($i=1;$i<=$cebenen;$i++){
+							if($row['si'.$i]=='')break;	
+
+							$rp=&$rp[$row['si'.$i]];
+							$namcache[$row['si'.$i]]=$row['sn'.$i];
+							$namcache2[$row['si'.$i]]=$row['sii'.$i];
+						}
+						$rp=1;
+					}
+					
+					
+					$t=$this->buildtree($r,$namcache,$namcache2);
+				//	p($t);
+					if(is_array($t) && count($t)>0){
+						foreach($t as $resiso=>$val){
+							if(count($val)>0){
+								foreach($val as $row){
+									$id=$row[0];
+									$label=$row[1];
+									
+									$results[] = array(
+										'id'	=> $id,
+										'label' => $label,
+										'value' => $label,
+										'color' => ''
+									);
+								}
+							}
 						}
 					}
+		
 					
 					// Insert Geonames Search Cache
 					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
@@ -653,7 +708,10 @@ WHERE
 				/* @var $dbst PDOStatement */
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
+				// $r[iso][parent][]=p strings
+				// $r[iso][sub][]=p strings
 				
+				$res=array();
 				if($row){
 					list($did, $label)=$this->getLangLabel('','','',$row);
 					
@@ -675,91 +733,141 @@ WHERE
 	return $results;
 }
 
-function getLangLabel($iso,$isoparent='',$name='',$row=array()){
-	
-	if(!isset($row['iso639-6']) ){
-		$row=$this->getLang($iso,$isoparent,$name);
-	}
-	
-	if(isset($row['parent_iso639-6']) && !isset($row['pname']) ){
-		$rowp=$this->getLang($row['parent_iso639-6']);
-		$row['pname']=$rowp['name'];
-	}
-	if($row['iso639-6']==''){
-			return array($row['language_id'], "{$row['name']}");
-	}
-	return array($row['language_id'], "{$row['iso639-6']}, {$row['name']} (-> {$row['parent_iso639-6']}, {$row['pname']})");
-}
+function buildtree(&$r,$nc=array(),$nc2=array()){
 
-function getLang($iso,$isoparent='',$name=''){
-    global $_CONFIG;
+	$this->x=0;
+	/*
+	$res=array();
+	foreach($r as $key=>$tree){
+		$this->buildtree2($tree,1,array($key),$res);
+	}*/
+	$res='';
+	foreach($r as $key=>$tree){
+		$this->buildtree1($tree,1,$key,$res,$nc,0,$nc2);
+	}
+	return $res;
+}
+var $x=0;
+
+function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
+
+	$this->x++;
+	if($this->x>300){
+		echo "Error";
+		exit;
+	}
 	
-	$db = clsDbAccess::Connect('INPUT');
-	
-	// Look Up in database
-	$sql = "
-SELECT
- language_id,
- `iso639-6`,
- `parent_iso639-6`,
- `name`
-  
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages
-WHERE
- `iso639-6`='$iso'
- ";
-	
-	$dbst = $db->query($sql);
-	$row = $dbst->fetch();
-	
-	// If in database...
-	if (isset($row['iso639-6'])) {
-		return $row;
-	
-	// If not in database => insert it
-	}else{
-		// parent and name already given
-		if($isoparent!='' && $name!=''){
-			$row=array('iso639-6'=>$iso,'parent_iso639-6'=>$isoparent,'name'=>$name);	
+	if($ebene<3){
 		
-		// else: get it from geolang...
+		if($ebene==1){
+			$keys=", ".$nc[$keys]." ({$keys})";
 		}else{
-			
-			$source=$this->_get('www.geolang.com', '80',
-				'/iso639-6/resultsA4.asp',
-				array(
-					'textfieldA4'=>$iso,
-					'searchAlpha4'=>'Search'
-				)
-			);
-			
-			if($source){
-				$table=strstr($source,'Language Reference Name');
-				preg_match_all('/<div align="left">(.*)<\/div>/msU',$table,$parsed);
-				$parsed=$parsed[1];
+			$el=current($el);
+		}
+		
+		$key=key($el);
+		$keys.=", ".$nc[$key]." ({$key})";
+
+		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,0,$nc2);
+		
+	}else if($ebene==3){
+	
+		$el=current($el);
+		$key=key($el);
+		
+		$res[$key][]=array($nc2[$key],$nc[$key]." ({$key}) [".$keys."]");
+		
+		$el=current($el);
+		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,$key,$nc2);
+		
+	}else if($ebene<10){
+		$sp=$ebene-3-1;
+
+		if(is_array($el) && count($el)>0){
+
+			foreach($el as $key=>$tree){
 				
-				$row=array('iso639-6'=>$parsed[0],'parent_iso639-6'=>$parsed[1],'name'=>$parsed[2]);
+				$keyn=str_repeat('&nbsp;&nbsp;',$sp)."&#x21B3;"."".$nc[$key]." ({$key})";
+
+				$res[$akey][]=array($nc2[$key],$keyn);
+				$this->buildtree1($tree,$ebene+1,$keys,$res,$nc,$akey,$nc2);
 			}
 		}
-		
-		// If data available: insert it.
-		if (isset($row['iso639-6'])) {
-	
-			$sql="INSERT IGNORE INTO  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages (`iso639-6`,`parent_iso639-6`,`name`) VALUES ("
-				.$db->quote($row['iso639-6'])  .","
-				.$db->quote($row['parent_iso639-6']).","
-				.$db->quote($row['name']).")";
-			$dbst = $db->query($sql);
-			
-			$row['language_id']=$db->lastInsertId();
-			return $row;
-		}
 	}
-	
-	return '';
 }
 
+/*
+function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
+
+	$this->x++;
+	if($this->x>300){
+		echo "Error";
+		exit;
+	}
+	
+	if($ebene<3){
+		
+		if($ebene==1){
+			$keys=", ".$nc[$keys]." ({$keys})";
+		}else{
+			$el=current($el);
+		}
+		
+		$key=key($el);
+		$keys.=", ".$nc[$key]." ({$key})";
+
+		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,0,$nc2);
+		
+	}else if($ebene==3){
+	
+		$el=current($el);
+		$key=key($el);
+		
+		$res[$key]['c'][]=array($nc2[$key],"".$nc[$key]."({$key}) [".$keys."]");
+		
+		$el=current($el);
+		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,$key,$nc2);
+		
+	}else if($ebene<2+3+3){
+		$sp=$ebene-3;
+
+		if(is_array($el) && count($el)>0){
+
+			foreach($el as $key=>$tree){
+				
+				$keyn=str_repeat('.',$sp)."".$nc[$key]." ({$key})";
+
+				$res[$akey]['c'][]=array($nc2[$key],$keyn);
+				$this->buildtree1($tree,$ebene+1,$keys,$res,$nc,$akey,$nc2);
+			}
+		}
+	}
+}*/
+/*
+function buildtree2(&$el,$ebene,$keys,&$res,$nc){
+
+	$this->x++;
+	if($this->x>300){
+		echo "Error";
+		exit;
+	}
+	
+	if($ebene<3){
+		if($ebene>1){
+			$el=current($el);
+		}
+
+		$keys[]=key($el);
+		$this->buildtree2($el,$ebene+1,$keys,$res);
+	}else{
+	
+		$el=current($el);
+		$key=key($el);
+	
+		$res[$key]['p']=$keys;
+		$res[$key]['c']=current($el);
+	}
+}*/
 
 /**
  * Common Names: Period

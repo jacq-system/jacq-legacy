@@ -116,9 +116,6 @@ function UpdateGeoname(geonameID) {
 	});
 }
 
-function selectID(active_id){
-	document.location.href='<?php echo $_SERVER['PHP_SELF']; ?>?show=1&id='+active_id;
-}
 
 function editCommoname(){
 	cid='?a=b';
@@ -342,7 +339,10 @@ $_dvar=array(
 	'geospecification'=> '',
 	'annotation'		=> '',
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id'))
+	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id')),
+
+	'enableClose'	=> ((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0
+
 );
 
 
@@ -485,7 +485,6 @@ var init={taxon:'{$_dvar['taxonIndex']}',geoname:'{$_dvar['geonameIndex']}',lite
 var init2={period:'',common_name:'',language:'{$_dvar['languageIndex']}',geospecification:''};
 ";
 
-$_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
 
 $source_sel[$_dvar['source']]=' checked';
 
@@ -533,10 +532,10 @@ echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"active_id\" value=\"".$_dvar['active_id']->toString()."\">\n";
 
 if($unlock_tbl_name_applies_to) {
-    $cf->label(23,2,"locked");
-    $cf->checkbox(23,2,"locked",$_dvar['locked']);
+    $cf->label(60.5,2,"locked");
+    $cf->checkbox(60.5,2,"locked",$_dvar['locked']);
 }else if($isLocked){
-    $cf->label(23,2,"locked");
+    $cf->label(60.5,2,"locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"{$_dvar['locked']}\">\n";
 }
 
@@ -593,7 +592,7 @@ if (($_SESSION['editControl'] & 0x200) != 0) {
 		$cf->buttonSubmit(33, 34, "submitInsert", " Insert New");
 	}
 }
-$cf->buttonSubmit(40, 34, "submitSearch", " Search");
+$cf->buttonSubmit(20, 2, "submitSearch", " Search");
 
 
 
@@ -1043,6 +1042,11 @@ $(function(){
 	);
 	$("#sorttable").tablesorter();
 });
+
+function selectID(active_id){
+	document.location.href='{$_SERVER['PHP_SELF']}?show=1&id='+active_id+'&enableClose={$_dvar['enableClose']}';
+}
+
 </script>
 EOF;
 	return $search_result;
