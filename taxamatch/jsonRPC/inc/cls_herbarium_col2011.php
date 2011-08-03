@@ -140,6 +140,8 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 		$genus	= strtolower(trim($parts['genus'])); // Uniominal = genus
 		$lenGenus=mb_strlen($genus);
 		
+		$lenlim=min($lenGenus/2,$this->limit);
+
 		
 		//$subgenus	= strtolower($parts['subgenus']);			  // subgenus (if any)
 		
@@ -154,55 +156,77 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 		
 		
 		// Genus Fetched (Uniomnial)
-		$genusids=$this->getUninomial($genus,true);
-		
+		$query="
+SELECT
+ genusids
+FROM
+ fuzzy_fastsearch_scientific_name_element
+WHERE
+ rank in ('genus')
+ and 
+ mdld('{$genus}',genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ ";
+
+ //echo $query;exit;
+ 
+		$res = mysql_query($query);
+		$s="";
+		while ($row = mysql_fetch_array($res)) {
+			$s.=",".$row['genusids']."";
+		}
+		$s=substr($s,1);
+
 		// Now: Fetch Species
 
 		// Bi und Trinomial...
 		$query="
 SELECT
-	taxon_id as 'taxon_id',
-	genus_id  as 'g_id',
-	genus_name  as 'g_name',
-	species_id  as 's_id',
-	species_name as 's_name',
-	infraspecies_id  as 'i_id',
-	infraspecies_name as 'i_name',
-	infraspecific_marker as 'marker',
-	status as 'status',
-	author as 'author',
-	family_name as 'f_name',
-	mdld('{$genus}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) as 'mdld_g',
-	mdld('{$species}', LOWER(species_name), {$this->block_limit}, {$this->limit}) as 'mdld_s',
-	mdld('{$epithet}', LOWER(infraspecies_name), {$this->block_limit}, {$this->limit})  as 'mdld_i'
+ s2.id as 'taxon_id',
+ s2.genus as 'g_name',
+ s2.species as 's_name',
+ s2.infraspecies as 'i_name',
+ s2.infraspecific_marker as 'marker',
+ s2.status as 'status',
+ s2.author as 'author',
+ s2.family as 'f_name',
+ s2.accepted_species_id as 'accepted_species_id',
+ s2.accepted_species_name 	as 'accepted_species_name',
+ s2.accepted_species_author as 'accepted_species_author',
+ 
+ 
+ mdld('{$genus}', LOWER(s2.genus), {$this->block_limit}, {$this->limit}) as 'mdld_g',
+ mdld('{$species}', LOWER(s2.species), {$this->block_limit}, {$this->limit}) as 'mdld_s',
+ mdld('{$epithet}', LOWER(s2.infraspecies), {$this->block_limit}, {$this->limit})  as 'mdld_i'
 FROM
- `_species_details`
+ _search_scientific s1
+ LEFT JOIN _search_scientific s2 ON s2.genus = s1.genus
+ 
 WHERE
- genus_id in ({$genusids})
+ s1.id in ({$s})
 ";
+
 		//echo $query;exit;
 		$res = mysql_query($query);
 		while ($row = mysql_fetch_array($res)) {
 			// If no infraspecies was given but found... discard
-			if(!($epithet && $rank) && $row['i_id']!="0" ){
+			if(!($epithet && $rank) && $row['i_name']!="" ){
 				continue;
 			}
-			
 			$found=false;
 			$g_ratio=0;
 			
+			
 			// if a species was given...
 			if($species){
-			
 				$distance=$row['mdld_s'];
+			
 				// we've hit a species
-				if( ($distance + $row['mdld_g']) < $this->limit && $row['mdld_s'] < min($lenSpecies, mb_strlen($row['s_name'], "UTF-8")) / 2 ){
-					
+				if( (($distance + $row['mdld_g']) < $this->limit )&& ($row['mdld_s'] <= min($lenSpecies, mb_strlen($row['s_name'], "UTF-8")) / 2 )){
 					// if epithet
 					if($epithet && $rank){
 					
 						// we've hit an epithet
-						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] < min($lenEpithet, mb_strlen($row['i_name'], "UTF-8")) / 2 ) {                         // 4th limit of the search
+						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] <= min($lenEpithet, mb_strlen($row['i_name'], "UTF-8")) / 2 ) {                         // 4th limit of the search
 							$found = true;  
 							$ratio = 1
 									- $row['mdld_s'] / max(mb_strlen($row['s_name'], "UTF-8"), $lenSpecies)
@@ -227,22 +251,22 @@ WHERE
 			// of found and synonynm accepted code
 			if($found){
 				
-				if(!isset($lev[$row['g_id']]['ID'])){
+				if(!isset($lev[$row['g_name']]['ID'])){
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['g_name'], "UTF-8"), $lenGenus);
 				
-					$lev[$row['g_id']]=array(
+					$lev[$row['g_name']]=array(
 						'genus'    => $row['g_name'],
 						'distance' => $row['mdld_g'],
 						'ratio'    => $g_ratio,
 						'taxon'    => $row['g_name'] . ' (' . $row['f_name'] . ')',
-						'ID'       => $row['g_id'],
+						'ID'       => $row['g_name'],
 						'species' => array()
 					);
 				}
-				// Look for synonym!&& ( $row['status']==2 || $row['status']==2 ){
-				if(false){
-				//	$syn=trim($row2['g_name']." ".$row2['s_name']." ".$row2['infraspecific_marker']." ".$row2['i_name']." ".$row2['author']);
-				//	$synID = $row2['g_id'];
+				
+				if($row['accepted_species_id']!=''){
+					$syn=trim($row['accepted_species_name']." ".$row['accepted_species_author']);
+					$synID = $row['accepted_species_id'];
 				}else{
 					$syn = '';
 					$synID = 0;
@@ -254,7 +278,7 @@ WHERE
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['g_name'], "UTF-8"), $lenGenus);
 				}
 				// put everything into the output-array
-				$lev[$row['g_id']]['species'][]=array(
+				$lev[$row['g_name']]['species'][]=array(
 					'name'     => trim($row['s_name']),
 					'distance' => $distance + $row['mdld_g'],
 					'ratio'    => $g_ratio * $ratio,
@@ -267,7 +291,14 @@ WHERE
 			
 			//$ctr++;
 		}
-		$this->_doMultiSort($lev);
+
+		foreach($lev as $k=>$obj){
+			usort($obj['species'],'col2011sort_a');
+			$lev[$k]=$obj;
+		}
+		usort($lev,'col2011sort_a');
+		
+		
 		return $lev;
 	}
 			
@@ -278,56 +309,54 @@ WHERE
 		$lenUninomial=mb_strlen(trim($uninomial));
 		$lenlim=min($lenUninomial/2,$this->limit);
 
-
+		$uninomial=strtolower($uninomial);
 		// getGenusIds out of genusNamesCache
 
 		$query="
 SELECT
  genusids
 FROM
- fuzzy_fastsearch_scientific_name_element2
+ fuzzy_fastsearch_scientific_name_element
 WHERE
- mdld('{$uninomial}',LOWER( genus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ rank in ('genus','kingdom','phylum','class','order','superfamily','family')
+ and 
+ mdld('{$uninomial}',genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
 
+ //echo $query;exit;
+ 
 		$res = mysql_query($query);
-	
 		$s="";
 		while ($row = mysql_fetch_array($res)) {
 			$s.=",".$row['genusids']."";
 		}
 		$s=substr($s,1);
-		
-		// For Multinomials
-		if($getGenusIds){
-			return $s;
-		}
-		
-		$uninomial=strtolower($uninomial);
+
 		// "Fill" Out Genus...
-$query2="
+		$query2="
 SELECT
-distinct
- genus_id,
- genus_name,
- family_name,
- 'genus' as 'rank',
- mdld('{$uninomial}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) AS 'mdld'
+ s.id,
+ s.genus,
+ s.family,
+ tr.rank as 'rank',
+ mdld('{$uninomial}', LOWER(s.genus), {$this->block_limit}, {$this->limit}) AS 'mdld'
 FROM
- _species_details		
+ _search_scientific s
+ LEFT JOIN taxon t on t.id=s.id 
+ LEFT JOIN taxonomic_rank tr on tr.id=t.taxonomic_rank_id
 WHERE
-genus_id in ({$s})
+ s.id in ({$s})
 ";
 //echo "$query2 s";exit;
 		$res = mysql_query($query2);
 	
 		while ($row = mysql_fetch_array($res)) {
 			$sr = array(
-				'genus'	=> $row['genus_name'],
-				'taxon'	=> $row['genus_name'].' ('.$row['family_name'].') ',
+				'genus'	=> $row['genus'],
+				'taxon'	=> $row['genus'].' ('.$row['family'].') ',
 				'distance' => $row['mdld'],
-				'ratio'	=> 1 - $row['mdld'] / max(mb_strlen($row['genus_name'], "UTF-8"), $lenUninomial),
-				'ID'	   => $row['genus_id'],
+				'ratio'	=> 1 - $row['mdld'] / max(mb_strlen($row['genus'], "UTF-8"), $lenUninomial),
+				'ID'	   => $row['id'],
 				'type'	=> $row['rank']
 			);
 			$searchresult[] = $sr;
@@ -336,50 +365,22 @@ genus_id in ({$s})
 			$ctr++;
 		}
 		
-		// Search kingdom-genus from search Cache
-$query2="
-SELECT
- name_element,
- rank,
- mdld('{$uninomial}', name_element, {$this->block_limit}, {$this->limit}) AS 'mdld'
-FROM
- fuzzy_fastsearch_scientific_name_element1		
-WHERE
- mdld('{$uninomial}', LOWER(name_element), {$this->block_limit}, {$this->limit}) < LEAST(CHAR_LENGTH(name_element)/2,{$lenlim})
-
-";
-//echo $query2;exit;
-		$res = mysql_query($query2);
-		while ($row = mysql_fetch_array($res)) {
-			$sr = array(
-				'genus'	=> '',
-				'taxon'	=> $row['name_element'].' ('.$row['rank'].') ',
-				'distance' => $row['mdld'],
-				'ratio'	=> 1 - $row['mdld'] / max(mb_strlen($row['name_element'], "UTF-8"), $lenUninomial),
-				'ID'	   => 0,
-				'type'	=> $row['rank']
-			);
-			$searchresult[] = $sr;
-			
-			$j++;
-			$ctr++;
-		}	
-		$this->_doMultiSort($searchresult);
+		usort($searchresult,'col2011sort_a');
 		return $searchresult;
 	}
 
-	function _doMultiSort(&$searchresult){
-				
-		// if there's more than one hit, sort them (faster here than within the db)
-		if (count($searchresult) > 0) {
-			foreach ($searchresult as $key => $row) {
-				$sort1[$key] = $row['distance'];
-				$sort2[$key] = $row['ratio'];
-				$sort3[$key] = $row['taxon'];
-			}
-			array_multisort($sort1, SORT_NUMERIC, $sort2, SORT_DESC, SORT_NUMERIC, $sort3, $searchresult);
-		}
-	}
 				
 
 }
+
+function col2011sort_a($a,$b){
+    if($a['distance']==$b['distance']) {
+		if($a['ratio']==$b['ratio']){
+			return strcmp($a['taxon'],$b['taxon']);
+		}
+		return($a['ratio']<$b['ratio'])?-1:1;		
+    }
+    return($a['distance']<$b['distance'])?-1:1;
+}
+
+

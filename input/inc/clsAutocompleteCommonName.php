@@ -20,6 +20,11 @@ EOF;
 		exit;
 	}
 }
+
+function langsort($a, $b){
+    return strcmp($a["frucht"], $b["frucht"]);
+}
+
 error_reporting(E_ALL^E_NOTICE);
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
@@ -530,7 +535,8 @@ public function cname_literature ($value)
 public function cname_language ($value){
     global $_CONFIG;
     $this->dbprefix=$_CONFIG['DATABASE']['NAME']['name'].".";
-    
+    $d=$this->dbprefix;
+	
 	$results = array();
 	$fetched=array();
 			
@@ -538,7 +544,7 @@ public function cname_language ($value){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			
+
 			if(!$id=extractID2($value)){
 					
 			
@@ -550,95 +556,78 @@ public function cname_language ($value){
 				$row = $dbst->fetch();
 				
 				// If TypingCache
-				if (isset($row['result']) && $row['result'] !='') {
+				if (false && isset($row['result']) && $row['result'] !='') {
 
 					$results=json_decode($row['result'],1);
 				
 				// Else generate
 				}else{
 
-					$d=$this->dbprefix;
+					
 					
 					// Get Geolang out of database first
 					$pebenen=3;
 					$cebenen=3;
-					/*
-					for($i=$pebenen-1;$i>0;$i--){					
-						$f.="
+				
+					$f1='';$f2='';
+					$j1='';$j2=''; 
+					for($i=$pebenen;$i>0;$i--){					
+						$f1.="
  p{$i}.name as 'pn{$i}',
- p{$i}.`iso639-6` as 'pi{$i}',";
- 
- 						$j.="
-  LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`
+ p{$i}.`iso639-6` as 'pi{$i}',
+ p{$i}.language_id as 'pii{$i}',
  ";
+ 						if($i==1){
+ 							$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
+ 						}else{
+ 							$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
+ 						}
 					}
 					
-					for($i=2;$i<=$cebenen;$i++){					
-						$f.="
+					for($i=1;$i<=$cebenen;$i++){					
+						$f2.="
  s{$i}.name as 'sn{$i}',
- s{$i}.`iso639-6` as 'si{$i}',";
- 
- 						$j.="
- LEFT JOIN {$d}tbl_name_languages s{$i} ON s{$i}.`parent_iso639-6` = s".($i-1).".`iso639-6`
- ";
+ s{$i}.`iso639-6` as 'si{$i}',
+ s{$i}.language_id as 'sii{$i}',
+";
+ 						if($i==1){
+ 							$j2.=" LEFT JOIN {$d}tbl_name_languages s1 ON s1.`parent_iso639-6` = l.`iso639-6`\n";			
+ 						}else{
+ 							$j2.=" LEFT JOIN {$d}tbl_name_languages s{$i} ON s{$i}.`parent_iso639-6` = s".($i-1).".`iso639-6`\n";						
+ 						}
 					}
-					*/
-						
+					
+					
 					$sql = "
 SELECT
- p3.name as 'pn3',
- p3.`iso639-6` as 'pi3',
- p3.language_id as 'pii3',
- 
- p2.name as 'pn2',
- p2.`iso639-6` as 'pi2',
- p2.language_id as 'pii2',
- 
- p1.name as 'pn1',
- p1.`iso639-6` as 'pi1',
- p1.language_id as 'pii1',
+{$f1}
  
  l.name as 'n',
  l.`iso639-6` as 'i',
  l.language_id as 'id',
  
- s1.name as 'sn1',
- s1.`iso639-6` as 'si1',
- s1.language_id as 'sii1',
-
- s2.name as 'sn2',
- s2.`iso639-6` as 'si2',
- s2.language_id as 'sii2',
+{$f2}
  
- s3.name as 'sn3',
- s3.`iso639-6` as 'si3',
- s3.language_id as 'sii3'
-
+ IF(l.`iso639-6`='$value',1,0) as 'sort',
+ LOCATE('{$value}',l.name) as 'sort2'
 FROM
  {$d}tbl_name_languages l
- LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`
- LEFT JOIN {$d}tbl_name_languages p2 ON p2.`iso639-6` = p1.`parent_iso639-6`
- LEFT JOIN {$d}tbl_name_languages p3 ON p3.`iso639-6` = p2.`parent_iso639-6`
- 
- LEFT JOIN {$d}tbl_name_languages s1 ON s1.`parent_iso639-6` = l.`iso639-6`
- LEFT JOIN {$d}tbl_name_languages s2 ON s2.`parent_iso639-6` = s1.`iso639-6`
- LEFT JOIN {$d}tbl_name_languages s3 ON s3.`parent_iso639-6` = s2.`iso639-6`
+{$j1}
+{$j2}
  
 WHERE
 	l.name LIKE ".$db->quote('%'.$value."%")."
  or l.`iso639-6` LIKE ".$db->quote($value."%")."
-
 ORDER BY
- l.`iso639-6`,
- l.name
-
-LIMIT
- 100
- ";
+ sort desc,sort2, l.name
+ ";	
+				
+//p($sql);
 
 					/* @var $dbst PDOStatement */
 					$dbst = $db->query($sql);
 					$rows = $dbst->fetchAll();
+					// Build Tree
 					$namcache=array();
 					$namcache2=array();
 					$r=array();
@@ -650,6 +639,9 @@ LIMIT
 							$namcache[$row['pi'.$i]]=$row['pn'.$i];
 							$namcache2[$row['pi'.$i]]=$row['pii'.$i];
 						}
+						
+						// If no ISO...
+						if($row['i']=='')$row['i']=$row['id'];
 						
 						$rp=&$rp[$row['i']];
 						$namcache[$row['i']]=$row['n'];
@@ -664,60 +656,101 @@ LIMIT
 						}
 						$rp=1;
 					}
-					
-					
+					//p($r);
+					// Traverse Tree
 					$t=$this->buildtree($r,$namcache,$namcache2);
-				//	p($t);
+					
+					//p($t,1);
+					$x=0;
 					if(is_array($t) && count($t)>0){
 						foreach($t as $resiso=>$val){
 							if(count($val)>0){
 								foreach($val as $row){
-									$id=$row[0];
-									$label=$row[1];
+									$ebene=$row[0];
+									$id=$row[1];
+									$label=$row[2];
 									
+									/*if(isset($fetched[$id])){
+										continue;
+									}*/
+									$fetched[$id]=$ebene;
+									$pr='';
+									if($ebene>0){
+										$pr=str_repeat('&nbsp;&nbsp;',$ebene)."&#x21B3;";
+									}
+									$x++;
+									if($x>150)break;
 									$results[] = array(
 										'id'	=> $id,
-										'label' => $label,
+										'label' => $pr."".$label,
 										'value' => $label,
-										'color' => ''
+										'color' => '',
+										'sort'	=>''
 									);
+									
 								}
 							}
 						}
 					}
-		
 					
 					// Insert Geonames Search Cache
 					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
 					$dbst = $db->query($sql);
 				}
 			}else{
+				$pebenen=3;
+				
+				$f1='';$j1='';
+				for($i=$pebenen;$i>0;$i--){					
+					$f1.="
+ p{$i}.name as 'pn{$i}',
+ p{$i}.`iso639-6` as 'pi{$i}',
+ p{$i}.language_id as 'pii{$i}',
+ ";
+ 						if($i==1){
+ 							$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
+ 						}else{
+ 							$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
+ 						}
+					}
+					
 				$sql = "
 SELECT
- `l`.`language_id`,
- `l`.`iso639-6`,
- `l`.`parent_iso639-6`,
- `p`.`name` as 'pname',
- `l`.`name`
+{$f1}
+ l.language_id,
+ l.name,
+ l.`iso639-6`,
+ l.`parent_iso639-6`
+
 FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages l
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages p ON `p`.`iso639-6` = `l`.`parent_iso639-6`
+ {$d}tbl_name_languages l
+{$j1}
 WHERE
-	`l`.`language_id`='$id'
+	l.language_id='$id'
  ";
+// p($sql,1);
 				/* @var $dbst PDOStatement */
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
-				// $r[iso][parent][]=p strings
-				// $r[iso][sub][]=p strings
-				
+					
 				$res=array();
 				if($row){
-					list($did, $label)=$this->getLangLabel('','','',$row);
+					$label="";
+					for($i=1;$i<=$pebenen;$i++){
+						if($row['pn'.$i]=='')continue;
+						if($i==1){
+							$label.="{$row['pn'.$i]} ({$row['pi'.$i]})";
+						}else{
+							$label.=", {$row['pn'.$i]} ({$row['pi'.$i]})";
+						}
+					}
+					$label="{$row['name']} ({$row['iso639-6']}) [".$label."]";
 					
+					$id=$row['language_id'];
+							
 					$results[] = array(
-						'id'	=> $did,
-						'label' => "{$label} &lt;{$row['language_id']}&gt;",
+						'id'	=> $id,
+						'label' => $label,
 						'value' => $label,
 						'color' => ''
 					);
@@ -736,62 +769,63 @@ WHERE
 function buildtree(&$r,$nc=array(),$nc2=array()){
 
 	$this->x=0;
-	/*
-	$res=array();
-	foreach($r as $key=>$tree){
-		$this->buildtree2($tree,1,array($key),$res);
-	}*/
 	$res='';
-	foreach($r as $key=>$tree){
-		$this->buildtree1($tree,1,$key,$res,$nc,0,$nc2);
-	}
+
+	$this->buildtree1($r,0,'',$res,$nc,0,$nc2);
+
 	return $res;
 }
 var $x=0;
+var $usedisos=array();
 
 function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
 
 	$this->x++;
-	if($this->x>300){
-		echo "Error";
+	if($this->x>3000){
+		echo "Errore";
 		exit;
+	}
+	
+	if(!is_array($el) || count($el)==0){
+		return;
 	}
 	
 	if($ebene<3){
 		
-		if($ebene==1){
-			$keys=", ".$nc[$keys]." ({$keys})";
-		}else{
-			$el=current($el);
-		}
-		
 		$key=key($el);
-		$keys.=", ".$nc[$key]." ({$key})";
-
-		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,0,$nc2);
-		
-	}else if($ebene==3){
-	
-		$el=current($el);
-		$key=key($el);
-		
-		$res[$key][]=array($nc2[$key],$nc[$key]." ({$key}) [".$keys."]");
-		
-		$el=current($el);
-		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,$key,$nc2);
-		
-	}else if($ebene<10){
-		$sp=$ebene-3-1;
-
-		if(is_array($el) && count($el)>0){
-
-			foreach($el as $key=>$tree){
+		$ebene=$ebene+1;
+		$keyso=$keys;
+		foreach($el as $key=>$tree){
+			if($key!=''){
+				if(intval($ebene)==1){
+					$keys="".$nc[$key]." ({$key})";
 				
-				$keyn=str_repeat('&nbsp;&nbsp;',$sp)."&#x21B3;"."".$nc[$key]." ({$key})";
-
-				$res[$akey][]=array($nc2[$key],$keyn);
-				$this->buildtree1($tree,$ebene+1,$keys,$res,$nc,$akey,$nc2);
+				}else{
+					$keys="".$nc[$key]." ({$key}), ".$keyso;
+				}
 			}
+			$this->buildtree1($tree,$ebene,$keys,$res,$nc,$key,$nc2);
+		}
+	
+	}else if($ebene==3){
+
+		$ebene=$ebene+1;
+		$x=0;
+		foreach($el as $key=>$tree){
+			if(!isset($this->usedisos[$key])){
+				$res[$key][]=array(0,$nc2[$key],$nc[$key]." ({$key}) [".$keys."]");
+				$this->buildtree1($tree,$ebene,$keys,$res,$nc,$key,$nc2);
+			}
+		}
+
+	}else if($ebene<3+3+1){
+
+		$key=key($el);
+		$ebene=$ebene+1;
+		$this->usedisos[$key]=1;	
+		foreach($el as $key=>$tree){
+			$res[$akey][]=array($ebene-3-1,$nc2[$key],$nc[$key]." ({$key})");
+			$this->buildtree1($tree,$ebene,$keys,$res,$nc,$akey,$nc2);
 		}
 	}
 }
@@ -912,7 +946,7 @@ WHERE
 					
 					$results[] = array(
 						'id'	=> $id,
-						'label' => "{$label}",
+						'label' => $label,
 						'value' => $label,
 						'color' => ''
 					);

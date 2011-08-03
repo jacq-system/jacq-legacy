@@ -26,6 +26,6 @@ if ($errors) {
 if(is_array($data) && count($data)>0){
 	foreach($data as $r){
 		$r['value']=str_replace('|','-',$r['value']);
-		echo "{$r['value']}|{$r['id']}\n";
+		echo "{$r['label']}|{$r['value']}|{$r['id']}\n";
 	}
 }

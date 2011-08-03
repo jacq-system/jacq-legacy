@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 no_magic();
 error_reporting(E_ALL);
+//http://docs.jquery.com/Plugins/Autocomplete/autocomplete#url_or_dataoptions
 $debuger=0;
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -135,6 +136,7 @@ function prepareWithID(nam,startval,mustMatch1){
 			selectFirst: true,
 			delay:100,
 			LoadingAction: function() { $('#'+nam+'Index').val('');  },
+			scroll: true
   		}).change(function() {
 			if($('#'+nam+'Index').val()==''){
 				$('#ajax_'+nam).addClass('wrongItem');
@@ -148,18 +150,20 @@ function prepareWithID(nam,startval,mustMatch1){
   			loadingClass: 'working',
 			selectFirst: true,
 			LoadingAction: function() { $('#'+nam+'Index').val(''); },
-			delay:100
+			delay:100,
+			scroll:true,
+			matchSubset:false,
   		});
 	}
 
 	$('#ajax_'+nam).result(function(event, data, formatted) {
 		if(data){
-			$('#'+nam+'Index').val(data[1]);
-			$('#ajax_'+nam).val(data[0]).removeClass('wrongItem');
+			$('#'+nam+'Index').val(data[2]);
+			$('#ajax_'+nam).val(data[1]).removeClass('wrongItem');
 		}
 	});
 
-	if(startval!=''){
+	if(startval!='' && startval!='0'){
 		$('#ajax_'+nam).searchID(startval);
 	}
 }

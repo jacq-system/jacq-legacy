@@ -230,7 +230,7 @@ $.Autocompleter = function(input, options) {
 			
 			var result;
 			if( data && data.length ) {
-				if( data[0]['data'][1]==q.replace(/<|>|&lt;|&gt/g, "") ){
+				if( data[0]['data'][2]==q.replace(/<|>|&lt;|&gt/g, "") ){
 					result = data[0];
 				}
 			}
