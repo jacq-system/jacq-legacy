@@ -172,9 +172,9 @@ SELECT
 	status as 'status',
 	author as 'author',
 	family_name as 'f_name',
-	mdld('{$genus}', genus_name, {$this->block_limit}, {$this->limit}) as 'mdld_g',
-	mdld('{$species}', species_name, {$this->block_limit}, {$this->limit}) as 'mdld_s',
-	mdld('{$epithet}', infraspecies_name, {$this->block_limit}, {$this->limit})  as 'mdld_i'
+	mdld('{$genus}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) as 'mdld_g',
+	mdld('{$species}', LOWER(species_name), {$this->block_limit}, {$this->limit}) as 'mdld_s',
+	mdld('{$epithet}', LOWER(infraspecies_name), {$this->block_limit}, {$this->limit})  as 'mdld_i'
 FROM
  `_species_details`
 WHERE
@@ -265,11 +265,10 @@ WHERE
 				);
 			}
 			
-			
 			//$ctr++;
 		}
+		$this->_doMultiSort($lev);
 		return $lev;
-		exit;
 	}
 			
 	function getUninomial($uninomial,$getGenusIds=false){
@@ -288,7 +287,7 @@ SELECT
 FROM
  fuzzy_fastsearch_scientific_name_element2
 WHERE
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ mdld('{$uninomial}',LOWER( genus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
 
 		$res = mysql_query($query);
@@ -304,7 +303,7 @@ WHERE
 			return $s;
 		}
 		
-		$uninomial=ucfirst($uninomial);
+		$uninomial=strtolower($uninomial);
 		// "Fill" Out Genus...
 $query2="
 SELECT
@@ -313,7 +312,7 @@ distinct
  genus_name,
  family_name,
  'genus' as 'rank',
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) AS 'mdld'
+ mdld('{$uninomial}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) AS 'mdld'
 FROM
  _species_details		
 WHERE
@@ -346,7 +345,7 @@ SELECT
 FROM
  fuzzy_fastsearch_scientific_name_element1		
 WHERE
- mdld('{$uninomial}', name_element, {$this->block_limit}, {$this->limit}) < LEAST(CHAR_LENGTH(name_element)/2,{$lenlim})
+ mdld('{$uninomial}', LOWER(name_element), {$this->block_limit}, {$this->limit}) < LEAST(CHAR_LENGTH(name_element)/2,{$lenlim})
 
 ";
 //echo $query2;exit;
@@ -365,20 +364,14 @@ WHERE
 			$j++;
 			$ctr++;
 		}	
-		
-		
-		
 		$this->_doMultiSort($searchresult);
-		
-		
 		return $searchresult;
 	}
 
-	
 	function _doMultiSort(&$searchresult){
 				
 		// if there's more than one hit, sort them (faster here than within the db)
-		if (count($searchresult) > 1) {
+		if (count($searchresult) > 0) {
 			foreach ($searchresult as $key => $row) {
 				$sort1[$key] = $row['distance'];
 				$sort2[$key] = $row['ratio'];

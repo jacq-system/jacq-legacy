@@ -58,10 +58,10 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 		
 				if ($withNearMatch) {
 					$searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
-					$uninomial		   = ucfirst(trim($searchItemNearmatch));
+					$uninomial		   = strtolower(trim($searchItemNearmatch));
 				} else {
 					$searchItemNearmatch = '';
-					$uninomial		   = ucfirst(trim($searchItem));
+					$uninomial		   = strtolower(trim($searchItem));
 				}
 				
 				$searchresult=$this->getUninomial($uninomial);
@@ -105,18 +105,19 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 		
 		$lev=array();
 		// distribute the parsed string to different variables and calculate the (real) length
-		$genus[0]	= ucfirst($parts['genus']);
+		$genus[0]	= strtolower(trim($parts['genus']));
 		$lenGenus[0] = mb_strlen($parts['genus'], "UTF-8");
 		$lenGenuslim[0]=min((int)( $lenGenus[0]/2),$this->limit-1);
 		
-		$genus[1]	= ucfirst($parts['subgenus']);			  // subgenus (if any)
+		$genus[1]	= strtolower(trim($parts['subgenus']));			  // subgenus (if any)
 		$lenGenus[1] = mb_strlen($parts['subgenus'], "UTF-8");   // real length of subgenus
 		$lenGenuslim[1]=min((int)( $lenGenus[1]/2),$this->limit-1);
 
-		$epithet	 = $parts['epithet'];
+		$epithet	 = strtolower(trim($parts['epithet']));
 		$lenEpithet  = mb_strlen($parts['epithet'], "UTF-8");
-		$rank		= $parts['rank'];
-		$epithet2	= $parts['subepithet'];
+		
+		$rank		= strtolower(trim($parts['rank']));
+		$epithet2	= strtolower(trim($parts['subepithet']));
 		$lenEpithet2 = mb_strlen($parts['subepithet'], "UTF-8");
 				
 		
@@ -126,7 +127,7 @@ SELECT
 FROM
  fuzzy_fastsearch_name_element1 f
 WHERE
- mdld('{$genus[0]}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenGenuslim[0]})
+ mdld('{$genus[0]}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenGenuslim[0]})
 
 UNION ALL
 
@@ -135,7 +136,7 @@ SELECT
 FROM
  fuzzy_fastsearch_name_element2 f
 WHERE
- mdld('{$genus[1]}', subgenus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenGenuslim[1]})
+ mdld('{$genus[1]}', LOWER(subgenus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenGenuslim[1]})
  ";
 		$res = mysql_query($query);
 		
@@ -159,10 +160,10 @@ SELECT
 	AUTHOR_NAME,
 	YEAR,
 	FULLNAMECACHE,
-	mdld('{$genus[0]}', GENUS_NAME, {$this->block_limit}, {$this->limit}) as 'mdld_g',
-	mdld('{$genus[1]}', INFRAGENUS_NAME, {$this->block_limit}, {$this->limit}) as 'mdld_sg',
-	mdld('{$epithet}', SPECIES_EPITHET, {$this->block_limit}, {$this->limit}) as 'mdld_e',
-	mdld('{$epithet2}', INFRASPECIES_EPITHET, {$this->block_limit}, {$this->limit})  as 'mdld_i'
+	mdld('{$genus[0]}', LOWER(GENUS_NAME), {$this->block_limit}, {$this->limit}) as 'mdld_g',
+	mdld('{$genus[1]}', LOWER(INFRAGENUS_NAME), {$this->block_limit}, {$this->limit}) as 'mdld_sg',
+	mdld('{$epithet}', LOWER(SPECIES_EPITHET), {$this->block_limit}, {$this->limit}) as 'mdld_e',
+	mdld('{$epithet2}', LOWER(INFRASPECIES_EPITHET), {$this->block_limit}, {$this->limit})  as 'mdld_i'
 FROM
  Taxon_FaEu_v2
 WHERE
@@ -240,6 +241,7 @@ WHERE
 
 			//$ctr++;
 		}
+		$this->_doMultiSort($lev);
 		return $lev;
 	}
 
@@ -255,25 +257,25 @@ WHERE
 		$query="
 SELECT
  genus_name,
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) AS 'mdld',
+ mdld('{$uninomial}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) AS 'mdld',
  h.TAXON_NAME as 'family_name'
 FROM
  fuzzy_fastsearch_name_element1 f
  LEFT JOIN Hierarchy_FaEu_v2 h on h.TAXONID=f.familyids
 WHERE
- mdld('{$uninomial}', genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
+ mdld('{$uninomial}', LOWER(genus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
 
 UNION ALL
 
 SELECT
  subgenus_name as 'genus_name',
- mdld('{$uninomial}', subgenus_name, {$this->block_limit}, {$this->limit}) AS 'mdld',
+ mdld('{$uninomial}', LOWER(subgenus_name), {$this->block_limit}, {$this->limit}) AS 'mdld',
  h.TAXON_NAME as 'family_name'
 FROM
  fuzzy_fastsearch_name_element2 f
  LEFT JOIN Hierarchy_FaEu_v2 h on h.TAXONID=f.familyids
 WHERE
- mdld('{$uninomial}', subgenus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
+ mdld('{$uninomial}', LOWER(subgenus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
  ";
  //echo $query;exit;
 		$res = mysql_query($query);
