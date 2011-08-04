@@ -870,14 +870,10 @@ if ($result && mysql_num_rows($result) > 0) {
     }
 }
 
-unset($series);
-$series[0][] = 0; $series[1][] = "";
-$result = db_query("SELECT seriesID, series FROM tbl_specimens_series ORDER BY series");
+$result = db_query("SELECT series FROM tbl_specimens_series WHERE seriesID = '$p_series'");
 if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
-        $series[0][] = $row['seriesID'];
-        $series[1][] = (strlen($row['series']) > 50) ? substr($row['series'], 0, 50) . "..." : $row['series'];
-    }
+    $row = mysql_fetch_array($result);
+    $p_seriesName = $row['series'];
 }
 
 unset($nation);
@@ -1034,8 +1030,12 @@ $cf->label(9, $y, "typified by");
 $cf->inputText(9, $y, 46, "typified", $p_typified, 255);
 
 $y += 2;
+//$cf->label(9, $y, "Series", "javascript:editSeries()");
+//$cf->dropdown(9, $y, "series", $p_series, $series[0], $series[1]);
+//$cf->label(49.5, $y, "ser.Nr.");
+//$cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 $cf->label(9, $y, "Series", "javascript:editSeries()");
-$cf->dropdown(9, $y, "series", $p_series, $series[0], $series[1]);
+$cf->inputJqAutocomplete(9, $y, 30, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2);
 $cf->label(49.5, $y, "ser.Nr.");
 $cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 

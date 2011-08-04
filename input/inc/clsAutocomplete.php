@@ -697,6 +697,45 @@ public function taxonWithHybridsNoExternals ($value)
 	return $this->taxonWithHybrids($value, true);
 }
 
+/**
+ * autocomplete a series entry field
+ *
+ * @param string $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function series ($value)
+{
+	$results = array();
+	if ($value && strlen($value) > 1) {
+		$pieces = explode(" <", $value);
+		try {
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			$sql = "SELECT series, seriesID
+					FROM tbl_specimens_series
+					WHERE series LIKE " . $db->quote ( '%' . $pieces[0] . '%') . "
+					ORDER BY series";
+			/* @var $dbst PDOStatement */
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$results[] = array(
+                                            'id' => $row['seriesID'],
+                                            'label' => $row['series'] . " <" . $row['seriesID'] . ">",
+                                            'value' => $row['series'] . " <" . $row['seriesID'] . ">",
+                                            'color' => '');
+				}
+			}
+		}
+		catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	}
+
+	return $results;
+}
+
 
 /***********************\
 |					   |
