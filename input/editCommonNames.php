@@ -627,7 +627,7 @@ EOF;
 </body>
 </html>
 
-<?
+<?PHP
 /*
   FUNCTION SECTION
 

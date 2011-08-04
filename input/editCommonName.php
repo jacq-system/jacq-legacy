@@ -171,7 +171,7 @@ EOF;
 </body>
 </html>
 
-<?
+<?php
 
 function UpdateCommonName(&$_dvar, $update=false){
 	global $dbprefix;
