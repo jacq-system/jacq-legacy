@@ -324,7 +324,7 @@ if (isset($_GET['sel'])) {
     $p_batch             = $_POST['batch'];
     $p_checked           = $_POST['checked'];
     $p_accessible        = $_POST['accessible'];
-    $p_series            = $_POST['series'];
+    $p_series            = $_POST['seriesIndex'];
     $p_series_number     = $_POST['series_number'];
     $p_Nummer            = $_POST['Nummer'];
     $p_alt_number        = $_POST['alt_number'];
@@ -873,7 +873,7 @@ if ($result && mysql_num_rows($result) > 0) {
 $result = db_query("SELECT series FROM tbl_specimens_series WHERE seriesID = '$p_series'");
 if ($result && mysql_num_rows($result) > 0) {
     $row = mysql_fetch_array($result);
-    $p_seriesName = $row['series'];
+    $p_seriesName = $row['series'] . " <" . $p_series . ">";
 }
 
 unset($nation);
