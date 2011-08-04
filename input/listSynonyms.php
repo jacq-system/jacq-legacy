@@ -332,12 +332,12 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                         echo $tableStart;
                         echo item(20, $row2, $short, "&equiv;");
                         typusList($row2['taxonID'], true);
-                        echo "</table>ttu\n";
+                        echo "</table>\n";
                         $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
                         while ($row3 = mysql_fetch_array($result3)) {
                             echo $tableStart;
                             echo item(40, $row3, $short, "&equiv;");
-                            echo "<table>tt\n";
+                            echo "</table>\n";
                         }
                     }
                     if (empty($row['basID'])) {
@@ -350,19 +350,18 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                         echo $tableStart;
                         echo item(20, $row2, $short);
                         typusList($row2['taxonID'], true);
-                        echo "</table>ssd\n";
+                        echo "</table>\n";
                         $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'". $order);
                         while ($row3 = mysql_fetch_array($result3)) {
                             echo $tableStart;
                             echo item(40, $row3, $short, "&equiv;");
-                            echo "{$id} {$row2['taxonID']} {$row2['genus']}</table>dd\n";
+                            echo "</table>\n";
                         }
                     }
                     
                     // repeat the loop if the synID is set to anything
                     if (!empty($row['synID'])) {
                         $id = $row['synID'];
-						echo "zz44 {$row['taxonID']} {$row['synID']}";
                         echo "\n";
                     } else {
                         $id = 0;
