@@ -1136,13 +1136,13 @@ $cf->textarea(9, $y, 46, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
 if (($_SESSION['editControl'] & 0x2000) != 0) {
-    $cf->buttonSubmit(16, $y, "reload", " Reload \" onclick=\"reloadButtonPressed()");
+    //$cf->buttonSubmit(16, $y, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {
-            $cf->buttonJavaScript(22, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
+            $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
             $cf->buttonSubmit(31, $y, "submitUpdate", " Update ");
         } else {
-            $cf->buttonJavaScript(22, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
+            $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
         $cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
