@@ -1067,7 +1067,7 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 54.5em;\">
 $y += 1.25;
 $cf->labelMandatory(9, $y, 8, "Country");
 if (($_SESSION['editControl'] & 0x2000) != 0) {
-    $cf->dropdown(9, $y, "nation\" onchange=\"reload=true; self.document.f.reload.click()", $p_nation, $nation[0], $nation[1]);
+    $cf->dropdown(9, $y, "nation\" onchange=\"reload=true; self.document.f.submit();", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(9, $y, "nation", $p_nation, $nation[0], $nation[1]);
 }
