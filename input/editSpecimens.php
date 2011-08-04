@@ -764,7 +764,7 @@ if (isset($_GET['sel'])) {
         }
       }
       reload=true;
-      self.document.f.reload.click()
+      self.document.f.submit();
     }
 
     function editNCBI(sel) {
