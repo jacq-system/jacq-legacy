@@ -1,5 +1,6 @@
 <?php
 require_once( 'variables.php' );
+require_once( 'class.natID.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     header("Location: login.php");

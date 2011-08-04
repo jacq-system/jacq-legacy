@@ -556,7 +556,7 @@ public function cname_language ($value){
 				$row = $dbst->fetch();
 				
 				// If TypingCache
-				if (false && isset($row['result']) && $row['result'] !='') {
+				if(isset($row['result']) && $row['result'] !='') {
 
 					$results=json_decode($row['result'],1);
 				
@@ -669,17 +669,13 @@ ORDER BY
 									$ebene=$row[0];
 									$id=$row[1];
 									$label=$row[2];
-									
-									/*if(isset($fetched[$id])){
-										continue;
-									}*/
-									$fetched[$id]=$ebene;
+
 									$pr='';
 									if($ebene>0){
 										$pr=str_repeat('&nbsp;&nbsp;',$ebene)."&#x21B3;";
 									}
 									$x++;
-									if($x>150)break;
+									if($x>100)break;
 									$results[] = array(
 										'id'	=> $id,
 										'label' => $pr."".$label,
@@ -707,12 +703,12 @@ ORDER BY
  p{$i}.`iso639-6` as 'pi{$i}',
  p{$i}.language_id as 'pii{$i}',
  ";
- 						if($i==1){
- 							$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
- 						}else{
- 							$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
- 						}
-					}
+ 					if($i==1){
+ 						$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
+ 					}else{
+ 						$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
+ 					}
+				}
 					
 				$sql = "
 SELECT
@@ -772,7 +768,10 @@ function buildtree(&$r,$nc=array(),$nc2=array()){
 	$res='';
 
 	$this->buildtree1($r,0,'',$res,$nc,0,$nc2);
-
+	if($this->x>3000){
+		echo "Too Many Suggestions";
+	}
+		
 	return $res;
 }
 var $x=0;
@@ -782,8 +781,7 @@ function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
 
 	$this->x++;
 	if($this->x>3000){
-		echo "Errore";
-		exit;
+		return;
 	}
 	
 	if(!is_array($el) || count($el)==0){
@@ -830,78 +828,6 @@ function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
 	}
 }
 
-/*
-function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
-
-	$this->x++;
-	if($this->x>300){
-		echo "Error";
-		exit;
-	}
-	
-	if($ebene<3){
-		
-		if($ebene==1){
-			$keys=", ".$nc[$keys]." ({$keys})";
-		}else{
-			$el=current($el);
-		}
-		
-		$key=key($el);
-		$keys.=", ".$nc[$key]." ({$key})";
-
-		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,0,$nc2);
-		
-	}else if($ebene==3){
-	
-		$el=current($el);
-		$key=key($el);
-		
-		$res[$key]['c'][]=array($nc2[$key],"".$nc[$key]."({$key}) [".$keys."]");
-		
-		$el=current($el);
-		$this->buildtree1($el,$ebene+1,$keys,$res,$nc,$key,$nc2);
-		
-	}else if($ebene<2+3+3){
-		$sp=$ebene-3;
-
-		if(is_array($el) && count($el)>0){
-
-			foreach($el as $key=>$tree){
-				
-				$keyn=str_repeat('.',$sp)."".$nc[$key]." ({$key})";
-
-				$res[$akey]['c'][]=array($nc2[$key],$keyn);
-				$this->buildtree1($tree,$ebene+1,$keys,$res,$nc,$akey,$nc2);
-			}
-		}
-	}
-}*/
-/*
-function buildtree2(&$el,$ebene,$keys,&$res,$nc){
-
-	$this->x++;
-	if($this->x>300){
-		echo "Error";
-		exit;
-	}
-	
-	if($ebene<3){
-		if($ebene>1){
-			$el=current($el);
-		}
-
-		$keys[]=key($el);
-		$this->buildtree2($el,$ebene+1,$keys,$res);
-	}else{
-	
-		$el=current($el);
-		$key=key($el);
-	
-		$res[$key]['p']=$keys;
-		$res[$key]['c']=current($el);
-	}
-}*/
 
 /**
  * Common Names: Period

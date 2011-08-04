@@ -7,14 +7,56 @@ ALTER TABLE `tbl_herbardb_groups`
  ADD `commonnameUpdate` INT( 4 ) NOT NULL ,
  ADD `commonnameInsert` INT( 4 ) NOT NULL
 
--- 2.8.2011
+-- 4.8.2011
 
-ALTER TABLE `log_commonnames_tbl_name_applies_to`
-ADD `oldid` VARCHAR( 100 ) NOT NULL AFTER `name_id` ,
-ADD `annotation` TEXT NULL AFTER `oldid` ,
-ADD `locked` TINYINT NULL AFTER `annotation`
-ADD `geospecification` TEXT NOT NULL AFTER `oldid`
+CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_applies_to` (
+  `logID` int(11) NOT NULL auto_increment,
+  `geonameId` int(11) NOT NULL,
+  `language_id` int(11) NOT NULL,
+  `period_id` int(11) NOT NULL,
+  `entity_id` int(11) NOT NULL,
+  `reference_id` int(11) NOT NULL,
+  `name_id` int(11) NOT NULL,
+  `oldid` varchar(100) NOT NULL,
+  `geospecification` text NOT NULL,
+  `annotation` text,
+  `locked` tinyint(4) default NULL,
+  `userID` int(11) NOT NULL,
+  `updated` int(4) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`logID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=178 ;
 
--- 2.8.2011
-ALTER TABLE `tbl_name_commons` ADD `locked` TINYINT NOT NULL
-ALTER TABLE `log_commonnames_tbl_name_commons` ADD `locked` TINYINT NOT NULL AFTER `common_name`
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `log_commonnames_tbl_name_commons`
+--
+
+CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_commons` (
+  `log_common_id` int(11) NOT NULL auto_increment,
+  `common_id` int(11) NOT NULL,
+  `common_name` varchar(255) NOT NULL,
+  `locked` tinyint(4) NOT NULL,
+  `userID` int(11) NOT NULL,
+  `updated` int(4) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`log_common_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=33 ;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `log_commonnames_tbl_name_languages`
+--
+
+CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_languages` (
+  `language_id` int(11) NOT NULL,
+  `iso639-6` varchar(4) NOT NULL,
+  `parent_iso639-6` varchar(4) default NULL,
+  `name` varchar(50) default NULL,
+  `userID` int(11) NOT NULL,
+  `updated` int(4) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
