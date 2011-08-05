@@ -1154,12 +1154,14 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
     if ($p_specimen_ID) {
         if ($edit) {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
-            $cf->buttonSubmit(31, $y, "submitUpdate", " Update ", "", "doSubmit();");
+            //$cf->buttonSubmit(31, $y, "submitUpdate", " Update ", "");
+            $cf->buttonJavaScript(31, $y, " Update ", "doSubmit();", "", "submitUpdate");
         } else {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
-        $cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
+        //$cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
+        $cf->buttonJavaScript(47, $y, " New &amp; Copy", "doSubmit();", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
         $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
