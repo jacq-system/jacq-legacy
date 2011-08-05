@@ -320,7 +320,6 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
       . "      delay: 500, \n";
 
   if ($autoFocus) print " autoFocus: true,\n";  
-  if( $zeroOnEmpty ) print "change: function(event, ui) { if( $('#ajax_{$name}').val() == '' ) $('#{$name}Index').val(''); }";
   print "      select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
       . "    })\n"
       . "    .data('autocomplete')._renderItem = function( ul, item ) {\n"
@@ -329,8 +328,9 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
       . "        .append('<a' + ((item.color) ? ' style=\"background-color:' + item.color + ';\">' : '>') + item.label + '</a>')\n"
       . "        .appendTo(ul);\n"
       . "    };\n"
-	  . "  });\n"
-      . "</script>\n";
+	  . "  });\n";
+  if( $zeroOnEmpty ) print "$('#ajax_{$name}').change( function() { if( $('#ajax_{$name}').val() == '' ) $('#{$name}Index').val(''); } );\n";
+  print "</script>\n";
 }
 
 
