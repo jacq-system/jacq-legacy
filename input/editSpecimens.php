@@ -152,6 +152,13 @@ function makeSammler2($search, $nr)
 }
 
 // main program
+// As we have changed the buttons to JavaScript only, we cannot check automatically which button was pressed
+// Therefor we use a hidden field and mirror it to the buttons name for now
+if( isset($_POST['submit_type']) ) {
+    if( !isset($_POST[$_POST['submit_type']]) ) {
+        $_POST[$_POST['submit_type']] = true;
+    }
+}
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
@@ -684,10 +691,11 @@ if (isset($_GET['sel'])) {
         return true;
     }
     
-    function doSubmit() {
+    function doSubmit( p_type ) {
         // If all fields are set, trigger a submit
         if( checkMandatory(1) ) {
-            document.f.submit();
+            $( '#submit_type' ).val( p_type );
+            $( '#f' ).submit();
         }
     }
 
@@ -833,6 +841,7 @@ if (isset($_GET['sel'])) {
 <div id="iBox_content" style="display:none;"></div>
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
+<input type="hidden" name="submit_type" id="submit_type" value="">
 
 <?php
 unset($institution);
@@ -1155,13 +1164,13 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
         if ($edit) {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
             //$cf->buttonSubmit(31, $y, "submitUpdate", " Update ", "");
-            $cf->buttonJavaScript(31, $y, " Update ", "doSubmit();", "", "submitUpdate");
+            $cf->buttonJavaScript(31, $y, " Update ", "doSubmit( 'submitUpdate' );", "", "submitUpdate");
         } else {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
         //$cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
-        $cf->buttonJavaScript(47, $y, " New &amp; Copy", "doSubmit();", "", "submitNewCopy" );
+        $cf->buttonJavaScript(47, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
         $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
