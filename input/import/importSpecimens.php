@@ -435,7 +435,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $taxonParts = $parser->tokenize($import[$i][3]);
 
             $taxamatch[$i] = array();
-            $service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
+            $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
                 $matches = $service->getMatches($taxonParts['genus'] . ' ' . $taxonParts['epithet'] . $ranks[$taxonParts['rank']] . $taxonParts['subepithet']);
                 if (isset($matches['result'][0]['searchresult'])) {

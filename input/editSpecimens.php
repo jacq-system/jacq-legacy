@@ -519,7 +519,7 @@ if (isset($_GET['sel'])) {
         $p_specimen_ID = "";
         $edit = false;
     } else {
-        $edit = (!empty($_POST['reload']) && !empty($_POST['edit'])) ? true : false;
+        $edit = (!empty($_POST['edit'])) ? true : false;
         $p_specimen_ID = $_POST['specimen_ID'];
     }
 }
@@ -683,6 +683,13 @@ if (isset($_GET['sel'])) {
       else
         return true;
     }
+    
+    function doSubmit() {
+        // If all fields are set, trigger a submit
+        if( checkMandatory(1) ) {
+            document.f.submit();
+        }
+    }
 
     function quadrant2LatLon(quadrant,quadrant_sub) {
       var xx = quadrant.substr(quadrant.length-2,2);
@@ -818,7 +825,7 @@ if (isset($_GET['sel'])) {
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <div id="iBox_content" style="display:none;"></div>
 
-<form onSubmit="return checkMandatory(1)" Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
+<form onSubmit="return false;" Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
 <?php
 unset($institution);
@@ -1140,7 +1147,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
     if ($p_specimen_ID) {
         if ($edit) {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
-            $cf->buttonSubmit(31, $y, "submitUpdate", " Update ");
+            $cf->buttonSubmit(31, $y, "submitUpdate", " Update ", "", "doSubmit();");
         } else {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
@@ -1148,9 +1155,9 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
         $cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
     } else {
         $cf->buttonReset(22, $y, " Reset ");
-        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ");
-        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy");
-        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New");
+        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
+        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
+        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
     }
 }
 $cf->buttonJavaScript(2, $y, " < Specimens ", "goBack($nr," . intval($p_specimen_ID) . "," . intval($edit) . "," . $_SESSION['sPTID'] . ")");

@@ -152,13 +152,14 @@ function buttonJavaScript($x,$y,$text,$js,$bgcol="",$name="") {
   $this->tabindex++;
 }
 
-function buttonSubmit($x,$y,$name,$text,$bgcol="") {
+function buttonSubmit($x,$y,$name,$text,$bgcol="",$onclick="") {
 
   $this->_divclass($x,$y,"cssfinput");
   print "<input tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
   if ($bgcol) print " style=\"background-color: $bgcol;\"";
   print " type=\"submit\" name=\"$name\"";
   if ($this->nameIsID) print " id=\"$name\"";
+  if( !empty($onclick) ) print "onclick=\"$onclick\"";
   print " value=\"$text\">";
   print "</div>\n";
   $this->tabindex++;

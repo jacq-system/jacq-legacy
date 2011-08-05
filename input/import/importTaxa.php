@@ -386,7 +386,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                         .      $import[$i][1] . ' '
                         .      (trim($import[$i][3]) == 'f.' ? 'forma' : $import[$i][3])
                         .      $import[$i][4]);
-            $service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
+            $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
                 $matches = $service->getMatches($searchtext);
                 foreach ($matches['result'][0]['searchresult'] as $key => $val) {
