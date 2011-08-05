@@ -817,6 +817,13 @@ if (isset($_GET['sel'])) {
           height: 600
         } );
     } );
+
+    $(document).ready(function() {
+        $( '#f' ).submit( function( evt ) {
+            evt.preventDefault();
+            return false;
+        } );
+    });
   </script>
 </head>
 
@@ -825,7 +832,7 @@ if (isset($_GET['sel'])) {
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
 <div id="iBox_content" style="display:none;"></div>
 
-<form onSubmit="return false;" Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
+<form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
 <?php
 unset($institution);
