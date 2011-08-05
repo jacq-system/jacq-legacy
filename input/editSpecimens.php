@@ -825,13 +825,6 @@ if (isset($_GET['sel'])) {
           height: 600
         } );
     } );
-
-    $(document).ready(function() {
-        $( '#f' ).submit( function( evt ) {
-            evt.preventDefault();
-            return false;
-        } );
-    });
   </script>
 </head>
 
@@ -1173,9 +1166,12 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
         $cf->buttonJavaScript(47, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
-        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
-        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
-        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
+//        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
+        $cf->buttonJavaScript( 31, $y, " Insert ", "doSubmit( 'submitUpdate' );", "", "submitUpdate" );
+//        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
+        $cf->buttonJavaScript(37, $y, " Insert &amp; Copy", "doSubmit( 'submitUpdateCopy' );", "", "submitUpdateCopy" );
+//        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
+        $cf->buttonJavaScript(47, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
     }
 }
 $cf->buttonJavaScript(2, $y, " < Specimens ", "goBack($nr," . intval($p_specimen_ID) . "," . intval($edit) . "," . $_SESSION['sPTID'] . ")");
