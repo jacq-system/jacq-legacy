@@ -1035,7 +1035,7 @@ $y += 2;
 //$cf->label(49.5, $y, "ser.Nr.");
 //$cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 $cf->label(9, $y, "Series", "javascript:editSeries()");
-$cf->inputJqAutocomplete(9, $y, 30, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2, true);
+$cf->inputJqAutocomplete(9, $y, 30, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2, "", "", false, true );
 $cf->label(49.5, $y, "ser.Nr.");
 $cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 
