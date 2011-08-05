@@ -276,7 +276,7 @@ function insertTaxon($taxon, $externalID, $contentID)
   <script type="text/javascript" language="JavaScript">
       $(document).ready(function() {
           $( 'input[name^="similarTaxa_"]' ).change( function() {
-              if( !$(this).prop( 'checked' ) ) return;
+              if( !$(this).attr( 'checked' ) ) return;
               
               // Find compare string
               var origString = $( 'input[name="' + $(this).attr( 'name' ) + '_orig"]' ).val();
@@ -287,7 +287,7 @@ function insertTaxon($taxon, $externalID, $contentID)
                   var currName = $(this).attr( 'name' );
                   currName = currName.replace( '_orig', '' );
                   
-                  $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).prop( 'checked', true );
+                  $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).attr( 'checked', true );
               } );
           } );
       });
