@@ -273,6 +273,23 @@ function insertTaxon($taxon, $externalID, $contentID)
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="../css/screen.css">
   <script src="../inc/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript" language="JavaScript">
+      $( 'input[name^="similarTaxa_"]' ).change( function() {
+          if( !$(this).prop( 'checked' ) ) return;
+          
+          // Find compare string
+          var origString = $( 'input[name="' + $(this).attr( 'name' ) + '_orig"]' ).val();
+          var selectVal = $(this).val();
+          
+          // Now find all other entries with the same value
+          $( 'input[value="' + origString + '"]' ).each( function() {
+              var currName = $(this).attr( 'name' );
+              currName = currName.replace( '_orig', '' );
+              
+              $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).prop( 'checked', true );
+          } );
+      } );
+  </script>
 </head>
 
 <body>
@@ -849,6 +866,7 @@ if ($type == 1) {  // file uploaded
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:yellow\">";
                     if ($block == 1) {
+                        echo "<input type='hidden' name='similarTaxa_${ctr}_orig' value='" . htmlspecialchars($import[$i][3]) . "' />";
                         echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"0\" checked>no import<br>";
                         foreach ($taxamatch[$i] as $val) {
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"" . htmlspecialchars($val['taxonID']) . "\">"
