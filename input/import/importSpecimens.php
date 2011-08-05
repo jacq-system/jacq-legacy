@@ -274,21 +274,23 @@ function insertTaxon($taxon, $externalID, $contentID)
   <link rel="stylesheet" type="text/css" href="../css/screen.css">
   <script src="../inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
-      $( 'input[name^="similarTaxa_"]' ).change( function() {
-          if( !$(this).prop( 'checked' ) ) return;
-          
-          // Find compare string
-          var origString = $( 'input[name="' + $(this).attr( 'name' ) + '_orig"]' ).val();
-          var selectVal = $(this).val();
-          
-          // Now find all other entries with the same value
-          $( 'input[value="' + origString + '"]' ).each( function() {
-              var currName = $(this).attr( 'name' );
-              currName = currName.replace( '_orig', '' );
+      $(document).ready(function() {
+          $( 'input[name^="similarTaxa_"]' ).change( function() {
+              if( !$(this).prop( 'checked' ) ) return;
               
-              $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).prop( 'checked', true );
+              // Find compare string
+              var origString = $( 'input[name="' + $(this).attr( 'name' ) + '_orig"]' ).val();
+              var selectVal = $(this).val();
+              
+              // Now find all other entries with the same value
+              $( 'input[value="' + origString + '"]' ).each( function() {
+                  var currName = $(this).attr( 'name' );
+                  currName = currName.replace( '_orig', '' );
+                  
+                  $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).prop( 'checked', true );
+              } );
           } );
-      } );
+      });
   </script>
 </head>
 
