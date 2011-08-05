@@ -978,7 +978,7 @@ $y += 2;
 //$institution = mysql_fetch_array(mysql_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
 $cf->label(9, $y, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
-$cf->dropdown(9, $y, "institution", $p_institution, $institution[0], $institution[1]);
+$cf->dropdown(9, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
 $cf->label(19, $y, "HerbarNr.");
 $cf->inputText(19, $y, 7, "HerbNummer", $p_HerbNummer, 25);
 $cf->labelMandatory(32.5, $y, 5.5, "Collection");

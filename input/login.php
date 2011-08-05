@@ -139,6 +139,6 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
         show_page("");
     }
 } else {
-    Header("Location: https://herbarium.botanik.univie.ac.at/herbarium-wu/login.php");
+    Header("Location: https://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
 }
 ?>
