@@ -1,8 +1,20 @@
+CREATE TABLE IF NOT EXISTS `tbl_person_alternative` (
+  `person_alternative_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `person_ID` int(11) NOT NULL,
+  `p_alternative` varchar(255) NOT NULL,
+  PRIMARY KEY (`person_alternative_ID`),
+  UNIQUE KEY `person_ID` (`person_ID`,`p_alternative`),
+  KEY `p_alternative` (`p_alternative`),
+  KEY `person_ID_2` (`person_ID`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ;
+
+-- 12.8.2011
+
 ALTER TABLE `tbl_tax_synonymy`
  ADD `ref_date` DATE NULL DEFAULT NULL AFTER `acc_taxon_ID`,
  ADD `source_specimenID` INT( 11 ) NULL DEFAULT NULL AFTER `source_serviceID`
- 
- 
+
+
 ALTER TABLE `tbl_herbardb_groups`
  ADD `commonnameUpdate` INT( 4 ) NOT NULL ,
  ADD `commonnameInsert` INT( 4 ) NOT NULL
