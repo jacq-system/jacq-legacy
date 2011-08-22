@@ -1,7 +1,21 @@
 <?php
 session_start();
-require("../inc/connect.php");
-no_magic();
+require_once('../inc/tools.php');
+require_once('../inc/variables.php');
+
+$settings = clsSettings::Load();
+// connect to the database or stop on any connect error
+try {
+    $db = new PDO('mysql:host=' . $settings->getSettings('DB', 'INPUT', 'HOST') . ';dbname=' . $settings->getSettings('DB', 'INPUT', 'NAME'),
+                  $_SESSION['username'],
+                  $_SESSION['password'],
+                  array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET character set utf8"));
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+}
+catch (PDOException $e) {
+    echo 'Connection failed: ' . $e->getMessage();
+    exit();
+}
 
 function parseAuthors ($text)
 {
@@ -52,6 +66,16 @@ function parseAuthors ($text)
       MeinFenster = window.open(target,"editAuthor","width=500,height=200,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
+    function editGenera(sel) {
+      target = "../editGenera.php?sel=" + encodeURIComponent(sel);
+      MeinFenster = window.open(target,"editGenera","width=600,height=500,top=50,left=50,scrollbars=yes,resizable=yes");
+      MeinFenster.focus();
+    }
+    function editSpecies(sel) {
+      target = "../editSpecies.php?sel=<" + encodeURIComponent(sel) + ">";
+      MeinFenster = window.open(target,"editSpecies","width=990,height=710,top=50,left=50,scrollbars=yes,resizable=yes");
+      MeinFenster.focus();
+    }
   </script>
 </head>
 
@@ -66,20 +90,59 @@ $authorsKnown = array();
 $authorsUnknown = array();
 $authorsUnknownID = array();
 $ctrUnknown = 0;
-$result = db_query("SELECT authorID, author FROM tbl_tax_authors");
-while ($row = mysql_fetch_array($result)) {
-    $authors = parseAuthors($row['author']);
-    foreach ($authors as $author) {
-        $author = trim($author);
-        if (strlen($author) > 0) {
-            $result2 = db_query("SELECT person_ID FROM tbl_person WHERE p_abbrev = '" . mysql_real_escape_string($author) . "'");
-            if (mysql_num_rows($result2)) {
-                $row2 = mysql_fetch_array($result2);
-                $authorsKnown[$row2['person_ID']] = $author;
-            } else {
-                $authorsUnknown[$ctrUnknown] = $author;
-                $authorsUnknownID[$ctrUnknown++] = $row['authorID'];
+try {
+    $dbst = $db->query("SELECT authorID, author FROM tbl_tax_authors");
+    foreach ($dbst as $row) {
+        $authors = parseAuthors($row['author']);
+        foreach ($authors as $author) {
+            $author = trim($author);
+            if (strlen($author) > 0) {
+                $dbst2 = $db->prepare("SELECT person_ID FROM tbl_person WHERE p_abbrev = :p_abbrev");
+                $dbst2->execute(array(':p_abbrev' => $author));
+                $row2 = $dbst2->fetch();
+                if ($row2) {
+                    $authorsKnown[$row2['person_ID']] = $author;
+                } else {
+                    $authorsUnknown[$ctrUnknown] = $author;
+                    $authorsUnknownID[$ctrUnknown++] = $row['authorID'];
+                }
             }
+        }
+    }
+}
+catch (Exception $e) {
+    echo $e->getMessage();
+    exit();
+}
+
+$authorsUnknownUnused = array();
+if (count($authorsUnknown)) {
+    array_multisort($authorsUnknown, $authorsUnknownID);
+    for ($i = 0; $i < count($authorsUnknown); $i++) {
+        $used = array();
+        $dbst = $db->prepare("SELECT taxonID
+                              FROM tbl_tax_species
+                              WHERE authorID = :aid
+                               OR subspecies_authorID = :aid
+                               OR variety_authorID = :aid
+                               OR subvariety_authorID = :aid
+                               OR forma_authorID = :aid
+                               OR subforma_authorID = :aid");
+        $dbst->execute(array(':aid' => $authorsUnknownID[$i]));
+        foreach ($dbst as $row) {
+            $used[] = array('type' => 'species', 'ID' => $row['taxonID']);
+        }
+
+        $dbst = $db->prepare("SELECT genID FROM tbl_tax_genera WHERE authorID = :aid");
+        $dbst->execute(array(':aid' => $authorsUnknownID[$i]));
+        foreach ($dbst as $row) {
+            $used[] = array('type' => 'genera', 'ID' => $row['genID']);
+        }
+
+        if ($used) {
+            $authorsUnknownUnused['unknown'][] = array('ID' => $authorsUnknownID[$i], 'name' => $authorsUnknown[$i], 'used' => $used);
+        } else {
+            $authorsUnknownUnused['unused'][]  = array('ID' => $authorsUnknownID[$i], 'name' => $authorsUnknown[$i]);
         }
     }
 }
@@ -88,7 +151,9 @@ while ($row = mysql_fetch_array($result)) {
   <tr>
     <th><?php echo count($authorsKnown); ?> known Tax. Authors</th>
     <th width="20"></th>
-    <th><?php echo count($authorsUnknown); ?> unknown Tax. Authors</th>
+    <th><?php echo count($authorsUnknownUnused['unknown']); ?> unknown Tax. Authors</th>
+    <th width="20"></th>
+    <th><?php echo count($authorsUnknownUnused['unused']); ?> unknown and unused Tax. Authors</th>
   </tr><tr>
     <td>
       <?php
@@ -103,10 +168,30 @@ while ($row = mysql_fetch_array($result)) {
     </td><td>
     </td><td>
       <?php
-      if (count($authorsUnknown)) {
-          array_multisort($authorsUnknown, $authorsUnknownID);
-          for ($i = 0; $i < count($authorsUnknown); $i++) {
-              echo "<a href=\"javascript:editAuthor('" . $authorsUnknownID[$i] . "')\">" . htmlspecialchars($authorsUnknown[$i]) . "</a><br>\n      ";
+      if (count($authorsUnknownUnused['unknown'])) {
+          foreach ($authorsUnknownUnused['unknown'] as $author) {
+              echo "<a href=\"javascript:editAuthor('" . $author['ID'] . "')\">" . htmlspecialchars($author['name']) . "</a> (";
+              $parts = array();
+              foreach ($author['used'] as $used) {
+                  switch ($used['type']) {
+                      case 'species':
+                          $parts[] = "<a href=\"javascript:editSpecies('" . $used['ID'] . "')\">s" . htmlspecialchars($used['ID']) . "</a>";
+                          break;
+                      case 'genera':
+                          $parts[] = "<a href=\"javascript:editGenera('" . $used['ID'] . "')\">g" . htmlspecialchars($used['ID']) . "</a>";
+                          break;
+                  }
+              }
+              echo implode(', ', $parts) . ")<br>\n      ";
+          }
+      }
+      ?>
+    </td><td>
+    </td><td>
+      <?php
+      if (count($authorsUnknownUnused['unused'])) {
+          foreach ($authorsUnknownUnused['unused'] as $author) {
+              echo "<a href=\"javascript:editAuthor('" . $author['ID'] . "')\">" . htmlspecialchars($author['name']) . "</a> (unused)<br>\n      ";
           }
       }
       ?>
