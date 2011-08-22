@@ -123,7 +123,10 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                                            $row['collUpd']   * 0x1000 +
                                            $row['specim']    * 0x2000 +
                                            $row['dt']        * 0x4000 +
-                                           $row['specimensTypes'] * 0x8000;
+                                           $row['specimensTypes'] * 0x8000+
+										   $row['commonnameUpdate'] * 0x10000+
+                                           $row['commonnameInsert'] * 0x20000;
+										   
                 $_SESSION['linkControl'] = $row['linkTaxon'];
                 $_SESSION['editorControl'] = $row['editor'];
                 $location="Location: menu.php";

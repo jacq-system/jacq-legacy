@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 03. August 2011 um 13:47
+-- Erstellungszeit: 12. August 2011 um 10:14
 -- Server Version: 5.0.41
 -- PHP-Version: 5.3.4
 
@@ -96,13 +96,14 @@ CREATE TABLE IF NOT EXISTS `tbl_name_entities` (
 DROP TABLE IF EXISTS `tbl_name_languages`;
 CREATE TABLE IF NOT EXISTS `tbl_name_languages` (
   `language_id` int(11) NOT NULL auto_increment,
-  `iso639-6` varchar(4) NOT NULL,
+  `iso639-6` varchar(4) default NULL,
   `parent_iso639-6` varchar(4) default NULL,
   `name` varchar(50) default NULL,
   PRIMARY KEY  (`language_id`),
-  UNIQUE KEY `iso639-6` (`iso639-6`),
-  KEY `parent_iso639-6` (`parent_iso639-6`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=20575 ;
+  UNIQUE KEY `iso639-6_2` (`iso639-6`),
+  KEY `parent_iso639-6` (`parent_iso639-6`),
+  KEY `iso639-6` (`iso639-6`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=20577 ;
 
 -- --------------------------------------------------------
 
@@ -128,7 +129,7 @@ DROP TABLE IF EXISTS `tbl_name_names`;
 CREATE TABLE IF NOT EXISTS `tbl_name_names` (
   `name_id` int(11) NOT NULL auto_increment,
   PRIMARY KEY  (`name_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
 -- --------------------------------------------------------
 

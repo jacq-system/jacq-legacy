@@ -8,6 +8,51 @@
  * @version 1.0
  * @package clsAutocomplete
  */
+function diff($old, $new){
+	foreach($old as $oindex => $ovalue){
+		$nkeys = array_keys($new, $ovalue);
+		foreach($nkeys as $nindex){
+			$matrix[$oindex][$nindex] = isset($matrix[$oindex - 1][$nindex - 1]) ?
+				$matrix[$oindex - 1][$nindex - 1] + 1 : 1;
+			if($matrix[$oindex][$nindex] > $maxlen){
+				$maxlen = $matrix[$oindex][$nindex];
+				$omax = $oindex + 1 - $maxlen;
+				$nmax = $nindex + 1 - $maxlen;
+			}
+		}	
+	}
+	if($maxlen == 0) return array(array('d'=>$old, 'i'=>$new));
+	return array_merge(
+		diff(array_slice($old, 0, $omax), array_slice($new, 0, $nmax)),
+		array_slice($new, $nmax, $maxlen),
+		diff(array_slice($old, $omax + $maxlen), array_slice($new, $nmax + $maxlen))
+	);
+}
+
+function htmlDiff($old, $new){
+	$diff = diff(str_split($old),str_split($new));
+	foreach($diff as $k){
+		if(is_array($k))
+			/*$ret .= (!empty($k['d'])?"<span class='del'>".implode(' ',$k['d'])."</span> ":'').
+				(!empty($k['i'])?"<span class='ins'>".implode(' ',$k['i'])."</span> ":'');*/
+			$ret .= (!empty($k['d'])?"<del>".implode('',$k['d'])."</del>":'').
+				(!empty($k['i'])?"<ins>".implode('',$k['i'])."</ins>":'');
+		else $ret .= $k . '';
+	}
+	
+	return $ret;
+}
+
+function col2011sort_a($a,$b){
+    if($a['distance']==$b['distance']) {
+		if($a['ratio']==$b['ratio']){
+			return strcmp($a['taxon'],$b['taxon']);
+		}
+		return($a['ratio']<$b['ratio'])?-1:1;		
+    }
+    return($a['distance']<$b['distance'])?-1:1;
+}
+
 
 error_reporting(E_ALL^E_NOTICE);
 /**
@@ -581,6 +626,61 @@ public function taxonWithDT ($value)
  */
 public function taxonWithHybrids ($value, $noExternals = false)
 {
+	$results = array();
+	$start = microtime(true);
+
+//$fp = fsockopen('127.0.0.1','1556',$errno,$errstr,30);
+
+$fp = fsockopen('belisk.com','1556',$errno,$errstr,30);
+
+if(!$fp){
+	echo "ERROR: $errstr ($errno)";
+}else {
+	fputs($fp,"{$value}\n");
+	$r='';
+	while (!feof($fp)) {
+		$r.=fgets($fp, 4096);
+	}
+	fclose($fp);
+}
+$stop = microtime(true);
+$tr=number_format(($stop - $start), 2)."s";
+$s="";
+$t=explode("\n",$r);
+$searchresult=array();
+foreach($t as $t1){
+	$t2=explode("	",$t1);
+	if($t2[1]!=''){
+		
+		//echo "{$t2[3]}=round( 1 - {$t2[2]} / max(strlen({$value}),{$t2[0]}),3)*100;";
+		$searchresult[]=array('genus'=>$t2[0], 'id'=>$t2[1],'distance'=>$t2[2],'ratio'=>$t2[3],'inline'=>$t2[4]);
+	}
+}
+
+	usort($searchresult,'col2011sort_a');
+	
+	foreach($searchresult as $t2){
+	
+			$label="<div style='width:200px;float:left'>".htmlDiff($value,$t2['genus'])." {$tr}</div><div style='width:200px;float:left'>-{$t2['genus']} &lt;{$t2['id']}&gt;-</div><div style='float:left'>({$t2['ratio']}%, {$t2['distance']})</div> &nbsp;";
+			if($t2['inline']=='1'){
+				$label=str_replace($value,"<b>{$value}</b>",$label);
+			}
+			$results[] = array(
+				'id'	=> $t2['id'],
+				'label' => $label ,
+				'value' => $t2['genus'],
+				 'color' => $color
+			);
+	}
+	
+	return $results;
+	
+	
+	
+	
+	
+	
+	
 	$results = array();
 	if ($value && strlen($value) > 1) {
 		$pieces = explode(chr(194) . chr(183), $value);

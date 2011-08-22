@@ -72,3 +72,4 @@ CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_languages` (
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE `tbl_img_definition` ADD `img_service_path` VARCHAR( 255 ) NOT NULL

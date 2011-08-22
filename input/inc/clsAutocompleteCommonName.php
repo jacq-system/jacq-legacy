@@ -1,33 +1,6 @@
 <?php
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
- *
- * A singleton to supply various autocomplete methods
- *
- * @author Johannes Schachner
- * @version 1.0
- * @package clsAutocomplete
- */
-function p($var,$exit=false){
-	
-	$a=print_r($var,1);
-	echo <<<EOF
-<pre>
-$a
-</pre>
-EOF;
-	if($exit){
-		exit;
-	}
-}
-
-function langsort($a, $b){
-    return strcmp($a["frucht"], $b["frucht"]);
-}
-
-error_reporting(E_ALL^E_NOTICE);
-/**
- * Autocomplete methods singleton - handling all autocomplete methods
  * @package clsAutocomplete
  * @subpackage classes
  */
@@ -730,7 +703,7 @@ WHERE
 				$row = $dbst->fetch();
 					
 				$res=array();
-				if($row){
+				if(isset($row['name']) && $row['name']!=''){
 					$label="";
 					for($i=1;$i<=$pebenen;$i++){
 						if($row['pn'.$i]=='')continue;

@@ -579,24 +579,22 @@ $cf->inputJqAutocomplete2(11, 26, 48, "person", "", $_dvar['personIndex'], "inde
 $cf->label(10, 29.5, "annotation");
 $cf->textarea(11, 29.5, 50,2.5, "annotation", $_dvar['annotation'], "", "", "");
 
-if(checkRight('commonnameInsert')){
+
+if(($_SESSION['editControl'] & 0x20000) != 0){
 	echo "<input style=\"display:none\" type=\"submit\" name=\"submitInsert\" value=\" Insert New\">";
 }
 
-if (($_SESSION['editControl'] & 0x200) != 0) {
-	//$cf->buttonSubmit(11, 34, "reload", " Reload ");
-	
-	//$cf->buttonReset(17, 34, " Reset ");
-	$cf->buttonJavaScript(17, 34, " Reset ", "document.location.reload(true);");
-	if($_dvar['update'] &&  checkRight('commonnameUpdate') && ($unlock_tbl_name_applies_to || !$isLocked) ){
-		$cf->buttonSubmit(22, 34, "submitUpdate", " Update");
-		$cf->buttonSubmit(28, 34, "submitDelete", " Delete");
-	}
-	if(checkRight('commonnameInsert')){
-		$cf->buttonSubmit(33, 34, "submitInsert", " Insert New");
-	}
-}
+$cf->buttonJavaScript(17, 34, " Reset ", "document.location.reload(true);");
 $cf->buttonSubmit(20, 2, "submitSearch", " Search");
+
+if($_dvar['update'] &&  ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_tbl_name_applies_to || !$isLocked) ){
+	$cf->buttonSubmit(22, 34, "submitUpdate", " Update");
+	$cf->buttonSubmit(28, 34, "submitDelete", " Delete");
+}
+
+if(($_SESSION['editControl'] & 0x20000) != 0 ){
+	$cf->buttonSubmit(33, 34, "submitInsert", " Insert New");
+}
 
 
 
@@ -826,7 +824,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		if($result && $row=mysql_fetch_array($result)){
 			$_dvar['languageIndex']=$row['language_id'];
 		}else{
-			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name,locked) VALUES ('{$_dvar['language']}','1')");
+			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
 			$_dvar['languageIndex']=mysql_insert_id();
 		}
 	}
