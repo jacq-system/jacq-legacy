@@ -10,6 +10,27 @@ if (empty($_SESSION['uid'])) {
     $_SESSION['username'] = '';
 }
 
+$debug=isset($_GET['debug']);
+$databases_cache='databases_cache.inc';
+
+if(isset($_POST['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
+	require_once('inc/jsonRPCClient.php');
+
+	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
+
+	try {
+		$service = new jsonRPCClient($url);
+		$services = $service->getDatabases();
+		
+		file_put_contents($databases_cache,serialize($services));
+		
+	}catch (Exception $e) {
+		$out =  "Fehler " . nl2br($e);
+	}
+}
+
+$services=unserialize(file_get_contents($databases_cache));
+
 if (!empty($_POST['username'])) {
     $result = db_query("SELECT uid, username FROM tbluser WHERE username = " . quoteString($_POST['username']));
     if (mysql_num_rows($result) > 0) {
@@ -81,19 +102,42 @@ if (!empty($_POST['username'])) {
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
-  <title>taxamatch - bulk upload</title>
+  <title>herbardb - taxamatch MDLD</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <script type="text/javascript" src="inc/iBox/ibox.js"></script>
-  <script type="text/javascript" language="JavaScript">
-    iBox.setPath('inc/iBox/');
-    iBox.tags_to_hide = ['embed', 'object'];
-  </script>
+  <link type="text/css" href="css/screen.css" rel="stylesheet">
+  <link type="text/css" href="css/south-street/jquery-ui-1.8.14.custom.css" rel="stylesheet" />	
+  <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
+
+  <script>
+var tims=0;
+var timid=0;
+
+$(function() {
+	$( "#dialog-about").dialog({
+		autoOpen: false,
+		modal: true,
+		width:700,
+		buttons:{"OK": function() {$( this ).dialog( "close" );}}
+	});
+	$('#aboutb').click(function(){
+		$( "#dialog-about").dialog('open');
+		return false;
+	});
+	$("#database_vienna").change(function(){
+		$("#database_extern").attr('selectedIndex', '-1');
+	});
+	$("#database_extern").change(function () {
+		$('input[name=database][value=extern]').attr('checked','checked');
+	})
+});
+	</script>
 </head>
 
-<body>
+<body onload="document.f.searchtext.focus();">
 
-<div id="iBox_content" style="display:none;">
+
+<div id="dialog-about" title="MDLD taxamatch implementation">
 <br>
 This is a bulkupload routine utilizing the <b>MDLD taxamatch implementation</b> (modified Damerau-Levenshtein algorithm, originally developed by tony rees at csiro dot org)<br>
 (phonetic = near match not included so far)<br>
@@ -114,38 +158,70 @@ If you test, please at the moment do not run more than 1000 names at a time - jo
 <h1>
   Taxamatch bulk upload
   &nbsp;
-  <img align="top" src="images/information.png" onclick="iBox.showURL('#iBox_content', 'info', iBox.parseQuery('width=520')); return false;">
+  <a href="#"><img align="top" src="images/information.png" border="0" id="aboutb"></a>
 </h1>
-<?php
+<p>
+<?PHP
 if (!$_SESSION['uid']) {
     echo "<form Action='" . $_SERVER['PHP_SELF'] . "' Method='POST' name='f'>\n"
        . "username: <input type='text' name='username'> \n"
        . "<input type='submit' value='login'>\n"
        . "</form>\n";
-} else {
-    echo "<form enctype='multipart/form-data' Action='" . $_SERVER['PHP_SELF'] . "' Method='POST' name='f'>\n"
+}else{
+	echo "<form enctype='multipart/form-data' Action='" . $_SERVER['PHP_SELF'] . "' Method='POST' name='f'>\n"
        . "<big><b>username: " . $_SESSION['username'] . "</b></big> \n"
        . "<input type='submit' name='logout' value='logout'>\n"
        . "<p>\n";
-
+	
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
     if (mysql_num_rows($result) > 0) {
         $row = mysql_fetch_array($result);
     } else {
         $row = array();
-        echo "<input type='radio' name='database' id='database_vienna' value='vienna' checked>\n"
-           . "<label for='database_vienna'>Virtual Herbarium Vienna</label>\n"
-           . "<input type='radio' name='database' id='database_col' value='col'>\n"
-           . "<label for='database_col'>Catalogue of Life</label>\n"
-           . "<input type='radio' name='database' id='database_fe' value='fe'>\n"
-           . "<label for='database_fe'>Fauna Europea</label>\n"
-           . "<input type='checkbox' name='showSyn' id='showSyn' value='synonyms'>\n"
-           . "<label for='syn'>show synonyms</label><br>\n"
-           . "<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />\n"
-           . "upload this file: <input name='userfile' type='file' />\n"
-           . "<input type='submit' value='upload' />\n";
+        echo<<<EOF
 
-    }
+		<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />
+          upload this file: <input name='userfile' type='file' />
+           <input type='submit' value='upload' />
+
+    <table>
+      <tr>
+        <td>
+          <div id="dbext"><input type="radio" name="database" value="vienna" id="database_vienna" checked>
+          <label for="database_vienna">Virtual Herbarium Vienna</label>
+          <input type="radio" name="database"  value="extern" >
+          <label for="database_col">Extern </label>
+		  <div id="loading" style="text-align:center;margin-top:7px;display:none"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
+
+</div>
+		  <select name="database_extern" id="database_extern" size="5">
+		  
+EOF;
+
+foreach($services as $k=>$v){
+	if($k!='vienna'){
+		echo  "<option value=\"{$k}\">{$v['name']}</option>";
+	}
+}
+		echo<<<EOF
+			</select>
+        </td>
+      </tr><tr>
+        <td>
+                   <input type="checkbox" name="showSyn" id="showSyn"><label for="showSyn">show synonyms</label>
+        </td>
+      </tr><tr>
+        <td valign="top">
+          <input type="submit" value="upload" id="showMatchJsonRPC" name="searchSpecies">
+        </td>
+      </tr>
+    </table>
+  </form>
+</p>
+EOF;
+
+	}
+    
     echo "<div style='font-size:large; font-weight:bold;'><input type='submit' name='refresh' value='refresh list'></div>\n"
        . "</form>\n";
 
@@ -194,6 +270,5 @@ if (!$_SESSION['uid']) {
     }
 }
 ?>
-
 </body>
 </html>

@@ -17,9 +17,9 @@ CREATE TABLE `fuzzy_fastsearch_name_element2` (
   PRIMARY KEY  (`subgenus_name`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Individual elements used to generate a scientific name';
 
---Add an unique ID
+-- Add an unique ID
 
-ALTER TABLE `Taxon_FaEu_v2` ADD `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY
+ALTER TABLE `Taxon_FaEu_v2` ADD `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY; 
 
 -- Insert Genus
 INSERT INTO

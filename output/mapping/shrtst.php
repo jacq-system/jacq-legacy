@@ -23,11 +23,11 @@ $points_cnt = count($points_lat);
     function load() {
       if (GBrowserIsCompatible()) {
         var map = new GMap2(document.getElementById("map"));
-        var limit_sw = new GLatLng(<?= $min_lat ?>,<?= $min_lng ?>);
-        var limit_ne = new GLatLng(<?= $max_lat ?>,<?= $max_lng ?>);
+        var limit_sw = new GLatLng(<?php echo $min_lat; ?>,<?php echo $min_lng; ?>);
+        var limit_ne = new GLatLng(<?php echo $max_lat; ?>,<?php echo $max_lng; ?>);
         var bounds = new GLatLngBounds(limit_sw, limit_ne);
 
-        map.setCenter(new GLatLng(<?= $mean_lat ?>, <?= $mean_lng ?>), 1);
+        map.setCenter(new GLatLng(<?php echo $mean_lat; ?>, <?php echo $mean_lng; ?>), 1);
         //map.addControl(new GLargeMapControl()); // pan, zoom
         map.addControl(new GSmallMapControl()); // pan, zoom
         map.addControl(new GMapTypeControl()); // map, satellite, hybrid

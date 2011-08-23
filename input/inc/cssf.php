@@ -337,20 +337,25 @@ function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $
 function inputJqAutocomplete2($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false,$textarea=false,$rows=0) {
 
 	$this->_divclass($x, $y, "cssfinput");
-	$val=htmlspecialchars($value, ENT_QUOTES);
 	
+	$val=htmlspecialchars($value, ENT_QUOTES);
+	$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
+	$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
+	$title=($title=='')?"":" title='{$title}'";
+
 	if($textarea){
 		echo<<<EOF
 <input type="hidden" name="{$name}Index" id="{$name}Index"  value="{$index}"/>
-<textarea  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;background-color: rgb(255, 255, 153);' rows="{$rows}" type="text" type="text" name="{$name}" id="ajax_{$name}" maxlength="{$maxsize}" title="{$title}">{$value}</textarea>
+<textarea  tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$rows}" name="{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$value}</textarea>
 </div>
 
 EOF;
 		
 	}else{
+		
 		echo<<<EOF
 <input type="hidden" name="{$name}Index" id="{$name}Index"  value="{$index}"/>
-<input tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;' type="text" style="width: 200px;"  type="text" value="{$value}" name="{$name}" id="ajax_{$name}" maxlength="{$maxsize}" title="{$title}" />
+ <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" type="text" value="{$value}" name="{$name}" id="ajax_{$name}"{$maxsize}{$title} />
 </div>
 
 EOF;

@@ -38,8 +38,9 @@ $debuger=0;
 	* html .ui-autocomplete {
 		height: 200px;
 	}
-.working{background:url('css/loading.gif') no-repeat right center;}
+.ui-autocomplete-loading{background:url('css/loading.gif') no-repeat right center;}
 .wrongItem{background:url('css/wrong.gif') no-repeat right center; background-color:rgb(255, 185,79) !important;}
+.newItem{background:url('css/new.gif') no-repeat right center; }
 
 .eac{background-color:#DAEEDD;}
 .oac{background-color:#e7fae6;}
@@ -52,11 +53,43 @@ table.tablesorter tbody td {border: 1px solid #CCC !important;}
   </style>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-autocomplete/jquery.autocomplete_nhm.js" type="text/javascript"></script>
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
 
   <script type="text/javascript" language="JavaScript">
-var geowin;
+  function p(objarray){
+		return alert(pr(objarray));
+	}
+
+	function p(objarray,tiefe){
+		return alert(pr(objarray,tiefe));
+	}
+
+	function pr(objarray){
+		return pr(objarray,4);
+	}
+
+	function pr(objarray,tiefe){
+		return print_r1(objarray,'','',0,tiefe);
+	}
+
+	function print_r1(objarray,string,ebene,tiefe,maxtiefe){
+		for(i in objarray){
+			try{
+				if(typeof(objarray[i])=='object' && tiefe<maxtiefe){
+
+					string=print_r1(objarray[i],string,ebene+'['+i+']',tiefe+1,maxtiefe);
+
+				}else{
+					//if(typeof(objarray[i])!='function'){
+						string+=ebene+'['+i+']='+objarray[i]+"\n" ;
+					//}
+				}
+			}catch(e){}
+		}
+		return string;
+	}
+	
+  var geowin;
 // windows...
 function selectTaxon() {
 	//taxonID=$('#taxonIndex').val();
@@ -126,54 +159,140 @@ function editCommoname(){
 	comwin.focus();
 }
 
+
+
+
+
+(function($){	 
+	$(".ui-autocomplete-input").live("autocompleteopen", function() {
+		var autocomplete = $(this).data("autocomplete"),
+		menu = autocomplete.menu;
+	 
+		if (!autocomplete.options.selectFirst) {
+			return;
+		}
+		menu.activate($.Event({ type: "mouseenter" }), menu.element.children().first());
+	});
+}(jQuery));
+
 // Autocompleter
-function prepareWithID(nam,startval,mustMatch1){
-	if(mustMatch1){
-		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
-			extraParams:{field:'cname_'+nam},
-  			autoFill:1,
-			loadingClass: 'working',
-			selectFirst: true,
-			delay:100,
-			LoadingAction: function() { $('#'+nam+'Index').val('');  },
-			scroll: true
-  		}).change(function() {
-			if($('#'+nam+'Index').val()==''){
-				$('#ajax_'+nam).addClass('wrongItem');
+function prepareWithID(nam,startval,mustMatch1,fullfocus){
+
+	var $at=$('#ajax_'+nam);
+	var $ati=$('#'+nam+'Index');
+	
+	$at.autocomplete({
+		create: function(event, ui) {
+			$at.data('autocomplete').requestIndex=0;
+		},
+		source: function( request, response ) {
+			/*
+			// original: 
+			// used to prevent race conditions with remote data sources
+			var requestIndex = 0;
+			//=> doesn't work, if we want to preload all at once... !!!
+			
+			this.source = function( request, response ) {
+			if ( self.xhr ) {
+				self.xhr.abort();
+			}
+			self.xhr = $.ajax({
+				url: url,
+				data: request,
+				dataType: "json",
+				autocompleteRequest: ++requestIndex,
+				success: function( data, status ) {
+					if ( this.autocompleteRequest === requestIndex ) {
+						response( data );
+					}
+				},
+				error: function() {
+					if ( this.autocompleteRequest === requestIndex ) {
+						response( [] );
+					}
+				}
+			});
+			*/
+			if ( $at.data('autocomplete').xhr ) {
+				$at.data('autocomplete').xhr.abort();
+			}
+			
+			$at.data('autocomplete').xhr = $.ajax({
+				url: 'index_autocomplete_commoname.php?field=cname_'+nam,
+				data: request,
+				dataType: "json",
+				autocompleteRequest: ++$at.data('autocomplete').requestIndex,
+				success: function( data, status ) {
+					if ( this.autocompleteRequest === $at.data('autocomplete').requestIndex) {
+						response( data );
+					}
+				},
+				error: function() {
+					if ( this.autocompleteRequest === $at.data('autocomplete').requestIndex ) {
+						response( [] );
+					}
+				}
+			});
+		},
+		search: function(){
+			$ati.val('');
+		},
+		change: function(event, ui) {
+			if($ati.val()==''){
+					$at.addClass((mustMatch1==1)?'wrongItem':'newItem');
+			}
+		},
+		select: function(event, ui){
+			if(ui.item.id){
+				$ati.val(ui.item.id);
+				$at.val(ui.item.value).removeClass((mustMatch1==1)?'wrongItem':'newItem');
+			}
+		},
+		open: function(event, ui) {
+			if($at.autocomplete("option", "populate")=='1'){
+				$at.autocomplete("option","populate","0");
+				$at.autocomplete( "close" );
+			}
+		},
+		delay:100,
+		selectFirst: (mustMatch1==1)?true:false
+	}).data('autocomplete')._renderItem=function(ul, item){
+		if($at.autocomplete("option", "populate")=='1'){
+			$ati.val(item.id);
+			$at.val(item.value);
+		}
+		return $('<li></li>')
+		.data('item.autocomplete', item)
+		.append('<a' + ((item.color) ? ' style="background-color:' + item.color + ';">' : '>') + item.label.replace(new RegExp('('+this.term+')',"ig"),'<b>$1</b>') + '</a>')
+		.appendTo(ul);
+		
+	}
+
+	if(fullfocus==1){
+		$at.bind({
+			click: function() {
+				if($(this).data.toggle!='1'){
+					$(this).data.toggle='1';
+					$(this).select();
+				}
+			},
+			focusout: function() {
+				$(this).data.toggle='0';
 			}
 		});
-
-		if($('#ajax_'+nam).val()!='' && startval!='')$('#ajax_'+nam).addClass('wrongItem');
-	}else{
-		$('#ajax_'+nam).autocomplete("index_autocomplete_commoname.php",{
-			extraParams:{field:'cname_'+nam},
-  			loadingClass: 'working',
-			selectFirst: true,
-			LoadingAction: function() { $('#'+nam+'Index').val(''); },
-			delay:100,
-			scroll:true,
-			matchSubset:false,
-  		});
 	}
 
-	$('#ajax_'+nam).result(function(event, data, formatted) {
-		if(data){
-			$('#'+nam+'Index').val(data[2]);
-			$('#ajax_'+nam).val(data[1]).removeClass('wrongItem');
-		}
-	});
+	if(mustMatch1==1 && $at.val()!='' && startval!='')$at.addClass('wrongItem');
 
 	if(startval!='' && startval!='0'){
-		$('#ajax_'+nam).searchID(startval);
+		$at.autocomplete("option","populate","1").autocomplete("search",'<'+startval+'>');
 	}
+
 }
 
-function initAjaxVal(initObj,initObj2){
-	jQuery.each(initObj, function(key, val) {
-		prepareWithID(key, val,1);
-    });
-	jQuery.each(initObj2, function(key, val) {
-		prepareWithID(key, val,0);
+function initAjaxVal(initobj){
+	jQuery.each(initobj, function(key, val) {
+		prepareWithID(val[0], val[1],val[2],val[3]);
     });
 	$("#ajax_taxon").focus();
 }
@@ -484,9 +603,8 @@ if($doSearch){
 }
 //print_r($_dvar);
 
-$init="
-var init={taxon:'{$_dvar['taxonIndex']}',geoname:'{$_dvar['geonameIndex']}',literature:'{$_dvar['literatureIndex']}',service:'{$_dvar['serviceIndex']}',person:'{$_dvar['personIndex']}'};
-var init2={period:'',common_name:'',language:'{$_dvar['languageIndex']}',geospecification:''};
+$init3="
+var init3=[['taxon','{$_dvar['taxonIndex']}','1','1'],['geoname','{$_dvar['geonameIndex']}','1','1'],['literature','{$_dvar['literatureIndex']}','1','1'],['service','{$_dvar['serviceIndex']}','1','1'],['person','{$_dvar['personIndex']}','1','1'],['period','','0','0'],['common_name','','0','0'],['language','{$_dvar['languageIndex']}','0','1'],['geospecification','','0','0']];
 ";
 
 
@@ -509,11 +627,13 @@ if($msg['result']=="0"){
 echo <<<EOF
 
 <script type="text/javascript" language="JavaScript">
-{$init}
+
+{$init3}
+
 var a='{$_dvar['source']}';
 
 $(document).ready(function() {
-	initAjaxVal(init,init2);
+	initAjaxVal(init3);
 	
 	switch(a){
 		case 'person':$('#ajax_service, #ajax_literature').removeClass('wrongItem');break;
@@ -1000,13 +1120,6 @@ function doSearch($_dvar,$get=false){
 		
 		$trclass=($i%2)?'odd':'even';
 		$eo=($i%2)?'o':'e';
-/*
-//dbeug
-<td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td>
-
-// orig
-<td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td>
-*/
 
 		$locked=$row['locked']?'<b>&lt;locked&gt;</b><br>':'';
 		$search_result.=<<<EOF

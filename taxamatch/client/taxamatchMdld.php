@@ -31,8 +31,8 @@ $services=unserialize(file_get_contents($databases_cache));
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link type="text/css" href="css/screen.css" rel="stylesheet">
   <link type="text/css" href="css/south-street/jquery-ui-1.8.14.custom.css" rel="stylesheet" />	
-  <script type="text/javascript" src="ajax/jquery-1.5.1.min.js"></script>
-  <script type="text/javascript" src="ajax/jquery-ui-1.8.13.custom.min.js"></script>
+  <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
+  <script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
 
   <script>
 var tims=0;

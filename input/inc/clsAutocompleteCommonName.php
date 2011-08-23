@@ -1,4 +1,10 @@
 <?php
+
+function p($val){
+
+echo "<pre>".print_r($val,1)."</pre>";
+
+}
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
  * @package clsAutocomplete
@@ -144,7 +150,7 @@ public function cname_person($value)
 		}
 		$sql="SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
 					FROM tbl_person {$sql}";
-
+		$sql.=" LIMIT 100";
 		/* @var $dbst PDOStatement */
 		$dbst = $db->query($sql);
 		$rows = $dbst->fetchAll();
@@ -212,6 +218,7 @@ public function cname_taxon ($value)
 				}
 				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
 			}
+			$sql.=" LIMIT 100";
 			//echo $sql;
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
@@ -260,7 +267,7 @@ public function cname_common_name ($value){
 			}
 			
 			$sql = "SELECT common_name,common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE {$where}";	
-			
+			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -310,7 +317,8 @@ public function cname_geoname ($value){
 				$where="name LIKE ".$db->quote($value .'%');
 			}
 			
-			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";	
+			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";
+			$sql.=" LIMIT 100";
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
 			
@@ -468,6 +476,7 @@ public function cname_literature ($value)
 								OR lp.periodical LIKE " . $db->quote ($second . '%') . ")";
 				}
 				$sql .= " ORDER BY la.autor, jahr, lp.periodical, vol, part, pp";
+				$sql.=" LIMIT 100";
 				/* @var $dbst PDOStatement */
 				$dbst = $db->query($sql);
 				$rows = $dbst->fetchAll();
@@ -499,6 +508,11 @@ public function cname_literature ($value)
 	return $results;
 }
 
+
+var $nc_id=array();
+var $nc_name=array();
+var $x=0;
+
 /**
  * Common Names: Language todo: bring it to life
  * @param string $value text to search for
@@ -529,7 +543,7 @@ public function cname_language ($value){
 				$row = $dbst->fetch();
 				
 				// If TypingCache
-				if(isset($row['result']) && $row['result'] !='') {
+				if(false && isset($row['result']) && $row['result'] !='') {
 
 					$results=json_decode($row['result'],1);
 				
@@ -541,7 +555,8 @@ public function cname_language ($value){
 					// Get Geolang out of database first
 					$pebenen=3;
 					$cebenen=3;
-				
+					
+					$cebenen++;
 					$f1='';$f2='';
 					$j1='';$j2=''; 
 					for($i=$pebenen;$i>0;$i--){					
@@ -596,63 +611,64 @@ ORDER BY
  ";	
 				
 //p($sql);
-
+					$sql.=" LIMIT 100";
 					/* @var $dbst PDOStatement */
 					$dbst = $db->query($sql);
 					$rows = $dbst->fetchAll();
 					// Build Tree
-					$namcache=array();
-					$namcache2=array();
+				
 					$r=array();
 					foreach ($rows as $row) {
 						$rp=&$r;
 						
 						for($i=$pebenen;$i>0;$i--){					
 							$rp=&$rp[$row['pi'.$i]];
-							$namcache[$row['pi'.$i]]=$row['pn'.$i];
-							$namcache2[$row['pi'.$i]]=$row['pii'.$i];
+							
+							$this->nc_name[$row['pi'.$i]]=$row['pn'.$i];
+							$this->nc_id[$row['pi'.$i]]=$row['pii'.$i];
+
 						}
 						
 						// If no ISO...
 						if($row['i']=='')$row['i']=$row['id'];
 						
 						$rp=&$rp[$row['i']];
-						$namcache[$row['i']]=$row['n'];
-						$namcache2[$row['i']]=$row['id'];
-						
+
+						$this->nc_name[$row['i']]=$row['n'];
+						$this->nc_id[$row['i']]=$row['id'];
+							
 						for($i=1;$i<=$cebenen;$i++){
 							if($row['si'.$i]=='')break;	
 
 							$rp=&$rp[$row['si'.$i]];
-							$namcache[$row['si'.$i]]=$row['sn'.$i];
-							$namcache2[$row['si'.$i]]=$row['sii'.$i];
+
+							$this->nc_name[$row['si'.$i]]=$row['sn'.$i];
+							$this->nc_id[$row['si'.$i]]=$row['sii'.$i];
 						}
 						$rp=1;
 					}
-					//p($r);
+				//	p($r);
 					// Traverse Tree
-					$t=$this->buildtree($r,$namcache,$namcache2);
+					$t=$this->buildtree($r);
 					
 					//p($t,1);
+				//	exit;
 					$x=0;
 					if(is_array($t) && count($t)>0){
 						foreach($t as $resiso=>$val){
 							if(count($val)>0){
 								foreach($val as $row){
-									$ebene=$row[0];
-									$id=$row[1];
-									$label=$row[2];
+									
+									$id=$row[0];
+									$label=$row[1];
+									$value=$row[2];
 
-									$pr='';
-									if($ebene>0){
-										$pr=str_repeat('&nbsp;&nbsp;',$ebene)."&#x21B3;";
-									}
 									$x++;
 									if($x>100)break;
 									$results[] = array(
 										'id'	=> $id,
-										'label' => $pr."".$label,
-										'value' => $label,
+										'label' =>$label,
+										'value' => $value,
 										'color' => '',
 										'sort'	=>''
 									);
@@ -661,6 +677,8 @@ ORDER BY
 							}
 						}
 					}
+					
+					// Todo: fetch all manual inserted languages...
 					
 					// Insert Geonames Search Cache
 					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
@@ -698,6 +716,7 @@ WHERE
 	l.language_id='$id'
  ";
 // p($sql,1);
+				$sql.=" LIMIT 100";
 				/* @var $dbst PDOStatement */
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
@@ -735,70 +754,100 @@ WHERE
 	return $results;
 }
 
-function buildtree(&$r,$nc=array(),$nc2=array()){
+
+
+
+function buildtree(&$r){
 
 	$this->x=0;
-	$res='';
 
-	$this->buildtree1($r,0,'',$res,$nc,0,$nc2);
+	$res=array();
+
+	$this->buildtree1($res,$r,-3,'',0,'');
 	if($this->x>3000){
 		echo "Too Many Suggestions";
 	}
 		
 	return $res;
 }
-var $x=0;
+
 var $usedisos=array();
-
-function buildtree1(&$el,$ebene,$keys,&$res,&$nc,$akey,&$nc2){
-
+function buildtree1(&$res,&$el,$childebene,$keys,$akey,$t3){
+	
+	// to much recursion...
 	$this->x++;
 	if($this->x>3000){
 		return;
 	}
 	
+	// no more childs...
 	if(!is_array($el) || count($el)==0){
 		return;
 	}
 	
-	if($ebene<3){
-		
-		$key=key($el);
-		$ebene=$ebene+1;
+	
+	$keyso='';
+	if($childebene<0){
 		$keyso=$keys;
-		foreach($el as $key=>$tree){
+	}
+	$t5="";
+	
+	// get last key.
+	$tt=$el;
+	
+	end($tt);
+	$lastkey = key($tt);
+
+	foreach($el as $key=>$tree){
+		
+		// <0 paarent, 0 element, >0 child
+		if($childebene<0){
 			if($key!=''){
-				if(intval($ebene)==1){
-					$keys="".$nc[$key]." ({$key})";
-				
-				}else{
-					$keys="".$nc[$key]." ({$key}), ".$keyso;
+				$keys=$this->nc_name[$key]." ({$key})";
+				if($childebene>-3){
+					$keys.=", ".$keyso;
 				}
 			}
-			$this->buildtree1($tree,$ebene,$keys,$res,$nc,$key,$nc2);
-		}
-	
-	}else if($ebene==3){
 
-		$ebene=$ebene+1;
-		$x=0;
-		foreach($el as $key=>$tree){
-			if(!isset($this->usedisos[$key])){
-				$res[$key][]=array(0,$nc2[$key],$nc[$key]." ({$key}) [".$keys."]");
-				$this->buildtree1($tree,$ebene,$keys,$res,$nc,$key,$nc2);
+		}else{
+			
+			if($childebene==0){
+				$akey=$key;
 			}
+			
+			$lastkey1=($key==$lastkey);
+			
+			
+			$usedbefore=isset($this->usedisos[$key])?true:false;
+			
+			if($usedbefore && $childebene==0){
+				continue;
+			}
+			
+			$t6=($childebene==0)?' ['.$keys.']':'';
+			$t7=(is_array($tree) && $usedbefore)?' (*) opened before':(($usedbefore)?' shown before':'');
+			$t8=( is_array($tree) &&  $childebene==3 )?' (*)':''; //childebenene
+			
+			
+			
+			$res[$akey][]=array($this->nc_id[$key],$t3."".(($lastkey1)?'+':'|')."--".$this->nc_name[$key]." ({$key})".$t6.$t8.$t7,$this->nc_name[$key]." ({$key})".$lastkey);
+			
+			if($childebene==3 || $usedbefore ){ //childebenen
+				continue;
+			}
+			
+			$this->usedisos[$key]=1;
+
+			$t5=$t3.(($lastkey1)?'':'|')."&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+			
+			$key=$akey;
 		}
 
-	}else if($ebene<3+3+1){
+		$this->buildtree1($res,$tree,$childebene+1,$keys,$key,$t5);
 
-		$key=key($el);
-		$ebene=$ebene+1;
-		$this->usedisos[$key]=1;	
-		foreach($el as $key=>$tree){
-			$res[$akey][]=array($ebene-3-1,$nc2[$key],$nc[$key]." ({$key})");
-			$this->buildtree1($tree,$ebene,$keys,$res,$nc,$akey,$nc2);
-		}
+
 	}
+	return;
 }
 
 
@@ -833,6 +882,7 @@ FROM
 WHERE
  {$where}
 ";
+			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -891,7 +941,7 @@ WHERE
  {$where}
 ";
 			
-			
+			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -943,7 +993,7 @@ WHERE
  geospecification like " . $db->quote ($value . '%')."
 ";
 			
-			
+			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();

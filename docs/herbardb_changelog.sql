@@ -1,0 +1,1 @@
+ALTER TABLE `tbl_img_definition` ADD `img_service_path` VARCHAR( 255 ) NOT NULL
