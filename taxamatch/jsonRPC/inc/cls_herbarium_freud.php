@@ -23,6 +23,8 @@ private $matches = array();    // result of getMatches() are stored here
 private $currSynonyms20;       // holds temporary list of synonyms20 for current species
 private $counterSyns20 = 0;    // counter20 for temporary list
 
+	var $block_limit=2;
+	var $limit=4;
 /*******************\
 |                   |
 |  public functions |
@@ -449,69 +451,105 @@ public function getMatchesCommonNames($searchtext, $withNearMatch = false)
 
         if ($withNearMatch) {
             $searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
-            $commonName           = ucfirst(trim($searchItemNearmatch));
+            $commonName           = strtolower(trim($searchItemNearmatch));
             $lenCommonName        = mb_strlen(trim($searchItemNearmatch), "UTF-8");
         } else {
             $searchItemNearmatch = '';
-            $commonName           = ucfirst(trim($searchItem));
+            $commonName           = strtolower(trim($searchItem));
             $lenCommonName        = mb_strlen(trim($searchItem), "UTF-8");
         }
+		$this->limit=4;
+		$lenlim=min($lenCommonName/2,$this->limit);
+		
+		$query="
+SELECT
+ c.common_id
+FROM
+  {$options['hrdb']['dbnameCommonNames']}.tbl_name_commons c
+WHERE
+  mdld('{$commonName}',common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(common_name)/2,{$lenlim})
+ ";
+ //echo $query;exit;
+ 
+		$res = mysql_query($query);
+		$s="";
+		while ($row = mysql_fetch_array($res)) {
+			$s.=",".$row['common_id']."";
+		}
+		$s=substr($s,1);
+		
+		$query="
+SELECT
+ tax.taxonID as 'taxonID',
+ com.common_name as 'common_name',
+ mdld('{$commonName}', LOWER(com.common_name), {$this->block_limit}, {$this->limit}) as 'mdld'
 
-        // compare with the common names
-        $res = mysql_query("SELECT cn.common_name, cnl.taxonID_fk,
-                             mdld('" . mysql_real_escape_string($commonName) . "', cn.common_name, 2, 4) AS mdld
-                            FROM tbl_nom_common_names cn, tbl_nom_common_names_links cnl
-                            WHERE cn.common_name_ID = cnl.common_name_ID_fk");
+FROM
+ names.tbl_name_applies_to a
+ LEFT JOIN names.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN names.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
+
+ LEFT JOIN names.tbl_name_names nam ON nam.name_id = a.name_id
+ LEFT JOIN names.tbl_name_commons com ON com.common_id = nam.name_id
+WHERE
+ com.common_id IN({$s})
+ ";
+  //echo $query;exit;
+		
+		$res = mysql_query($query);
         /**
-         * do the actual calculation of the distances
-         * and decide if the result should be kept
          */
         while ($row = mysql_fetch_array($res)) {
-            $limit = min($lenCommonName, strlen($row['common_name'])) / 2;     // 1st limit of the search
-            if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {                  // 2nd limit of the search
-                // we've found something, so let's put everything together
-                // distances and ratios of genus and species are both set to the distance and ratio found for the common name
-                $familyData  = $this->_getFamilyPartsOfSpecies($row['taxonID_fk']);
-                $genusData   = $this->_getGenusPartsOfSpecies($row['taxonID_fk']);
-                $speciesData = $this->_getTaxonPartsOfSpecies($row['taxonID_fk']);
+           
+			// we've found something, so let's put everything together
+			// distances and ratios of genus and species are both set to the distance and ratio found for the common name
+			$familyData  = $this->_getFamilyPartsOfSpecies($row['taxonID']);
+			$genusData   = $this->_getGenusPartsOfSpecies($row['taxonID']);
+			$speciesData = $this->_getTaxonPartsOfSpecies($row['taxonID']);
+			
+			$taxon = $genusData['genus'];
+			if ($speciesData['epithet0']) $taxon .= " "          . $speciesData['epithet0'] . " " . $speciesData['author0'];
+			if ($speciesData['epithet1']) $taxon .= " subsp. "   . $speciesData['epithet1'] . " " . $speciesData['author1'];
+			if ($speciesData['epithet2']) $taxon .= " var. "     . $speciesData['epithet2'] . " " . $speciesData['author2'];
+			if ($speciesData['epithet3']) $taxon .= " subvar. "  . $speciesData['epithet3'] . " " . $speciesData['author3'];
+			if ($speciesData['epithet4']) $taxon .= " forma "    . $speciesData['epithet4'] . " " . $speciesData['author4'];
+			if ($speciesData['epithet5']) $taxon .= " subforma " . $speciesData['epithet5'] . " " . $speciesData['author5'];
 
-                $taxon = $genusData['genus'];
-                if ($speciesData['epithet0']) $taxon .= " "          . $speciesData['epithet0'] . " " . $speciesData['author0'];
-                if ($speciesData['epithet1']) $taxon .= " subsp. "   . $speciesData['epithet1'] . " " . $speciesData['author1'];
-                if ($speciesData['epithet2']) $taxon .= " var. "     . $speciesData['epithet2'] . " " . $speciesData['author2'];
-                if ($speciesData['epithet3']) $taxon .= " subvar. "  . $speciesData['epithet3'] . " " . $speciesData['author3'];
-                if ($speciesData['epithet4']) $taxon .= " forma "    . $speciesData['epithet4'] . " " . $speciesData['author4'];
-                if ($speciesData['epithet5']) $taxon .= " subforma " . $speciesData['epithet5'] . " " . $speciesData['author5'];
+			if ($speciesData['synID']) {
+				$synData = $this->_getTaxonPartsOfSpecies($speciesData['synID']);
+				$syn = $synData['genus'];
+				if ($synData['epithet0']) $syn .= " " .          $synData['epithet0'] . " " . $synData['author0'];
+				if ($synData['epithet1']) $syn .= " subsp. "   . $synData['epithet1'] . " " . $synData['author1'];
+				if ($synData['epithet2']) $syn .= " var. "     . $synData['epithet2'] . " " . $synData['author2'];
+				if ($synData['epithet3']) $syn .= " subvar. "  . $synData['epithet3'] . " " . $synData['author3'];
+				if ($synData['epithet4']) $syn .= " forma "    . $synData['epithet4'] . " " . $synData['author4'];
+				if ($synData['epithet5']) $syn .= " subforma " . $synData['epithet5'] . " " . $synData['author5'];
+				$synID = $synData['taxonID'];
+			} else {
+				$syn = '';
+				$synID = 0;
+			}
 
-                if ($speciesData['synID']) {
-                    $synData = $this->_getTaxonPartsOfSpecies($speciesData['synID']);
-                    $syn = $synData['genus'];
-                    if ($synData['epithet0']) $syn .= " " .          $synData['epithet0'] . " " . $synData['author0'];
-                    if ($synData['epithet1']) $syn .= " subsp. "   . $synData['epithet1'] . " " . $synData['author1'];
-                    if ($synData['epithet2']) $syn .= " var. "     . $synData['epithet2'] . " " . $synData['author2'];
-                    if ($synData['epithet3']) $syn .= " subvar. "  . $synData['epithet3'] . " " . $synData['author3'];
-                    if ($synData['epithet4']) $syn .= " forma "    . $synData['epithet4'] . " " . $synData['author4'];
-                    if ($synData['epithet5']) $syn .= " subforma " . $synData['epithet5'] . " " . $synData['author5'];
-                    $synID = $synData['taxonID'];
-                } else {
-                    $syn = '';
-                    $synID = 0;
-                }
-
-                $searchresult[] = array('genus'    => $genusData['genus'],
-                                        'distance' => $row['mdld'],
-                                        'ratio'    => 1 - $row['mdld'] / max(mb_strlen($row['common_name'], "UTF-8"), $lenCommonName),
-                                        'taxon'    => $genusData['genus'] . ' ' . $genusData['author'] . ' (' . $familyData['family'] . ')',
-                                        'ID'       => $genusData['genID'],
-                                        'species'  => array(array('name'       => trim($speciesData['epithet0']),
-                                                                  'commonName' => $row['common_name'],
-                                                                  'distance'   => $row['mdld'],
-                                                                  'ratio'      => 1 - $row['mdld'] / max(mb_strlen($row['common_name'], "UTF-8"), $lenCommonName),
-                                                                  'taxon'      => $taxon,
-                                                                  'taxonID'    => $row['taxonID_fk'],
-                                                                  'syn'        => $syn,
-                                                                  'synID'      => $synID)));
-            }
+			$searchresult[] = array(
+				'genus'    => $genusData['genus'],
+				'distance' => $row['mdld'],
+				'ratio'    => 1 - $row['mdld'] / max(mb_strlen($row['common_name'], "UTF-8"), $lenCommonName),
+				'taxon'    => $genusData['genus'] . ' ' . $genusData['author'] . ' (' . $familyData['family'] . ')',
+				'ID'       => $genusData['genID'],
+				'species'  => array(
+					array(
+						'name'       => trim($speciesData['epithet0']),
+						'commonName' => $row['common_name'],
+						'distance'   => $row['mdld'],
+						'ratio'      => 1 - $row['mdld'] / max(mb_strlen($row['common_name'], "UTF-8"), $lenCommonName),
+						'taxon'      => $taxon,
+						'taxonID'    => $row['taxonID'],
+						'syn'        => $syn,
+						'synID'      => $synID
+					)
+				)
+			);
+            
             $ctr++;
         }
 
