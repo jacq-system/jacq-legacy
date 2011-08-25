@@ -344,6 +344,7 @@ function inputJqAutocomplete2($x, $y, $w, $name, $value, $index, $serverScript, 
 	$title=($title=='')?"":" title='{$title}'";
 
 	if($textarea){
+		$value=str_replace('&quot;','"',$value);
 		echo<<<EOF
 <input type="hidden" name="{$name}Index" id="{$name}Index"  value="{$index}"/>
 <textarea  tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$rows}" name="{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$value}</textarea>
@@ -432,7 +433,8 @@ function text($x,$y,$text) {
 }
 
 function textarea($x,$y,$w,$h,$name,$value,$bgcol="",$title="",$readonly='') {
-
+	
+  $value=htmlspecialchars_decode($value);
   $this->_divclass($x,$y,"cssfinput");
   print "\n<textarea class=\"cssf\" style=\"width: ".$w."em; height: ".$h."em;";
   if ($bgcol) print " background-color: $bgcol;";

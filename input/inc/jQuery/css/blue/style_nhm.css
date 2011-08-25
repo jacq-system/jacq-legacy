@@ -43,3 +43,5 @@ table.tablesorter .smallorder{
  font-size:8px;
  color:#000;
 }
+table.tablesorter thead tr th{border: 1px solid #CCC !important;}
+table.tablesorter tbody td {border: 1px solid #CCC !important;}

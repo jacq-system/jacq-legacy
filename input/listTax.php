@@ -21,7 +21,22 @@ if (!isset($_SESSION['taxMDLD']))   $_SESSION['taxMDLD'] = ""; // BP
 if (isset($_POST['search'])) {
     $_SESSION['taxMDLD'] = $_POST['mdld'];  // BP
     if ($_SESSION['editFamily']) $_POST['family'] = $_SESSION['editFamily'];
-    if ($_POST['collector'] || $_POST['number'] || $_POST['date']) {
+    if ($_POST['commonname']) {
+		$_SESSION['taxType']       = 5; // list ?
+		$_SESSION['taxCommonname'] = $_POST['commonname'];
+		$_SESSION['taxFamily']     = "";
+        $_SESSION['taxGenus']      = "";
+        $_SESSION['taxSpecies']    = "";
+        $_SESSION['taxStatus']     = "";
+        $_SESSION['taxCollector']  = "";
+        $_SESSION['taxNumber']     = "";
+        $_SESSION['taxDate']       = "";
+        $_SESSION['taxAuthor']     = "";
+        $_SESSION['taxAnnotation'] = "";
+        $_SESSION['taxExternal']   = "";
+        $_SESSION['taxOrder']      = "genus, auth_g, family, epithet,common_name, author";
+        $_SESSION['taxOrTyp']      = 51;
+	}else if ($_POST['collector'] || $_POST['number'] || $_POST['date']) {
         $_SESSION['taxType']       = 4; // list Species, other display
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
@@ -113,7 +128,23 @@ if (isset($_POST['search'])) {
     $_SESSION['taxOrder']      = "genus, auth_g, family";
     $_SESSION['taxOrTyp']      = 21;
 } else if (isset($_GET['order'])) {
-    if ($_SESSION['taxType'] == 4) { // list Species, other display
+    if ($_SESSION['taxType'] == 5) { // list Species, other display
+		if ($_GET['order']=="db") {
+			$_SESSION['taxOrder'] = "genus, auth_g, family, epithet,common_name, author";
+			if ($_SESSION['taxOrTyp'] == 52) {
+				$_SESSION['taxOrTyp'] = -52;
+			} else {
+				$_SESSION['taxOrTyp'] = 52;
+			}
+		} else {
+			$_SESSION['taxOrder'] = "common_name,genus, auth_g, family, epithet, author";
+			if ($_SESSION['taxOrTyp'] == 51) {
+				$_SESSION['taxOrTyp'] = -51;
+			} else {
+				$_SESSION['taxOrTyp'] = 51;
+			}
+		}
+	} else if ($_SESSION['taxType'] == 4) { // list Species, other display
         if ($_GET['order']=="db") {
             $_SESSION['taxOrder'] = "family, genus, epithet, author, epithet1, author1, "
                                   . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
@@ -216,7 +247,9 @@ function prettyPrintSynonymLinks()
        . "<td style=\"width:20px\">&nbsp;</td>"
        . "<td><a href=\"javascript:listSynonyms(1,0)\">list synonyms (short)</a></td>"
        . "<td style=\"width:20px\">&nbsp;</td>"
-       . "<td><a href=\"javascript:listSynonyms(1,1)\">list names alphabetically</a></td>";
+       . "<td><a href=\"javascript:listSynonyms(1,1)\">list names alphabetically</a></td"
+	   . "<td style=\"width:20px\">&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+       . "<td><a href=\"javascript:listSynonyms(1,2)\">list CommonNames alphabetically</a></td>";
    return $out;
 }
 
@@ -636,6 +669,10 @@ if ($result = db_query($sql)) {
   <title>herbardb - list Species</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
+  <style>
+
+  </style>
   <!-- BP: use jQuery for disabling edit-fields if MDLD-search has been entered -->
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <!-- BP END -->
@@ -669,6 +706,7 @@ if ($result = db_query($sql)) {
       MeinFenster.focus();
     }
     function listSynonyms(sel,type) {
+		var add='';
       target  = "listSynonyms.php?short=" + encodeURIComponent(sel) + "&listOnly=" + encodeURIComponent(type);
       options = "width=800,height=800,top=50,left=50,scrollbars=yes,resizable=yes";
       MeinFenster = window.open(target,"listSynonyms",options);
@@ -755,6 +793,9 @@ if ($result = db_query($sql)) {
   <td align="right" id="annotationLabel">&nbsp;<b>Annotation:</b></td>
     <td colspan="5"><input type="text" name="annotation" id="annotation" size="89" value="<?php echoSpecial('taxAnnotation', 'SESSION'); ?>"></td>
 </tr><tr>
+  <td align="right" id="annotationLabel">&nbsp;<b>Common Name:</b></td>
+    <td colspan="5"><input type="text" name="commonname" id="commonname" size="89" value="<?php echoSpecial('taxCommonname', 'SESSION'); ?>"></td>
+</tr><tr>
   <td align="left" colspan="3"><input class="button" type="submit" name="search" value=" search "></td>
   <td align="right" id="externalLabel" colspan="2">&nbsp;<b>external:</b></td>
   <td align="left"><input type="checkbox" name="external" id="external"<?php echo (!empty($_SESSION['taxExternal'])) ? ' checked' : ''; ?>></td>
@@ -829,7 +870,7 @@ if ($_SESSION['taxMDLD'] != "") {
     </script>
 
     <?php
-    if ($_SESSION['taxType'] == 3) {  
+    if ($_SESSION['taxType'] == 3 || $_SESSION['taxType'] == 5) {  
         echo prettyPrintSynonymLinks();     // BP: moved to a function
     }
     echo "</tr></table><p>\n";
@@ -1124,6 +1165,181 @@ if ($_SESSION['taxMDLD'] != "") {
         } else {
             echo "<b>nothing found!</b>\n";
         }
+	} else if ($_SESSION['taxType'] == 5) {  // list Species, other display
+		
+		
+		$start = microtime(true);
+
+		$searchtext = strtolower(trim($_SESSION['taxCommonname']));
+		
+		$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+		_logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
+		try {
+		
+			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
+			$stop = microtime(true);
+
+			/*if (!empty($matches['error'])) {
+				$out = $matches['error'];
+			} else */{
+			
+				$s[0]=sortItem($_SESSION['taxOrTyp'], 51);
+				$s[1]=sortItem($_SESSION['taxOrTyp'], 52);
+				$s[2]=sortItem($_SESSION['taxOrTyp'], 53);
+				$s[3]=sortItem($_SESSION['taxOrTyp'], 54);
+			
+				/*echo<<<EOF
+<table class="out" cellspacing="0">
+<tr class="out">
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=da">Taxon</a>{$s[0]}</th>
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=db">CommonName</a>{$s[1]}</th>
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=dc">Distance</a>{$s[2]}</th>
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=dd">Ratio</a>{$s[3]}</th>
+</tr>
+EOF;*/
+				echo<<<EOF
+<script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
+
+<table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter" border="1" style="border: 1px solid #000;border-collapse:collapse" width="700">
+<colgroup><col width="40%"><col width="40%"><col width="10%"><col width="10%"></colgroup>
+<thead>
+<tr>
+ <th><span>Taxon</span></th><th><span>CommonName</span></th><th><span>Distance</span></th><th><span>Ratio</span></th>
+</tr>
+</thead>
+<tbody>
+
+EOF;
+				$x=0;
+				$used=array();
+				$linkList=array(0);
+				$indexMatch=0;
+				while ($indexMatch < count($matches['result'])) {
+					$countResults = count($matches['result'][$indexMatch]['searchresult']);
+					$indexResult=0;
+					$nr1 = 1;
+					while ($indexResult < $countResults) {
+						$row = $matches['result'][$indexMatch]['searchresult'][$indexResult]['species'][0];
+					
+						if(!isset($used[$row['taxonID']])){
+							$nr=$nr1;
+							$nr1++;
+						}else{
+							$nr=$used[$row['taxonID']];
+						}
+						
+						//$link=  "editSpecies.php?sel=".htmlspecialchars("<" . $row['taxonID'] . ">")."&nr={$nr}";
+						
+						$ratio=number_format($row['ratio'] * 100, 1).'%';
+						$c=($x++%2 || $nrSel == $nr)?'o':'e';
+						echo<<<EOF
+<tr onclick="selectID('{$row['taxonID']}','{$nr}')" >
+<td class="{$c}">{$row['taxon']} {$row['taxonID']}</td><td class="{$c}"">{$row['commonName']}</td><td class="{$c}">{$row['distance']}</td><td class="{$c}">$ratio</td>
+</tr>
+EOF;
+						if(!isset($used[$row['taxonID']])){
+							$used[$row['taxonID']]=$nr;
+							// save current taxonID for "editSpecies.php" and "listSynonyms.php"
+							$linkList[$nr] = $row['taxonID'];
+							$nr++;
+						}
+						$indexResult++;
+					}
+					$indexMatch++;
+				}
+				echo<<<EOF
+</tbody>
+</table>
+<script>
+$(function(){
+	$("#sorttable tbody tr").hover(
+		function(){ $(this).find('td').css('background-color','#ffff99');},
+		function(){ $(this).find('td').css('background-color','');}
+	);
+	$("#sorttable").tablesorter();
+});
+
+function selectID(taxonID,nr){
+	document.location.href="editSpecies.php?sel=<"+taxonID+">&nr="+nr;
+}
+
+</script>
+			
+EOF;
+				$linkList[0] = $nr1 - 1;
+				$_SESSION['txLinkList'] = $linkList;
+			}
+		}catch (Exception $e) {
+			$out =  "Fehler " . nl2br($e);
+		}
+	
+		/*$sql ="
+SELECT
+ vc.common_name,
+ ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family,
+ ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
+ ta4.author author4, ta5.author author5,
+ te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+ te4.epithet epithet4, te5.epithet epithet5
+FROM
+ {$_CONFIG['DATABASE']['VIEWS']['name']}.view_commonnames vc
+ LEFT JOIN tbl_tax_species ts ON ts.taxonID=vc.taxonID
+ LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+ LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+ LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+ LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+ LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+ LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+ LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+ LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+ LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+ LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+ LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+ LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+ LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+ LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
+ LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+WHERE
+ vc.common_name LIKE '%".mysql_escape_string($_SESSION['taxCommonname']) ."%'
+";
+		$sql .= "ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
+		
+
+		$result = db_query($sql);
+		if (mysql_num_rows($result) > 1000) {
+		    echo "<b>no more than 1000 results allowed</b>\n";
+		} elseif (mysql_num_rows($result) > 0) {
+				
+			$s[0]=sortItem($_SESSION['taxOrTyp'], 51);
+			$s[1]=sortItem($_SESSION['taxOrTyp'], 52);
+			
+			echo<<<EOF
+<table class="out" cellspacing="0">
+<tr class="out">
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=da">Type</a>{$s[0]}</th>
+<th class="out"><a href="{$_SERVER['PHP_SELF']}?order=db">Taxon</a>{$s[1]}</th>
+</tr>
+EOF;
+			$nr = 1;
+			while ($row = mysql_fetch_array($result)) {
+				$link=  "editSpecies.php?sel=".htmlspecialchars("<" . $row['taxonID'] . ">")."&nr=$nr";
+		   		$class=($nrSel == $nr) ? "outMark" : "out";
+		    	$taxon=htmlspecialchars(taxon($row));
+				
+				echo<<<EOF
+<tr class="{$class}">
+<td class=out><a href="{$link}">{$taxon}</a></td>
+<td class=out><a href="{$link}">{$row['common_name']}</a></td>
+</tr>
+EOF;
+				$nr++;
+		    }
+		    echo "</table>\n";
+		} else {
+		    echo "<b>nothing found!</b>\n";
+		}*/
+		
+		
     }
 } // no MDLD
 ?>

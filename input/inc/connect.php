@@ -27,15 +27,45 @@ function no_magic()   // PHP >= 4.1
     }
 }
 
-function db_query($sql)
-{
-    $result = @mysql_query($sql);
-    if (!$result) {
-        echo $sql . "<br>\n";
-        echo mysql_error() . "<br>\n";
-    }
+// mode=1=> From Post to escaped mysql
+// $mode=2 => for formulars from escaped mysql
+// $mode=3 => for formulars from not escaped mysql
+// $mode=4 => from mysql to mysql
+function doQuotes(&$obj,$mode){
+	foreach($obj as &$val){
+		if(is_array($val)){
+				doQuotes($val,$mode);
+		}else if(is_scalar($val)){
+			if($mode==1){
+				$val=htmlspecialchars_decode($val);
+				$val=mysql_escape_string($val);
+			}else if($mode==2){
+				$val=htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
+				$val=stripslashes($val);
+			}else if($mode==3){
+				$val=htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
+			}else if($mode==4){
+				$val=mysql_escape_string($val);
+			}
+		}
+	}
+}
 
-    return $result;
+function db_query($sql,$debug=false){
+	global $_OPTIONS;
+	
+	if($debug || $_OPTIONS['debug']==1){
+		$debug=true;
+	}
+	
+	$res=mysql_query($sql);
+	
+	if(!$res && $debug){
+		echo $sql;
+		echo mysql_errno() . ": " . mysql_error() . "<br>\n";
+	}
+	
+    return $res;
 }
 
 function extractID($text)

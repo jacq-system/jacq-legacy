@@ -10,10 +10,12 @@ function logCommonNamesAppliesTo($id,$updated,$old='') {
 WHERE 
 ".$id->getWhere();
 	
-	$result = mysql_query($sql);
+	
+	$result = db_query($sql);
 	$row = mysql_fetch_array($result);
+	doQuotes($row,4);
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to ".
-		"(geonameId,language_id,period_id,entity_id,reference_id,name_id,locked,oldid,geospecification,annotation,".
+		"(geonameId,language_id,period_id,entity_id,reference_id,name_id, geospecification,annotation,locked,oldid,".
 		"userID, updated, timestamp) VALUES (".
 		$row['geonameId'].', '.
 		$row['language_id'].', '.
@@ -21,6 +23,7 @@ WHERE
 		$row['entity_id'].', '.
 		$row['reference_id'].', '.
 		$row['name_id'].', '.
+		
 		'\''.$row['geospecification'].'\', '.
 		'\''.$row['annotation'].'\', '.
 		$row['locked'].', '.
@@ -30,7 +33,7 @@ WHERE
 		$updated.',
 		NULL)';
 
-	mysql_query($sql);
+	db_query($sql);
 }
 
 function logCommonNamesCommonName($id,$updated) {
@@ -38,9 +41,11 @@ function logCommonNamesCommonName($id,$updated) {
 	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 	
 	$sql = "SELECT * FROM {$dbprefix}tbl_name_commons WHERE common_id='{$id}'";
-	$result = mysql_query($sql);
+	$result = db_query($sql);
 	$row = mysql_fetch_array($result);
 
+	doQuotes($row,4);
+	
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_commons ".
 		 "(common_id, common_name, locked, userID, updated, timestamp) VALUES (".
 		$row['common_id'].', '.
@@ -50,17 +55,18 @@ function logCommonNamesCommonName($id,$updated) {
 		$_SESSION['uid'].', '.
 		$updated.',
 		NULL)';
-	mysql_query($sql);
+	db_query($sql);
 }
-
+/*
+// Not lockable!
 function logCommonNamesLanguage($id,$updated) {
 	global $_CONFIG;
 	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
 	
 	$sql = "SELECT * FROM {$dbprefix}tbl_name_languages WHERE language_id='{$id}'";
-	$result = mysql_query($sql);
+	$result = db_query($sql);
 	$row = mysql_fetch_array($result);
-
+	doQuotes($row,4);
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_languages ".
 		 "(language_id, `iso639-6`, `parent_iso639-6`, name, userID, updated, timestamp) VALUES (".
 		$row['language_id'].', '.
@@ -72,8 +78,8 @@ function logCommonNamesLanguage($id,$updated) {
 		$updated.',
 		NULL)';
 
-	mysql_query($sql);
-}
+	db_query($sql);
+}*/
 
 
 function logSpecimen($ID,$updated) {
@@ -81,7 +87,7 @@ function logSpecimen($ID,$updated) {
   if ($updated) {
     $sql = "SELECT * FROM tbl_specimens ".
            "WHERE specimen_ID='".mysql_escape_string($ID)."'";
-    $result = mysql_query($sql);
+    $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
     $sql = "INSERT INTO herbarinput_log.log_specimens SET
@@ -150,14 +156,14 @@ function logSpecimen($ID,$updated) {
             updated=".quoteString($updated).",
             timestamp=NULL";
   }
-  mysql_query($sql);
+  db_query($sql);
 }
 
 function logSpecimensTypes($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_specimens_types ".
          "WHERE specimens_types_ID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_specimens_types ".
@@ -171,15 +177,15 @@ function logSpecimensTypes($ID,$updated) {
          quoteString($_SESSION['uid']).", ".
          quoteString($updated).", ".
          "NULL)";
-  mysql_query($sql);
+  db_query($sql);
 }
 
 function logSpecimensSeries($ID, $updated)
 {
-    $row = mysql_fetch_array(mysql_query("SELECT * FROM tbl_specimens_series
+    $row = mysql_fetch_array(db_query("SELECT * FROM tbl_specimens_series
                                           WHERE seriesID = '" . mysql_escape_string($ID) . "'"));
 
-    mysql_query("INSERT INTO herbarinput_log.log_specimens_series SET
+    db_query("INSERT INTO herbarinput_log.log_specimens_series SET
                   seriesID  = " . quoteString($row['seriesID']) . ",
                   series    = " . quoteString($row['series'])   . ",
                   locked    = " . quoteString($row['locked'])   . ",
@@ -192,7 +198,7 @@ function logAuthors($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_authors ".
          "WHERE authorID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_authors ".
@@ -210,7 +216,7 @@ function logFamilies($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_families ".
          "WHERE familyID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_families ".
@@ -228,7 +234,7 @@ function logGenera($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_genera ".
          "WHERE genID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_genera ".
@@ -255,7 +261,7 @@ function logIndex($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_index ".
          "WHERE taxindID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_index ".
@@ -277,7 +283,7 @@ function logSpecies($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_species ".
          "WHERE taxonID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_species ".
@@ -315,7 +321,7 @@ function logTypecollections($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_tax_typecollections ".
          "WHERE typecollID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_tax_typecollections ".
@@ -342,7 +348,7 @@ function logLit($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_lit ".
          "WHERE citationID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_lit ".
@@ -383,7 +389,7 @@ function logLitTax($ID,$updated) {
   $sql = "SELECT *
           FROM tbl_lit_taxa
           WHERE lit_tax_ID = '" . mysql_escape_string($ID) . "'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_lit_taxa SET
@@ -407,7 +413,7 @@ function logLitAuthors($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_lit_authors ".
          "WHERE autorID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_lit_authors ".
@@ -425,7 +431,7 @@ function logLitPeriodicals($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_lit_periodicals ".
          "WHERE periodicalID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_lit_periodicals ".
@@ -447,7 +453,7 @@ function logLitPublishers($ID,$updated) {
 
   $sql = "SELECT * FROM tbl_lit_publishers ".
          "WHERE publisherID='".mysql_escape_string($ID)."'";
-  $result = mysql_query($sql);
+  $result = db_query($sql);
   $row = mysql_fetch_array($result);
 
   $sql = "INSERT INTO herbarinput_log.log_lit_publishers ".

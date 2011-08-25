@@ -428,6 +428,7 @@ $source_sel=array('service'=>'','person'=>'','literature'=>'');
 $msg=array('result'=>'','err'=>'');
 $strict=!isset($_GET['search']);
 $dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+$quotesdone=0;
 	
 
 // dataVar
@@ -468,8 +469,6 @@ $_dvar=array(
 
 );
 
-
-
 if(isset($_GET['search'])){
 	foreach($_GET as $k=>$v){
 		$_POST[$k]=$v;
@@ -481,8 +480,8 @@ $action=isset($_POST['submitDelete'])?'doDelete':(isset($_POST['submitUpdate'])?
 //echo $action;
 //print_r($_POST);
 
-if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==0 ){
-	
+if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==false ){
+
 	$errr=error_reporting($debuger);
 	$_dvar=array_merge($_dvar, array(
 		'taxonIndex' => $_POST['taxonIndex'],
@@ -534,7 +533,8 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==0 ){
 		cleanPair('literature');
 		
 	}	
-
+	doQuotes($_dvar,1);
+	$quotesdone=1;
 	error_reporting($errr);
 }
 //print_r($_dvar);
@@ -596,13 +596,14 @@ if ($action=='doDelete' ) {
 }else if($action=='doSearch'){
 	$doSearch=true;
 }
-
+doQuotes($_dvar,($quotesdone==1)?2:3);
 
 if($doSearch){
 	$search_result=doSearch($_dvar,$strict);
 }
 //print_r($_dvar);
 
+// todo: include this to autcompleter cssf!!
 $init3="
 var init3=[['taxon','{$_dvar['taxonIndex']}','1','1'],['geoname','{$_dvar['geonameIndex']}','1','1'],['literature','{$_dvar['literatureIndex']}','1','1'],['service','{$_dvar['serviceIndex']}','1','1'],['person','{$_dvar['personIndex']}','1','1'],['period','','0','0'],['common_name','','0','0'],['language','{$_dvar['languageIndex']}','0','1'],['geospecification','','0','0']];
 ";
@@ -715,8 +716,6 @@ if($_dvar['update'] &&  ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_t
 if(($_SESSION['editControl'] & 0x20000) != 0 ){
 	$cf->buttonSubmit(33, 34, "submitInsert", " Insert New");
 }
-
-
 
 echo<<<EOF
 <div style="position: absolute; left: 11em; top: 36em; width:672px;">
@@ -892,6 +891,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		return array($msg,0);
 	}
 
+
 	// reference
 	$_dvar['referenceIndex']=0;
 	switch($_dvar['source']){
@@ -963,7 +963,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	}else{
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_names (name_id) VALUES (NULL)");
 		$_dvar['nameIndex']=mysql_insert_id();
-		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name) VALUES ('{$_dvar['nameIndex']}','{$_dvar['common_name']}')");
+		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['nameIndex']}','{$_dvar['common_name']}','1')");
 		
 		// log it
 		logCommonNamesCommonName($_dvar['nameIndex'],0);
@@ -981,14 +981,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		$_dvar['entityIndex']=mysql_insert_id();
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
 	}
-	
+
 	// save old id
 	$where='';$old='';
 	if($update){
 		$where=$_dvar['active_id']->getWhere();
 		$old=$_dvar['active_id']->toString();
 	}
-	
+
 	// NEW ID
 	$_dvar['active_id']->setNatID(array(
 		'entity_id'=>$_dvar['entityIndex'],
@@ -1002,8 +1002,8 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	// Update fields
 	$sql = $_dvar['active_id']->getIDFields();
 	
-	$sql.=", annotation='".doQuote($_dvar['annotation'])."'"
-		 .", geospecification='".doQuote($_dvar['geospecification'])."'";
+	$sql.=", annotation='{$_dvar['annotation']}'"
+		 .", geospecification='{$_dvar['geospecification']}'";
 
 	if(checkRight('unlock_tbl_name_applies_to')){
 		$sql .= ", locked = '{$_dvar['locked']}'";
@@ -1098,6 +1098,9 @@ function doSearch($_dvar,$get=false){
 
 	$i=0;$search_result='';
 	while($row = mysql_fetch_array($result)){
+		
+		doQuotes($row,3);
+		
 		$taxon=getTaxon($row['taxonID']);
 		
 		$literature='';
@@ -1221,29 +1224,10 @@ function doDBQuery($sql,$debug=false){
 	if($debug){
 		echo $sql;
 	}
-	$res=db_query($sql);
-	
-	if(!$res){
-		echo mysql_errno() . ": " . mysql_error() . "\n";
-	}
-	return $res;
+	return db_query($sql,$debug);
 }
-
-/**
- * doDBQuery:
- * @param 
- * @param 
- * @return sql string
- */
-function doQuote($var){
-	return mysql_real_escape_string($var);
-}
-
-
-
 
 // Helper... to be moved or reorganized...
-
 
 function getService($serviceID){
 	$sql = "

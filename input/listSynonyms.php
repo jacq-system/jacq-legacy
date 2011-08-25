@@ -51,8 +51,40 @@ function taxonList($row)
   return $text;
 }
 
+function getCommonNames($taxonIDs){
+	
+	global $_CONFIG;
+	
+	$where='';
+	
+	foreach($taxonIDs as $taxonID){
+		$where.=','.mysql_escape_string($taxonID);
+	}
+	$where=substr($where,1);
+	
+	$sql ="SELECT common_name FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_commonnames WHERE  taxonID IN ($where)";
+
+	$result = db_query($sql);
+	$text = "";
+	if (mysql_num_rows($result)>0) {
+		while ($row=mysql_fetch_array($result)) {
+			$text.=", {$row['common_name']}";
+		}
+	}
+	$text=substr($text,2);
+	
+	if(strlen($text)>0){
+		$text="CN: ".$text;
+	}else{
+		return false;
+	}
+	
+	return $text;
+}
+
 function protologList($taxon, $short=false)
 {
+	
     $sql ="SELECT paginae, figures,
             l.suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical,
             l.vol, l.part, l.jahr
@@ -181,10 +213,24 @@ for ($i = 1; $i <= $idList[0]; $i++) {
              LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
             WHERE taxonID = '" . mysql_escape_string($id) . "'";
+			
     $result = db_query($sql);
     if (mysql_num_rows($result) > 0) {
         $row = mysql_fetch_array($result);
         if (!empty($_GET['listOnly'])) {
+			
+			$commonnames_lookup=array();
+			
+			$commonnames_lookup[]=$row['taxonID'];
+			
+			if($_GET['listOnly']=='2'){
+				$text=getCommonNames($commonnames_lookup);
+				
+				if(!$text){
+					continue;
+				}
+			}
+			
             $bold = ($row['statusID'] == 96) ? true : false;
             if ($short) {
                 echo (($bold) ? "<b>" : "") . taxonList($row) . (($bold) ? "</b>" : "") . protologList($row['taxonID'], true) . "<br>\n";
@@ -192,64 +238,74 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                 echo (($bold) ? "<b>" : "") . taxonList($row) . (($bold) ? "</b>" : "") . "<br>\n" . protologList($row['taxonID']) . "<br>\n";
             }
             typusList($row['taxonID'], false);
-            if ($row['basID']) {
-                $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
-                         ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                         ta4.author author4, ta5.author author5,
-                         te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                         te4.epithet epithet4, te5.epithet epithet5
-                        FROM tbl_tax_species ts
-                         LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                         LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                         LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                         LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                         LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                         LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                         LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                         LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                         LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                         LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                         LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                         LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                         LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-                         LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                        WHERE taxonID = '" . mysql_escape_string($row['basID']) . "' ";
-                $row2 = mysql_fetch_array(db_query($sql));
-                echo "bas. " . taxonList($row2) . "<br>\n";
-            }
-            if ($row['synID']) {
-                $sql = "SELECT ts.taxonID, ts.basID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
-                         ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                         ta4.author author4, ta5.author author5,
-                         te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                         te4.epithet epithet4, te5.epithet epithet5
-                        FROM tbl_tax_species ts
-                         LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                         LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                         LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                         LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                         LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                         LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                         LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                         LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                         LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                         LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                         LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                         LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                         LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-                         LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                        WHERE taxonID = '" . mysql_escape_string($row['synID']) . "' ";
-                $result2 = db_query($sql);
-                if (mysql_num_rows($result2) > 0) {
-                    $row2 = mysql_fetch_array($result2);
-                    if ($row['basID'] && $row2['basID'] == $row['basID'] || !$row['basID'] && $row2['basID'] == $row['taxonID']) {
-                        $sign = "&equiv;";
-                    } else {
-                        $sign = "=";
-                    }
-                    echo "<b>$sign " . taxonList($row2) . "</b><br>\n";
-                }
-            }
+			
+			if($_GET['listOnly']!='2'){
+			
+				if ($row['basID']) {
+					$sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
+							 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+							 ta4.author author4, ta5.author author5,
+							 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+							 te4.epithet epithet4, te5.epithet epithet5
+							FROM tbl_tax_species ts
+							 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+							 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+							 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+							 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+							 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+							 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+							 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+							 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+							 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+							 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+							 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+							 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+							 LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
+							 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+							WHERE taxonID = '" . mysql_escape_string($row['basID']) . "' ";
+					$row2 = mysql_fetch_array(db_query($sql));
+					
+					$commonnames_lookup[]=$row2['taxonID'];
+					
+					echo "bas. " . taxonList($row2) . "<br>\n";
+				}
+				if ($row['synID']) {
+					$sql = "SELECT ts.taxonID, ts.basID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
+							 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+							 ta4.author author4, ta5.author author5,
+							 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+							 te4.epithet epithet4, te5.epithet epithet5
+							FROM tbl_tax_species ts
+							 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+							 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+							 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+							 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+							 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+							 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+							 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+							 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+							 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+							 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+							 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+							 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+							 LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
+							 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+							WHERE taxonID = '" . mysql_escape_string($row['synID']) . "' ";
+					$result2 = db_query($sql);
+					if (mysql_num_rows($result2) > 0) {
+						$row2 = mysql_fetch_array($result2);
+						
+						if ($row['basID'] && $row2['basID'] == $row['basID'] || !$row['basID'] && $row2['basID'] == $row['taxonID']) {
+							$sign = "&equiv;";
+						} else {
+							$sign = "=";
+						}
+						echo "<b>$sign " . taxonList($row2) . "</b><br>\n";
+					}
+				}
+			}
+			echo getCommonNames($commonnames_lookup);
+			
         } else {
             $repeatCtr = 10;
 
@@ -261,6 +317,8 @@ for ($i = 1; $i <= $idList[0]; $i++) {
             }
 
             do {
+				$commonnames_lookup=array();
+				
                 $result = db_query("SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status, tst.statusID,
                                      ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                                      ta4.author author4, ta5.author author5,
@@ -284,7 +342,9 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                                     WHERE taxonID = '" . intval($id) . "'");
                 if (mysql_num_rows($result) > 0) {
                     $row = mysql_fetch_array($result);
-
+					
+					$commonnames_lookup[]=$row['taxonID'];
+					
                     $repeat = false;
                     if (!empty($row['synID']) && $repeatCtr > 0) {
                         $repeatCtr--;
@@ -329,12 +389,16 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                     }
 
                     while ($row2 = mysql_fetch_array($result2)) {
+						
+						$commonnames_lookup[]=$row2['taxonID'];
+						
                         echo $tableStart;
                         echo item(20, $row2, $short, "&equiv;");
                         typusList($row2['taxonID'], true);
                         echo "</table>\n";
                         $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
                         while ($row3 = mysql_fetch_array($result3)) {
+							$commonnames_lookup[]=$row3['taxonID'];
                             echo $tableStart;
                             echo item(40, $row3, $short, "&equiv;");
                             echo "</table>\n";
@@ -347,18 +411,26 @@ for ($i = 1; $i <= $idList[0]; $i++) {
                     }
 
                     while ($row2 = mysql_fetch_array($result2)) {
+						
+						$commonnames_lookup[]=$row2['taxonID'];
+						
                         echo $tableStart;
                         echo item(20, $row2, $short);
                         typusList($row2['taxonID'], true);
                         echo "</table>\n";
                         $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'". $order);
                         while ($row3 = mysql_fetch_array($result3)) {
+							
+							$commonnames_lookup[]=$row3['taxonID'];
+							
                             echo $tableStart;
                             echo item(40, $row3, $short, "&equiv;");
                             echo "</table>\n";
                         }
                     }
                     
+					echo getCommonNames($commonnames_lookup);
+					
                     // repeat the loop if the synID is set to anything
                     if (!empty($row['synID'])) {
                         $id = $row['synID'];

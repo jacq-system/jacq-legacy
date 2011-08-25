@@ -1,28 +1,38 @@
 <?php
-// Main database containing the data
-$_CONFIG['DATABASE']['INPUT'] = array(
-    "host" => "localhost",
-    "name" => "",
-    "readonly" => array(
-        "user" => "",
-        "pass" => ""
-    )
+
+$_CONFIG['DATABASE']=array(
+	
+	// Main database containing the data
+	'INPUT' => array(
+		'host' => 'localhost',
+		'name' => '',
+		'readonly' => array(
+			'user' => '',
+			'pass' => ''
+		)
+	),
+
+	// Names databases (doesn't need a own user actually, but instead it uses the login user)
+	'NAME' =>array(
+		'name' => 'names',
+	),
+	
+	// Log database containing journal + user data
+	'LOG' => array(
+		'host' => 'localhost',
+		'name' => '',
+		'readonly' => array(
+			'user' => '',
+			'pass' => ''
+		)
+	),
+	
+	// Log database containing journal + user data
+	'VIEWS' => array(
+		'name' => 'herbar_view',
+	),
 );
 
-// Log database containing journal + user data
-$_CONFIG['DATABASE']['LOG'] = array(
-    "host" => "localhost",
-    "name" => "",
-    "readonly" => array(
-        "user" => "",
-        "pass" => ""
-    )
-);
-
-// Names databases (doesn't need a own user actually, but instead it uses the login user)
-$_CONFIG['DATABASE']['NAME'] = array(
-    "name" => "names",
-);
 
 // Force HTTPS
 $_CONFIG['CONNECTION']['secure'] = true;
