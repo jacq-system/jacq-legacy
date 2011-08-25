@@ -29,6 +29,7 @@ $result = mysql_query("SELECT db FROM tbljobs WHERE jobID = '$jobID'");
 $row = mysql_fetch_array($result);
 $database = $row['db'];
 
+// todo: new databases.
 $result = mysql_query("SELECT queryID, query FROM tblqueries WHERE jobID = '$jobID' AND result IS NULL ORDER BY lineNr");
 while ($row = mysql_fetch_array($result)) {
     try {

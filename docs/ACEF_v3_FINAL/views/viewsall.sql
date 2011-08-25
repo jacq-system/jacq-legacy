@@ -1,3 +1,19 @@
+/*
+SELECT 
+ ReferenceID,
+
+ COUNT(*)
+
+FROM
+view_references
+
+GROUP BY
+ ReferenceID
+
+HAVING
+ COUNT(*)>1
+ */
+
 -- ===========================================
 -- ready
 -- view_sourcedatabase
@@ -42,7 +58,7 @@ CREATE OR REPLACE
 
 SELECT
  
- ts.taxonID AS 'AcceptedTaxonID',
+ CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  
  'Plantae' AS 'Kingdom',
  'Magnoliophyta' AS 'Phylum',
@@ -65,8 +81,8 @@ SELECT
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
  
- 'LTSSpecialist' AS 'LTSSpecialist',
- 'LTSDate' AS 'LTSDate',
+ sc.author AS 'LTSSpecialist',
+ sc.date AS 'LTSDate',
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
@@ -75,6 +91,7 @@ SELECT
 
 FROM
  herbarinput.tbl_tax_species ts
+ LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
  
@@ -104,7 +121,7 @@ CREATE OR REPLACE
  AS
 
 SELECT 
- ts.taxonID AS 'AcceptedTaxonID',
+ CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  acc.AcceptedTaxonID AS 'ParentSpeciesID',
 
  CASE ts.tax_rankID
@@ -131,8 +148,8 @@ SELECT
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
 
- 'LTSSpecialist' AS 'LTSSpecialist',
- 'LTSDate' AS 'LTSDate',
+ sc.author AS 'LTSSpecialist',
+ sc.date AS 'LTSDate',
 
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
@@ -141,7 +158,8 @@ SELECT
 
 FROM
  herbar_view.view_acceptedspecies acc
- LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=acc.AcceptedTaxonID
+ LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
  LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
  
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
@@ -201,7 +219,7 @@ CREATE OR REPLACE
  VIEW herbar_view.view_synonyms
  AS
 SELECT 
- tsn.SynonymID AS 'ID',
+ CONCAT('s',tsn.SynonymID) AS 'ID',
  tsn.AcceptedTaxonID AS 'AcceptedTaxonID',
  tg.genus AS 'Genus',
  '' AS 'SubGenusName',
@@ -273,8 +291,19 @@ SELECT
  co.common_name AS 'CommonName',
  '' AS 'Transliteration',
  lan.name AS 'Language',
- '' AS 'Country',
- geo.name AS 'Area',
+ -- after second "(" between second and third "," is the country; no "," and "(" are allowed but this normed ones.
+ SUBSTRING(geo.name,
+   (LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+2) ,
+   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1))
+  -(LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+2)
+ ) AS 'Country',
+ 
+ -- area is before first ","; no "," and "(" are allowed but this normed ones.
+ CONCAT(
+  SUBSTRING(geo.name,1,INSTR( geo.name,',')-1) ,
+  ' (',geo.geonameId,' geoname.org)'
+ ) AS 'Area',
+  
  CONCAT('c',ap.reference_id) AS 'ReferenceID'
  
 FROM
@@ -282,7 +311,8 @@ FROM
  LEFT JOIN names.tbl_name_entities en ON en.entity_id=taxonids.AcceptedTaxonID
  CROSS JOIN names.tbl_name_applies_to ap ON ap.entity_id=en.entity_id
  
- LEFT JOIN names.tbl_name_commons co ON co.common_id=ap.name_id
+ LEFT JOIN names.tbl_name_names n ON n.name_id=ap.name_id
+ LEFT JOIN names.tbl_name_commons co ON co.common_id=n.name_id
  LEFT JOIN names.tbl_name_languages lan ON lan.language_id=ap.language_id
  LEFT JOIN names.tbl_geonames_cache geo ON geo.geonameId=ap.geonameId
 ;

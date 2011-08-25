@@ -1,0 +1,109 @@
+# depslib dependency file v1.0
+1313517104 source:/home/gunther/mdld/mdld2/PracticalSocket.cpp
+	"pthread.h"
+	"PracticalSocket.h"
+	<winsock.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<netinet/in.h>
+	<string.h>
+	<stdlib.h>
+	<pthread.h>
+	<errno.h>
+
+1313497658 /home/gunther/mdld/mdld2/PracticalSocket.h
+	<string>
+	<exception>
+
+1313502574 source:/home/gunther/mdld/mdld2/levenshtein.cpp
+	<string>
+	<vector>
+	<iostream>
+	<algorithm>
+	"levenshtein.h"
+
+1313490554 /home/gunther/mdld/mdld2/levenshtein.h
+
+1313520031 source:/home/gunther/mdld/mdld2/main.cpp
+	"PracticalSocket.h"
+	"pthread.h"
+	<iostream>
+	<cstdlib>
+	<fstream>
+	<sstream>
+	<time.h>
+	<stdio.h>
+	<string.h>
+	<sys/types.h>
+	<sys/timeb.h>
+	"levenshtein.h"
+	<stdio.h>
+	<math.h>
+	<omp.h>
+	<iomanip>
+	<fcntl.h>
+	<errno.h>
+	<unistd.h>
+	<syslog.h>
+	<string.h>
+	<assert.h>
+	<signal.h>
+	<pthread.h>
+
+1313517104 source:/opt/mdld/mdld2/PracticalSocket.cpp
+	"pthread.h"
+	"PracticalSocket.h"
+	<winsock.h>
+	<sys/types.h>
+	<sys/socket.h>
+	<netdb.h>
+	<arpa/inet.h>
+	<unistd.h>
+	<netinet/in.h>
+	<string.h>
+	<stdlib.h>
+	<pthread.h>
+	<errno.h>
+
+1313497658 /opt/mdld/mdld2/PracticalSocket.h
+	<string>
+	<exception>
+
+1313502574 source:/opt/mdld/mdld2/levenshtein.cpp
+	<string>
+	<vector>
+	<iostream>
+	<algorithm>
+	"levenshtein.h"
+
+1313490554 /opt/mdld/mdld2/levenshtein.h
+
+1313526026 source:/opt/mdld/mdld2/main.cpp
+	"PracticalSocket.h"
+	"pthread.h"
+	<iostream>
+	<cstdlib>
+	<fstream>
+	<sstream>
+	<time.h>
+	<stdio.h>
+	<string.h>
+	<sys/types.h>
+	<sys/timeb.h>
+	"levenshtein.h"
+	<stdio.h>
+	<math.h>
+	<omp.h>
+	<iomanip>
+	<fcntl.h>
+	<errno.h>
+	<unistd.h>
+	<syslog.h>
+	<string.h>
+	<assert.h>
+	<signal.h>
+	<pthread.h>
+
