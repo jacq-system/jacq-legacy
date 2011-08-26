@@ -308,7 +308,8 @@ SELECT
  
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- LEFT JOIN herbar_names.tbl_name_entities en ON en.entity_id=taxonids.AcceptedTaxonID
+ LEFT JOIN herbar_names.tbl_name_taxa tax ON tax.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
+ LEFT JOIN herbar_names.tbl_name_entities en ON en.entity_id=tax.taxon_id
  CROSS JOIN herbar_names.tbl_name_applies_to ap ON ap.entity_id=en.entity_id
  
  LEFT JOIN herbar_names.tbl_name_names n ON n.name_id=ap.name_id
@@ -316,7 +317,6 @@ FROM
  LEFT JOIN herbar_names.tbl_name_languages lan ON lan.language_id=ap.language_id
  LEFT JOIN herbar_names.tbl_geonames_cache geo ON geo.geonameId=ap.geonameId
 ;
-
 -- ===========================================
 -- ready
 -- view_sp2000_distribution
