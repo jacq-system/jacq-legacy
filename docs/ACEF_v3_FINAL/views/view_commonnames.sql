@@ -42,20 +42,20 @@ SELECT
  
  a.locked as 'locked'
 FROM
- names.tbl_name_applies_to a
- LEFT JOIN names.tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN names.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
+ herbar_names.tbl_name_applies_to a
+ LEFT JOIN herbar_names.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN herbar_names.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
 
- LEFT JOIN names.tbl_name_names nam ON nam.name_id = a.name_id
- LEFT JOIN names.tbl_name_commons com ON com.common_id = nam.name_id
+ LEFT JOIN herbar_names.tbl_name_names nam ON nam.name_id = a.name_id
+ LEFT JOIN herbar_names.tbl_name_commons com ON com.common_id = nam.name_id
 
- LEFT JOIN names.tbl_geonames_cache geo ON geo.geonameId = a.geonameId
- LEFT JOIN names.tbl_name_languages lan ON  lan.language_id = a.language_id
- LEFT JOIN names.tbl_name_periods per ON per.period_id= a.period_id
+ LEFT JOIN herbar_names.tbl_geonames_cache geo ON geo.geonameId = a.geonameId
+ LEFT JOIN herbar_names.tbl_name_languages lan ON  lan.language_id = a.language_id
+ LEFT JOIN herbar_names.tbl_name_periods per ON per.period_id= a.period_id
 
- LEFT JOIN names.tbl_name_references ref ON ref.reference_id = a.reference_id
+ LEFT JOIN herbar_names.tbl_name_references ref ON ref.reference_id = a.reference_id
 
- LEFT JOIN names.tbl_name_persons pers ON pers.person_id = ref.reference_id
- LEFT JOIN names.tbl_name_literature lit ON lit.literature_id = ref.reference_id
- LEFT JOIN names.tbl_name_webservices ser ON ser.webservice_id = ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_persons pers ON pers.person_id = ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_literature lit ON lit.literature_id = ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_webservices ser ON ser.webservice_id = ref.reference_id
 ;

@@ -5,7 +5,7 @@ SELECT
  COUNT(*)
 
 FROM
-view_references
+view_sp2000_references
 
 GROUP BY
  ReferenceID
@@ -16,12 +16,12 @@ HAVING
 
 -- ===========================================
 -- ready
--- view_sourcedatabase
+-- view_sp2000_sourcedatabase
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sourcedatabase
+ VIEW herbar_view.view_sp2000_sourcedatabase
  AS
  
 SELECT
@@ -48,12 +48,12 @@ FROM
 
 -- ===========================================
 -- ready
--- view_acceptedspecies
+-- view_sp2000_acceptedspecies
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_acceptedspecies
+ VIEW herbar_view.view_sp2000_acceptedspecies
  AS
 
 SELECT
@@ -112,12 +112,12 @@ WHERE
  
 -- ===========================================
 -- ready
--- view_acceptedinfraspecifictaxa
+-- view_sp2000_acceptedinfraspecifictaxa
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_acceptedinfraspecifictaxa
+ VIEW herbar_view.view_sp2000_acceptedinfraspecifictaxa
  AS
 
 SELECT 
@@ -157,9 +157,9 @@ SELECT
  'GSDNameGUI' AS 'GSDNameGUI'
 
 FROM
- herbar_view.view_acceptedspecies acc
- LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
- LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
+ herbar_view.view_sp2000_acceptedspecies acc
+ LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=sc.taxonID
  LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
  
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
@@ -185,42 +185,42 @@ WHERE
 -- ===========================================
 -- 
 -- ready
--- view_tmp_AcceptedTaxonID
+-- view_sp2000_tmp_AcceptedTaxonID
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_tmp_AcceptedTaxonID
+ VIEW herbar_view.view_sp2000_tmp_AcceptedTaxonID
  AS
 
-SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_acceptedspecies acc 
+SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedspecies acc 
 UNION ALL
-SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_acceptedinfraspecifictaxa acc 
+SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedinfraspecifictaxa acc 
 ;
 
 -- ===========================================
 -- ready
--- view_tmp_tabl_synonyms_normalized
+-- view_sp2000_tmp_tabl_synonyms_normalized
 --
 -- ===========================================
-DROP TABLE IF EXISTS herbar_view.view_tmp_tabl_synonyms_normalized;
-CREATE TABLE herbar_view.view_tmp_tabl_synonyms_normalized(
+DROP TABLE IF EXISTS herbar_view.view_sp2000_tmp_tabl_synonyms_normalized;
+CREATE TABLE herbar_view.view_sp2000_tmp_tabl_synonyms_normalized(
 AcceptedTaxonID INT NOT NULL ,
 SynonymID INT NOT NULL 
 ) ENGINE = MYISAM ;
 
 -- ===========================================
 -- ready
--- view_synonyms
+-- view_sp2000_synonyms
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_synonyms
+ VIEW herbar_view.view_sp2000_synonyms
  AS
 SELECT 
  CONCAT('s',tsn.SynonymID) AS 'ID',
- tsn.AcceptedTaxonID AS 'AcceptedTaxonID',
+ CONCAT('t',tsn.AcceptedTaxonID) AS 'AcceptedTaxonID',
  tg.genus AS 'Genus',
  '' AS 'SubGenusName',
  te.epithet AS 'Species',
@@ -250,7 +250,7 @@ SELECT
 
  '' AS 'GSDNameGUI'
 FROM
- herbar_view.view_tmp_tabl_synonyms_normalized tsn
+ herbar_view.view_sp2000_tmp_tabl_synonyms_normalized tsn
  LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsn.AcceptedTaxonID
  LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsn.SynonymID
 
@@ -279,12 +279,12 @@ FROM
 
 -- ===========================================
 -- ready
--- view_commonnames
+-- view_sp2000_commonnames
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_commonnames
+ VIEW herbar_view.view_sp2000_commonnames
  AS
 SELECT
  taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
@@ -307,24 +307,24 @@ SELECT
  CONCAT('c',ap.reference_id) AS 'ReferenceID'
  
 FROM
- herbar_view.view_tmp_AcceptedTaxonID taxonids
- LEFT JOIN names.tbl_name_entities en ON en.entity_id=taxonids.AcceptedTaxonID
- CROSS JOIN names.tbl_name_applies_to ap ON ap.entity_id=en.entity_id
+ herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ LEFT JOIN herbar_names.tbl_name_entities en ON en.entity_id=taxonids.AcceptedTaxonID
+ CROSS JOIN herbar_names.tbl_name_applies_to ap ON ap.entity_id=en.entity_id
  
- LEFT JOIN names.tbl_name_names n ON n.name_id=ap.name_id
- LEFT JOIN names.tbl_name_commons co ON co.common_id=n.name_id
- LEFT JOIN names.tbl_name_languages lan ON lan.language_id=ap.language_id
- LEFT JOIN names.tbl_geonames_cache geo ON geo.geonameId=ap.geonameId
+ LEFT JOIN herbar_names.tbl_name_names n ON n.name_id=ap.name_id
+ LEFT JOIN herbar_names.tbl_name_commons co ON co.common_id=n.name_id
+ LEFT JOIN herbar_names.tbl_name_languages lan ON lan.language_id=ap.language_id
+ LEFT JOIN herbar_names.tbl_geonames_cache geo ON geo.geonameId=ap.geonameId
 ;
 
 -- ===========================================
 -- ready
--- view_distribution
+-- view_sp2000_distribution
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_distribution
+ VIEW herbar_view.view_sp2000_distribution
  AS
 
 SELECT
@@ -333,7 +333,7 @@ SELECT
  'ISO2Alpha' AS 'StandardInUse',
  'native' AS 'DistributionStatus'
 FROM
- herbar_view.view_tmp_AcceptedTaxonID taxonids
+ herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
  LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID=taxonids.AcceptedTaxonID
  LEFT JOIN herbarinput.tbl_geo_nation gn ON gn.NationID = sp.NationID
 WHERE
@@ -342,12 +342,12 @@ WHERE
 
 -- ===========================================
 -- ready
--- view_tmp_references
+-- view_sp2000_tmp_references
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_tmp_references
+ VIEW herbar_view.view_sp2000_tmp_references
  AS
 -- accepted TAXA
 SELECT
@@ -360,8 +360,8 @@ SELECT
  lit.annotation AS 'Details'
  
 FROM
- herbar_view.view_tmp_AcceptedTaxonID taxonids
- LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = taxonids.AcceptedTaxonID
+ herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
 
@@ -377,7 +377,7 @@ SELECT
  lit.annotation AS 'Details'
  
 FROM
- herbar_view.view_synonyms synonymids
+ herbar_view.view_sp2000_synonyms synonymids
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = synonymids.ID
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
@@ -417,11 +417,11 @@ SELECT
  END AS 'Details'
  
 FROM
- herbar_view.view_commonnames cmnames
- LEFT JOIN names.tbl_name_references ref ON ref.reference_id=cmnames.ReferenceID
- LEFT JOIN names.tbl_name_literature nlit ON nlit.literature_id=ref.reference_id
- LEFT JOIN names.tbl_name_persons per ON per.person_id=ref.reference_id
- LEFT JOIN names.tbl_name_webservices ser ON ser.webservice_id=ref.reference_id
+ herbar_view.view_sp2000_commonnames cmnames
+ LEFT JOIN herbar_names.tbl_name_references ref ON ref.reference_id=cmnames.ReferenceID
+ LEFT JOIN herbar_names.tbl_name_literature nlit ON nlit.literature_id=ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_persons per ON per.person_id=ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_webservices ser ON ser.webservice_id=ref.reference_id
  
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = nlit.literature_id
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
@@ -434,12 +434,12 @@ FROM
 
 -- ===========================================
 -- ready
--- view_references
+-- view_sp2000_references
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_references
+ VIEW herbar_view.view_sp2000_references
  AS
 SELECT
  ref.ReferenceID,
@@ -448,17 +448,17 @@ SELECT
  ref.Details
  
 FROM
- herbar_view.view_tmp_references ref
+ herbar_view.view_sp2000_tmp_references ref
 ;
  
  -- ===========================================
 -- ready
--- view_namereferenceslinks
+-- view_sp2000_namereferenceslinks
 --
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_namereferenceslinks
+ VIEW herbar_view.view_sp2000_namereferenceslinks
  AS
 
 SELECT
@@ -466,7 +466,7 @@ SELECT
  ref.tmp_type AS 'Reference Type',
  ref.ReferenceID AS 'ReferenceID'
 FROM
- herbar_view.view_tmp_references ref
+ herbar_view.view_sp2000_tmp_references ref
 ;
 
 -- ===========================================
@@ -511,7 +511,7 @@ BEGIN
    );
    
  DECLARE cur_taxonids CURSOR FOR 
-  SELECT taxonids.AcceptedTaxonID AS 'AcceptedTaxonID' FROM  herbar_view.view_tmp_AcceptedTaxonID taxonids;
+  SELECT SUBSTR(taxonids.AcceptedTaxonID,2) AS 'AcceptedTaxonID' FROM  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids;
  
  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
@@ -534,7 +534,7 @@ BEGIN
      LEAVE loop_taxsyn;
     END IF;
 
-    INSERT INTO herbar_view.view_tmp_tabl_synonyms_normalized (AcceptedTaxonID,SynonymID)
+    INSERT INTO herbar_view.view_sp2000_tmp_tabl_synonyms_normalized (AcceptedTaxonID,SynonymID)
      VALUES (AcceptedTaxonID,SYNONYMID);
    
    END LOOP loop_taxsyn;
