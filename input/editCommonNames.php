@@ -17,7 +17,8 @@ $debuger=0;
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
    <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
-   <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
+   <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
+   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -38,9 +39,7 @@ $debuger=0;
 	* html .ui-autocomplete {
 		height: 200px;
 	}
-.ui-autocomplete-loading{background:url('css/loading.gif') no-repeat right center;}
-.wrongItem{background:url('css/wrong.gif') no-repeat right center; background-color:rgb(255, 185,79) !important;}
-.newItem{background:url('css/new.gif') no-repeat right center; }
+
 
 .eac{background-color:#DAEEDD;}
 .oac{background-color:#e7fae6;}
@@ -54,41 +53,9 @@ table.tablesorter tbody td {border: 1px solid #CCC !important;}
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
+  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
 
   <script type="text/javascript" language="JavaScript">
-  function p(objarray){
-		return alert(pr(objarray));
-	}
-
-	function p(objarray,tiefe){
-		return alert(pr(objarray,tiefe));
-	}
-
-	function pr(objarray){
-		return pr(objarray,4);
-	}
-
-	function pr(objarray,tiefe){
-		return print_r1(objarray,'','',0,tiefe);
-	}
-
-	function print_r1(objarray,string,ebene,tiefe,maxtiefe){
-		for(i in objarray){
-			try{
-				if(typeof(objarray[i])=='object' && tiefe<maxtiefe){
-
-					string=print_r1(objarray[i],string,ebene+'['+i+']',tiefe+1,maxtiefe);
-
-				}else{
-					//if(typeof(objarray[i])!='function'){
-						string+=ebene+'['+i+']='+objarray[i]+"\n" ;
-					//}
-				}
-			}catch(e){}
-		}
-		return string;
-	}
-	
   var geowin;
 // windows...
 function selectTaxon() {
@@ -110,26 +77,6 @@ function UpdateLiterature(literatureID) {
 	$('#ajax_literature').searchID(literatureID);
 }
 
-/*
-function selectService() {
-	//personID=$('#personIndex').val();
-	serwin = window.open("listServiceCommonName.php", "selectservice", "width=600, height=500, top=50, right=50, scrollbars=yes, resizable=yes");
-	serwin.focus();
-}
-function UpdateService(serviceID) {
-	$('#ajax_service').searchID(serviceID);
-}
-
-function selectPerson() {
-	//personID=$('#personIndex').val();
-	perwin = window.open("listPersonsCommonName.php", "selectperson", "width=600, height=500, top=50, right=50, scrollbars=yes, resizable=yes");
-	perwin.focus();
-}
-function UpdatePerson(personID) {
-	$('#ajax_person').searchID(personID);
-}
-*/
-
 function selectGeoname() {
 	gn=$('#ajax_geoname').val();
 	gi=$('#geonameIndex').val();
@@ -150,151 +97,12 @@ function UpdateGeoname(geonameID) {
 	});
 }
 
-
 function editCommoname(){
 	cid='?a=b';
 	if($('#common_nameIndex').val()!='')cid+='&common_nameIndex='+$('#common_nameIndex').val();
 	
 	comwin = window.open("editCommonName.php"+cid, "editCommonName", "width=850 height=150, top=50, right=50, scrollbars=auto, resizable=yes");
 	comwin.focus();
-}
-
-
-
-
-
-(function($){	 
-	$(".ui-autocomplete-input").live("autocompleteopen", function() {
-		var autocomplete = $(this).data("autocomplete"),
-		menu = autocomplete.menu;
-	 
-		if (!autocomplete.options.selectFirst) {
-			return;
-		}
-		menu.activate($.Event({ type: "mouseenter" }), menu.element.children().first());
-	});
-}(jQuery));
-
-// Autocompleter
-function prepareWithID(nam,startval,mustMatch1,fullfocus){
-
-	var $at=$('#ajax_'+nam);
-	var $ati=$('#'+nam+'Index');
-	
-	$at.autocomplete({
-		create: function(event, ui) {
-			$at.data('autocomplete').requestIndex=0;
-		},
-		source: function( request, response ) {
-			/*
-			// original: 
-			// used to prevent race conditions with remote data sources
-			var requestIndex = 0;
-			//=> doesn't work, if we want to preload all at once... !!!
-			
-			this.source = function( request, response ) {
-			if ( self.xhr ) {
-				self.xhr.abort();
-			}
-			self.xhr = $.ajax({
-				url: url,
-				data: request,
-				dataType: "json",
-				autocompleteRequest: ++requestIndex,
-				success: function( data, status ) {
-					if ( this.autocompleteRequest === requestIndex ) {
-						response( data );
-					}
-				},
-				error: function() {
-					if ( this.autocompleteRequest === requestIndex ) {
-						response( [] );
-					}
-				}
-			});
-			*/
-			if ( $at.data('autocomplete').xhr ) {
-				$at.data('autocomplete').xhr.abort();
-			}
-			
-			$at.data('autocomplete').xhr = $.ajax({
-				url: 'index_autocomplete_commoname.php?field=cname_'+nam,
-				data: request,
-				dataType: "json",
-				autocompleteRequest: ++$at.data('autocomplete').requestIndex,
-				success: function( data, status ) {
-					if ( this.autocompleteRequest === $at.data('autocomplete').requestIndex) {
-						response( data );
-					}
-				},
-				error: function() {
-					if ( this.autocompleteRequest === $at.data('autocomplete').requestIndex ) {
-						response( [] );
-					}
-				}
-			});
-		},
-		search: function(){
-			$ati.val('');
-		},
-		change: function(event, ui) {
-			if($ati.val()==''){
-					$at.addClass((mustMatch1==1)?'wrongItem':'newItem');
-			}
-		},
-		select: function(event, ui){
-			if(ui.item.id){
-				$ati.val(ui.item.id);
-				$at.val(ui.item.value).removeClass((mustMatch1==1)?'wrongItem':'newItem');
-			}
-		},
-		open: function(event, ui) {
-			if($at.autocomplete("option", "populate")=='1'){
-				$at.autocomplete("option","populate","0");
-				$at.autocomplete( "close" );
-			}
-		},
-		delay:100,
-		selectFirst: (mustMatch1==1)?true:false
-	}).data('autocomplete')._renderItem=function(ul, item){
-		if($at.autocomplete("option", "populate")=='1'){
-			$ati.val(item.id);
-			$at.val(item.value);
-		}
-		return $('<li></li>')
-		.data('item.autocomplete', item)
-		.append('<a' + ((item.color) ? ' style="background-color:' + item.color + ';">' : '>') + item.label.replace(new RegExp('('+this.term+')',"ig"),'<b>$1</b>') + '</a>')
-		.appendTo(ul);
-		
-	}
-
-	if(fullfocus==1){
-		$at.bind({
-			click: function() {
-				if($(this).data.toggle!='1'){
-					$(this).data.toggle='1';
-					$(this).select();
-				}
-			},
-			focusout: function() {
-				$(this).data.toggle='0';
-			}
-		});
-	}
-
-	if(mustMatch1==1 && $at.val()!='' && startval!='')$at.addClass('wrongItem');
-
-	if(startval!='' && startval!='0'){
-		$at.autocomplete("option","populate","1").autocomplete("search",'<'+startval+'>');
-	}
-
-}
-
-function initAjaxVal(initobj){
-	jQuery.each(initobj, function(key, val) {
-		prepareWithID(val[0], val[1],val[2],val[3]);
-    });
-	$("#ajax_taxon").focus();
 }
 
 
@@ -603,11 +411,6 @@ if($doSearch){
 }
 //print_r($_dvar);
 
-// todo: include this to autcompleter cssf!!
-$init3="
-var init3=[['taxon','{$_dvar['taxonIndex']}','1','1'],['geoname','{$_dvar['geonameIndex']}','1','1'],['literature','{$_dvar['literatureIndex']}','1','1'],['service','{$_dvar['serviceIndex']}','1','1'],['person','{$_dvar['personIndex']}','1','1'],['period','','0','0'],['common_name','','0','0'],['language','{$_dvar['languageIndex']}','0','1'],['geospecification','','0','0']];
-";
-
 
 $source_sel[$_dvar['source']]=' checked';
 
@@ -629,13 +432,12 @@ echo <<<EOF
 
 <script type="text/javascript" language="JavaScript">
 
-{$init3}
-
-var a='{$_dvar['source']}';
-
 $(document).ready(function() {
-	initAjaxVal(init3);
 	
+	ACFreudInit();
+	$("#ajax_taxon").focus();
+	
+	var a='{$_dvar['source']}';
 	switch(a){
 		case 'person':$('#ajax_service, #ajax_literature').removeClass('wrongItem');break;
 		case 'service':$('#ajax_person, #ajax_literature').removeClass('wrongItem');break;
@@ -665,36 +467,36 @@ if($unlock_tbl_name_applies_to) {
 }
 
 $cf->label(10, 5, "Scientific Name","javascript:selectTaxon()");
-$cf->inputJqAutocomplete2(11, 5, 50, "taxon", "", $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon_commonname", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 5, 50, "taxon", $_dvar['taxonIndex'], "index_autocomplete_commoname.php?field=cname_taxon",520,2,'','',1,1);
 
 $cf->label(10, 7.5, "Common Name","javascript:editCommoname()");
-$cf->inputJqAutocomplete2(11, 7.5, 50, "common_name", $_dvar['common_name'], $_dvar['common_nameIndex'], "index_jq_autocomplete.php?field=cname_commonname", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 7.5, 50, "common_name",$_dvar['common_nameIndex'], "index_autocomplete_commoname.php?field=cname_commonname",520,2,'','',0,0);
 
 
 $cf->label(10, 10, "Geography","javascript:selectGeoname()");
 $cf->label(10.5, 10, "*","javascript:showGeonameInfo()");
-$cf->inputJqAutocomplete2(11, 10, 50, "geoname", "", $_dvar['geonameIndex'], "index_jq_autocomplete.php?field=cname_geoname", 520, 2,"",0,true);
+$cf->inputJqAutocomplete3(11, 10, 50, "geoname", $_dvar['geonameIndex'], "index_autocomplete_commoname.php?field=cname_geoname",520,2,'','',1,0);
 
 $cf->label(10, 12.5, "Geo Specification");
-$cf->inputJqAutocomplete2(14, 12.5, 47, "geospecification", $_dvar['geospecification'],"", "index_jq_autocomplete.php?field=cname_geospecification", 520, 2,0,"",true,true,1);
+$cf->inputJqAutocomplete3(14, 12.5, 47, "geospecification", $_dvar['geospecification'],"index_autocomplete_commoname.php?field=cname_geospecification",520,2,'','',2,0);
 
 $cf->label(10, 15, "Language");
-$cf->inputJqAutocomplete2(11, 15, 50, "language", "", $_dvar['languageIndex'], "index_jq_autocomplete.php?field=cname_language", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 15, 50, "language", $_dvar['languageIndex'], "index_autocomplete_commoname.php?field=cname_language",520,2,'','',0,1);
 
 $cf->label(10, 17.5, "Period");
-$cf->inputJqAutocomplete2(11,17.5, 50, "period", $_dvar['period'], $_dvar['periodIndex'], "index_jq_autocomplete.php?field=cname_period", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11,17.5, 50, "period", $_dvar['period'], $_dvar['periodIndex'], "index_autocomplete_commoname.php?field=cname_period",520,2,'','',2,0);
 
 $cf->label(10, 21, "Literature","javascript:selectLiterature()");
 $cf->label(62, 21, "<input type=\"radio\" name=\"source\" value=\"literature\"{$source_sel['literature']}>");
-$cf->inputJqAutocomplete2(11, 21, 48, "literature", "", $_dvar['literatureIndex'], "index_jq_autocomplete.php?field=cname_literature", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 21, 48, "literature", $_dvar['literatureIndex'], "index_autocomplete_commoname.php?field=cname_literature",520,2,'','',1,1);
 
 $cf->label(10, 23.5, "Service");
 $cf->label(62, 23.5, "<input type=\"radio\" name=\"source\"  value=\"service\"{$source_sel['service']}>");
-$cf->inputJqAutocomplete2(11, 23.5, 48, "service", "", $_dvar['serviceIndex'], "index_jq_autocomplete.php?field=cname_service", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 23.5, 48, "service",$_dvar['serviceIndex'], "index_autocomplete_commoname.php?field=cname_service",520,2,'','',1,1);
 
 $cf->label(10, 26, "Person");
 $cf->label(62, 26, "<input type=\"radio\" name=\"source\"  value=\"person\"{$source_sel['person']}>");
-$cf->inputJqAutocomplete2(11, 26, 48, "person", "", $_dvar['personIndex'], "index_jq_autocomplete.php?field=cname_person", 520, 2,0,"",true);
+$cf->inputJqAutocomplete3(11, 26, 48, "person",  $_dvar['personIndex'], "index_autocomplete_commoname.php?field=cname_person",520,2,'','',1,1);
 
 
 $cf->label(10, 29.5, "annotation");

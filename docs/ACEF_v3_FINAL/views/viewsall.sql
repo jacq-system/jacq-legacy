@@ -1,19 +1,3 @@
-/*
-SELECT 
- ReferenceID,
-
- COUNT(*)
-
-FROM
-view_sp2000_references
-
-GROUP BY
- ReferenceID
-
-HAVING
- COUNT(*)>1
- */
-
 -- ===========================================
 -- ready
 -- view_sp2000_sourcedatabase
@@ -74,7 +58,7 @@ SELECT
  
  ta.author AS 'AuthorString',
 
- '' AS 'GSDNameStatus',
+ status_description AS 'GSDNameStatus',
  tts.status_sp2000 AS 'Sp2000NameStatus',
  
  'No' AS 'IsFossil',
@@ -87,11 +71,11 @@ SELECT
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
  'GSDTaxonGUI' AS 'GSDTaxonGUI',
- 'GSDNameGUI' AS 'GSDNameGUI'
+ ts.taxonID AS 'GSDNameGUI'
 
 FROM
  herbarinput.tbl_tax_species ts
- LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
+ LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
  
@@ -141,7 +125,7 @@ SELECT
  END AS 'InfraSpecificAuthorString',
  
  ttr.rank_abbr AS 'InfraSpecificMarker',
- '' AS 'GSDNameStatus',
+ status_description AS 'GSDNameStatus',
  tts.status_sp2000 AS 'Sp2000NameStatus',
 
  'No' AS 'IsFossil',
@@ -154,11 +138,11 @@ SELECT
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
  'GSDTaxonGUI' AS 'GSDTaxonGUI',
- 'GSDNameGUI' AS 'GSDNameGUI'
+ ts.taxonID AS 'GSDNameGUI'
 
 FROM
  herbar_view.view_sp2000_acceptedspecies acc
- LEFT JOIN herbarinput.tmp_scrutiny_import sc ON sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
+ LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
  LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=sc.taxonID
  LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
  
@@ -198,29 +182,19 @@ UNION ALL
 SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedinfraspecifictaxa acc 
 ;
 
--- ===========================================
--- ready
--- view_sp2000_tmp_tabl_synonyms_normalized
---
--- ===========================================
-DROP TABLE IF EXISTS herbar_view.view_sp2000_tmp_tabl_synonyms_normalized;
-CREATE TABLE herbar_view.view_sp2000_tmp_tabl_synonyms_normalized(
-AcceptedTaxonID INT NOT NULL ,
-SynonymID INT NOT NULL 
-) ENGINE = MYISAM ;
 
 -- ===========================================
 -- ready
 -- view_sp2000_synonyms
---
+-- new: for tbl_tax_synonymy
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
  VIEW herbar_view.view_sp2000_synonyms
  AS
 SELECT 
- CONCAT('s',tsn.SynonymID) AS 'ID',
- CONCAT('t',tsn.AcceptedTaxonID) AS 'AcceptedTaxonID',
+ CONCAT('s',tss.taxonID) AS 'ID',
+ CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  tg.genus AS 'Genus',
  '' AS 'SubGenusName',
  te.epithet AS 'Species',
@@ -250,9 +224,11 @@ SELECT
 
  '' AS 'GSDNameGUI'
 FROM
- herbar_view.view_sp2000_tmp_tabl_synonyms_normalized tsn
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsn.AcceptedTaxonID
- LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsn.SynonymID
+ herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ LEFT JOIN herbarinput.tbl_tax_synonymy tsyn ON tsyn.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
+ CROSS JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsyn.acc_taxon_ID
+
+ LEFT JOIN herbarinput.tbl_tax_species ts ON tss.taxonID=tsyn.taxonID
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
@@ -293,9 +269,9 @@ SELECT
  lan.name AS 'Language',
  -- after second "(" between second and third "," is the country; no "," and "(" are allowed but this normed ones.
  SUBSTRING(geo.name,
-   (LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+2) ,
-   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1))
-  -(LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+2)
+   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+2) ,
+   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+1))
+  -(LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+2)
  ) AS 'Country',
  
  -- area is before first ","; no "," and "(" are allowed but this normed ones.
@@ -334,7 +310,7 @@ SELECT
  'native' AS 'DistributionStatus'
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID=taxonids.AcceptedTaxonID
+ LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
  LEFT JOIN herbarinput.tbl_geo_nation gn ON gn.NationID = sp.NationID
 WHERE
  gn.iso_alpha_2_code IS NOT NULL
@@ -378,7 +354,7 @@ SELECT
  
 FROM
  herbar_view.view_sp2000_synonyms synonymids
- LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = synonymids.ID
+ LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
 
@@ -468,98 +444,3 @@ SELECT
 FROM
  herbar_view.view_sp2000_tmp_references ref
 ;
-
--- ===========================================
--- ready
--- do_synonym_normalizing
---
--- ===========================================
-DROP PROCEDURE IF EXISTS do_synonym_normalizing;
-DELIMITER $$
-
-CREATE PROCEDURE do_synonym_normalizing()
-BEGIN
- 
- DECLARE taxon_search INT DEFAULT 48465 ; 
- DECLARE xx INT DEFAULT 0 ; 
- DECLARE AcceptedTaxonID,NEXTSYNID,SYNONYMID INT;
- DECLARE done BOOLEAN DEFAULT 0;
- 
- DECLARE cur_taxsyn CURSOR FOR
-  SELECT
-   ts.taxonID AS 'AcceptedTaxonID',
-   ts.synID AS 'NEXTSYNID',
-   ts3.taxonID AS 'SYNONYMID'
-
-  FROM
-   herbarinput.tbl_tax_species ts
-   CROSS JOIN herbarinput.tbl_tax_species ts2
-   CROSS JOIN herbarinput.tbl_tax_species ts3
-  WHERE
-   -- Umsetzung aus lists2ynonyms.php rev 51
-   ts.taxonID=taxon_search -- line 284
-   AND(
-    ts2.synID=ts.taxonID -- line 324 
-    AND(
-         ( IF(ts.basID IS NULL, (ts2.basID=ts.taxonID), ( (ts2.basID IS NULL OR ts2.basID=ts.taxonID) AND ts2.taxonID= ts.basID ) ) ) -- query 325-329
-      OR ( IF(ts.basID IS NULL, (ts2.basID IS NULL),    ( (ts2.basID IS NULL OR ts2.basID=ts.taxonID) AND ts2.taxonID<>ts.basID ) ) ) -- query 343-347
-    )
-   )
-   AND(
-       ( ts3.synID=ts.taxonID AND ts3.basID=ts2.taxonID ) -- echo: 336-358/338-340  (query: 324/336/354)
-    OR ( ts3.taxonID=ts2.taxonID ) -- echo: 332-335/350-353
-   );
-   
- DECLARE cur_taxonids CURSOR FOR 
-  SELECT SUBSTR(taxonids.AcceptedTaxonID,2) AS 'AcceptedTaxonID' FROM  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids;
- 
- DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
- OPEN cur_taxonids;
- loop_taxonids: LOOP
-  
-  FETCH cur_taxonids INTO taxon_search;
-  IF done THEN
-   LEAVE loop_taxonids;
-  END IF;
-  
-  loop_taxsynloop: LOOP
-   
-   OPEN cur_taxsyn;
-   loop_taxsyn: LOOP
-    
-    FETCH cur_taxsyn INTO AcceptedTaxonID,NEXTSYNID,SYNONYMID;
-    
-    IF done THEN
-     LEAVE loop_taxsyn;
-    END IF;
-
-    INSERT INTO herbar_view.view_sp2000_tmp_tabl_synonyms_normalized (AcceptedTaxonID,SynonymID)
-     VALUES (AcceptedTaxonID,SYNONYMID);
-   
-   END LOOP loop_taxsyn;
-   CLOSE cur_taxsyn;
-  
-   IF NEXTSYNID IS NOT NULL THEN
-    SET taxon_search=NEXTSYNID;
-   ELSE
-    LEAVE loop_taxsynloop;
-   END IF;
-   
-   SET done = 0; 
-  END LOOP loop_taxsynloop; 
-  
-  SET done = 0;
- END LOOP loop_taxonids;
- CLOSE cur_taxonids;
- 
-END$$
-
-DELIMITER ;
-
--- ===========================================
--- CALL
--- do_synonym_normalizing
---
--- ===========================================
-CALL do_synonym_normalizing;

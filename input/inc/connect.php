@@ -32,6 +32,7 @@ function no_magic()   // PHP >= 4.1
 // $mode=3 => for formulars from not escaped mysql
 // $mode=4 => from mysql to mysql
 function doQuotes(&$obj,$mode){
+	if(!is_array($obj))$obj=array($obj);
 	foreach($obj as &$val){
 		if(is_array($val)){
 				doQuotes($val,$mode);

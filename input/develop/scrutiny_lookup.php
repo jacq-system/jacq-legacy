@@ -36,14 +36,16 @@ $path="../inc/";
 .at2 td{
  background-color:#d0d0d0;
 }
-
+.highl{
+ background-color:#dcf4d9;
+}
 
 .selectedtr td{
  background-color:#f5eea8;
 }
 
 .inpyear{
- background-color:#abe7a8;
+ background-color:#f5eea8;
 }
   </style>
 <script src="<?PHP echo $path;?>/jQuery/jquery.min.js" type="text/javascript"></script>
@@ -353,89 +355,64 @@ EOF;
 
 	$i=0;
 	//for($i=1;$i<=2;$i++){
-	//	$obj2=$obj['a'.$i];
-	//	$abk=substr($obj2['fname'],0,1);
-		/*$query="
-SELECT
 
-person_ID,
-p_abbrev,
-p_familyname,
-p_firstname,
+		
+		
+		
+		
+		
+		
+		$rr=trim(str_replace(array('-',$obj['y']),'',$obj['a']));
+		$parts=preg_split ('/\s|,|&|(\.[\w]+)/',$rr ,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+		$parts2=array();
+		
+		foreach($parts as $k=>$pp2){
+			$parts2[$k]="<span class='highl'>{$pp2}</span>";
+		}
+		
+		$parts5=preg_split ('/-|\s|,|&|;|(\.[\w]+)/',$rr,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+		
+		//print_r($parts);
+		$len=mb_strlen($rr,"UTF-8");
 
-IF(p_abbrev='{$obj2['abr']}',1,0) as a1,
-IF(p_abbrev='{$obj2['fname']}',1,0) as a2,
-IF(p_abbrev='{$obj2['abr']} {$obj2['fname']}',1,0) as a3,
-IF(SUBSTRING(p_firstname,0,1)='{$abk}',1,0) as a4
-
-FROM
-tbl_person
-WHERE
-
-p_familyname='{$obj2['fname']}'
-";*/	
-		
-		$r1=array('et al','. .','..');
-		$r2='';
-		
-		$obj['a1']['abr']=trim(str_replace($r1,$r2,$obj['a1']['abr']));
-		$obj['a2']['abr']=trim(str_replace($r1,$r2,$obj['a2']['abr']));
-		
-		$checkcount=7;
-		
-		
-		
-		$rr=str_replace($obj['y'],'',$obj['a']);
-		$len=strlen($rr);
-		
 		//echo "UPDATE  herbar_view.scrutiny SET date='{$obj['y']}', author='{$rr}' WHERE scrutiny='{$obj['a']}'; \n";continue;
-		
+		$chc=1;
 		$checks='';
-		$checks.="IF($len <= CHAR_LENGTH(autor)+1 and $len >= CHAR_LENGTH(autor)-1 ,10,0) as c1,";
-		$checks.="IF(autor='{$rr}',10,0) as c2,";
-		$checks.=" IF( mdld('{$rr}',autor, 3, 4)<4,10,0) as c3,  ";
+		$checks.="IF($len <= CHAR_LENGTH(autor)+1 and $len >= CHAR_LENGTH(autor)-1 ,2,0) as c{$chc},";
+		$chc++;
+		$checks.="IF(autor='{$rr}',2,0) as c{$chc},";
+		$chc++;
+		$checks.=" IF( mdld('{$rr}',autor, 3, 4)<4,2,0) as c{$chc},  ";
+		$chc++;
+		$where="";
 		
 		//echo $rr;
-		$chk=30;
-		$chc=3;
-		//print_r($obj);
+		$chk=6;
+		$where1="";
+		$where2="";
 		
-		$where=" or  mdld('{$rr}',autor, 3, 4)<4";
-		
-		if(strlen($obj['a1']['fname'])>0){
-			$where.=" or ( autor LIKE '%{$obj['a1']['fname']}%'";
-			
-			if(strlen($obj['a1']['abr'])>0){
-				$where.=" and autor LIKE '%{$obj['a1']['abr']}%' ";
-				$checks.="IF(INSTR(autor,'{$obj['a1']['abr']}' )>0 ,1,0) as c4,";
+		foreach($parts5 as $part){
+			if(strpos($part,".")===false && strlen($part)>4){
+				
+				$where1.=" and autor LIKE '%{$part}%'";
+					$checks.="IF(INSTR(autor,'{$part}' )>0 ,1,0) as c{$chc},";
+					$chk+=1;
+					$chc+=1;
+				
+			}else{
+				
+				$where2.=" or  autor LIKE '%{$part}%'";
+				$checks.="IF(INSTR(autor,'{$part}' )>0 ,1,0) as c{$chc},";
 				$chk+=1;
 				$chc+=1;
-			}
-			
-			$where.=" ) ";
-			
-			$checks.="IF(INSTR(autor,'{$obj['a1']['fname']}' )>0 ,1,0) as c5,";
-			$chk+=1;
-			$chc+=1;
+			}	
 		}
-		if(strlen($obj['a2']['fname'])>0){
-			$where.=" or ( autor LIKE '%{$obj['a2']['fname']}%'";
-			
-			if(strlen($obj['a2']['abr'])>0){
-				$where.=" and autor LIKE '%{$obj['a2']['abr']}%' ";
-				$checks.="IF(INSTR(autor,'{$obj['a2']['abr']}' )>0 ,1,0) as c6,";
-				$chk+=1;
-				$chc+=1;
-			}
-			
-			$where.=" ) ";
-			
-			$checks.="IF(INSTR(autor,'{$obj['a2']['fname']}' )>0 ,1,0) as c7,";
-			$chk+=1;
-			$chc+=1;
-			
-		}
+		
+		$where=" mdld('{$rr}',autor, 3, 4)<4 or ( 1=1 {$where1} and ( 1=0 {$where} {$where2} )) ";
 
+		
+			
+		
 		
 		
 		
@@ -453,7 +430,7 @@ autorsystbot
 FROM
 tbl_lit_authors
 WHERE
-1=0 
+
 $where
 limit 1000
 ";
@@ -467,7 +444,7 @@ limit 1000
 		while($row = mysql_fetch_array($res)){
 			
 			$su=0;
-			for($j=1;$j<=$checkcount;$j++){
+			for($j=1;$j<$chc;$j++){
 				
 				if(isset($row['c'.$j])){
 					$t=$row['c'.$j];
@@ -475,12 +452,16 @@ limit 1000
 				}
 			}
 			$t1=max(substr_count($row['autor'], ','),substr_count($row['autor'], '&'));
-			$t2=max(substr_count($obj['a'], ','),substr_count($obj['a'], '&')) ;
+			$t2=max(substr_count($rr, ','),substr_count($rr, '&')) ;
 			
 			if(  $t1==$t2  ){
 				$su++;
+				$row['c'.$chc]=1;
+			}else{
+				$row['c'.$chc]=0;
 			}
 			
+			//echo "-{$obj['a']}-{$row['autorID']}:$t1:$t2-";
 			
 			$res3[$su][]=$row;
 			
@@ -521,7 +502,10 @@ EOF;
 		}else{
 			$z='';
 		}
-					
+			
+		
+		$xx=0;
+		$first =true;
 		$checked=false;
 		foreach ($res3 as $dist => $row1) {
 			$co=count($row1);
@@ -540,7 +524,7 @@ EOF;
 					$s='';
 					if($dist>0){
 						$s='';
-						for($j=1;$j<=$checkcount;$j++){
+						for($j=1;$j<$chc;$j++){
 							if(isset($row['c'.$j])){
 								$s.=" c{$j}:".$row['c'.$j].",";
 							}
@@ -553,28 +537,42 @@ EOF;
 EOF;
 					}
 					
+					$sho=$row['autor'];
+					
 					$c='';$cl='hoverd';$cl2='';
 					//if(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]) && $result[$obj['id']][$i]==$row['person_ID']){
 					$a=(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]));
-					
-					if(  (!$a && $co==1 && !$checked &&  ( ($dist-$next[$dist]>=10) || ($next[$dist]==0 && $rat>0.95 ) ) )  ||  ($a && $result[$obj['id']][$i]==$row['autorID']) ){
+					$c4='';
+					if(  ($first && !$a && $co==1 && !$checked &&  ( ($rat-$next[$dist]/$chk>=0.3) || ($next[$dist]==0 && $rat>0.90 ) ) )  ||  ($a && $result[$obj['id']][$i]==$row['autorID']) ){
 						$c=' checked';
 						$cl.=" selectedtr";
 						$checked=true;
 						$cl2=' class="at"';
-					}
-
+						$c4=' <small><i>suggested</i></small>';
+						$sho="<span{$cl2}><b>{$row['autor']}</b></span>";
+					}else{
+						
+						
+						$sho=str_replace($parts,$parts2,$row['autor']);
 					
+					}
+					
+					$xx++;
+//{$c}
 					echo<<<EOF
 				
-<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$row['autorID']}"{$c} jump="{$z}"></td><td></td><td>{$row['autorID']}</td><td><span{$cl2}><b>{$row['autor']}</b></span></td><td><i><small>{$s}</small></i></td><td></td></tr>
+<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$row['autorID']}" jump="{$z}"></td><td></td><td>{$row['autorID']}{$c4}</td><td>{$sho}</td><td><i><small>{$s}</small></i></td><td></td></tr>
 
 
 EOF;
+					if($xx>50){
+						break;
+					}
 
 					
 				}
-			
+				if($xx>50)break;
+				$first=false;
 		}
 		
 		$c='';$cl='hoverd';$cl2='';
@@ -587,10 +585,19 @@ EOF;
 					
 		echo<<<EOF
 				
-<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$rr}"{$c} jump="{$z}"></td><td></td><td>Nothing</td><td><span{$cl2}><b>Nothing (check manually)</b></span></td><td></td><td></td></tr>
+<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$rr}"{$c} jump="{$z}"></td><td></td><td>not now</td><td><span{$cl2}><b>check manually not now</b></span></td><td></td><td></td></tr>
 
 
 EOF;
+		if($xx>50){
+					
+			echo<<<EOF
+				
+<tr><td></td><td></td><td></td><td><span><b>More than 50 found</b></span></td><td></td><td></td></tr>
+
+
+EOF;
+		}
 		
 	//}
 

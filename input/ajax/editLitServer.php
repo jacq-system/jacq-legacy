@@ -1,5 +1,6 @@
 <?php
 session_start();
+error_reporting(0);
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require_once ("../inc/xajax/xajax_core/xajax.inc.php");

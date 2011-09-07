@@ -105,7 +105,7 @@ protected function __construct () {}
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_person($value)
+public function cname_person($value,$id=0)
 {
 	$results = array();
 	$where='';
@@ -183,7 +183,7 @@ public function cname_person($value)
  * @param bool[optional] $withDT adds the DallaTorre information (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_taxon ($value)
+public function cname_taxon ($value,$id=0)
 {
 	$results = array();
 	if ($value && strlen($value) > 1) {
@@ -250,7 +250,7 @@ public function cname_taxon ($value)
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_common_name ($value){
+public function cname_common_name ($value,$id=0){
     global $_CONFIG;
 	
 	$results = array();
@@ -299,7 +299,7 @@ public function cname_common_name ($value){
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_geoname ($value){
+public function cname_geoname ($value,$id=0){
 	global $_OPTIONS, $_CONFIG;
 	$results = array();
 	$results_intern=array();
@@ -308,16 +308,15 @@ public function cname_geoname ($value){
 	if ($value && strlen($value)>1){
 		try{
 			$db = clsDbAccess::Connect('INPUT');
+			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";
 			
 			// Get Geonames out of database first
-			$where='';
-			if($id=extractID2($value)){
-				$where="geonameId ='$id'";
+			if($id!=0){
+				$sql.=" ='".$db->quote ($id)."' ";
 			}else{
-				$where="name LIKE ".$db->quote($value .'%');
+				$sql.="name LIKE ".$db->quote($value .'%');
 			}
 			
-			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";
 			$sql.=" LIMIT 100";
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -339,6 +338,7 @@ public function cname_geoname ($value){
 				}
 			
 			}
+			if($id!=0)return $results_intern;
 			
 			// Get TypeCache
 			$cacheoption=$this->getCacheOption();
@@ -447,7 +447,7 @@ london:
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_literature ($value)
+public function cname_literature ($value,$id=0)
 {
 	$results = array();
 	if ($value && strlen($value) > 1) {
@@ -461,8 +461,17 @@ public function cname_literature ($value)
 		try {
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			if(!$id=extractID2($value)){
+			if($id!=0){
+				$display = clsDisplay::Load();
 					
+				$label= $display->protolog($id, true);
+				$results[] = array(
+					'id'	=> $id,
+					'label' =>$label,
+					'value' => $label,
+					'color' => '');
+
+			}else{
 				$sql ="SELECT citationID
 					   FROM tbl_lit l
 						LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
@@ -489,15 +498,6 @@ public function cname_literature ($value)
 										   'color' => '');
 					}
 				}
-			}else{
-				$display = clsDisplay::Load();
-					
-				$label= $display->protolog($id, true);
-				$results[] = array(
-					'id'	=> $id,
-					'label' =>$label,
-					'value' => $label,
-					'color' => '');
 			}
 		}
 		catch (Exception $e) {
@@ -519,7 +519,7 @@ var $x=0;
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_language ($value){
+public function cname_language ($value,$id=0){
     global $_CONFIG;
     $this->dbprefix=$_CONFIG['DATABASE']['NAME']['name'].".";
     $d=$this->dbprefix;
@@ -531,10 +531,67 @@ public function cname_language ($value){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-
-			if(!$id=extractID2($value)){
-					
 			
+			if($id!=0){
+				$pebenen=3;
+				
+				$f1='';$j1='';
+				for($i=$pebenen;$i>0;$i--){					
+					$f1.="
+ p{$i}.name as 'pn{$i}',
+ p{$i}.`iso639-6` as 'pi{$i}',
+ p{$i}.language_id as 'pii{$i}',
+ ";
+ 					if($i==1){
+ 						$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
+ 					}else{
+ 						$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
+ 					}
+				}
+					
+				$sql = "
+SELECT
+{$f1}
+ l.language_id,
+ l.name,
+ l.`iso639-6`,
+ l.`parent_iso639-6`
+
+FROM
+ {$d}tbl_name_languages l
+{$j1}
+WHERE
+	l.language_id='$id'
+ ";
+// p($sql,1);
+				$sql.=" LIMIT 100";
+				/* @var $dbst PDOStatement */
+				$dbst = $db->query($sql);
+				$row = $dbst->fetch();
+					
+				$res=array();
+				if(isset($row['name']) && $row['name']!=''){
+					$label="";
+					for($i=1;$i<=$pebenen;$i++){
+						if($row['pn'.$i]=='')continue;
+						if($i==1){
+							$label.="{$row['pn'.$i]} ({$row['pi'.$i]})";
+						}else{
+							$label.=", {$row['pn'.$i]} ({$row['pi'.$i]})";
+						}
+					}
+					$label="{$row['name']} ({$row['iso639-6']}) [".$label."]";
+					
+					$id=$row['language_id'];
+							
+					$results[] = array(
+						'id'	=> $id,
+						'label' => $label,
+						'value' => $label,
+						'color' => ''
+					);
+				}
+			}else{
 				// Get TypingCache
 				$cacheoption=$this->getCacheOption();
 				$sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
@@ -684,66 +741,8 @@ ORDER BY
 					$sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2',".$db->quote($value).",".$db->quote(json_encode($results)).")  ON DUPLICATE KEY UPDATE result=VALUES(result)" ;	
 					$dbst = $db->query($sql);
 				}
-			}else{
-				$pebenen=3;
-				
-				$f1='';$j1='';
-				for($i=$pebenen;$i>0;$i--){					
-					$f1.="
- p{$i}.name as 'pn{$i}',
- p{$i}.`iso639-6` as 'pi{$i}',
- p{$i}.language_id as 'pii{$i}',
- ";
- 					if($i==1){
- 						$j1=" LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6` = l.`parent_iso639-6`\n".$j1;				
- 					}else{
- 						$j1=" LEFT JOIN {$d}tbl_name_languages p{$i} ON p{$i}.`iso639-6` = p".($i-1).".`parent_iso639-6`\n".$j1;				
- 					}
-				}
-					
-				$sql = "
-SELECT
-{$f1}
- l.language_id,
- l.name,
- l.`iso639-6`,
- l.`parent_iso639-6`
-
-FROM
- {$d}tbl_name_languages l
-{$j1}
-WHERE
-	l.language_id='$id'
- ";
-// p($sql,1);
-				$sql.=" LIMIT 100";
-				/* @var $dbst PDOStatement */
-				$dbst = $db->query($sql);
-				$row = $dbst->fetch();
-					
-				$res=array();
-				if(isset($row['name']) && $row['name']!=''){
-					$label="";
-					for($i=1;$i<=$pebenen;$i++){
-						if($row['pn'.$i]=='')continue;
-						if($i==1){
-							$label.="{$row['pn'.$i]} ({$row['pi'.$i]})";
-						}else{
-							$label.=", {$row['pn'.$i]} ({$row['pi'.$i]})";
-						}
-					}
-					$label="{$row['name']} ({$row['iso639-6']}) [".$label."]";
-					
-					$id=$row['language_id'];
-							
-					$results[] = array(
-						'id'	=> $id,
-						'label' => $label,
-						'value' => $label,
-						'color' => ''
-					);
-				}
 			}
+				
 		}catch (Exception $e){
 			error_log($e->getMessage());
 			print_r($e);
@@ -857,20 +856,12 @@ function buildtree1(&$res,&$el,$childebene,$keys,$akey,$t3){
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_service ($value){
+public function cname_service ($value,$id=0){
 	$results = array();
 	if ($value && strlen($value)>1){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			
-			$where='';
-			if($id=extractID2($value)){
-				$where="serviceID ='$id'";
-			}else{
-				$where="name LIKE " . $db->quote ($value . '%').
-						"or url_head LIKE " . $db->quote ($value . '%');
-			}
 			
 			$sql = "
 SELECT
@@ -880,8 +871,15 @@ SELECT
 FROM
  tbl_nom_service
 WHERE
- {$where}
 ";
+			if($id!=0){
+				$sql.=" ='".$db->quote ($id)."' ";
+			}else{
+				$sql=" name LIKE " . $db->quote ($value . '%').
+						"or url_head LIKE " . $db->quote ($value . '%');
+			}
+			
+			
 			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
@@ -923,14 +921,6 @@ public function cname_period ($value){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			
-			$where='';
-			if($id=extractID2($value)){
-				$where="period_id ='$id'";
-			}else{
-				$where="period LIKE " . $db->quote ($value . '%');
-			}
-			
 			$sql = "
 SELECT
  period_id,
@@ -938,9 +928,14 @@ SELECT
 FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
 WHERE
- {$where}
 ";
+			if($id!=0){
+				$sql.=" ='".$db->quote ($id)."' ";
+			}else{
+				$sql.="period LIKE " . $db->quote ($value . '%');
+			}
 			
+						
 			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);

@@ -2,6 +2,34 @@
 
 require_once('variables.php');
 
+function logTbl_tax_synonymy($id,$updated) {
+	global $_CONFIG;
+	
+	$sql = "SELECT * FROM herbarinput.tbl_tax_synonymy where tax_syn_ID ='{$id}' limit 1";
+	$result = db_query($sql);
+	$row = mysql_fetch_array($result);
+	doQuotes($row,4);
+	$sql='INSERT INTO herbarinput_log.log_tbl_tax_synonymy '.
+		'(tax_syn_ID,taxonID,acc_taxon_ID,ref_date,preferred_taxonomy,annotations,locked,source,source_citationID,source_person_ID,source_serviceID,source_specimenID,'.
+		'userID, updated) VALUES ('.
+		'\''.$row['tax_syn_ID'].'\', '.
+		'\''.$row['taxonID'].'\', '.
+		'\''.$row['acc_taxon_ID'].'\', '.
+		'\''.$row['ref_date'].'\', '.
+		'\''.$row['preferred_taxonomy'].'\', '.
+		'\''.$row['annotations'].'\', '.
+		'\''.$row['locked'].'\', '.
+		'\''.$row['source'].'\', '.
+		'\''.$row['source_citationID'].'\', '.
+		'\''.$row['source_person_ID'].'\', '.
+		'\''.$row['source_serviceID'].'\', '.
+		'\''.$row['source_specimenID'].'\', '.
+		'\''.$_SESSION['uid'].'\', '.
+		'\''.$updated.'\' '.
+		')';
+	db_query($sql);
+}
+
 function logCommonNamesAppliesTo($id,$updated,$old='') {
 	global $_CONFIG;
 	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';

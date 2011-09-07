@@ -3,8 +3,80 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
+
 no_magic();
+
+
+function d($val){
+	return $val;
+}
+
+// todo: check ab hier...
+if(isset($_POST['function']) && $_POST['function']=='TaxSynLines'){
+	$uid=d($_SESSION['uid']);
+	$citid=d($_POST['citid']);
+	$val='';
+	foreach($_POST as $k=>$v){
+		if(preg_match('/ac_tax_t_(\d+)Index/', $k, $matches)==1){
+			$x=$matches[1];
+			$taxonID=$_POST['ac_tax_t_'.$x.'Index'];
+			$acctaxonID=$_POST['ac_tax_s_'.$x.'Index'];
+			
+			if(strlen($taxonID)>0 && strlen($acctaxonID)>0 && is_numeric($taxonID) && is_numeric($acctaxonID) ){		
+				$new[ $taxonID ][ $acctaxonID ]=1;
+				
+			}
+		}
+	}
+
+	//delete, untouch, add
+	$existing=array();
+	$sql = "SELECT taxonID,acc_taxon_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature'";
+	if($result = db_query($sql)) {
+		while ($row = mysql_fetch_array($result)){
+			// if db item not in new, delete it.
+			if(!isset( $new[ $row['taxonID'] ][ $row['acc_taxon_ID'] ] ) ){
+				// deleted: => updated =2.
+				$sql2 = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID='{$citid}' and source='literature' and taxonID ='{$row['taxonID']}' and acc_taxon_ID='{$row['acc_taxon_ID']}' LIMIT 1";
+				$result2 = db_query($sql2);
+				if($result2 && $row2 = mysql_fetch_array($result2)){
+					logTbl_tax_synonymy($row2['tax_syn_ID'],2);
+					
+					$sql3 = "DELETE FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID='{$row2['tax_syn_ID']}' LIMIT 1";
+					$res3 = db_query($sql3);
+					if($res3){
+						
+					}
+				}
+			}else{
+				$existing[ $row['taxonID'] ][ $row['acc_taxon_ID'] ]=1;
+			}
+		}
+	}
+
+	$sql="
+INSERT INTO  herbarinput.tbl_tax_synonymy
+(taxonID,acc_taxon_ID,ref_date,preferred_taxonomy,annotations,locked,source,source_citationID,source_person_ID,source_serviceID,source_specimenID,userID)
+VALUES 
+";	
+	$val="";
+	foreach($new as $taxonID=>$obj){
+		foreach($obj as $acctaxonID=>$obj2){
+			// If not in database yet, add it
+			if(!isset( $existing[$taxonID ][ $acctaxonID ] ) ){
+				$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature','{$citid}',null,null,null,'{$uid}') ";
+				$result2 = db_query($sql2);
+				if($result2){
+					$tax_syn_ID=mysql_insert_id();
+					logTbl_tax_synonymy($tax_syn_ID,0);
+				}
+			}
+		}
+	}
+	echo "1";
+	exit;
+}
+require_once ("inc/xajax/xajax_core/xajax.inc.php");
 
 $xajax = new xajax();
 $xajax->setRequestURI("ajax/editLitServer.php");
@@ -305,6 +377,10 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
+  <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
+
+  <!link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+  
   <style type="text/css">
 	.ui-autocomplete {
         font-size: 0.9em;  /* smaller size */
@@ -325,6 +401,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
+
   <script type="text/javascript" language="JavaScript">
     var reload = false;
 
@@ -417,16 +495,155 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
           width: 750,
           height: 600
         } );
-    } );
+    });
+	
+	
+	
   </script>
 </head>
 
 <body onload="call_listLib()">
 <div id="iBox_content" style="display:none;"></div>
 
-<form onSubmit="return checkMandatory()" name="f" id="f" target="_self" action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" >
+
+<div id="editTaxonomy" style="display:none;">
+
+
+<?PHP
+$cf = new CSSF();
+
+
+$sql="
+SELECT 
+ taxonID,
+ acc_taxon_ID
+FROM
+ tbl_tax_synonymy sy
+WHERE 
+ sy.source_citationID='$p_citationID'
+";
+
+$ac_taxinit='';
+if($result = db_query($sql)) {
+	if (mysql_num_rows($result) > 0) {
+		while ($row = mysql_fetch_array($result)) {
+			$ac_taxinit.=",['{$row['taxonID']}','{$row['acc_taxon_ID']}']";
+		}
+    }
+}
+$ac_taxinit=substr($ac_taxinit,1);
+$ac_taxinit='['.$ac_taxinit.']';
+
+
+$r=array(array("\n","'"),array("",'"'));
+$cf->setEcho(false);
+$htmla=str_replace($r[0],$r[1],$cf->inputJqAutocomplete3(0, 0, 20, '###name###', '', 1,"", "",true, true,false,false));
+$cf->setEcho(true);
+
+$htmlb=str_replace('###name###',"ac_tax_t_'+x+'",$htmla);
+$htmla=str_replace('###name###',"ac_tax_s_'+x+'",$htmla);
+
+echo<<<EOF
+<script>
+
+function editTaxonomy(){
+	$( "#editTaxonomy" ).dialog( "open" );
+}
+
+var taxsynConfig={$ac_taxinit};
+$(function() {
+	$( "#editTaxonomy" ).dialog({
+		autoOpen: false,
+		height: 500,
+		width: 700,
+		modal: true,
+		bgiframe: true,
+		buttons: {
+			"Save": function() {
+					submitTaxLines();
+					$( this ).dialog( "close" );
+			},Cancel: function() {
+				$( this ).dialog( "close" );
+			}
+		}
+	});
+	
+});
+
+var ACinitialized=false;
+$(document).ready(function() {
+	if(!ACinitialized){
+		$.each(taxsynConfig,function(index, conf) {
+			addTaxLine(conf[0],conf[1]);
+		});
+		addTaxLine();
+		addTaxLine();
+		ACFreudInit();
+	}
+	ACinitialized=true;
+});
+
+var x=0;
+function removeTaxLine(oid){
+	if($('#syntable1 tr').length>2){
+			$('#'+oid).remove();
+	}
+}
+
+function addTaxLine(taxon,synonym){
+	var code='<tr id="ac_tax_r_'+x+'"><td>{$htmla}</td><td>{$htmlb}</td><td><a href="javascript:removeTaxLine(\'ac_tax_r_'+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';
+	$('#syntable1 tr:last').after(code);
+
+	ACFreudPrepare('index_autocomplete_commoname.php?field=cname_taxon','ac_tax_t_'+x,((!isNaN(taxon))?taxon:'0'),1,1,2);
+	ACFreudPrepare('index_autocomplete_commoname.php?field=cname_taxon','ac_tax_s_'+x,((!isNaN(synonym))?synonym:'0'),1,1,2);
+	$('#ajax_ac_tax_t_'+x).focus(function(){
+		if($('#syntable1 tr:last input:text:first').val().length>0){
+			addTaxLine(0,0);
+		}
+    });
+	x++;
+}
+function submitTaxLines(){
+	$.ajaxSetup({
+		error:function(x,e){
+			if(x.status==0){alert('Taxamatch System Information:\\nYou are offline!!\\n Please Check Your Network.');
+			}else if(x.status==404){alert('Taxamatch System Information:\\n Requested URL not found.');
+			}else if(x.status==500){alert('Taxamatch System Information:\\nInternel Server Error.');
+			}else if(e=='parsererror'){alert('Taxamatch System Information:\\nError.\\nParsing JSON Request failed.');
+			}else if(e=='timeout'){alert('Taxamatch System Information:\\nRequest Time out.');
+			}else {alert('Taxamatch System Information:\\nUnknow Error.\\n'+x.responseText);
+			}
+		}
+	});
+	$.ajax({
+		type: 'POST',
+		url: 'editLit.php',
+		data: $('#editTaxSynonomy').serialize()+'&function=TaxSynLines',
+		/*timeout: 1000,*/
+		success: function(msg){
+			//alert(msg);
+		}
+	});
+}
+</script>
+
+<form name="editTaxSynonomy" id="editTaxSynonomy">
+<input type="hidden" name="citid" value="{$p_citationID}">
+<table id="syntable1">
+<tr><td colspan="2">Literature: </td></tr>
+</table>
+</div>
+</form>
+EOF;
+
+?>
 
 <?php
+
+echo<<<EOF
+<form onSubmit="return checkMandatory()" name="f" id="f" target="_self" action="{$_SERVER['PHP_SELF']}" method="POST" >
+EOF;
+
 unset($bestand);
 $sql = "SELECT bestand FROM tbl_lit GROUP BY bestand ORDER BY bestand";
 if ($result = db_query($sql)) {
@@ -470,7 +687,7 @@ if ($nr) {
     echo "</div>\n";
 }
 
-$cf = new CSSF();
+
 
 echo "<input type=\"hidden\" name=\"citationID\" value=\"$p_citationID\">\n";
 if ($p_citationID) {
@@ -492,6 +709,8 @@ $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
 
 $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
 $cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
+
+$cf->label(38, 7, "edit Container", "#\" onclick=\"editTaxonomy();");
 
 $cf->labelMandatory(19, 0.5, 3, "date");
 $cf->inputText(19, 0.5, 5, "jahr", $p_jahr, 50);
@@ -515,19 +734,30 @@ $cf->textarea(40, 6.5, 25, 3.9, "keywords", $p_keywords);
 $cf->label(40, 11.5, "annotation");
 $cf->textarea(40, 11.5, 25, 2.6, "annotation", $p_annotation);
 
+$cf->label(10, 12.5, "Geo Specification");
+
+//function inputJqAutocomplete3($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
 $cf->labelMandatory(7, 16, 6, "author{s}", "javascript:editAuthor(document.f.autor,'a')");
 $cf->editDropdown(7, 16, 25, "autor", $p_autor, makeAuthor($p_autor, 7, 13), 200);
+//$cf->inputJqAutocomplete3(7, 16, 25, "autor",$p_autor,"index_jq_autocomplete.php?field=author",520,2,'','',1,1);
+
 $cf->label(7, 17.7, "search", "javascript:searchAuthor()");
 $cf->label(7, 21, "editor{s}", "javascript:editAuthor(document.f.editor,'e')");
 //$cf->editDropdown(7, 21, 25, "editor", $p_editor, makeAuthor($p_editor, 7, 18.5), 200);
 $cf->inputText(7, 21, 25, "editor", $p_editor, 200, '', '', true);
 $cf->labelMandatory(7, 25.5, 6, "periodical", "javascript:editPeriodical(document.f.periodical)");
+
 $cf->editDropdown(7, 25.5, 25, "periodical", $p_periodical, makePeriodical($p_periodical, 7, 24), 300, 0, "", "", "call_listLib()");
+//$cf->inputJqAutocomplete3(7, 25.5, 25, "periodical",$p_periodical,"index_autocomplete.php?field=periodical",520,2,'','',1,1);
+
 $cf->inputText(7, 29.5, 2.5, "vol", $p_vol, 20);
 $cf->inputText(11, 29.5, 8, "part", $p_part, 50);
 $cf->inputText(20.5, 29.5, 11.5, "pp", $p_pp, 150);
 $cf->label(7, 33, "printer", "javascript:editPublisher(document.f.publisher)");
+
 $cf->editDropdown(7, 33, 25, "publisher", $p_publisher, makePublisher($p_publisher, 7, 31.5), 120);
+//$cf->inputJqAutocomplete3(7, 33, 25, "publisher",$p_publisher,"index_autocomplete.php?field=publisher",520,2,'','',1,1);
+
 $cf->label(7, 37, "printing Loc.");
 $cf->inputText(7, 37, 25, "verlagsort", $p_verlagsort, 100);
 
@@ -536,6 +766,8 @@ $cf->inputText(40, 37, 25, "additions", $p_additions, 500);
 
 $cf->label(7, 39.5, "listing");
 $cf->editDropdown(7, 39.5, 25, "bestand", $p_bestand, $bestand, 50);
+//$cf->inputJqAutocomplete3(7, 33, 25, "bestand",$p_bestand,"index_autocomplete.php?field=bestand",520,2,'','',1,1);
+
 $cf->label(44, 39.5, "recent publication");
 $cf->checkbox(44, 39.5, "publ", $p_publ);
 $cf->label(53, 39.5, "signature");
