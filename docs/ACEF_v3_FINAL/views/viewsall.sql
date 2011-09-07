@@ -228,7 +228,7 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_synonymy tsyn ON tsyn.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
  CROSS JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsyn.acc_taxon_ID
 
- LEFT JOIN herbarinput.tbl_tax_species ts ON tss.taxonID=tsyn.taxonID
+ LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsyn.taxonID
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID

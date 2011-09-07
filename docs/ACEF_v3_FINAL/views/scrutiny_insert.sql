@@ -1,35 +1,4 @@
-INSERT INTO  herbarinput.tbl_tax_synonymy syn
-(taxonID, acc_taxon_ID, ref_date, preferred_taxonomy, annotations, locked, source, source_citationID,
- source_person_ID, source_serviceID, source_specimenID, userID)
- 
- SELECT 
- 	taxsyns.taxonID as 'taxonID',
-	taxsyns.SynonymID as 'acc_taxon_ID',
-	lit.jahr as 'ref_date',
-
-	'' AS 'preferred_taxonomy',
-	
-	'import11' as 'annotations',
-	'1' as 'locked',
-	'literature' as 'source',
-	lit.citationID as 'source_citationID',
-	'' as 'source_person_ID',
-	'' as 'source_serviceID',
-	'' as 'source_specimenID',
-	
-	'2' as 'userID'
- 
-  FROM
-   herbar_view.view_sp2000_tmp_tabl_synonyms_normalized taxsyns
-   LEFT JOIN sp2000.tmp_scrutiny_import_all scr on scr.taxonID = taxsyns.AcceptedTaxonID
-   LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
-   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON sy.taxonID=scr.taxonID
-  WHERE
-   sy.taxonID is null
-
- 
 /*
-
 -- ===========================================
 -- ready
 -- view_sp2000_tmp_tabl_synonyms_normalized
@@ -135,5 +104,31 @@ DELIMITER ;
 --
 -- ===========================================
 CALL do_synonym_normalizing;
-
 */
+
+INSERT INTO herbarinput.tbl_tax_synonymy
+(taxonID, acc_taxon_ID, ref_date, preferred_taxonomy, annotations, locked, source, source_citationID,
+ source_person_ID, source_serviceID, source_specimenID, userID)
+ 
+ SELECT 
+  taxsyns.AcceptedTaxonID as 'taxonID',
+  taxsyns.SynonymID as 'acc_taxon_ID',
+  lit.jahr as 'ref_date',
+  '' AS 'preferred_taxonomy',
+	
+  'import11' as 'annotations',
+  '1' as 'locked',
+  'literature' as 'source',
+  lit.citationID as 'source_citationID',
+  '' as 'source_person_ID',
+  '' as 'source_serviceID',
+  '' as 'source_specimenID',
+	
+  '2' as 'userID'
+ FROM
+   herbar_view.view_sp2000_tmp_tabl_synonyms_normalized taxsyns
+   LEFT JOIN sp2000.tmp_scrutiny_import_all scr on scr.taxonID = taxsyns.AcceptedTaxonID
+   LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
+   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON sy.taxonID=scr.taxonID
+  WHERE
+   sy.taxonID is null;
