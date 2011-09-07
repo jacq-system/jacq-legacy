@@ -269,9 +269,9 @@ SELECT
  lan.name AS 'Language',
  -- after second "(" between second and third "," is the country; no "," and "(" are allowed but this normed ones.
  SUBSTRING(geo.name,
-   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+2) ,
+   (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+1) ,
    (LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+1))
-  -(LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+2)
+  -(LOCATE(',',geo.name,LOCATE(',',geo.name,LOCATE('(',geo.name, LOCATE('(',geo.name)+1)+1)+1)+1)
  ) AS 'Country',
  
  -- area is before first ","; no "," and "(" are allowed but this normed ones.
