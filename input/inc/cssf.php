@@ -413,9 +413,9 @@ EOF;
 		}
 		if($mustmatch==2){
 			$val=$id;
-		}/*else if($id==0 && $mustmatch!=3){
-			$val=$_POST['ajax_'.$name];// Todo!!! wichtig!
-		}*/
+		}else if($id==0 && $mustmatch!=3){
+			//$val=$_POST['ajax_'.$name];// Todo!!! wichtig!
+		}
 		if($textarea>0){
 			$val=str_replace('&quot;','"',$val);
 			$ret=<<<EOF
@@ -423,7 +423,7 @@ EOF;
 EOF;
 		
 		}else{
-			$val=htmlspecialchars($id, ENT_QUOTES);
+			$val=htmlspecialchars($val, ENT_QUOTES);
 			$ret=<<<EOF
  <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" value="{$val}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title} />
 EOF;
