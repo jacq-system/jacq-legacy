@@ -1,6 +1,6 @@
 <?php
 /*
-					COPYRIGHT
+COPYRIGHT
 
 Copyright 2007 Sergio Vaccaro <sergio@inservibile.org>
 
@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * @author sergio <jsonrpcphp@inservibile.org>
  */
-class jsonRPCClient {
+class internMDLDService{
 
 	/**
 	 * Debug state
@@ -53,7 +53,9 @@ class jsonRPCClient {
 	 *
 	 * @var boolean
 	 */
-	private $notification = false;
+	private $notification=false;
+
+	private $password;
 
 	/**
 	 * Takes the connection parameters
@@ -61,15 +63,17 @@ class jsonRPCClient {
 	 * @param string $url
 	 * @param boolean $debug
 	 */
-	public function __construct($url,$debug = false) {
+	public function __construct($url,$password='',$debug=false){
 		// server URL
-		$this->url = $url;
+		$this->url=$url;
 		// proxy
-		empty($proxy) ? $this->proxy = '' : $this->proxy = $proxy;
+		empty($proxy)?$this->proxy='':$this->proxy=$proxy;
 		// debug state
-		empty($debug) ? $this->debug = false : $this->debug = true;
+		empty($debug)?$this->debug=false:$this->debug=true;
+		//
+		$this->password=$password;
 		// message id
-		$this->id = 1;
+		$this->id=1;
 	}
 
 	/**
@@ -77,11 +81,14 @@ class jsonRPCClient {
 	 *
 	 * @param boolean $notification
 	 */
-	public function setRPCNotification($notification) {
-		empty($notification) ?
-							$this->notification = false
-							:
-							$this->notification = true;
+	public function setRPCNotification($notification){
+		empty($notification)?$this->notification=false:$this->notification=true;
+	}
+	
+	function makeKey(){
+		$salt=substr(uniqid(mt_rand(),true),0,5);
+		$key=$salt.md5($salt.md5($this->password).date('d.m.Y H:i'));
+		return $key;
 	}
 
 	/**
@@ -91,78 +98,95 @@ class jsonRPCClient {
 	 * @param array $params
 	 * @return array
 	 */
-	public function __call($method,$params) {
+	public function __call($method,$params){
 		$debug='';
 		
 		// check
-		if (!is_scalar($method)) {
+		if(!is_scalar($method)){
 			throw new Exception('Method name has no scalar value');
 		}
 
 		// check
-		if (is_array($params)) {
+		if(is_array($params)){
 			// no keys
-			$params = array_values($params);
-		} else {
+			$params=array_values($params);
+		}else{
 			throw new Exception('Params must be given as array');
 		}
 
 		// sets notification or request task
-		if ($this->notification) {
-			$currentId = NULL;
-		} else {
-			$currentId = $this->id;
+		if($this->notification){
+			$currentId=NULL;
+		}else{
+			$currentId=$this->id;
 		}
 
 		// prepares the request
-		$request = array(
-						'method' => $method,
-						'params' => $params,
-						'id' => $currentId
-						);
-		$request = json_encode($request);
-		if ($this->debug){
+		$request=array(
+			'method' => $method,
+			'id' => $currentId,
+		);
+		
+		if($this->password!=''){
+			$request['key']=$this->makeKey();
+		}
+		
+		/*$paramsb=array();
+		foreach($params as $k=>$v){
+			if(is_scalar($v)){
+				$paramsb[$k]=base64_encode($v);
+			}else{
+				$paramsb[$k]=$v;
+			}
+		}
+		$request['params']=$paramsb;*/
+		$request['params']=$params;
+		
+		$request=json_encode($request);
+		if($this->debug){
 			$debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
 		}
 		// performs the HTTP POST
-		$opts = array ('http' => array (
-							'method'  => 'POST',
-							'header'  => 'Content-type: application/json',
-							'content' => $request
-							));
-		$context  = stream_context_create($opts);
-		if ($fp = fopen($this->url, 'r', false, $context)) {
-			$response = '';
-			while($row = fgets($fp)) {
-				$response.= trim($row)."\n";
+		$opts=array(
+			'http' => array(
+				'method'  => 'POST',
+				'header'  => 'Content-type: application/json',
+				'content' => $request
+			)
+		);
+		$context =stream_context_create($opts);
+		if($fp=fopen($this->url, 'r', false, $context)){
+			$response='';
+			while($row=fgets($fp)){
+				$response.=trim($row)."\n";
 			}
 
-			if ($this->debug){
+			if($this->debug){
 				$debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
 			}
-			$response = json_decode($response,true);
-		} else {
+			$response=json_decode($response,true);
+		}else{
 			throw new Exception('Unable to connect to '.$this->url);
 		}
 
 		// debug output
-		if ($this->debug) {
+		if($this->debug){
 			echo nl2br($debug);
 		}
 
 		// final checks and return
-		if (!$this->notification) {
+		if(!$this->notification){
 			// check
-			if ($response['id'] != $currentId) {
-				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+			if($response['id'] !=$currentId){
+				throw new Exception('Incorrect response id(request id: '.$currentId.', response id: '.$response['id'].')');
 			}
-			if (!is_null($response['error'])) {
+			if(!is_null($response['error'])){
 				throw new Exception('Request error: '.$response['error']);
 			}
 
 			return $response['result'];
 
-		} else {
+		}else{
 			return true;
 		}
 	}

@@ -9,3 +9,5 @@ $_CONFIG['DATABASES']['OUTPUT'] = array(
 );
 
 $_CONFIG['img_service_url']='http://herbarium.univie.ac.at/database/image/';
+
+$_OPTIONS['internMDLDService']['password']='';

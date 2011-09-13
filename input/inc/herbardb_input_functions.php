@@ -1,4 +1,5 @@
 <?php
+require_once( 'tools.php' );
 function taxon($row,$withDT=false,$withID=true) {
 
   $text = $row['genus'];
@@ -136,14 +137,4 @@ function subTaxonItem($row) {
   if ($row['epithet5']) $text .= " subforma ".$row['epithet5']." ".$row['author5'];
 
   return $text;
-}
-
-function removeID($item) {
-
-    $pos = strrpos($item, ' <');
-    if ($pos !== false) {
-        return substr($item, 0, $pos);
-    } else {
-        return $item;
-    }
 }

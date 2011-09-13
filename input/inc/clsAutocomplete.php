@@ -85,8 +85,8 @@ public function taxAuthor ($value, $noExternals = false, $id=0)
 					WHERE 
 			";
 		
-			if($id!=0){
-				$sql.=" authorID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" authorID=".$db->quote ($id)." ";
 			}else{
 			
 				$sql.="(   author LIKE " . $db->quote ($pieces[0] . '%') . "
@@ -118,6 +118,55 @@ public function taxAuthor ($value, $noExternals = false, $id=0)
 	return $results;
 }
 
+/**
+ * autocomplete a taxonomy author entry field
+ *
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function litAuthor ($value,  $id=0,$noExternals = false)
+{
+
+	$results = array();
+	if ($value && strlen($value) > 1) {
+		$pieces = explode(chr(194) . chr(183) . " [", $value);
+		try {
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			$sql = "SELECT autor, autorID
+                FROM tbl_lit_authors
+				WHERE 
+			";
+		
+			if($id!==0){
+				$sql.=" autorID=".$db->quote ($id)." ";
+			}else{
+			
+				$sql.=" autor LIKE " . $db->quote ($pieces[0] . '%') . " ORDER BY autor";
+			}
+				//echo $sql;exit;
+			/* @var $dbst PDOStatement */
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$res = $row['autor'];
+					$results[] = array('id'	=> $row['autorID'],
+									   'label' => $res . " <" . $row['autorID'] . ">",
+									   'value' => $res . " <" . $row['autorID'] . ">",
+									   'color' => '');
+				}
+			}
+		}
+		catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	}
+
+	return $results;
+}
+
 
 /**
  * autocomplete an author entry field without external entries (external=0)
@@ -127,7 +176,7 @@ public function taxAuthor ($value, $noExternals = false, $id=0)
  */
 public function taxAuthorNoExternals ($value,$id=0)
 {
-	return $this->taxAuthor($value,true,$id);
+	return $this->taxAuthor($value,$id,true);
 }
 
 
@@ -138,7 +187,7 @@ public function taxAuthorNoExternals ($value,$id=0)
  * @param bool[optional] $second if true use tbl_collector2 (default = false)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function collector ($value, $second = false, $id=0)
+public function collector ($value, $id=0,$second = false)
 {
 	$results = array();
 	if ($value && strlen($value) > 1) {
@@ -153,8 +202,8 @@ public function collector ($value, $second = false, $id=0)
 						WHERE 
 						";
 						
-				if($id!=0){
-					$sql.=" Sammler_2ID='".$db->quote ($id)."' ";
+				if($id!==0){
+					$sql.=" Sammler_2ID=".$db->quote ($id)." ";
 				}else{
 				
 					$sql.=" Sammler_2 LIKE " . $db->quote ($pieces[0] . '%') ."
@@ -167,8 +216,8 @@ public function collector ($value, $second = false, $id=0)
 						FROM tbl_collector
 						WHERE 
 						";
-				if($id!=0){
-					$sql.=" SammlerID='".$db->quote ($id)."' ";
+				if($id!==0){
+					$sql.=" SammlerID=".$db->quote ($id)." ";
 				}else{
 				
 					$sql.="Sammler LIKE " . $db->quote ($pieces[0] . '%') . "
@@ -203,7 +252,7 @@ public function collector ($value, $second = false, $id=0)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function collector2 ($value,$id=0) {
-	return $this->collector($value,true, $id);
+	return $this->collector($value, $id,true);
 }
 
 /**
@@ -244,8 +293,8 @@ public function person ($value,$id=0)
 			$sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
 					FROM tbl_person
 					WHERE ";
-			if($id!=0){
-				$sql.=" person_ID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" person_ID=".$db->quote ($id)." ";
 			}else{
 			
 				$sql.="p_familyname LIKE " . $db->quote ($p_familyname . '%');
@@ -305,8 +354,8 @@ public function citation ($value,$id=0)
 					LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
 				   WHERE ";
 			// todo!!
-			if($id!=0){
-				$sql.=" citationID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" citationID=".$db->quote ($id)." ";
 			}else{
 				$sql.="(la.autor LIKE " . $db->quote ($autor . '%') . "
 						   OR le.autor LIKE " . $db->quote ($autor . '%') . ")";
@@ -345,7 +394,7 @@ public function citation ($value,$id=0)
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function periodical($value,$id){
+public function periodical($value,$id=0){
 	$results = array();
 	if ($value && strlen($value) > 1) {
 		$pieces = explode(" <", $value);
@@ -357,8 +406,8 @@ public function periodical($value,$id){
 								FROM tbl_lit_periodicals
 								WHERE ";
 			
-			if($id!=0){
-				$sql.=" periodicalID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" periodicalID=".$db->quote ($id)." ";
 			}else{
 			
 				$sql.="periodical LIKE " . $db->quote ($pieces[0] . '%') . "
@@ -384,7 +433,139 @@ public function periodical($value,$id){
 	return $results;
 }
 
+/**
+ * autocomplete a periodical entry field
+ *
+ * @param string $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function bestand($value,$id=0){
+	$results = array();
+	if ($value && strlen($value) > 1) {
+		$pieces = explode(" <", $value);
+		try {
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			/* @var $dbst PDOStatement */
+			$sql="SELECT bestand FROM tbl_lit ";
+			
+			if($id!==0){
+				$sql.=" WHERE bestand =" . $db->quote ($id ) . " LIMIT 1";
+			}else{
+				$sql.=" WHERE bestand like " . $db->quote ($pieces[0] . '%') . "";
+				$sql.=" GROUP BY bestand ORDER BY bestand";
+			}
+			//echo $sql;exit;
+			
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$results[] = array('id'	=> $row['bestand'],
+									   'label' => $row['bestand'] ,
+									   'value' => $row['bestand'] ,
+									   'color' => '');
+				}
+			}
+		}
+		catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	}
 
+	return $results;
+}
+
+/**
+ * autocomplete a periodical entry field
+ *
+ * @param string $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function categories($value,$id=0){
+	$results = array();
+	if ($value && strlen($value) > 1) {
+		$pieces = explode(" <", $value);
+		try {
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			/* @var $dbst PDOStatement */
+			$sql="SELECT category FROM tbl_lit ";
+			
+			if($id!==0){
+				$sql.=" WHERE category =" . $db->quote ($id ) . " LIMIT 1";
+			}else{
+				$sql.=" WHERE category like " . $db->quote ($pieces[0] . '%') . " ";
+				$sql.=" GROUP BY category ORDER BY category";
+			}
+			//echo $sql;exit;
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$results[] = array('id'	=> $row['category'],
+									   'label' => $row['category'] ,
+									   'value' => $row['category'] ,
+									   'color' => '');
+				}
+			}
+		}
+		catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	}
+
+	return $results;
+}
+
+
+/**
+ * autocomplete a periodical entry field
+ *
+ * @param string $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function publisher($value,$id=0){
+	$results = array();
+	if ($value && strlen($value) > 1) {
+		$pieces = explode(" <", $value);
+		try {
+			/* @var $db clsDbAccess */
+			$db = clsDbAccess::Connect('INPUT');
+			/* @var $dbst PDOStatement */
+			$sql="SELECT publisher, publisherID
+                FROM tbl_lit_publishers
+                WHERE";
+			
+			if($id!==0){
+				$sql.=" publisherID=".$db->quote ($id)." ";
+			}else{
+				$sql.=" publisher LIKE ".  $db->quote ($pieces[0]. "%")."
+                ORDER BY publisher";
+			}
+			//echo $sql;	exit;
+			$dbst = $db->query($sql);
+			$rows = $dbst->fetchAll();
+			if (count($rows) > 0) {
+				foreach ($rows as $row) {
+					$results[] = array('id'	=> $row['publisherID'],
+									   'label' => $row['publisher'] . " <" . $row['publisherID'] . ">",
+									   'value' => $row['publisher'] . " <" . $row['publisherID'] . ">",
+									   'color' => '');
+				}
+			}
+		}catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	}
+
+	return $results;
+}
+
+
+
+
+				
 /**
  * autocomplete a family entry field
  *
@@ -404,8 +585,8 @@ public function family ($value,$id=0)
 								FROM tbl_tax_families tf
 								 LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
 								WHERE");
-			if($id!=0){
-				$sql.=" familyID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" familyID=".$db->quote ($id)." ";
 			}else{
 			
 				$sql.= " family LIKE " . $db->quote ($pieces[0] . '%') . " ";
@@ -453,8 +634,8 @@ public function genus ($value,$id=0){
 					 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
 				WHERE ";
 			
-			if($id!=0){
-				$sql.=" tg.genID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" tg.genID=".$db->quote ($id)." ";
 			}else{
 				$sql.= "tg.genus LIKE " . $db->quote ($pieces[0] . '%') . " ";
 				$sql." ORDER BY tg.genus";
@@ -495,7 +676,7 @@ public function genus ($value,$id=0){
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function epithet ($value, $noExternals = false,$id=0)
+public function epithet ($value, $id=0,$noExternals = false)
 {
 	$results = array();
 	if ($value && strlen($value)>1) {
@@ -507,8 +688,8 @@ public function epithet ($value, $noExternals = false,$id=0)
 					WHERE ";
 			
 			
-			if($id!=0){
-				$sql.=" epithetID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" epithetID=".$db->quote ($id)." ";
 			}else{
 				$sql.= " epithet LIKE " . $db->quote ($value . '%') . " ";
 				if ($noExternals) $sql .= " AND external = 0";
@@ -544,7 +725,7 @@ public function epithet ($value, $noExternals = false,$id=0)
  */
 public function epithetNoExternals ($value,$id=0)
 {
-	return $this->epithet($value, true,$id);
+	return $this->epithet($value,$id, true);
 }
 
 
@@ -558,19 +739,40 @@ public function epithetNoExternals ($value,$id=0)
  * @param bool[optional] $withDT adds the DallaTorre information (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function taxon ($value, $noExternals = false, $withDT = false,$id=0)
+public function taxon ($value,$id=0, $noExternals = false, $withDT = false)
 {
 	$results = array();
 	if ($value && strlen($value) > 1) {
 		$pieces = explode(chr(194) . chr(183), $value);
 		$pieces = explode(" ",$pieces[0]);
 		try {
-			$sql="";
-			if($id!=0){
-				$sql.=" ='".$db->quote ($id)."' ";
+			$db = clsDbAccess::Connect('INPUT');
+			$sql = "SELECT taxonID, ts.external
+					FROM tbl_tax_species ts
+					 LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+					 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+					 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+					 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+					 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+					 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+					WHERE ";
+			
+			
+			if($id!==0){
+				$sql.=" ts.taxonID=".$db->quote ($id)." ";
 			}else{
-				$sql.= "";
-				
+				$sql.=" tg.genus LIKE " . $db->quote ($pieces[0] . '%');
+				$sql .= " AND ts.external = 0";
+			
+				if (!empty($pieces[1])) {
+					$sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
+				} else {
+					$sql .= " AND te0.epithet IS NULL";
+				}
+				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+			
+				$sql.=" LIMIT 100";
 			}
 			
 			$sql.=$where;
@@ -610,7 +812,7 @@ public function taxon ($value, $noExternals = false, $withDT = false,$id=0)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function taxonNoExternals ($value,$id=0){
-	return $this->taxon($value, true, false, $id);
+	return $this->taxon($value, $id, true, false);
 }
 
 
@@ -625,7 +827,7 @@ public function taxonNoExternals ($value,$id=0){
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function taxonWithDT ($value,$id=0){
-	return $this->taxon($value, false, true,$id);
+	return $this->taxon($value,$id, false, true);
 }
 
 /**
@@ -637,7 +839,7 @@ public function taxonWithDT ($value,$id=0){
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function taxonWithHybrids ($value, $noExternals = false,$id=0)
+public function taxonWithHybrids ($value,$id=0, $noExternals = false)
 {
 	$results = array();
 	if ($value && strlen($value) > 1) {
@@ -660,8 +862,8 @@ public function taxonWithHybrids ($value, $noExternals = false,$id=0)
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE";
 			
-			if($id!=0){
-				$sql.=" ='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" =".$db->quote ($id)." ";
 			}else{
 				$sql= "tg.genus LIKE " . $db->quote ($pieces[0] . '%');
 				if ($noExternals)$sql.= " AND ts.external = 0";
@@ -691,7 +893,7 @@ public function taxonWithHybrids ($value, $noExternals = false,$id=0)
 									   'color' => $color);
 				}
 			}
-			if($id!=0){
+			if($id!==0){
 				$sql = "SELECT ts.taxonID, ts.synID
 						FROM (tbl_tax_species ts, tbl_tax_hybrids th)
 						 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
@@ -760,7 +962,7 @@ public function taxonWithHybrids ($value, $noExternals = false,$id=0)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function taxonWithHybridsNoExternals ($value,$id=0){
-	return $this->taxonWithHybrids($value, true,$id);
+	return $this->taxonWithHybrids($value,$id, true);
 }
 
 /**
@@ -780,8 +982,8 @@ public function series ($value,$id=0){
 					FROM tbl_specimens_series
 					WHERE ";
 			
-			if($id!=0){
-				$sql.=" seriesID='".$db->quote ($id)."' ";
+			if($id!==0){
+				$sql.=" seriesID=".$db->quote ($id)." ";
 			}else{
 				$sql.= "tseries LIKE " . $db->quote ( '%' . $pieces[0] . '%') . "
 					ORDER BY series";

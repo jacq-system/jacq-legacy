@@ -105,18 +105,19 @@ protected function __construct () {}
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_person($value,$id=0)
-{
+public function cname_person($value,$id=0){
 	$results = array();
 	$where='';
 	 try {
 		/* @var $db clsDbAccess */
 		$db = clsDbAccess::Connect('INPUT');
 			
-			
-		if($id=extractID2($value)){
-			$sql="WHERE person_ID='{$id}'";
+		$sql="SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE ";
+					
+		if($id!=0){
+			$sql.=" person_ID='{$id}'";
 		}else{
+			if (!$value || strlen($value)==0)return;
 			if ($value && strlen($value) > 1) {
 				$pieces = explode(", ", $value, 2);
 				$p_familyname = $pieces[0];
@@ -138,31 +139,29 @@ public function cname_person($value,$id=0)
 				} else {
 					$p_firstname = $p_birthdate = $p_death = '';
 				}
-
 	   
-				$sql = "
-						WHERE p_familyname LIKE " . $db->quote ($p_familyname . '%');
+				$sql.=" p_familyname LIKE " . $db->quote ($p_familyname . '%');
 				if ($p_firstname) $sql .= " AND p_firstname LIKE " . $db->quote ($p_firstname . '%');
 				if ($p_birthdate) $sql .= " AND p_birthdate LIKE " . $db->quote ($p_birthdate . '%');
 				if ($p_death)	 $sql .= " AND p_death LIKE " . $db->quote ($p_death . '%');
-				$sql .= " ORDER BY p_familyname, p_firstname, p_birthdate, p_death";
+				$sql .= " ORDER BY p_familyname, p_firstname, p_birthdate, p_death LIMIT 100";
 			}
 		}
-		$sql="SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
-					FROM tbl_person {$sql}";
-		$sql.=" LIMIT 100";
+		
 		/* @var $dbst PDOStatement */
 		$dbst = $db->query($sql);
 		$rows = $dbst->fetchAll();
 		if (count($rows) > 0) {
-				foreach ($rows as $row) {
-					$text = $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
-					$results[] = array('id'	=> $row['person_ID'],
-									   'label' => $text,
-									   'value' => $text,
-									   'color' => '');
-				}
+			foreach ($rows as $row) {
+				$text = $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
+				$results[] = array(
+					'id'	=> $row['person_ID'],
+					'label' => $text,
+					'value' => $text,
+					'color' => ''
+				);
 			}
+		}
 	}catch (Exception $e) {
 		error_log($e->getMessage());
 		print_r($e->getMessage());
@@ -183,13 +182,9 @@ public function cname_person($value,$id=0)
  * @param bool[optional] $withDT adds the DallaTorre information (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_taxon ($value,$id=0)
-{
+public function cname_taxon ($value,$id=0){
 	$results = array();
-	if ($value && strlen($value) > 1) {
-		$pieces = explode(chr(194) . chr(183), $value);
-		$pieces = explode(" ",$pieces[0]);
-		try {
+			try {
 			$db = clsDbAccess::Connect('INPUT');
 
 			/* @var $db clsDbAccess */
@@ -205,20 +200,24 @@ public function cname_taxon ($value,$id=0)
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE ";
 			
-			if($id=extractID2($value)){
+			if($id!=0){
 				$sql.=" ts.taxonID='{$id}'";
 			}else{
+				if (!$value || strlen($value)==0)return;
+				$pieces = explode(chr(194) . chr(183), $value);
+				$pieces = explode(" ",$pieces[0]);
+	
 				$sql.=" tg.genus LIKE " . $db->quote ($pieces[0] . '%');
-				$sql .= " AND ts.external = 0";
+				$sql.= " AND ts.external = 0";
 			
 				if (!empty($pieces[1])) {
 					$sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
 				} else {
 					$sql .= " AND te0.epithet IS NULL";
 				}
-				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet  LIMIT 100";
 			}
-			$sql.=" LIMIT 100";
+
 			//echo $sql;
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
@@ -240,7 +239,7 @@ public function cname_taxon ($value,$id=0)
 		catch (Exception $e) {
 			error_log($e->getMessage());
 		}
-	}
+	
 
 	return $results;
 }
@@ -250,24 +249,25 @@ public function cname_taxon ($value,$id=0)
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_common_name ($value,$id=0){
+public function cname_commonname ($value,$id=0){
     global $_CONFIG;
 	
 	$results = array();
-	if ($value && strlen($value)>1){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			
 			$where='';
-			if($id=extractID2($value)){
+			if($id!=0){
 				$where="common_id ='$id'";
 			}else{
-				$where="common_name LIKE " . $db->quote($value . '%');
+				if (!$value || strlen($value)==0)return;
+				$where="common_name LIKE " . $db->quote($value . '%')." LIMIT 100";
 			}
 			
 			$sql = "SELECT common_name,common_id FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons WHERE {$where}";	
-			$sql.=" LIMIT 100";
+			
+			//echo $sql;exit;
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -288,6 +288,55 @@ public function cname_common_name ($value,$id=0){
 		}catch (Exception $e){
 			error_log($e->getMessage());
 		}
+	
+
+	return $results;
+}
+
+
+/**
+ * Common Names: Common Name
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function cname_stamm ($value,$id=0){
+    global $_CONFIG;
+	
+	$results = array();
+	try{
+		$db = clsDbAccess::Connect('INPUT');
+		
+		/* @var $db clsDbAccess */
+		
+		$sql = "SELECT  FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_ WHERE ";
+		if($id!=0){
+			$sql.="  =" . $db->quote($id)."";
+		}else{
+			if (!$value || strlen($value)==0)return;
+			$sql.="  LIKE " . $db->quote($value . '%')." LIMIT 100";
+		}
+			
+		//echo $sql;exit;
+		/* @var $dbst PDOStatement */
+		$dbst = $db->query($sql);
+		$rows = $dbst->fetchAll();
+		
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				$id=$row['common_id'];
+				$label=$row['common_name'];
+				
+				$results[] = array(
+					'id'	=> $id,
+					'label' => "{$label} &lt;{$id}&gt;",
+					'value' => $label,
+					'color' => ''
+				);
+			}
+		}
+	}catch (Exception $e){
+		error_log($e->getMessage());
 	}
 
 	return $results;
@@ -308,16 +357,17 @@ public function cname_geoname ($value,$id=0){
 	if ($value && strlen($value)>1){
 		try{
 			$db = clsDbAccess::Connect('INPUT');
-			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE {$where}";
+			
+			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE ";
 			
 			// Get Geonames out of database first
 			if($id!=0){
-				$sql.=" ='".$db->quote ($id)."' ";
+				$sql.=" geonameId=".$db->quote ($id)." ";
 			}else{
-				$sql.="name LIKE ".$db->quote($value .'%');
+				if (!$value || strlen($value)==0)return;
+				$sql.="name LIKE ".$db->quote($value .'%')." LIMIT 100";
 			}
 			
-			$sql.=" LIMIT 100";
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
 			
@@ -447,13 +497,12 @@ london:
  * @param string $value text to search for
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_literature ($value,$id=0)
-{
+public function cname_literature ($value,$id=0){
 	$results = array();
 	if ($value && strlen($value) > 1) {
 		$pieces = explode(" ", $value);
 		$autor = $pieces[0];
-		if (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.')) {
+		if (isset($pieces[1]) && (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.'))) {
 			$second = $pieces[1];
 		} else {
 			$second = '';
@@ -506,6 +555,71 @@ public function cname_literature ($value,$id=0)
 	}
 
 	return $results;
+	
+	$results = array();
+	echo "$value,$id";
+	try {
+		$db = clsDbAccess::Connect('INPUT');
+				
+		$sql ="SELECT citationID
+					   FROM tbl_lit l
+						LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
+						LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
+						LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
+					   WHERE";
+					   
+			/* @var $db clsDbAccess */
+			if($id!=0){
+				$display = clsDisplay::Load();
+					
+				$label= $display->protolog($id, true);
+				$results[] = array(
+					'id'	=> $id,
+					'label' =>$label,
+					'value' => $label,
+					'color' => '');
+
+			}else{
+				if (!$value || strlen($value)==0)return;
+				$pieces = explode(" ", $value);
+				$autor = $pieces[0];
+				if (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.')) {
+					$second = $pieces[1];
+				} else {
+					$second = '';
+				}
+		
+				 $sql.="(la.autor LIKE " . $db->quote ($autor . '%') . "
+						   OR le.autor LIKE " . $db->quote ($autor . '%') . ")";
+				if ($second) {
+					$sql .= " AND (l.jahr LIKE " . $db->quote ($second . '%') . "
+								OR l.titel LIKE " . $db->quote ($second . '%') . "
+								OR lp.periodical LIKE " . $db->quote ($second . '%') . ")";
+				}
+				$sql .= " ORDER BY la.autor, jahr, lp.periodical, vol, part, pp";
+				$sql.=" LIMIT 100";
+				
+				/* @var $dbst PDOStatement */
+				$dbst = $db->query($sql);
+				$rows = $dbst->fetchAll();
+				if (count($rows) > 0) {
+					$display = clsDisplay::Load();
+					foreach ($rows as $row) {
+						$results[] = array(
+							'id'	=> $row['citationID'],
+							'label' => $display->protolog($row['citationID'], true),
+							'value' => $display->protolog($row['citationID'], true),
+							'color' => ''
+						);
+					}
+				}
+			}
+		}catch (Exception $e) {
+			error_log($e->getMessage());
+		}
+	
+
+	return $results;
 }
 
 
@@ -527,7 +641,6 @@ public function cname_language ($value,$id=0){
 	$results = array();
 	$fetched=array();
 			
-	if ($value && strlen($value)>1){
 		try{
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
@@ -566,6 +679,7 @@ WHERE
 // p($sql,1);
 				$sql.=" LIMIT 100";
 				/* @var $dbst PDOStatement */
+				
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
 					
@@ -592,10 +706,13 @@ WHERE
 					);
 				}
 			}else{
+				if (!$value || strlen($value)==0)return;
+				
 				// Get TypingCache
 				$cacheoption=$this->getCacheOption();
 				$sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val=" . $db->quote($value)." {$cacheoption} LIMIT 1";	
-				
+			
+				$db = clsDbAccess::Connect('INPUT');
 				$dbst = $db->query($sql);
 				$row = $dbst->fetch();
 				
@@ -748,7 +865,6 @@ ORDER BY
 			print_r($e);
 			exit;
 		}
-	}
 
 	return $results;
 }
@@ -858,9 +974,7 @@ function buildtree1(&$res,&$el,$childebene,$keys,$akey,$t3){
  */
 public function cname_service ($value,$id=0){
 	$results = array();
-	if ($value && strlen($value)>1){
 		try{
-			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			
 			$sql = "
@@ -873,14 +987,18 @@ FROM
 WHERE
 ";
 			if($id!=0){
-				$sql.=" ='".$db->quote ($id)."' ";
+				$sql.=" serviceID= ".$db->quote ($id)." ";
 			}else{
-				$sql=" name LIKE " . $db->quote ($value . '%').
+				if (!$value || strlen($value)==0)return;
+				
+			
+				$sql.=" name LIKE " . $db->quote ($value . '%').
 						"or url_head LIKE " . $db->quote ($value . '%');
 			}
 			
 			
 			$sql.=" LIMIT 100";
+			//echo $sql;exit;
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -902,7 +1020,7 @@ WHERE
 		}catch (Exception $e){
 			error_log($e->getMessage());
 		}
-	}
+	
 
 	return $results;
 }
@@ -913,14 +1031,13 @@ WHERE
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_period ($value){
+public function cname_period ($value,$id=0){
     global $_CONFIG;
     
 	$results = array();
-	if ($value && strlen($value)>1){
 		try{
-			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
+			
 			$sql = "
 SELECT
  period_id,
@@ -930,13 +1047,12 @@ FROM
 WHERE
 ";
 			if($id!=0){
-				$sql.=" ='".$db->quote ($id)."' ";
+				$sql.=" period_id =".$db->quote ($id)." ";
 			}else{
-				$sql.="period LIKE " . $db->quote ($value . '%');
+				if (!$value || strlen($value)==0)return;
+				
+				$sql.="period LIKE " . $db->quote ($value . '%')."  LIMIT 100";
 			}
-			
-						
-			$sql.=" LIMIT 100";
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -958,7 +1074,6 @@ WHERE
 		}catch (Exception $e){
 			error_log($e->getMessage());
 		}
-	}
 
 	return $results;
 }
@@ -974,12 +1089,12 @@ public function cname_geospecification ($value){
     global $_CONFIG;
     
 	$results = array();
-	if ($value && strlen($value)>1){
-		try{
-			/* @var $db clsDbAccess */
-			$db = clsDbAccess::Connect('INPUT');
-			
-			$sql = "
+	if (!$value || strlen($value)==0)return;
+				
+	try{
+		$db = clsDbAccess::Connect('INPUT');
+				
+		$sql = "
 SELECT
  DISTINCT geospecification
 FROM
@@ -988,28 +1103,81 @@ WHERE
  geospecification like " . $db->quote ($value . '%')."
 ";
 			
-			$sql.=" LIMIT 100";
-			/* @var $dbst PDOStatement */
-			$dbst = $db->query($sql);
-			$rows = $dbst->fetchAll();
-			
-			if (count($rows) > 0) {
-				foreach ($rows as $row) {
-					
-					$label=$row['geospecification'];
-					$id=$row['geospecification'];
-					
-					$results[] = array(
-						'id'	=> $id,
-						'label' => $label,
-						'value' => $label,
-						'color' => ''
-					);
-				}
+		$sql.=" LIMIT 100";
+		/* @var $dbst PDOStatement */
+		$dbst = $db->query($sql);
+		$rows = $dbst->fetchAll();
+		
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				
+				$label=$row['geospecification'];
+				$id=$row['geospecification'];
+				
+				$results[] = array(
+					'id'	=> $id,
+					'label' => $label,
+					'value' => $label,
+					'color' => ''
+				);
 			}
-		}catch (Exception $e){
-			error_log($e->getMessage());
 		}
+	}catch (Exception $e){
+		error_log($e->getMessage());
+	}
+
+	return $results;
+}
+
+/**
+ * Common Names: Period
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function cname_tribes ($value,$id=0){
+    global $_CONFIG;
+    
+	$results = array();
+	if (!$value || strlen($value)==0)return;
+				
+	try{
+		$db = clsDbAccess::Connect('INPUT');
+				
+		$sql = "
+SELECT
+tribe_id, tribe_name
+FROM
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_tribes
+WHERE
+";
+		if($id!=0){
+			$sql.=" tribe_id =".$db->quote ($id)." ";
+		}else{
+			if (!$value || strlen($value)==0)return;
+			
+			$sql.="tribe_name LIKE " . $db->quote ($value . '%')."  LIMIT 100";
+		}
+		/* @var $dbst PDOStatement */
+		$dbst = $db->query($sql);
+		$rows = $dbst->fetchAll();
+		
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				
+				$label=$row['tribe_name'];
+				$id=$row['tribe_id'];
+				
+				$results[] = array(
+					'id'	=> $id,
+					'label' => $label,
+					'value' => $label,
+					'color' => ''
+				);
+			}
+		}
+	}catch (Exception $e){
+		error_log($e->getMessage());
 	}
 
 	return $results;

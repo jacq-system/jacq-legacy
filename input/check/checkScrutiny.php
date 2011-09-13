@@ -101,12 +101,14 @@ error_reporting(E_ALL);
 // ghomolka
 
 require("$path/variables.php");// develop/input/
+require("$path/jsonRPCClient.php");// develop/input/
 
 if (!mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) || !mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])){
 	echo 'no database connection';
 	exit;
 }
 mysql_query("SET character set utf8"); //<= do not use it!
+
 
 
 
@@ -354,14 +356,7 @@ EOF;
 	$z++;
 
 	$i=0;
-	//for($i=1;$i<=2;$i++){
-
-		
-		
-		
-		
-		
-		
+	
 		$rr=trim(str_replace(array('-',$obj['y']),'',$obj['a']));
 		$parts=preg_split ('/\s|,|&|(\.[\w]+)/',$rr ,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 		$parts2=array();
@@ -374,38 +369,30 @@ EOF;
 		
 		//print_r($parts);
 		$len=mb_strlen($rr,"UTF-8");
-
+		$checks="";
 		//echo "UPDATE  herbar_view.scrutiny SET date='{$obj['y']}', author='{$rr}' WHERE scrutiny='{$obj['a']}'; \n";continue;
-		$chc=1;
-		$checks='';
-		$checks.="IF($len <= CHAR_LENGTH(a.autor)+1 and $len >= CHAR_LENGTH(a.autor)-1 ,2,0) as c{$chc},";
-		$chc++;
-		$checks.="IF(a.autor='{$rr}',2,0) as c{$chc},";
-		$chc++;
-		$checks.=" IF( mdld('{$rr}',a.autor, 3, 4)<4,2,0) as c{$chc},  ";
-		$chc++;
-		$where="";
+		$checks.="IF($len <= CHAR_LENGTH(a.autor)+1 and $len >= CHAR_LENGTH(a.autor)-1 ,2,0) as check_a_1_2, \n";
+		$checks.="IF(a.autor='{$rr}',2,0) as check_a_2_2,\n";
+		$checks.=" IF( mdld('{$rr}',a.autor, 3, 4)<4,2,0) as check_a_3_2,\n";
 		
 		//echo $rr;
-		$chk=6;
+		$where="";
 		$where1="";
 		$where2="";
 		
+		$x=0;
 		foreach($parts5 as $part){
 			if(strpos($part,".")===false && strlen($part)>4){
 				
 				$where1.=" and a.autor LIKE '%{$part}%'";
-					$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as c{$chc},";
-					$chk+=1;
-					$chc+=1;
+				$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as check_a_4{$x}_1,\n";
 				
 			}else{
 				
 				$where2.=" or  a.autor LIKE '%{$part}%'";
-				$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as c{$chc},";
-				$chk+=1;
-				$chc+=1;
-			}	
+				$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as check_a_5{$x}_1,\n";
+			}
+			$x++;
 		}
 		
 		$where=" mdld('{$rr}',a.autor, 3, 4)<4 or ( 1=1 {$where1} and ( 1=0 {$where} {$where2} )) ";
@@ -415,14 +402,12 @@ EOF;
 		
 		$parts7=preg_split ('/-|\s|,|&|;|\./',$obj['y'],20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 		
+		$x=0;
 		foreach($parts7 as $j){
 			$years.=" and lit.jahr like '%{$j}%'";
-			$checks.="IF(INSTR(lit.jahr,'{$j}' )>0 ,5,0) as c{$chc},";
-			$chk+=5;
-			$chc+=1;
+			$checks.="IF(INSTR(lit.jahr,'{$j}' )>0 ,5,0) as  check_l_1{$x}_5,\n";
+			$x++;
 		}
-		
-		
 		
 		$query="
 SELECT
@@ -445,47 +430,62 @@ WHERE
 $where
 limit 1000
 ";
-//echo $query;
-//break;
-		//print_r($obj);
 		
+		$service = new internMDLDService($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password'],1);
 		
-		$res = mysql_query($query);
-                
-                if( $res === false ) {
-                    echo mysql_error();
-                    continue;
-                }
+		$sql=base64_encode($query);
+		try {
+			$res = $service->getSQLResults($sql);
+		}catch (Exception $e) {
+			echo "Fehler " . nl2br($e);
+		}
+		
+		if(isset($res['error']) ) {
+			echo $res['error'];
+			continue;
+		}
                 
 		$res3=array();
-		while($row = mysql_fetch_array($res)){
-			
-			$su=0;
-			for($j=1;$j<$chc;$j++){
-				
-				if(isset($row['c'.$j])){
-					$t=$row['c'.$j];
-					$su+=$t;
-				}
-			}
+		foreach($res as $row){
 			$t1=max(substr_count($row['autor'], ','),substr_count($row['autor'], '&'));
 			$t2=max(substr_count($rr, ','),substr_count($rr, '&')) ;
 			
-			if(  $t1==$t2  ){
-				$su++;
-				$row['c'.$chc]=1;
+			if($t1==$t2){
+				$row['check_a_6_1']=1;
 			}else{
-				$row['c'.$chc]=0;
+				$row['check_a_6_1']=1;
 			}
 			
+			$listing=array();
+			$listing['ges']['m']=0;
+			$listing['ges']['r']=0;
+			$chc=0;
+			foreach($row as $col=>$val){
+				
+				$result=preg_match('/check_(?P<group>\w+)_(?P<index>\d+)_(?P<max>\d+)/',$col,$m);
+				if($result==1){
+					$chc++;
+					$listing[$m['group']][$m['index']]['m']=$m['max'];
+					$listing[$m['group']][$m['index']]['r']=$val;
+					
+					if(!isset($listing[$m['group']]['ges']['m'])){
+						$listing[$m['group']]['ges']['m']=0;
+						$listing[$m['group']]['ges']['r']=0;
+					}
+					$listing[$m['group']]['ges']['m']+=$m['max'];
+					$listing[$m['group']]['ges']['r']+=$val;
+					
+					$listing['ges']['m']+=$m['max'];
+					$listing['ges']['r']+=$val;
+				}
+		
+			}
+			$row['res']=$listing;
 			//echo "-{$obj['a']}-{$row['autorID']}:$t1:$t2-";
-			
+			$su=$listing['ges']['r'];
 			$res3[$su][]=$row;
 			
 		}
-		$chk+=1;
-		$chc+=1;
-
 		
 		ksort($res3);
 		$res3= array_reverse($res3,1);
@@ -495,9 +495,7 @@ EOF;
 		
 		if(count($res3)==0){
 				echo<<<EOF
-				
 <tr><td></td><td></td><td colspan="5">Nothing found</td></tr>
-
 EOF;
 		}
 			
@@ -526,27 +524,49 @@ EOF;
 		$checked=false;
 		foreach ($res3 as $dist => $row1) {
 			$co=count($row1);
+			//print_r($row1);exit;
+			$chk=$row1[0]['res']['ges']['m'];
+			
 			$rat=$dist/$chk;
+			
+			
 			
 			$pr=number_format($rat* 100, 1).'%';
 			$trc='';
 			if($rat>0.95)$trc=' class="at"';
 			echo<<<EOF
-<tr class="at2" ><td></td><td colspan="5" ><span{$trc}><b>{$pr}</b></span>, <small>{$chc} checks, {$dist}/{$chk} scores</small>, <b>{$co} results</b> matched. </td></tr>
+<tr class="at2" ><td></td><td colspan="5" ><span{$trc}><b>{$pr}</b></span>, <small>{$chc} checks</small>, <b>{$co} results</b> matched. </td></tr>
 EOF;
 			
 			
 				foreach ($row1 as  $k=>$row) {
 					
+					$ratAuth=$row['res']['a']['ges']['r']/$row['res']['a']['ges']['m'];
+					$ratLit=$row['res']['l']['ges']['r']/$row['res']['l']['ges']['m'];
+					
+					$prA=number_format($ratAuth* 100, 1).'%';
+					$prL=number_format($ratLit* 100, 1).'%';
+					
 					$s='';
 					if($dist>0){
-						$s='';
-						for($j=1;$j<$chc;$j++){
-							if(isset($row['c'.$j])){
-								$s.=" c{$j}:".$row['c'.$j].",";
+						foreach($row['res'] as $group=>$obj11){
+							if($group=='ges'){
+								$s.="<br> group {$group}: {$obj11['r']}/{$obj11['m']},";
+							}else{
+								$s.="<br> group {$group}:";
+								$t="";
+								foreach($obj11 as $index=>$res){
+									if($index=='ges'){
+										$s.=" {$index}:{$res['r']}/{$res['m']},";
+									}else{
+										$t.=" {$index}:{$res['r']}/{$res['m']},";
+									}
+								}
+								$s.=$t;
 							}
+						
 						}
-						$s=substr($s,0,-1);
+						//$s=substr($s,0,-1);
 						echo<<<EOF
 				
 <tr><td></td><td></td><td colspan="5"></td></tr>
@@ -557,7 +577,6 @@ EOF;
 					$sho=$row['autor'];
 					
 					$c='';$cl='hoverd';$cl2='';
-					//if(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]) && $result[$obj['id']][$i]==$row['person_ID']){
 					$a=(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]));
 					$c4='';
 					if(  ($first && !$a && $co==1 && !$checked && isset($row['citationID']) && strlen($row['citationID'])>0 &&  ( ($rat-$next[$dist]/$chk>=0.3) || ($next[$dist]==0 && $rat>0.90 ) ) )  ||  ($a && $result[$obj['id']][$i]==$row['autorID']) ){
@@ -565,7 +584,7 @@ EOF;
 						$cl.=" selectedtr";
 						$checked=true;
 						$cl2=' class="at"';
-						$c4=' <small><i>suggested author</i></small>';
+						$c4=' ';
 						$sho="<span{$cl2}><b>{$row['autor']}</b></span>";
 					}else{
 						
@@ -576,7 +595,7 @@ EOF;
 					$cit= "";
 					if(isset($row['citationID']) && strlen($row['citationID'])>0){
 					
-						$cit= " {$row['jahr']}, {$row['citationID']}, {$row['litinfo']}";
+						$cit= " year: {$row['jahr']}, ID:{$row['citationID']}, info: {$row['litinfo']}";
 					}else{
 						$jj=implode(",",$parts7);
 						$cit= "None found for year: {$jj}";
@@ -585,7 +604,7 @@ EOF;
 //{$c}
 					echo<<<EOF
 				
-<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$row['citationID']}" jump="{$z}"></td><td></td><td>CitationID: {$row['citationID']}, AuthorID:{$row['autorID']} {$c4}</td><td>{$sho}</td><td>Citation: {$cit}</td><td><i><small>{$s}</small></i></td></tr>
+<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$row['citationID']}" jump="{$z}"></td><td></td><td><small>Auth:{$prA}, Lit:{$prL}<br>(AuthorID:{$row['autorID']}, CitationID: {$row['citationID']})</small> {$c4}</td><td>  {$sho}</td><td>{$cit}</td><td><i><small>{$s}</small></i></td></tr>
 
 
 EOF;

@@ -1,5 +1,6 @@
 <?php
 require_once( 'variables.php' );
+require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
@@ -69,20 +70,6 @@ function db_query($sql,$debug=false){
     return $res;
 }
 
-function extractID($text)
-{
-    $pos1 = strrpos($text, "<");
-    $pos2 = strrpos($text, ">");
-    if ($pos1!==false && $pos2 !== false) {
-        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
-            return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
-        } else {
-            return "NULL";
-        }
-    } else {
-        return "NULL";
-    }
-}
 
 function quoteString($text)
 {
@@ -106,11 +93,6 @@ function makeInt($value)
     } else {
         return "NULL";
     }
-}
-
-function replaceNewline($text)
-{
-    return strtr(str_replace("\r\n", "\n",$text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
 }
 
 function checkRight($right)
@@ -325,27 +307,5 @@ function echoSpecial($name, $type)
         case 'GET':     echo (isset($_GET[$name]))     ? htmlspecialchars($_GET[$name])     : ''; break;
         case 'POST':    echo (isset($_POST[$name]))    ? htmlspecialchars($_POST[$name])    : ''; break;
         case 'SESSION': echo (isset($_SESSION[$name])) ? htmlspecialchars($_SESSION[$name]) : ''; break;
-    }
-}
-
-
-/**
- * function for automatic class loading
- *
- * @param string $class_name name of class and of file
- */
-function __autoload($class_name)
-{
-    if (preg_match('|^\w+$|', $class_name)) {
-        $class_name = basename($class_name);
-        $path = 'inc/' . $class_name . '.php';
-
-        if (file_exists($path)) {
-            include($path);
-        } elseif (file_exists('../' . $path)) {
-            include('../' . $path);
-        } else {
-            die("The requested library $class_name could not be found.");
-        }
     }
 }

@@ -14,20 +14,33 @@
  * @param string $text string to extract ID from
  * @return string ID enclosed in single quotes or the string "NULL" (without quotes)
  */
-function extractID ($text)
-{
-    $pos1 = strrpos($text, "<");
-    $pos2 = strpos($text, ">", $pos1);
-    if ($pos1 !== false && $pos2 !== false) {
-        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
-            return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
-        } else {
-            return "NULL"; // no ID found
-        }
-    } else {
-        return "NULL"; // no ID found
-    }
-}
+
+	function extractID ($text){
+		$pos1 = strrpos($text, "<");
+		$pos2 = strpos($text, ">", $pos1);
+		if ($pos1 !== false && $pos2 !== false) {
+			if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
+				return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+			} else {
+				return "NULL"; // no ID found
+			}
+		} else {
+			return "NULL"; // no ID found
+		}
+	}
+
+
+/**
+ * replaces \r\n with \n and then \r or \n with <space>
+ *
+ * @param string $text text to scan
+ * @return string result of replacements
+ */
+
+	function replaceNewline($text)
+	{
+		return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
+	}
 
 function extractID2($text)
 {
@@ -37,7 +50,7 @@ function extractID2($text)
         if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
             return  intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
         } else {
-            return null;
+            return substr($text, $pos1 + 1, $pos2 - $pos1 - 1);
         }
     } else {
         return null;
@@ -61,16 +74,7 @@ function removeID ($item)
 }
 
 
-/**
- * replaces \r\n with \n and then \r or \n with <space>
- *
- * @param string $text text to scan
- * @return string result of replacements
- */
-function replaceNewline($text)
-{
-    return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
-}
+
 
 
 /**

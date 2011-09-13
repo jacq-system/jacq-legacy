@@ -2,7 +2,7 @@
 /**
  * Include necessary files
  */
-require("inc/init.php");
+require_once("inc/init.php");
 
 ob_start();  // intercept all output
 
@@ -11,7 +11,14 @@ $autocomplete = clsAutocomplete::Load();
 $methodName = (isset($_GET['field'])) ? $_GET['field'] : "";
 
 if (method_exists($autocomplete, $methodName) && isset($_GET['term'])) {
-    $data = $autocomplete->$methodName(removeID($_GET['term']));
+
+	if($id=extractID2($_GET['term'])){
+	
+		$data = $autocomplete->$methodName($_GET['term'],$id);
+	}else{
+		 $data = $autocomplete->$methodName(removeID($_GET['term']),0);	
+	}
+	
 } else {
     $data  = '';
 }

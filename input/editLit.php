@@ -6,76 +6,6 @@ require("inc/log_functions.php");
 
 no_magic();
 
-
-function d($val){
-	return $val;
-}
-
-// todo: check ab hier...
-if(isset($_POST['function']) && $_POST['function']=='TaxSynLines'){
-	$uid=d($_SESSION['uid']);
-	$citid=d($_POST['citid']);
-	$val='';
-	foreach($_POST as $k=>$v){
-		if(preg_match('/ac_tax_t_(\d+)Index/', $k, $matches)==1){
-			$x=$matches[1];
-			$taxonID=$_POST['ac_tax_t_'.$x.'Index'];
-			$acctaxonID=$_POST['ac_tax_s_'.$x.'Index'];
-			
-			if(strlen($taxonID)>0 && strlen($acctaxonID)>0 && is_numeric($taxonID) && is_numeric($acctaxonID) ){		
-				$new[ $taxonID ][ $acctaxonID ]=1;
-				
-			}
-		}
-	}
-
-	//delete, untouch, add
-	$existing=array();
-	$sql = "SELECT taxonID,acc_taxon_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature'";
-	if($result = db_query($sql)) {
-		while ($row = mysql_fetch_array($result)){
-			// if db item not in new, delete it.
-			if(!isset( $new[ $row['taxonID'] ][ $row['acc_taxon_ID'] ] ) ){
-				// deleted: => updated =2.
-				$sql2 = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID='{$citid}' and source='literature' and taxonID ='{$row['taxonID']}' and acc_taxon_ID='{$row['acc_taxon_ID']}' LIMIT 1";
-				$result2 = db_query($sql2);
-				if($result2 && $row2 = mysql_fetch_array($result2)){
-					logTbl_tax_synonymy($row2['tax_syn_ID'],2);
-					
-					$sql3 = "DELETE FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID='{$row2['tax_syn_ID']}' LIMIT 1";
-					$res3 = db_query($sql3);
-					if($res3){
-						
-					}
-				}
-			}else{
-				$existing[ $row['taxonID'] ][ $row['acc_taxon_ID'] ]=1;
-			}
-		}
-	}
-
-	$sql="
-INSERT INTO  herbarinput.tbl_tax_synonymy
-(taxonID,acc_taxon_ID,ref_date,preferred_taxonomy,annotations,locked,source,source_citationID,source_person_ID,source_serviceID,source_specimenID,userID)
-VALUES 
-";	
-	$val="";
-	foreach($new as $taxonID=>$obj){
-		foreach($obj as $acctaxonID=>$obj2){
-			// If not in database yet, add it
-			if(!isset( $existing[$taxonID ][ $acctaxonID ] ) ){
-				$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature','{$citid}',null,null,null,'{$uid}') ";
-				$result2 = db_query($sql2);
-				if($result2){
-					$tax_syn_ID=mysql_insert_id();
-					logTbl_tax_synonymy($tax_syn_ID,0);
-				}
-			}
-		}
-	}
-	echo "1";
-	exit;
-}
 require_once ("inc/xajax/xajax_core/xajax.inc.php");
 
 $xajax = new xajax();
@@ -92,77 +22,7 @@ if (!isset($_SESSION['liLinkList'])) $_SESSION['liLinkList'] = '';
 $nr = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $linkList = $_SESSION['liLinkList'];
 
-function makeAuthor($search, $x, $y)
-{
-    global $cf;
 
-    $pieces = explode(" <", $search);
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $sql = "SELECT autor, autorID
-                FROM tbl_lit_authors
-                WHERE autor LIKE '" . mysql_escape_string(trim($pieces[0])) . "%'
-                ORDER BY autor";
-        if ($result = db_query($sql)) {
-            //$cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = $row['autor'] . " <" . $row['autorID'] . ">";
-                }
-            }
-        }
-    }
-    return $results;
-}
-
-
-function makePeriodical($search, $x, $y)
-{
-    global $cf;
-
-    $pieces = explode(" <", $search);
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $sql = "SELECT periodical, periodicalID
-                FROM tbl_lit_periodicals
-                WHERE periodical LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                 OR periodical_full LIKE '%". mysql_escape_string($pieces[0]) . "%'
-                ORDER BY periodical";
-        if ($result = db_query($sql)) {
-            //$cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = $row['periodical'] . " <" . $row['periodicalID'] . ">";
-                }
-            }
-        }
-    }
-    return $results;
-}
-
-
-function makePublisher($search, $x, $y)
-{
-    global $cf;
-
-    $pieces = explode(" <", $search);
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $sql = "SELECT publisher, publisherID
-                FROM tbl_lit_publishers
-                WHERE publisher LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                ORDER BY publisher";
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
-                    $results[] = $row['publisher'] . " <" . $row['publisherID'] . ">";
-                }
-            }
-        }
-    }
-    return $results;
-}
 
 function rom2arab ($r)
 {
@@ -266,11 +126,17 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $p_editor     = ($row['editor']) ? $row['editor'] . " <" . $row['editorID'] . ">" : "";
         $p_periodical = ($row['periodical']) ? $row['periodical'] . " <" . $row['periodicalID'] . ">" : "";
         $p_publisher  = ($row['publisher']) ? $row['publisher'] . " <" . $row['publisherID'] . ">" : "";
+		
+		$p_autorIndex      =  $row['autorID'];
+		$p_editorIndex     = $row['editorID'];
+        $p_periodicalIndex = $row['periodicalID'];
+        $p_publisherIndex  = $row['publisherID'];
     } else {
         $p_citationID = $p_jahr = $p_code = $p_titel = $p_suptitel = $p_vol = $p_part = "";
         $p_pp = $p_verlagsort = $p_keywords = $p_annotation = $p_additions = $p_bestand = "";
         $p_signature = $p_publ = $p_category = $p_autor = $p_editor = $p_periodical = "";
         $p_publisher = $p_url = "";
+		$p_autorIndex =  $p_editorIndex =  $p_periodicalIndex = $p_publisherIndex  = 0;
     }
     if (isset($_GET['new']) && $_GET['new'] == 1) $p_citationID = "";
     $edit = (!empty($_GET['edit'])) ? true : false;
@@ -286,32 +152,37 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_keywords   = $_POST['keywords'];
     $p_annotation = $_POST['annotation'];
     $p_additions  = $_POST['additions'];
-    $p_bestand    = $_POST['bestand'];
+    $p_bestand    = $_POST['bestandIndex'];
     $p_signature  = $_POST['signature'];
     $p_publ       = (!empty($_POST['publ'])) ? 1 : 0;
-    $p_category   = $_POST['category'];
+    $p_category   = $_POST['categoryIndex'];
     $p_url        = $_POST['url'];
     $p_autor      = $_POST['autor'];
     $p_editor     = $_POST['editor'];
     $p_periodical = $_POST['periodical'];
     $p_publisher  = $_POST['publisher'];
-
+	
+	$p_autorIndex      = $_POST['autorIndex'];
+	$p_editorIndex     = $_POST['editorIndex'];
+	$p_periodicalIndex = $_POST['periodicalIndex'];
+	$p_publisherIndex  = $_POST['publisherIndex'];
+		
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
         if (intval($_POST['citationID'])) {
             $sql = "UPDATE tbl_lit SET
                      lit_url = " . quoteString($p_url) . ",
-                     autorID = " . extractID($p_autor) . ",
+                     autorID = " . quoteString($p_autorIndex) . ",
                      jahr = " . quoteString($p_jahr) . ",
                      code = " . quoteString($p_code) . ",
                      titel = " . quoteString($p_titel) . ",
                      suptitel = " . quoteString($p_suptitel) . ",
-                     editorsID = " . extractID($p_editor) . ",
-                     periodicalID = " . extractID($p_periodical) . ",
+                     editorsID = " . quoteString($p_editorIndex) . ",
+                     periodicalID = " .quoteString($p_periodicalIndex) . ",
                      vol = " . quoteString($p_vol) . ",
                      part = " . quoteString($p_part) . ",
                      pp = " . quoteString($p_pp) . ",
                      ppSort = " . quoteString(parsePp($p_pp)) . ",
-                     publisherID = " . extractID($p_publisher) . ",
+                     publisherID = " . quoteString($p_publisherIndex) . ",
                      verlagsort = " . quoteString($p_verlagsort) . ",
                      keywords = " . quoteString($p_keywords) . ",
                      annotation = " . quoteString($p_annotation) . ",
@@ -325,18 +196,18 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         } else {
             $sql = "INSERT INTO tbl_lit SET
                      lit_url = " . quoteString($p_url) . ",
-                     autorID = " . extractID($p_autor) . ",
+                     autorID = " . quoteString($p_autorIndex) . ",
                      jahr = " . quoteString($p_jahr) . ",
                      code = " . quoteString($p_code) . ",
                      titel = " . quoteString($p_titel) . ",
                      suptitel = " . quoteString($p_suptitel) . ",
-                     editorsID = " . extractID($p_editor) . ",
-                     periodicalID = " . extractID($p_periodical) . ",
+                     editorsID = " . quoteString($p_editorIndex) . ",
+                     periodicalID = " . quoteString($p_periodicalIndex) . ",
                      vol = " . quoteString($p_vol) . ",
                      part = " . quoteString($p_part) . ",
                      pp = " . quoteString($p_pp) . ",
                      ppSort = " . quoteString(parsePp($p_pp)) . ",
-                     publisherID = " . extractID($p_publisher) . ",
+                     publisherID = " . quoteString($p_publisherIndex) . ",
                      verlagsort = " . quoteString($p_verlagsort) . ",
                      keywords = " . quoteString($p_keywords) . ",
                      annotation = " . quoteString($p_annotation) . ",
@@ -379,6 +250,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
 
+
   <!link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
   
   <style type="text/css">
@@ -402,22 +274,22 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
-
+ 
   <script type="text/javascript" language="JavaScript">
     var reload = false;
 
     function editAuthor(sel,typ) {
-      target = "editLitAuthor.php?sel=" + encodeURIComponent(sel.value) + "&typ=" + typ;
+      target = "editLitAuthor.php?sel=" + encodeURIComponent(sel) + "&typ=" + typ;
       MeinFenster = window.open(target,"editLitAuthor","width=500,height=200,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function editPeriodical(sel) {
-      target = "editLitPeriodical.php?sel=" + encodeURIComponent(sel.value);
+      target = "editLitPeriodical.php?sel=" + encodeURIComponent(sel);
       MeinFenster = window.open(target,"editLitPeriodical","width=600,height=550,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function editPublisher(sel) {
-      target = "editLitPublisher.php?sel=" + encodeURIComponent(sel.value);
+      target = "editLitPublisher.php?sel=" + encodeURIComponent(sel);
       MeinFenster = window.open(target,"editLitPublisher","width=500,height=200,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
@@ -447,6 +319,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     function reloadButtonPressed() {
       reload = true;
     }
+	// todo: check it....
     function checkMandatory() {
       var missing = 0;
       var text = "";
@@ -457,13 +330,13 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
       if (document.f.jahr.value.length==0) {
         missing++; text += "year\n";
       }
-      if (document.f.category.value.length==0) {
+      if (document.f.categoryIndex.value.length==0) {
         missing++; text += "categories\n";
       }
-      if (document.f.autor.value.indexOf("<")<0 || document.f.autor.value.indexOf(">")<0) {
+      if (document.f.autorIndex.value.length==0) {
         missing++; text += "author{s}\n";
       }
-      if (document.f.periodical.value.indexOf("<")<0 || document.f.periodical.value.indexOf(">")<0) {
+      if (document.f.periodicalIndex.value.length==0) {
         missing++; text += "periodical\n";
       }
 
@@ -506,165 +379,45 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 <div id="iBox_content" style="display:none;"></div>
 
 
-<div id="editTaxonomy" style="display:none;">
 
 
 <?PHP
 $cf = new CSSF();
 
+$display = clsDisplay::Load();
+$title=$display->protolog($p_citationID);
+$serverParams="&citationID={$p_citationID}";
 
-$sql="
-SELECT 
- taxonID,
- acc_taxon_ID
-FROM
- tbl_tax_synonymy sy
-WHERE 
- sy.source_citationID='$p_citationID'
-";
-
-$ac_taxinit='';
-if($result = db_query($sql)) {
-	if (mysql_num_rows($result) > 0) {
-		while ($row = mysql_fetch_array($result)) {
-			$ac_taxinit.=",['{$row['taxonID']}','{$row['acc_taxon_ID']}']";
-		}
-    }
-}
-$ac_taxinit=substr($ac_taxinit,1);
-$ac_taxinit='['.$ac_taxinit.']';
-
-
-$r=array(array("\n","'"),array("",'"'));
-$cf->setEcho(false);
-$htmla=str_replace($r[0],$r[1],$cf->inputJqAutocomplete3(0, 0, 20, '###name###', '', 1,"", "",true, true,false,false));
-$cf->setEcho(true);
-
-$htmlb=str_replace('###name###',"ac_tax_t_'+x+'",$htmla);
-$htmla=str_replace('###name###',"ac_tax_s_'+x+'",$htmla);
-
-echo<<<EOF
-<script>
-
-function editTaxonomy(){
-	$( "#editTaxonomy" ).dialog( "open" );
-}
-
-var taxsynConfig={$ac_taxinit};
-$(function() {
-	$( "#editTaxonomy" ).dialog({
-		autoOpen: false,
-		height: 500,
-		width: 700,
-		modal: true,
-		bgiframe: true,
-		buttons: {
-			"Save": function() {
-					submitTaxLines();
-					$( this ).dialog( "close" );
-			},Cancel: function() {
-				$( this ).dialog( "close" );
-			}
-		}
-	});
+$searchjs=<<<EOF
+function createMapSearchstring(){
+	searchString='';
+	if($('#speciesSearch').val().length>0)
+		searchString='&genusSearch='+$('#genusSearch').val()+'&speciesSearch='+$('#speciesSearch').val();
+	else if($('#genusSearch').val().length>0)
+		searchString='&genusSearch='+$('#genusSearch').val();
+	else
+		searchString='&mdldSearch='+$('#mdldSearch').val();
 	
-});
-
-var ACinitialized=false;
-$(document).ready(function() {
-	if(!ACinitialized){
-		$.each(taxsynConfig,function(index, conf) {
-			addTaxLine(conf[0],conf[1]);
-		});
-		addTaxLine();
-		addTaxLine();
-		ACFreudInit();
-	}
-	ACinitialized=true;
-});
-
-var x=0;
-function removeTaxLine(oid){
-	if($('#syntable1 tr').length>2){
-			$('#'+oid).remove();
-	}
+	return searchString;
 }
-
-function addTaxLine(taxon,synonym){
-	var code='<tr id="ac_tax_r_'+x+'"><td>{$htmla}</td><td>{$htmlb}</td><td><a href="javascript:removeTaxLine(\'ac_tax_r_'+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';
-	$('#syntable1 tr:last').after(code);
-
-	ACFreudPrepare('index_autocomplete_commoname.php?field=cname_taxon','ac_tax_t_'+x,((!isNaN(taxon))?taxon:'0'),1,1,2);
-	ACFreudPrepare('index_autocomplete_commoname.php?field=cname_taxon','ac_tax_s_'+x,((!isNaN(synonym))?synonym:'0'),1,1,2);
-	$('#ajax_ac_tax_t_'+x).focus(function(){
-		if($('#syntable1 tr:last input:text:first').val().length>0){
-			addTaxLine(0,0);
-		}
-    });
-	x++;
-}
-function submitTaxLines(){
-	$.ajaxSetup({
-		error:function(x,e){
-			if(x.status==0){alert('Taxamatch System Information:\\nYou are offline!!\\n Please Check Your Network.');
-			}else if(x.status==404){alert('Taxamatch System Information:\\n Requested URL not found.');
-			}else if(x.status==500){alert('Taxamatch System Information:\\nInternel Server Error.');
-			}else if(e=='parsererror'){alert('Taxamatch System Information:\\nError.\\nParsing JSON Request failed.');
-			}else if(e=='timeout'){alert('Taxamatch System Information:\\nRequest Time out.');
-			}else {alert('Taxamatch System Information:\\nUnknow Error.\\n'+x.responseText);
-			}
-		}
-	});
-	$.ajax({
-		type: 'POST',
-		url: 'editLit.php',
-		data: $('#editTaxSynonomy').serialize()+'&function=TaxSynLines',
-		/*timeout: 1000,*/
-		success: function(msg){
-			//alert(msg);
-		}
-	});
-}
-</script>
-
-<form name="editTaxSynonomy" id="editTaxSynonomy">
-<input type="hidden" name="citid" value="{$p_citationID}">
-<table id="syntable1">
-<tr><td colspan="2">Literature: </td></tr>
+EOF;
+		$searchhtml=<<<EOF
+<table>
+<tr><td>MDLD Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mdldSearch" value="" maxlength="200" ></td></tr>
+<tr><td>genus Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="genusSearch" value="" maxlength="200" ></td></tr>
+<tr><td>Species:</td><td><input class="cssftext" style="width: 25em;" type="text" id="speciesSearch" value="" maxlength="200" ></td></tr>
 </table>
-</div>
-</form>
 EOF;
 
-?>
+$cf->inputMapLines(45,2.5,1,'edit Mapping',$title,'index_autocomplete_commoname.php?field=cname_taxon',
+'index_autocomplete_commoname.php?field=cname_taxon','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml);
 
-<?php
+
+
 
 echo<<<EOF
 <form onSubmit="return checkMandatory()" name="f" id="f" target="_self" action="{$_SERVER['PHP_SELF']}" method="POST" >
 EOF;
-
-unset($bestand);
-$sql = "SELECT bestand FROM tbl_lit GROUP BY bestand ORDER BY bestand";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $bestand[] = $row['bestand'];
-        }
-    }
-}
-if ($bestand[0] != "") array_unshift($bestand, "");
-
-unset($category);
-$sql = "SELECT category FROM tbl_lit GROUP BY category ORDER BY category";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
-            $category[] = $row['category'];
-        }
-    }
-}
-if ($category[0] != "") array_unshift($category, "");
 
 if ($nr) {
     echo "<div style=\"position: absolute; left: 13em; top: 0.4em;\">";
@@ -710,13 +463,18 @@ $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
 $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
 $cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
 
-$cf->label(38, 7, "edit Container", "#\" onclick=\"editTaxonomy();");
+//$cf->label(38, 7, "edit Container", "#\" onclick=\"editMapping();");
 
+
+		
+		
 $cf->labelMandatory(19, 0.5, 3, "date");
 $cf->inputText(19, 0.5, 5, "jahr", $p_jahr, 50);
 $cf->inputText(25, 0.5, 5, "code", $p_code, 25);
 $cf->labelMandatory(40, 0.5, 6, "categories");
-$cf->editDropdown(40, 0.5, 25, "category", $p_category, $category, 50);
+//$cf->editDropdown(40, 0.5, 25, "category", $p_category, $category, 50);
+$cf->inputJqAutocomplete3(40, 0.5, 25, "category",$p_category,"index_jq_autocomplete.php?field=categories",50,2,'','',1,1);
+
 
 if ($p_url) {
     $cf->label(7, 4.5, "url", "http://" . $p_url . "\" target=\"_blank");
@@ -734,68 +492,69 @@ $cf->textarea(40, 6.5, 25, 3.9, "keywords", $p_keywords);
 $cf->label(40, 11.5, "annotation");
 $cf->textarea(40, 11.5, 25, 2.6, "annotation", $p_annotation);
 
-$cf->label(10, 12.5, "Geo Specification");
+//$cf->label(7, 12.5, "Geo<br> Specification");
 
 //function inputJqAutocomplete3($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
-$cf->labelMandatory(7, 16, 6, "author{s}", "javascript:editAuthor(document.f.autor,'a')");
-$cf->editDropdown(7, 16, 25, "autor", $p_autor, makeAuthor($p_autor, 7, 13), 200);
-//$cf->inputJqAutocomplete3(7, 16, 25, "autor",$p_autor,"index_jq_autocomplete.php?field=author",520,2,'','',1,1);
+$cf->labelMandatory(7, 16, 6, "author{s}", "javascript:editAuthor('<'+document.f.autorIndex.value+'>','a')");
+//$cf->editDropdown(7, 16, 25, "autor", $p_autor, makeAuthor($p_autor, 7, 13), 200);
+$cf->inputJqAutocomplete3(7, 16, 25, "autor",$p_autorIndex ,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
 
-$cf->label(7, 17.7, "search", "javascript:searchAuthor()");
-$cf->label(7, 21, "editor{s}", "javascript:editAuthor(document.f.editor,'e')");
+$cf->label(7, 14.7, "search", "javascript:searchAuthor()");
+$cf->label(7, 18.5, "editor{s}", "javascript:editAuthor('<'+document.f.editorIndex.value+'>','e')");
 //$cf->editDropdown(7, 21, 25, "editor", $p_editor, makeAuthor($p_editor, 7, 18.5), 200);
-$cf->inputText(7, 21, 25, "editor", $p_editor, 200, '', '', true);
-$cf->labelMandatory(7, 25.5, 6, "periodical", "javascript:editPeriodical(document.f.periodical)");
+//$cf->inputText(7, 21, 25, "editor", $p_editorIndex, 200, '', '', true);
+$cf->inputJqAutocomplete3(7, 18.5, 25, "editor",$p_editorIndex,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
 
-$cf->editDropdown(7, 25.5, 25, "periodical", $p_periodical, makePeriodical($p_periodical, 7, 24), 300, 0, "", "", "call_listLib()");
-//$cf->inputJqAutocomplete3(7, 25.5, 25, "periodical",$p_periodical,"index_autocomplete.php?field=periodical",520,2,'','',1,1);
+$cf->labelMandatory(7, 21, 6, "periodical", "javascript:editPeriodical('<'+document.f.periodicalIndex.value+'>')");
+//$cf->editDropdown(7, 25.5, 25, "periodical", $p_periodical, makePeriodical($p_periodical, 7, 24), 300, 0, "", "", "call_listLib()");
+$cf->inputJqAutocomplete3(7, 21, 25, "periodical", $p_periodicalIndex,"index_jq_autocomplete.php?field=periodical",520,2,'','',1,1);
 
-$cf->inputText(7, 29.5, 2.5, "vol", $p_vol, 20);
-$cf->inputText(11, 29.5, 8, "part", $p_part, 50);
-$cf->inputText(20.5, 29.5, 11.5, "pp", $p_pp, 150);
-$cf->label(7, 33, "printer", "javascript:editPublisher(document.f.publisher)");
+$cf->inputText(7, 23.5, 2.5, "vol", $p_vol, 20);
+$cf->inputText(11, 23.5, 8, "part", $p_part, 50);
+$cf->inputText(20.5, 23.5, 11.5, "pp", $p_pp, 150);
+$cf->label(7, 26, "printer", "javascript:editPublisher('<'+document.f.publisherIndex.value+'>')");
 
-$cf->editDropdown(7, 33, 25, "publisher", $p_publisher, makePublisher($p_publisher, 7, 31.5), 120);
-//$cf->inputJqAutocomplete3(7, 33, 25, "publisher",$p_publisher,"index_autocomplete.php?field=publisher",520,2,'','',1,1);
+//$cf->editDropdown(7, 33, 25, "publisher", $p_publisher, makePublisher($p_publisher, 7, 31.5), 120);
+$cf->inputJqAutocomplete3(7,26, 25, "publisher",$p_publisherIndex,"index_jq_autocomplete.php?field=publisher",520,2,'','',1,1);
 
-$cf->label(7, 37, "printing Loc.");
-$cf->inputText(7, 37, 25, "verlagsort", $p_verlagsort, 100);
+$cf->label(7, 28.5, "printing Loc.");
+$cf->inputText(7, 28.5, 25, "verlagsort", $p_verlagsort, 100);
 
-$cf->label(40, 37, "additions");
-$cf->inputText(40, 37, 25, "additions", $p_additions, 500);
+$cf->label(40, 28.5, "additions");
+$cf->inputText(40, 28.5, 25, "additions", $p_additions, 500);
 
-$cf->label(7, 39.5, "listing");
-$cf->editDropdown(7, 39.5, 25, "bestand", $p_bestand, $bestand, 50);
-//$cf->inputJqAutocomplete3(7, 33, 25, "bestand",$p_bestand,"index_autocomplete.php?field=bestand",520,2,'','',1,1);
+$cf->label(7, 31, "listing");
+//$cf->editDropdown(7, 39.5, 25, "bestand", $p_bestand, $bestand, 50);
+$cf->inputJqAutocomplete3(7, 31, 25, "bestand",$p_bestand,"index_jq_autocomplete.php?field=bestand",520,2,'','',1,1);
 
-$cf->label(44, 39.5, "recent publication");
-$cf->checkbox(44, 39.5, "publ", $p_publ);
-$cf->label(53, 39.5, "signature");
-$cf->inputText(53, 39.5, 12, "signature", $p_signature, 50);
+$cf->label(44, 31, "recent publication");
+$cf->checkbox(44, 31, "publ", $p_publ);
+$cf->label(53, 31, "signature");
+$cf->inputText(53, 31, 12, "signature", $p_signature, 50);
 
 if (($_SESSION['editControl'] & 0x20) != 0) {
-    $cf->buttonSubmit(16, 44, "reload", " Reload \" onclick=\"reloadButtonPressed()");
+    $cf->buttonSubmit(16, 36, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_citationID) {
         if ($edit) {
-            $cf->buttonJavaScript(22, 44, " Reset ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">&edit=1'");
-            $cf->buttonSubmit(31, 44, "submitUpdate", " Update ");
+            $cf->buttonJavaScript(22, 36, " Reset ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">&edit=1'");
+            $cf->buttonSubmit(31, 36, "submitUpdate", " Update ");
         } else {
-            $cf->buttonJavaScript(22, 44, " Reset ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">'");
-            $cf->buttonJavaScript(31, 44, " Edit ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">&edit=1'");
+            $cf->buttonJavaScript(22, 36, " Reset ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">'");
+            $cf->buttonJavaScript(31, 36, " Edit ", "self.location.href='editLit.php?sel=<" . $p_citationID . ">&edit=1'");
         }
-        $cf->buttonSubmit(47, 44, "submitNewCopy", " New &amp; Copy");
+        $cf->buttonSubmit(47, 36, "submitNewCopy", " New &amp; Copy");
     } else {
-        $cf->buttonReset(22, 44, " Reset ");
-        $cf->buttonSubmit(31, 44, "submitUpdate", " Insert ");
-        $cf->buttonSubmit(37, 44, "submitUpdateCopy", " Insert &amp; Copy");
-        $cf->buttonSubmit(47, 44, "submitUpdateNew", " Insert &amp; New");
+        $cf->buttonReset(22, 36, " Reset ");
+        $cf->buttonSubmit(31, 36, "submitUpdate", " Insert ");
+        $cf->buttonSubmit(37, 36, "submitUpdateCopy", " Insert &amp; Copy");
+        $cf->buttonSubmit(47, 36, "submitUpdateNew", " Insert &amp; New");
     }
 }
-$cf->buttonJavaScript(2, 44, " < Literature ", "self.location.href='listLit.php?nr=$nr'");
+$cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?nr=$nr'");
 ?>
 </form>
 
-<div id="xajax_listLibraries" style="position: absolute; top: 47em; left: 0em;"></div>
+<div id="xajax_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
 
 </body>
 </html>

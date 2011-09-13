@@ -376,38 +376,63 @@ EOF;
 		$this->tabindex++;
 	}
 	
-	// mustmach: 0 => must not match, symbol: !, mustmatch=1: => must match, orange + !, mustmatch=2 => only an insert, no Index!
-	// textarea>0 => $rows of textarea
+	// mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
+	// mustmatch=2 => only an insert, no Index, mustmatch=3: => must much + "0" allowed
+	// textarea>0 => $rows of textarea, otherwise textinput
 	function inputJqAutocomplete3($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
-	
+		
+		$val='';
+		$id=$index;
+		
 		$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
 		$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
 		$title=($title=='')?"":" title='{$title}'";
-		$val="";
 		
-		if($textarea>0){
-			
-			if($mustmatch==2){
-				$val=str_replace('&quot;','"',$index);
+		if($this->doEcho){
+			$pi=parse_url($serverScript);
+			parse_str($pi['query'],$pv);
+			$res=array();
+			//static call: $res=call_user_func_array( array('clsAutocompleteCommonName', $pv['field']), array('--',$index));
+			if(strpos($pi['path'],'common')!==false){
+				require_once('clsAutocomplete.php');
+				if(method_exists('clsAutocompleteCommonName',$pv['field'])){
+					if(!isset($GLOBALS['ACFREUD2']))$GLOBALS['ACFREUD2']=clsAutocompleteCommonName::Load();
+					$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array('--',$index));
+				}
+			}else/*if(strpos($pi['path'],'??')!==false)*/{
+				if(method_exists('clsAutocomplete',$pv['field'])){
+					if(!isset($GLOBALS['ACFREUD1']))$GLOBALS['ACFREUD1']=clsAutocomplete::Load();
+					$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array('--',$index));
+				}
 			}
+			if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
+				$val=$res[0]['value'];
+				$id=$res[0]['id'];
+				$index=0;
+			}
+		}
+		if($mustmatch==2){
+			$val=$id;
+		}/*else if($id==0 && $mustmatch!=3){
+			$val=$_POST['ajax_'.$name];// Todo!!! wichtig!
+		}*/
+		if($textarea>0){
+			$val=str_replace('&quot;','"',$val);
 			$ret=<<<EOF
 <textarea		tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$textarea}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$val}</textarea>
 EOF;
 		
 		}else{
-			if($mustmatch==2){
-				$val=htmlspecialchars($index, ENT_QUOTES);
-			}
+			$val=htmlspecialchars($id, ENT_QUOTES);
 			$ret=<<<EOF
  <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" value="{$val}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title} />
 EOF;
 		}
 		
 		$ret.=<<<EOF
-<input type="hidden" name="{$name}Index" id="{$name}Index" value="{$index}"/>
+<input type="hidden" name="{$name}Index" id="{$name}Index" value="{$id}"/>
 EOF;
 		if($this->doEcho){
-			
 			$ret.=<<<EOF
 </div>
 <script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$autoFocus}','{$minLength}']);</script>
@@ -421,7 +446,95 @@ EOF;
 		}
 	}
 	
-	
+
+	function inputMapLines($x, $y, $asdialog, $label, $title, $serverACL,$serverACR,$callbackUrl,$serverParams,$searchjs,$searchhtml){
+		$htmla=$htmlb='';
+		/*
+		$r=array(array("\n","'"),array("",'"'));
+		$this->setEcho(false);
+		$htmla=str_replace($r[0],$r[1],$this->inputJqAutocomplete3(0, 0, 20, '###name###', '', '',0,'1', '','',3, true,false,false));
+		$this->setEcho(true);
+
+		$htmlb=str_replace('###name###',"acmap_r_'+x+'",$htmla);
+		$htmla=str_replace('###name###',"acmap_l_'+x+'",$htmla);
+		*/
+?>
+<link rel="stylesheet" href="inc/jQuery/pagination.css" type="text/css" />
+<script type="text/javascript" src="inc/jQuery/jquery.pagination.js"></script>
+<script type="text/javascript" src="inc/jQuery/jquery.multi-open-accordion-1.5.3.min.js"></script>
+<script type="text/javascript" src="inc/jQuery/freud_EditMapping.js"></script>
+
+<script>
+
+<?PHP
+echo<<<EOF
+		
+var serverACL='{$serverACL}';
+var serverACR='{$serverACR}';
+var serverUrl='{$callbackUrl}';
+var serverParams='{$serverParams}';
+
+{$searchjs}
+EOF;
+?>
+
+var newsearch=false;
+var searchString='';
+var x=0;
+
+function getACTableCode(idtype,x){
+	/*return '<tr id="acmap_tr_'+x+'"><td><?PHP echo $htmla; ?></td><td><?PHP echo $htmlb; ?></td><td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';*/
+	return '<tr id="acmap_tr_'+x+'"><td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td><td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td><td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';
+}
+
+</script>
+<div id="dialog-confirm" title="Delete Item?" style="display:none;">
+<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><div sytle="float:left"><span id="dialog-confirm-t"></span>This Item will be deleted. Are you sure?</div></p>
+</div>
+
+	<?PHP
+	if($asdialog){
+		// do Label text
+		$this->label($x,$y,$label,'#" onclick="editMapping();');
+		echo<<<EOF
+<div id="editMapping" style="display:none;" title="Taxon Synonymy<br>{$title}">
+EOF;
+	}else{
+		$this->_divclass($x,$y,"editMapping1");
+		echo<<<EOF
+Taxon Synonymy<br>{$title}<br>
+EOF;
+	}
+	?>
+
+<div id="editAccordion">
+<h3><a href="#section1">Insert New and save</a></h3>
+<div>
+<form name="insertLineForm" id="insertLineForm" onsubmit="return false;">
+<table id="insertLineTable">
+<tr><td colspan="2"></td></tr>
+</table>
+<input class="cssftext" type="submit" name="doSearch" value="Save" >
+<div style="float:left;margin-left:10px;" id="PageInfo3"></div>
+</form>
+</div>
+<h3><a href="#section2">Search and instant deletion</a></h3>
+<div>
+<form  id="searchLineForm" onsubmit="return false;">
+<?PHP echo $searchhtml; ?>
+<input class="cssftext" type="submit" name="doSearch" value="Search" >
+<table id="searchLineTable">
+<tr><td colspan="2"></td></tr>
+</table>
+<div id="PageInfo"  style="float:left;"></div><div style="float:left;margin-left:10px;" id="PageInfo2"></div><div style="clear:both;" id="Pagination"></div>
+</form>
+</div>
+</div>
+</div>
+
+<?PHP
+	}
+
 	
 	function inputDate($x,$y,$name,$value,$us) {
 
@@ -492,7 +605,7 @@ EOF;
 		
 		$value=htmlspecialchars_decode($value);
 		$this->_divclass($x,$y,"cssfinput");
-		print "\n<textarea class=\"cssf\" style=\"width: ".$w."em; height: ".$h."em;";
+		print "\n<textarea tabindex=\"{$this->tabindex}\" class=\"cssf\" style=\"width: ".$w."em; height: ".$h."em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "\" name=\"$name\"";
 		if ($this->nameIsID) print " id=\"$name\"";
@@ -502,6 +615,7 @@ EOF;
 		if ($value) print htmlspecialchars($value);
 		print "</textarea>\n";
 		print "</div>\n";
+		$this->tabindex++;
 	}
 	
 	/****************************************************************************

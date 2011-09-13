@@ -2,6 +2,27 @@
 
 require_once('variables.php');
 
+
+function logTbl_name_names_equals($id1,$id2,$updated){
+	global $_CONFIG;
+	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+	
+	$sql = "SELECT * FROM  {$dbprefix}tbl_name_names_equals WHERE tbl_name_names_name_id='{$id1}' and tbl_name_names_name_id1='{$id2}' LIMIT 1";
+	$result = db_query($sql);
+	$row = mysql_fetch_array($result);
+	doQuotes($row,4);
+	$sql='INSERT INTO herbarinput_log.log_tbl_tax_synonymy '.
+		'(tbl_name_names_name_id,tbl_name_names_name_id1,'.
+		'userID, updated) VALUES ('.
+		'\''.$row['tbl_name_names_name_id'].'\', '.
+		'\''.$row['tbl_name_names_name_id1'].'\', '.
+
+		'\''.$_SESSION['uid'].'\', '.
+		'\''.$updated.'\' '.
+		')';
+	db_query($sql);
+}
+
 function logTbl_tax_synonymy($id,$updated) {
 	global $_CONFIG;
 	
@@ -43,7 +64,7 @@ WHERE
 	$row = mysql_fetch_array($result);
 	doQuotes($row,4);
 	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to ".
-		"(geonameId,language_id,period_id,entity_id,reference_id,name_id, geospecification,annotation,locked,oldid,".
+		"(geonameId,language_id,period_id,entity_id,reference_id,name_id,tribe_id, geospecification,annotation,locked,oldid,".
 		"userID, updated, timestamp) VALUES (".
 		$row['geonameId'].', '.
 		$row['language_id'].', '.
@@ -51,6 +72,7 @@ WHERE
 		$row['entity_id'].', '.
 		$row['reference_id'].', '.
 		$row['name_id'].', '.
+		$row['tribe_id'].', '.
 		
 		'\''.$row['geospecification'].'\', '.
 		'\''.$row['annotation'].'\', '.

@@ -37,6 +37,9 @@ $_CONFIG['DATABASE']=array(
 // Force HTTPS
 $_CONFIG['CONNECTION']['secure'] = true;
 
+// Mdld only on Outputserver => JSON RPC Service
+$_OPTIONS['internMDLDService']='';
+
 /*
  * Older settings start here (need to be changed to the new config structure)
  */

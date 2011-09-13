@@ -1,4 +1,4 @@
-  function p(objarray){
+	function p(objarray){
 		return alert(pr(objarray));
 	}
 
@@ -32,8 +32,19 @@
 	}
 
 
-
-// Select FIRST
+$.ajaxSetup({
+	error:function(x,e){
+		if(x.status==0){alert('Taxamatch System Information:\nYou are offline!!\n Please Check Your Network.');
+		}else if(x.status==404){alert('Taxamatch System Information:\n Requested URL not found.');
+		}else if(x.status==500){alert('Taxamatch System Information:\nInternel Server Error.');
+		}else if(e=='parsererror'){alert('Taxamatch System Information:\nError.\nParsing JSON Request failed.');
+		}else if(e=='timeout'){alert('Taxamatch System Information:\nRequest Time out.');
+		}else {alert('Taxamatch System Information:\nUnknow Error.\n'+x.responseText);
+		}
+	}
+});
+	
+// Select FIRST, taken from web...
 (function($){	 
 	$(".ui-autocomplete-input").live("autocompleteopen", function() {
 		var autocomplete = $(this).data("autocomplete"),
@@ -49,14 +60,18 @@
 var ACFreudConfig=[];
 
 function ACFreudInit(){
+	
 	$.each(ACFreudConfig,function(index, conf) { 
-		
 		ACFreudPrepare(conf[0],conf[1],conf[2],conf[3],conf[4],conf[5]);
-	});	
+	});
 }
 
+// mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
+// mustmatch=2 => only an insert, no Index, mustmatch=3: => must much + "0" allowed
+	
+	
 // Autocompleter
-function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength){
+function ACFreudPrepare(serverScript1,nam,startval,mustMatch,fullfocus,minlength){
 
 	//alert(serverScript+', '+nam+', '+startval+', '+mustMatch+', '+fullfocus+', '+minlength); 
 	var $at=$('#ajax_'+nam);
@@ -66,6 +81,7 @@ function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength)
 		create: function(event, ui) {
 			$at.data('autocomplete').requestIndex=0;
 		},
+		serverScript: serverScript1,
 		source: function( request, response ) {
 			/*
 			// original: 
@@ -97,9 +113,8 @@ function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength)
 			if ( $at.data('autocomplete').xhr ) {
 				$at.data('autocomplete').xhr.abort();
 			}
-			
 			$at.data('autocomplete').xhr = $.ajax({
-				url: serverScript,
+				url: this.options.serverScript,
 				data: request,
 				dataType: "json",
 				autocompleteRequest: ++$at.data('autocomplete').requestIndex,
@@ -120,18 +135,27 @@ function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength)
 		},
 		change: function(event, ui) {
 			if($ati.val()==''){
-					$at.addClass((mustMatch==1)?'wrongItem':'newItem');
+				if(mustMatch==3){
+					if($at.val()!='0'){
+						$at.addClass('wrongItem');
+					}
+				}else if(mustMatch==1){
+					$at.addClass('wrongItem');
+				}else if(mustMatch==2 || mustMatch==0){
+					$at.addClass('newItem');
+				}
 			}
 		},
 		select: function(event, ui){
 			if(ui.item.id){
 				$ati.val(ui.item.id);
-				$at.val(ui.item.value).removeClass((mustMatch==1)?'wrongItem':'newItem');
+				$at.val(ui.item.value).removeClass('wrongItem newItem');
 			}
 		},
 		open: function(event, ui) {
 			if($at.autocomplete("option", "populate")=='1'){
 				$at.autocomplete("option","populate","0");
+				$at.autocomplete("option","hook",null);
 				$at.autocomplete( "close" );
 			}
 		},
@@ -142,6 +166,7 @@ function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength)
 		if($at.autocomplete("option", "populate")=='1'){
 			$ati.val(item.id);
 			$at.val(item.value);
+			// call $at.autocomplete("option","hook");... todo ...
 		}
 		return $('<li></li>')
 		.data('item.autocomplete', item)
@@ -163,11 +188,18 @@ function ACFreudPrepare(serverScript,nam,startval,mustMatch,fullfocus,minlength)
 			}
 		});
 	}
-
-	if(mustMatch==1 && $at.val()!='' && startval!='')$at.addClass('wrongItem');
-
+	
 	if(startval!='' && startval!='0'&& startval!=0){
-		$at.autocomplete("option","populate","1").autocomplete("search",'<'+startval+'>');
+		if(mustMatch==1 && $at.val()!=''){
+			$at.addClass('wrongItem');
+		}
+		searchID(nam, startval);
 	}
 
+}
+function searchID(nam, id, hook){
+	/*if(hook!=undefined){
+		$('#ajax_'+nam).autocomplete("option","hook",hook);
+	}*/
+	$('#ajax_'+nam).autocomplete("option","populate","1").autocomplete("search",'<'+id+'>');
 }

@@ -14,8 +14,8 @@ error_reporting(E_ALL);
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
-   <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
    <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
+   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -45,9 +45,7 @@ error_reporting(E_ALL);
   </style>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-autocomplete/jquery.autocomplete_nhm.js" type="text/javascript"></script>
-  <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
-
+  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
   <script type="text/javascript" language="JavaScript">
 	$(document).ready(function() {
 	  $("#new_common_name").select();
@@ -111,7 +109,7 @@ if($msg['result']=="0"){
 }
 
 $cf = new CSSF();
-
+//editCommonNamesEquals.php
 echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"common_nameIndex\" id=\"common_nameIndex\" value=\"{$_dvar['common_nameIndex']}\">\n";
 
@@ -131,27 +129,55 @@ $cf->label(11, 3, "Common Name");
 $cf->text(12, 3, "{$_dvar['common_name']}");
 
 
-$cf->label(11, 5, "New Common Name");
+$cf->label(11, 5, "Common Name");
 $cf->inputText(12, 5, 50, "new_common_name", ($_dvar['new_common_name']!='')?$_dvar['new_common_name']:$_dvar['common_name'],"0","","\" id=\"new_common_name");
 
+$cf->label(11, 8, "Transliteration");
+$cf->inputText(12, 8, 50, "transliterations", ($_dvar['new_common_name']!='')?$_dvar['new_common_name']:$_dvar['common_name'],"0","","\" id=\"new_common_name");
+
+// Todo: equals...
 
 if (($_SESSION['editControl'] & 0x200) != 0) {
-	//$cf->buttonSubmit(12, 10, "reload", " Reload ");
-	//$cf->buttonReset(18, 10, " Reset ");
-	//$cf->buttonJavaScript(17, 34, " Reset ", "document.location.reload(true);");
+
 	
 	if(/* checkRight('commonnameUpdate') && */($unlock_tbl_name_commons || !$isLocked) ){
-		$cf->buttonSubmit(12,8, "submitUpdate", " Update");
+		$cf->buttonSubmit(12,11, "submitUpdate", " Update");
 	}
 
 }
-$cf->buttonJavaScript(18, 8, " Close Window", "self.close()");
+$cf->buttonJavaScript(18, 11, " Close Window", "self.close()");
 
 echo<<<EOF
 <div style="position: absolute; left: 12em; top: 12em; width:672px;">
 {$msgs}
 </div>
 EOF;
+
+$title="Common Names equals";
+$serverParams="";
+
+$searchjs=<<<EOF
+function createMapSearchstring(){
+	searchString='';
+	if($('#mysqlSearch').val().length>0)
+		searchString='&mysqlSearch='+$('#mysqlSearch').val();
+	else
+		searchString='&mdldSearch='+$('#mdldSearch').val();
+	
+	return searchString;
+}
+EOF;
+		$searchhtml=<<<EOF
+<table>
+<tr><td>MDLD Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mdldSearch" value="" maxlength="200" ></td></tr>
+<tr><td>mysql Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mysqlSearch" value="" maxlength="200" ></td></tr>
+</table>
+EOF;
+
+$cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_autocomplete_commoname.php?field=cname_commonname',
+'index_autocomplete_commoname.php?field=cname_commonname','ajax/MapLines_CommonNamesEqual.php',$serverParams,$searchjs,$searchhtml);
+
+
 ?>
 
 </form>
