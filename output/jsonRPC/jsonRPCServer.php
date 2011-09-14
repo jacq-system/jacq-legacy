@@ -29,7 +29,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 class jsonRPCServer{
 	
-	private function checkKey($key){
+	private function checkKey($key,$password){
 		$salt=substr($key,0,5);
 		$key=substr($key,5);
 		
@@ -66,16 +66,15 @@ class jsonRPCServer{
 			$valid=false;
 			
 			if($password!=''){
-				if(($valid=$this->checkKey($request['key']))===false){
+				if(($valid=self::checkKey($request['key'],$password))===false){
 					$response=array(
 						'id' => $request['id'],
 						'result' => NULL,
 						'error' => 'Key needed for this action and false provided.'
 					);
 				}
-				return $valid;
-		
 			}
+			
 			if($valid || $password==''){
 				
 				/*$params=array();

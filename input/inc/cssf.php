@@ -42,9 +42,8 @@ class CSSF{
 	var $nameIsID;		 // when set to true, the param $name is used to set the id
 	var $cssfImages;	 // path to the used images
 	var $tabindex=1;
-	var $relative=0;
+	var $yrelative=0;
 	var $doEcho=1;
-	var $xrel=0;
 	var $yrel=0;
 	
 	/****************************************************************************
@@ -62,8 +61,8 @@ class CSSF{
 		$this->cssfImages = array('downarrow' => 'webimages/downarrow.gif');
 	}
 	
-	function setRelative($relative){
-		$this->relative=$relative;
+	function setYRelative($yrelative){
+		$this->yrelative=$yrelative;
 	}
 	
 	function setEcho($doEcho){
@@ -112,7 +111,11 @@ class CSSF{
 	}*/
 	
 	function label($x,$y,$label,$link="",$id="") {
-
+		if($this->yrelative){
+			$y+=$this->yrel;
+		}
+		$this->yrel=$y;
+		
 		$width = (strlen($label) + 1) / 1.6;
 		$xh = $x - $width;
 		if ($width>0) {
@@ -127,7 +130,11 @@ class CSSF{
 	}
 	
 	function labelMandatory($x,$y,$width,$label,$link="") {
-
+		if($this->yrelative){
+			$y+=$this->yrel;
+		}
+		$this->yrel=$y;
+		
 		$xh = $x - $width;
 		if ($width>0) {
 				print "<div class=\"cssflabelMandatory\" style=\"position: absolute; left: ".$xh."em; top: ".($y+0.2)."em; ".
@@ -344,78 +351,52 @@ class CSSF{
 		print "</script>\n";
 	}
 	
-	
-	function inputJqAutocomplete2($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false,$textarea=false,$rows=0) {
 
-		$this->_divclass($x, $y, "cssfinput");
-		
-		$val=htmlspecialchars($value, ENT_QUOTES);
-		$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
-		$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
-		$title=($title=='')?"":" title='{$title}'";
-	
-		if($textarea){
-			$value=str_replace('&quot;','"',$value);
-			echo<<<EOF
-<input type="hidden" name="{$name}Index" id="{$name}Index"		value="{$index}"/>
-<textarea		tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$rows}" name="{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$value}</textarea>
-</div>
-
-EOF;
-		
-	}else{
-		
-		echo<<<EOF
-<input type="hidden" name="{$name}Index" id="{$name}Index"		value="{$index}"/>
- <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" type="text" value="{$value}" name="{$name}" id="ajax_{$name}"{$maxsize}{$title} />
-</div>
-
-EOF;
-		}
-		
-		$this->tabindex++;
-	}
-	
 	// mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
-	// mustmatch=2 => only an insert, no Index, mustmatch=3: => must much + "0" allowed
+	// no Index, mustmatch=2: => must much + "0" allowed
 	// textarea>0 => $rows of textarea, otherwise textinput
-	function inputJqAutocomplete3($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
+	function inputJqAutocomplete2($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$idequval=0,$textarea=0) {
 		
+		$acdone=0;
+		//$val=$idequval?$index:'';
 		$val='';
-		$id=$index;
-		
 		$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
 		$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
 		$title=($title=='')?"":" title='{$title}'";
-		
 		if($this->doEcho){
 			$pi=parse_url($serverScript);
 			parse_str($pi['query'],$pv);
 			$res=array();
 			//static call: $res=call_user_func_array( array('clsAutocompleteCommonName', $pv['field']), array('--',$index));
-			if(strpos($pi['path'],'common')!==false){
-				require_once('clsAutocomplete.php');
+			if(strpos($pi['path'],'index_autocomplete_commoname.php')!==false){
 				if(method_exists('clsAutocompleteCommonName',$pv['field'])){
+				
 					if(!isset($GLOBALS['ACFREUD2']))$GLOBALS['ACFREUD2']=clsAutocompleteCommonName::Load();
 					$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array('--',$index));
+					$acdone=1;
 				}
-			}else/*if(strpos($pi['path'],'??')!==false)*/{
+			}else/*if(strpos($pi['path'],'index_jq_autocomplete.php')!==false)*/{
 				if(method_exists('clsAutocomplete',$pv['field'])){
 					if(!isset($GLOBALS['ACFREUD1']))$GLOBALS['ACFREUD1']=clsAutocomplete::Load();
 					$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array('--',$index));
+					$acdone=1;
+					
 				}
 			}
 			if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
 				$val=$res[0]['value'];
-				$id=$res[0]['id'];
-				$index=0;
+				$index=$res[0]['id'];
 			}
 		}
-		if($mustmatch==2){
-			$val=$id;
-		}else if($id==0 && $mustmatch!=3){
-			//$val=$_POST['ajax_'.$name];// Todo!!! wichtig!
+		
+		if( (strlen($index)==0 || ($index=='0' &&$mustmatch!=2) ) && ( strlen($val)==0 || ($val=='0' &&$mustmatch!=2)) && isset($_POST['ajax_'.$name]) ){
+			$val=$_POST['ajax_'.$name];
+			$index=$_POST[$name.'Index'];
+			$acdone=1;
 		}
+		
+		//$val="id: $id,".strlen($id)." && val: $val,".strlen($val)." &&".isset($_POST['ajax_'.$name])." =>".$_POST['ajax_'.$name];
+		
 		if($textarea>0){
 			$val=str_replace('&quot;','"',$val);
 			$ret=<<<EOF
@@ -430,12 +411,12 @@ EOF;
 		}
 		
 		$ret.=<<<EOF
-<input type="hidden" name="{$name}Index" id="{$name}Index" value="{$id}"/>
+<input type="hidden" name="{$name}Index" id="{$name}Index" value="{$index}"/>
 EOF;
 		if($this->doEcho){
 			$ret.=<<<EOF
 </div>
-<script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$autoFocus}','{$minLength}']);</script>
+<script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$acdone}','{$autoFocus}','{$minLength}']);</script>
 EOF;
 			$this->_divclass($x, $y, "cssfinput");
 			echo $ret;
@@ -624,10 +605,10 @@ EOF;
 	*																			*
 	****************************************************************************/
 	function _divclass($x,$y,$class) {
-		if($this->relative){
-			$x+=$this->xrel;
+		if($this->yrelative){
+			$y+=$this->yrel;
 		}
-		$this->xrel=$x;
+		$this->yrel=$y;
 		print "<div class=\"$class\" style=\"position: absolute; left: ".$x."em; top: ".$y."em;\">";
 	}
 }

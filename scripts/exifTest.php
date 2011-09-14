@@ -10,7 +10,7 @@ if (!@mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE'][
 }
 mysql_query("SET character set utf8");// <= do not use it!
 
-$bpath='C:\Users\gunther\\Desktop\sqls1\exiv2';
+$bpath='C:\Users\gunther\Desktop\sqls1\exiv2';
 $pic='C:\Users\gunther\Desktop\sqls1\exiv2\wu_0038434.tif';
 
 $a=$bpath.'\exiv2.exe -pa '.$pic;

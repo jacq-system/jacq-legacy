@@ -23,7 +23,7 @@ class internMDLDService {
 			}
 		}
 		if($sc){
-			return res[0];
+			return $res[0];
 		}
 		return $res;
 	}

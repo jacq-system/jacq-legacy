@@ -114,7 +114,7 @@ public function cname_person($value,$id=0){
 			
 		$sql="SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE ";
 					
-		if($id!=0){
+		if(strlen($id)>0){
 			$sql.=" person_ID='{$id}'";
 		}else{
 			if (!$value || strlen($value)==0)return;
@@ -200,7 +200,7 @@ public function cname_taxon ($value,$id=0){
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE ";
 			
-			if($id!=0){
+			if(strlen($id)>0){
 				$sql.=" ts.taxonID='{$id}'";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -258,7 +258,7 @@ public function cname_commonname ($value,$id=0){
 			$db = clsDbAccess::Connect('INPUT');
 			
 			$where='';
-			if($id!=0){
+			if(strlen($id)>0){
 				$where="common_id ='$id'";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -300,7 +300,7 @@ public function cname_commonname ($value,$id=0){
  * @param bool[optional] $noExternals only results for "external=0" (default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function cname_stamm ($value,$id=0){
+public function cname_transliteration($value,$id=0){
     global $_CONFIG;
 	
 	$results = array();
@@ -308,13 +308,28 @@ public function cname_stamm ($value,$id=0){
 		$db = clsDbAccess::Connect('INPUT');
 		
 		/* @var $db clsDbAccess */
+			
+		$sql = "SELECT trans.transliteration_id, trans.name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations WHERE ";
+		if(strlen($id)>0){
+			if(substr($id,0,1)=='c'){
+				$id=substr($id,1);
+				$sql = "
+SELECT  
+ trans.transliteration_id,
+ trans.name
+FROM
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id = nam.transliteration_id
+WHERE
+ com.common_id =" . $db->quote($id)." LIMIT 1";
 		
-		$sql = "SELECT  FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_ WHERE ";
-		if($id!=0){
-			$sql.="  =" . $db->quote($id)."";
+			}else{
+				$sql.="  transliteration_id =" . $db->quote($id)." LIMIT 1";
+			}
 		}else{
 			if (!$value || strlen($value)==0)return;
-			$sql.="  LIKE " . $db->quote($value . '%')." LIMIT 100";
+			$sql.=" name LIKE " . $db->quote($value . '%')." LIMIT 100";
 		}
 			
 		//echo $sql;exit;
@@ -324,8 +339,56 @@ public function cname_stamm ($value,$id=0){
 		
 		if (count($rows) > 0) {
 			foreach ($rows as $row) {
-				$id=$row['common_id'];
-				$label=$row['common_name'];
+				$id=$row['transliteration_id'];
+				$label=$row['name'];
+				
+				$results[] = array(
+					'id'	=> $id,
+					'label' => "{$label} &lt;{$id}&gt;",
+					'value' => $label,
+					'color' => ''
+				);
+			}
+		}
+	}catch (Exception $e){
+		error_log($e->getMessage());
+	}
+
+	return $results;
+}
+
+/**
+ * Common Names: Common Name
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0" (default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function cname_tribe($value,$id=0){
+    global $_CONFIG;
+	
+	$results = array();
+	try{
+		$db = clsDbAccess::Connect('INPUT');
+		
+		/* @var $db clsDbAccess */
+		
+		$sql = "SELECT tribe_id, tribe_name FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_tribes WHERE ";
+		if(strlen($id)>0){
+			$sql.="  tribe_id=" . $db->quote($id)."";
+		}else{
+			if (!$value || strlen($value)==0)return;
+			$sql.=" tribe_name LIKE " . $db->quote($value . '%')." LIMIT 100";
+		}
+			
+		//echo $sql;exit;
+		/* @var $dbst PDOStatement */
+		$dbst = $db->query($sql);
+		$rows = $dbst->fetchAll();
+		
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				$id=$row['tribe_id'];
+				$label=$row['tribe_name'];
 				
 				$results[] = array(
 					'id'	=> $id,
@@ -361,7 +424,7 @@ public function cname_geoname ($value,$id=0){
 			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE ";
 			
 			// Get Geonames out of database first
-			if($id!=0){
+			if(strlen($id)>0){
 				$sql.=" geonameId=".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -388,7 +451,7 @@ public function cname_geoname ($value,$id=0){
 				}
 			
 			}
-			if($id!=0)return $results_intern;
+			if($id!=0 && count( $results_intern)>0)return $results_intern;
 			
 			// Get TypeCache
 			$cacheoption=$this->getCacheOption();
@@ -406,7 +469,7 @@ public function cname_geoname ($value,$id=0){
 			}else{
 				$url='http://api.geonames.org';
 				
-				if($id){
+				if(strlen($id)>0){
 					$url.="/getJSON?";
 					$url.="style=full";
 					$url.="&geonameId=".$id;
@@ -510,7 +573,7 @@ public function cname_literature ($value,$id=0){
 		try {
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			if($id!=0){
+			if(strlen($id)>0){
 				$display = clsDisplay::Load();
 					
 				$label= $display->protolog($id, true);
@@ -569,7 +632,7 @@ public function cname_literature ($value,$id=0){
 					   WHERE";
 					   
 			/* @var $db clsDbAccess */
-			if($id!=0){
+			if(strlen($id)>0){
 				$display = clsDisplay::Load();
 					
 				$label= $display->protolog($id, true);
@@ -645,7 +708,7 @@ public function cname_language ($value,$id=0){
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			
-			if($id!=0){
+			if(strlen($id)>0){
 				$pebenen=3;
 				
 				$f1='';$j1='';
@@ -986,7 +1049,7 @@ FROM
  tbl_nom_service
 WHERE
 ";
-			if($id!=0){
+			if(strlen($id)>0){
 				$sql.=" serviceID= ".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -1046,7 +1109,7 @@ FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
 WHERE
 ";
-			if($id!=0){
+			if(strlen($id)>0){
 				$sql.=" period_id =".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -1151,7 +1214,7 @@ FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_tribes
 WHERE
 ";
-		if($id!=0){
+		if(strlen($id)>0){
 			$sql.=" tribe_id =".$db->quote ($id)." ";
 		}else{
 			if (!$value || strlen($value)==0)return;

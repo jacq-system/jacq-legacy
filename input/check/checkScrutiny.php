@@ -101,7 +101,7 @@ error_reporting(E_ALL);
 // ghomolka
 
 require("$path/variables.php");// develop/input/
-require("$path/jsonRPCClient.php");// develop/input/
+require("$path/internMDLDService.php");// develop/input/
 
 if (!mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) || !mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])){
 	echo 'no database connection';
@@ -431,11 +431,10 @@ $where
 limit 1000
 ";
 		
-		$service = new internMDLDService($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password'],1);
+		$service = new internMDLDService($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
 		
-		$sql=base64_encode($query);
 		try {
-			$res = $service->getSQLResults($sql);
+			$res = $service->getSQLResults($query);
 		}catch (Exception $e) {
 			echo "Fehler " . nl2br($e);
 		}

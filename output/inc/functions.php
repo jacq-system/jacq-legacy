@@ -2,10 +2,10 @@
 require_once( 'variables.php' );
 
 function db_connect( $dbConfig, $dbAccess = "readonly" ) {
-    $host = $dbConfig["host"];
-    $db = $dbConfig["db"];
-    $user = $dbConfig["user"];
-    $pass = $dbConfig["pass"];
+    $host = $dbConfig['host'];
+    $db = $dbConfig['db'];
+    $user = $dbConfig['readonly']['user'];
+    $pass = $dbConfig['readonly']['pass'];
 
     if (!@mysql_connect($host,$user,$pass) || !@mysql_select_db($db)) {
       echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n".

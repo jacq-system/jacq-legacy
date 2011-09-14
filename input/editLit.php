@@ -473,7 +473,7 @@ $cf->inputText(19, 0.5, 5, "jahr", $p_jahr, 50);
 $cf->inputText(25, 0.5, 5, "code", $p_code, 25);
 $cf->labelMandatory(40, 0.5, 6, "categories");
 //$cf->editDropdown(40, 0.5, 25, "category", $p_category, $category, 50);
-$cf->inputJqAutocomplete3(40, 0.5, 25, "category",$p_category,"index_jq_autocomplete.php?field=categories",50,2,'','',1,1);
+$cf->inputJqAutocomplete2(40, 0.5, 25, "category",$p_category,"index_jq_autocomplete.php?field=categories",50,2,'','',1,1);
 
 
 if ($p_url) {
@@ -494,20 +494,20 @@ $cf->textarea(40, 11.5, 25, 2.6, "annotation", $p_annotation);
 
 //$cf->label(7, 12.5, "Geo<br> Specification");
 
-//function inputJqAutocomplete3($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
+//function inputJqAutocomplete2($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$textarea=0) {
 $cf->labelMandatory(7, 16, 6, "author{s}", "javascript:editAuthor('<'+document.f.autorIndex.value+'>','a')");
 //$cf->editDropdown(7, 16, 25, "autor", $p_autor, makeAuthor($p_autor, 7, 13), 200);
-$cf->inputJqAutocomplete3(7, 16, 25, "autor",$p_autorIndex ,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
+$cf->inputJqAutocomplete2(7, 16, 25, "autor",$p_autorIndex ,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
 
 $cf->label(7, 14.7, "search", "javascript:searchAuthor()");
 $cf->label(7, 18.5, "editor{s}", "javascript:editAuthor('<'+document.f.editorIndex.value+'>','e')");
 //$cf->editDropdown(7, 21, 25, "editor", $p_editor, makeAuthor($p_editor, 7, 18.5), 200);
 //$cf->inputText(7, 21, 25, "editor", $p_editorIndex, 200, '', '', true);
-$cf->inputJqAutocomplete3(7, 18.5, 25, "editor",$p_editorIndex,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
+$cf->inputJqAutocomplete2(7, 18.5, 25, "editor",$p_editorIndex,"index_jq_autocomplete.php?field=litAuthor",520,2,'','',1,1);
 
 $cf->labelMandatory(7, 21, 6, "periodical", "javascript:editPeriodical('<'+document.f.periodicalIndex.value+'>')");
 //$cf->editDropdown(7, 25.5, 25, "periodical", $p_periodical, makePeriodical($p_periodical, 7, 24), 300, 0, "", "", "call_listLib()");
-$cf->inputJqAutocomplete3(7, 21, 25, "periodical", $p_periodicalIndex,"index_jq_autocomplete.php?field=periodical",520,2,'','',1,1);
+$cf->inputJqAutocomplete2(7, 21, 25, "periodical", $p_periodicalIndex,"index_jq_autocomplete.php?field=periodical",520,2,'','',1,1);
 
 $cf->inputText(7, 23.5, 2.5, "vol", $p_vol, 20);
 $cf->inputText(11, 23.5, 8, "part", $p_part, 50);
@@ -515,7 +515,7 @@ $cf->inputText(20.5, 23.5, 11.5, "pp", $p_pp, 150);
 $cf->label(7, 26, "printer", "javascript:editPublisher('<'+document.f.publisherIndex.value+'>')");
 
 //$cf->editDropdown(7, 33, 25, "publisher", $p_publisher, makePublisher($p_publisher, 7, 31.5), 120);
-$cf->inputJqAutocomplete3(7,26, 25, "publisher",$p_publisherIndex,"index_jq_autocomplete.php?field=publisher",520,2,'','',1,1);
+$cf->inputJqAutocomplete2(7,26, 25, "publisher",$p_publisherIndex,"index_jq_autocomplete.php?field=publisher",520,2,'','',1,1);
 
 $cf->label(7, 28.5, "printing Loc.");
 $cf->inputText(7, 28.5, 25, "verlagsort", $p_verlagsort, 100);
@@ -525,7 +525,7 @@ $cf->inputText(40, 28.5, 25, "additions", $p_additions, 500);
 
 $cf->label(7, 31, "listing");
 //$cf->editDropdown(7, 39.5, 25, "bestand", $p_bestand, $bestand, 50);
-$cf->inputJqAutocomplete3(7, 31, 25, "bestand",$p_bestand,"index_jq_autocomplete.php?field=bestand",520,2,'','',1,1);
+$cf->inputJqAutocomplete2(7, 31, 25, "bestand",$p_bestand,"index_jq_autocomplete.php?field=bestand",520,2,'','',1,1);
 
 $cf->label(44, 31, "recent publication");
 $cf->checkbox(44, 31, "publ", $p_publ);

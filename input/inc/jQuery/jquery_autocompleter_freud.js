@@ -67,11 +67,9 @@ function ACFreudInit(){
 }
 
 // mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
-// mustmatch=2 => only an insert, no Index, mustmatch=3: => must much + "0" allowed
-	
-	
+//  mustmatch=2: => must much + "0" allowed
 // Autocompleter
-function ACFreudPrepare(serverScript1,nam,startval,mustMatch,fullfocus,minlength){
+function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,minlength){
 
 	//alert(serverScript+', '+nam+', '+startval+', '+mustMatch+', '+fullfocus+', '+minlength); 
 	var $at=$('#ajax_'+nam);
@@ -135,13 +133,13 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,fullfocus,minlength
 		},
 		change: function(event, ui) {
 			if($ati.val()==''){
-				if(mustMatch==3){
+				if(mustMatch==2){
 					if($at.val()!='0'){
 						$at.addClass('wrongItem');
 					}
 				}else if(mustMatch==1){
 					$at.addClass('wrongItem');
-				}else if(mustMatch==2 || mustMatch==0){
+				}else if(mustMatch==0){
 					$at.addClass('newItem');
 				}
 			}
@@ -166,7 +164,6 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,fullfocus,minlength
 		if($at.autocomplete("option", "populate")=='1'){
 			$ati.val(item.id);
 			$at.val(item.value);
-			// call $at.autocomplete("option","hook");... todo ...
 		}
 		return $('<li></li>')
 		.data('item.autocomplete', item)
@@ -188,18 +185,22 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,fullfocus,minlength
 			}
 		});
 	}
-	
-	if(startval!='' && startval!='0'&& startval!=0){
+	if(acdone==0 && (startval!='' && startval!='0' && startval!=0)){
 		if(mustMatch==1 && $at.val()!=''){
 			$at.addClass('wrongItem');
 		}
 		searchID(nam, startval);
+	}else{
+		if(mustMatch==0 && $at.val()!='' && $ati.val()==''){
+			$at.addClass('newItem');
+		}else if(mustMatch==1 && $at.val()!='' && $ati.val()==''){
+			$at.addClass('wrongItem');
+		}else if(mustMatch==2 && $at.val()!='' && $at.val()!='0' && $ati.val()==''){
+			$at.addClass('wrongItem');
+		}
 	}
 
 }
-function searchID(nam, id, hook){
-	/*if(hook!=undefined){
-		$('#ajax_'+nam).autocomplete("option","hook",hook);
-	}*/
+function searchID(nam, id){
 	$('#ajax_'+nam).autocomplete("option","populate","1").autocomplete("search",'<'+id+'>');
 }
