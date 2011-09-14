@@ -85,7 +85,7 @@ public function taxAuthor ($value, $noExternals = false, $id=0)
 					WHERE 
 			";
 		
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" authorID=".$db->quote ($id)." ";
 			}else{
 			
@@ -139,7 +139,7 @@ public function litAuthor ($value,  $id=0,$noExternals = false)
 				WHERE 
 			";
 		
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" autorID=".$db->quote ($id)." ";
 			}else{
 			
@@ -202,7 +202,7 @@ public function collector ($value, $id=0,$second = false)
 						WHERE 
 						";
 						
-				if($id!==0){
+				if(strlen($id)>0 && $id!='0' ){
 					$sql.=" Sammler_2ID=".$db->quote ($id)." ";
 				}else{
 				
@@ -216,7 +216,7 @@ public function collector ($value, $id=0,$second = false)
 						FROM tbl_collector
 						WHERE 
 						";
-				if($id!==0){
+				if(strlen($id)>0 && $id!='0' ){
 					$sql.=" SammlerID=".$db->quote ($id)." ";
 				}else{
 				
@@ -293,7 +293,7 @@ public function person ($value,$id=0)
 			$sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
 					FROM tbl_person
 					WHERE ";
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" person_ID=".$db->quote ($id)." ";
 			}else{
 			
@@ -354,7 +354,7 @@ public function citation ($value,$id=0)
 					LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
 				   WHERE ";
 			// todo!!
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" citationID=".$db->quote ($id)." ";
 			}else{
 				$sql.="(la.autor LIKE " . $db->quote ($autor . '%') . "
@@ -406,7 +406,7 @@ public function periodical($value,$id=0){
 								FROM tbl_lit_periodicals
 								WHERE ";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" periodicalID=".$db->quote ($id)." ";
 			}else{
 			
@@ -449,7 +449,7 @@ public function bestand($value,$id=0){
 			/* @var $dbst PDOStatement */
 			$sql="SELECT bestand FROM tbl_lit ";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" WHERE bestand =" . $db->quote ($id ) . " LIMIT 1";
 			}else{
 				$sql.=" WHERE bestand like " . $db->quote ($pieces[0] . '%') . "";
@@ -492,7 +492,7 @@ public function categories($value,$id=0){
 			/* @var $dbst PDOStatement */
 			$sql="SELECT category FROM tbl_lit ";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" WHERE category =" . $db->quote ($id ) . " LIMIT 1";
 			}else{
 				$sql.=" WHERE category like " . $db->quote ($pieces[0] . '%') . " ";
@@ -537,7 +537,7 @@ public function publisher($value,$id=0){
                 FROM tbl_lit_publishers
                 WHERE";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" publisherID=".$db->quote ($id)." ";
 			}else{
 				$sql.=" publisher LIKE ".  $db->quote ($pieces[0]. "%")."
@@ -585,7 +585,7 @@ public function family ($value,$id=0)
 								FROM tbl_tax_families tf
 								 LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
 								WHERE");
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" familyID=".$db->quote ($id)." ";
 			}else{
 			
@@ -634,7 +634,7 @@ public function genus ($value,$id=0){
 					 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
 				WHERE ";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" tg.genID=".$db->quote ($id)." ";
 			}else{
 				$sql.= "tg.genus LIKE " . $db->quote ($pieces[0] . '%') . " ";
@@ -688,7 +688,7 @@ public function epithet ($value, $id=0,$noExternals = false)
 					WHERE ";
 			
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" epithetID=".$db->quote ($id)." ";
 			}else{
 				$sql.= " epithet LIKE " . $db->quote ($value . '%') . " ";
@@ -759,7 +759,7 @@ public function taxon ($value,$id=0, $noExternals = false, $withDT = false)
 					WHERE ";
 			
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" ts.taxonID=".$db->quote ($id)." ";
 			}else{
 				$sql.=" tg.genus LIKE " . $db->quote ($pieces[0] . '%');
@@ -862,7 +862,7 @@ public function taxonWithHybrids ($value,$id=0, $noExternals = false)
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" =".$db->quote ($id)." ";
 			}else{
 				$sql= "tg.genus LIKE " . $db->quote ($pieces[0] . '%');
@@ -893,7 +893,7 @@ public function taxonWithHybrids ($value,$id=0, $noExternals = false)
 									   'color' => $color);
 				}
 			}
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql = "SELECT ts.taxonID, ts.synID
 						FROM (tbl_tax_species ts, tbl_tax_hybrids th)
 						 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
@@ -982,7 +982,7 @@ public function series ($value,$id=0){
 					FROM tbl_specimens_series
 					WHERE ";
 			
-			if($id!==0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" seriesID=".$db->quote ($id)." ";
 			}else{
 				$sql.= "tseries LIKE " . $db->quote ( '%' . $pieces[0] . '%') . "

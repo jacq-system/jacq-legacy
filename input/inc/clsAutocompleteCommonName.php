@@ -114,7 +114,7 @@ public function cname_person($value,$id=0){
 			
 		$sql="SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE ";
 					
-		if(strlen($id)>0){
+		if(strlen($id)>0 && $id!='0' ){
 			$sql.=" person_ID='{$id}'";
 		}else{
 			if (!$value || strlen($value)==0)return;
@@ -200,7 +200,7 @@ public function cname_taxon ($value,$id=0){
 					 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
 					WHERE ";
 			
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" ts.taxonID='{$id}'";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -258,7 +258,7 @@ public function cname_commonname ($value,$id=0){
 			$db = clsDbAccess::Connect('INPUT');
 			
 			$where='';
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$where="common_id ='$id'";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -310,7 +310,7 @@ public function cname_transliteration($value,$id=0){
 		/* @var $db clsDbAccess */
 			
 		$sql = "SELECT trans.transliteration_id, trans.name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations WHERE ";
-		if(strlen($id)>0){
+		if(strlen($id)>0 && $id!='0' ){
 			if(substr($id,0,1)=='c'){
 				$id=substr($id,1);
 				$sql = "
@@ -373,7 +373,7 @@ public function cname_tribe($value,$id=0){
 		/* @var $db clsDbAccess */
 		
 		$sql = "SELECT tribe_id, tribe_name FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_tribes WHERE ";
-		if(strlen($id)>0){
+		if(strlen($id)>0 && $id!='0' ){
 			$sql.="  tribe_id=" . $db->quote($id)."";
 		}else{
 			if (!$value || strlen($value)==0)return;
@@ -424,7 +424,7 @@ public function cname_geoname ($value,$id=0){
 			$sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE ";
 			
 			// Get Geonames out of database first
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" geonameId=".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -469,7 +469,7 @@ public function cname_geoname ($value,$id=0){
 			}else{
 				$url='http://api.geonames.org';
 				
-				if(strlen($id)>0){
+				if(strlen($id)>0 && $id!='0' ){
 					$url.="/getJSON?";
 					$url.="style=full";
 					$url.="&geonameId=".$id;
@@ -573,7 +573,7 @@ public function cname_literature ($value,$id=0){
 		try {
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$display = clsDisplay::Load();
 					
 				$label= $display->protolog($id, true);
@@ -632,7 +632,7 @@ public function cname_literature ($value,$id=0){
 					   WHERE";
 					   
 			/* @var $db clsDbAccess */
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$display = clsDisplay::Load();
 					
 				$label= $display->protolog($id, true);
@@ -708,7 +708,7 @@ public function cname_language ($value,$id=0){
 			/* @var $db clsDbAccess */
 			$db = clsDbAccess::Connect('INPUT');
 			
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$pebenen=3;
 				
 				$f1='';$j1='';
@@ -1049,7 +1049,7 @@ FROM
  tbl_nom_service
 WHERE
 ";
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" serviceID= ".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -1109,7 +1109,7 @@ FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
 WHERE
 ";
-			if(strlen($id)>0){
+			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" period_id =".$db->quote ($id)." ";
 			}else{
 				if (!$value || strlen($value)==0)return;
@@ -1214,7 +1214,7 @@ FROM
  {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_tribes
 WHERE
 ";
-		if(strlen($id)>0){
+		if(strlen($id)>0 && $id!='0' ){
 			$sql.=" tribe_id =".$db->quote ($id)." ";
 		}else{
 			if (!$value || strlen($value)==0)return;

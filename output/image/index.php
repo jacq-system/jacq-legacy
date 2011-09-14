@@ -2,28 +2,31 @@
 session_start();
 require("../inc/functions.php");
 
-
-
-@list($id,$img_def_ID,$method,$key)=explode('-',$_GET['id']);
+@list($filename,$method)=explode('/',$_GET['id']);
 
 if($method=='allpics'){
-	JsonPicInfo($id,$key);
-}else if(isIPv4Adress($server_adress) && !isSpecimenID($id) ){
-	redirectPicName($id,$server_adress);
-}else if(isSpecimenID($id) ){
-	redirectPicSpecimenID($id);
+	doPicInfo($id);
+}else{
+	doRedirectPic($id);
 }
-
   
-function getPicInfo($request,$key=''){
-	$server=getServer($request);
-
-	if($server && isset($server['imgserver_IP']) && isset($server['img_service_path'])){
+function doPicInfo($request){
+	$key='';
+	$picinfo=getServer($request);
+	
+	if(isset($picinfo['url']) &&$picinfo['url']!==false ){
 		header('Content-type: text/json');
 		header('Content-type: application/json');
-		$iurl="http://{$server['imgserver_IP']}/{$server['img_service_path']}/getPicInfo.php?specimenID={$specimenID}&m=info&key={$key}";
+		$a=array('filename'=>$picinfo['filename'],'specimenID'=>$picinfo['specimenID']);
+		
+		if($picinfo['djatoka']=='1'){
+			// JSON RPC
+			$url=$picinfo['url']."/getPicInfo/";
 
-		echo file_get_contents($iurl);
+		}else{
+			
+		}
+		
 		exit;
 	}else{
 		//header("");
@@ -32,56 +35,71 @@ function getPicInfo($request,$key=''){
 EOF;
 		exit;
 	}
-	
 }
 
-
-
-function redirectPic($request){
+function doRedirectPic($request){
+	$picinfo=getServer($request);
 	
-	if($server && isset($server['imgserver_IP']) && isset($server['img_service_path'])){
-		header("location: http://{$imgserver}/showPic.php?name={$specimenID}");
-	
+	if(isset($picinfo['url']) &&$picinfo['url']!==false ){
+		if($picinfo['djatoka']=='1'){
+			$url=$picinfo['url']."/showPic/?filename=".=$picinfo['filename']."&specimenID=".$picinfo['specimenID'];
+			header("location: {url}");
+			// viewer.html?url=http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2
+			// viewer.html?specimenID=ID&collection=filename&show=$requestedFilename
+		}else{	
+			$url=$picinfo['url']."/showPic/?filename=".=$picinfo['filename']."&specimenID=".$picinfo['specimenID'];
+			header("location: {url}");
+			// viewer.html?url=http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2
+			// viewer.html?specimenID=ID&collection=filename&show=$requestedFilename
+		}
 	}else{
-		
-		//header("");
-		
 		echo<<<EOF
 		Not found
 EOF;
 	}
-	
 }
 
 // request: can be specimen ID or filename
 function getServer($request){
-	$path='';
 	$picFilename='';
-	
-	$search=mysql_real_escape_string($request);
-	
+	$searchpicFilename=false;
 	$where='';
-
+	$specimenID=0;
+	//specimenid
+	if(is_numeric($request)){
+		$specimenID=$request;
+		$searchpicFilename=true;
 	//tabs..
-	if(strpos($request,'')!==false){
-		
-		$where="";
+	}else if(strpos($request,'tab_')!==false){
+		$result=preg_match('/tab_(?P<specimenID>\d+\.(.*))/',$request,$matches);
+		if($result==1){
+			$specimenID=$result['specimenID'];
+		}
+		$picFilename=$request;
 	// obs digital_image_obs
-	}else if(strpos($request,'')!==false){
-	
-	// specimenID
-	}else if(is_numeric($request)){
-	
-	//"normal" image digital_image 	
+	}else if(strpos($request,'obs_')!==false){
+		$result=preg_match('/obs_(?P<specimenID>\d+\.(.*))/',$request,$matches);
+		if($result==1){
+			$specimenID=$result['specimenID'];
+		}
+		$picFilename=$request;
+	// filename
 	}else{
+		$where=" s.filename = '".mysql_real_escape_string($request)."'";
+		$picFilename=$request;
+	}
 	
+	if($specimenID!=0){
+		$where=" s.specimen_ID = '".mysql_real_escape_string($specimenID)."'";
 	}
 	
 	$sql="
 SELECT
  i.imgserver_IP,
  i.img_service_path,
- img_def_ID
+ i.djatoka,
+ s.specimenID,
+ s.filename
  
 FROM
  tbl_specimens s,
@@ -89,22 +107,20 @@ FROM
  tbl_img_definition i
 
 WHERE
-(    s.specimen_ID = '".mysql_real_escape_string($specimenID)."'
-  OR s.filename=	 = '".mysql_real_escape_string($specimenID)."'
-)
- AND 
+ {$where}
  AND m.collectionID = s.collectionID
  AND i.source_id_fk = m.source_id
 ";
-
+	if($searchpicFilename){
+		$picFilename=$row['filename'];
+	}
 	$result=mysql_query($sql);
 	if($result && $row=mysql_fetch_array($result)){
-		$server=$row;
-		return $server;
+		$url="http://{$row['imgserver_IP']}/{$row['img_service_path']}/";
+		return array('url'=>$url,'requestFileName'=>$picFilename,'filename'=>$row['filename'],'specimenID'=>$row['specimenID'],'djatoka'=>$row['djatoka']);
 	}
 	return false;
 }
-
 
 function p($var){
 	echo "<pre>";
