@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Simple Cross Browser Carousel with Paging using Mootools</title>
+<meta name="Keywords" content="" />
+<meta name="Description" content="" />
+<link rel="stylesheet" href="carousel.css" />
+</head>
+<body>
+<h1>Simple Cross Browser Carousel with Paging using Mootools</h1>
+With a variety of Carousels out there , many for Mootools as well, I still decided to write my own Carousel Class, for some good reasons<br />
+<strong>1. Wanted a paging feature ( to be able to jump a particular slide/step in the carousel).<br />
+2. Wanted freedom with placement of the LEFT and RIGHT buttons/links , where ever I please.<br />
+3. More control over  the Slide Steps.</strong><br />
+<br />
+I did manage to create a new Carousel , with the above features ...as below ... Feel free to suggest any modifications you would require!!!<br />
+<br />
+<!-- Start  carousel1_box -->
+<h2> Carousel Expample 1 Without paging</h2>
+<div id="carousel1_container"  > <a href="javascript:void(0);" id="carousel1_moveleft"><span id="carousel1_container_l" class="carousel_container_l sprite_icon" ></span> </a>
+  <div id="carousel1_wrapper" >
+    <div id="carousel1_items_container" >
+      <!-- Start  carousel1_items -->
+      <div class="carousel1_items f11" > <img src="images/image1.jpg" /><br />
+        <span class="text ">Rs. 1,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image2.jpg" /><br />
+        <span class="text ">Rs. 2,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image3.jpg" /><br />
+        <span class="text ">Rs. 3,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image4.jpg" /><br />
+        <span class=" text ">Rs. 4,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image1.jpg" /><br />
+        <span class="text ">Rs. 5,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image2.jpg" /><br />
+        <span class="text ">Rs. 6,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image3.jpg" /><br />
+        <span class="text ">Rs. 7,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image4.jpg" /><br />
+        <span class=" text ">Rs. 8,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image1.jpg" /><br />
+        <span class="text ">Rs. 9,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image2.jpg" /><br />
+        <span class="text ">Rs. 10,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image3.jpg" /><br />
+        <span class="text ">Rs. 11,000</span><br />
+      </div>
+      <div class="carousel1_items f11" > <img src="images/image4.jpg" /><br />
+        <span class=" text ">Rs. 12,000</span><br />
+      </div>
+      <!-- end  carousel1_items -->
+    </div>
+  </div>
+  <a href="javascript:void(0);" id="carousel1_moveright"> <span id="carousel1_container_r" class="carousel_container_r sprite_icon"></span> </a>
+  <div class="clearfix"></div>
+</div>
+<!-- End  carousel1_box -->
+<div class="clearfix"></div>
+<h2> Carousel2 Expample 1 With paging</h2>
+<!-- Start  carousel2_box -->
+<div id="carousel2_container"  > <a href="javascript:void(0);" id="carousel2_moveleft"><span id="carousel2_container_l" class="carousel_container_l sprite_icon" ></span> </a>
+  <div id="carousel2_wrapper" >
+    <div id="carousel2_items_container" >
+      <!-- Start  carousel2_items -->
+      <div class="carousel2_items f11" ><img src="images/image1.jpg"  align="left" />
+        <span class="text">Flower 1</span><br />
+        <div class="stars stars1"></div>
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image2.jpg"  align="left"/>
+        <span class="text">Flower 2</span><br />
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image1.jpg" align="left"/>
+        <span class="text">Flower 3</span><br />
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image2.jpg"  align="left"/>
+        <span class="text">Flower 4</span><br />
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image1.jpg" align="left"/>
+        <span class="text">Flower 5</span><br />
+        <div class="stars stars3"></div>
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image2.jpg"  align="left"/>
+        <span class="text">Flower 6</span><br />
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image1.jpg" align="left"/>
+        <span class="text">Flower 7</span><br />
+        <div class="stars stars4"></div>
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image2.jpg" align="left"/>
+        <span class="text">Flower 8</span><br />
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image1.jpg" align="left"/>
+        <span class="text">Flower 9</span><br />
+        <div class="stars stars5"></div>
+      </div>
+      <div class="carousel2_items f11" > <img src="images/image2.jpg"  align="left"/>
+        <span class="text">Flower 10</span><br />
+      </div>
+      <!-- end  carousel2_items -->
+    </div>
+  </div>
+  <a href="javascript:void(0);" id="carousel2_moveright"> <span id="carousel2_container_r" class="carousel_container_r sprite_icon"></span> </a>
+  <div class="clearfix"></div>
+</div>
+<!-- End  carousel2_box -->
+<script type="text/javascript" src="mootools12_all_p.js"></script>
+<script type="text/javascript" src="moocarousel_v1.0.js"></script>
+<script type="text/javascript" >
+
+/*For Carousal 1 */
+var c1_w = 92; //  Carousal Item Width 
+var c1_n = 10; // Total Number of Carousal Items  
+var c1_pp = 4  // Number of  Carousal Items  perpage
+var c1_marginFactor = 51;
+
+var c1_sss = c1_w * c1_pp ; //sss = slide step size 
+var c1_ns =  parseInt(((c1_w * c1_n)/c1_sss) + .5); //ns= number of slides 
+c1_sss += c1_marginFactor ; //sss = slide step size , 51 for margins
+
+/*For Carousal 2 */
+var c2_w = 166; //  Carousal Item Width 
+var c2_n = 10; // Total Number of  Items  
+var c2_pp = 1  // Number of  Items  perpage
+var c2_marginFactor = 11;
+
+var c2_sss = c2_w * c2_pp ; //sss = slide step size 
+var c2_ns =  parseInt(((c2_w * c2_n)/c2_sss) + .5); //ns= number of slides 
+c2_sss += c2_marginFactor ; //sss = slide step size , 51 for margins
+
+	
+/*Start  ONLOAD Actions */
+window.addEvent('domready', function() {
+	var carousel1 =  new MooCarousel('carousel1_wrapper','carousel1_items_container','carousel1_moveleft','carousel1_moveright',c1_ns,c1_sss, false); //c_ns= number of slides , c_sss = slide step size
+	var carousel2 =  new MooCarousel('carousel2_wrapper','carousel2_items_container','carousel2_moveleft','carousel2_moveright',c2_ns,c2_sss, true); //c_ns= number of slides , c_sss = slide step size
+
+});
+
+
+
+</script>
+<div class="clearfix"></div>
+<hr/>
+<h3>1. Carousel Paging </h3>
+You can easily add the paging to your carousel, simply by setting the paging flag, which is last parater passed while creating the instance of the MooCarousel to true( want paging) or false( donot wanting paging).<br />
+<blockquote> <code> var carousel1 =  new MooCarousel('carousel1_wrapper','carousel1_items_container','carousel1_moveleft','carousel1_moveright',c_ns,c_sss,<strong> true</strong>); //ns= number of slides , sss = slide step size</code></blockquote>
+And ofcourse you can change the look-n-feel of these paging achors as you please by modifying their CSS.
+<blockquote> <code> .carousel_paging {text-align:right; margin:5px 10px 0 0;}
+  .carousel_paging .current, .carousel_paging .page{ outline:none;  width:15px; height:15px; line-height:15px; text-align:center; display:block; float:left; background:#D8D8EB; margin:0 1px 0 0; text-decoration:none;}
+  .carousel_paging a:hover, .carousel_paging .current{background:#4D4D9B; color:#ffffff;} </code></blockquote>
+Well! there is a small issue though, The paging anchors if set, then it will get generated always after the Carousel component. I wanted to make it dynamic as well, but then just to keep the Script for blowing out of proportions, I decided to skip it.
+But you know a little Javascript , you could easily modify the paging generation code in the MooCarousel class to please your needs.<br />
+<br />
+<h3>2. Customising the Left & Right Icons </h3>
+You can change the PLACEMENT, IMAGES or any displat property of the Left and Right Buttons simply by playing around with the CSS. to be able to change the placements of the Left and Right buttoms was the actual reason for me to right my our Carousel Class.
+Since this MooCarousel Class, accepts the id's of these buttons, you can actually place these buttons anywhere on the page, if you please... it does not have to be in the element hierarchy, as in my example.
+<blockquote> <code> var carousel1 =  new MooCarousel('carousel1_wrapper','carousel1_items_container',<strong>'carousel1_moveleft','carousel1_moveright'</strong>,c_ns,c_sss,true); <br />
+  <br />
+  <strong>CSS</strong> <br />
+  .carousel_container_l, .carousel_container_r{margin:50px 0 0 0 ; position: relative;width: 23px;height:20px; float:left; cursor:pointer; } 
+  .carousel_container_r{background-position: 0 -38px; } 
+  .carousel_container_l{background-position: 0 -58px; } </code></blockquote>
+<br/>
+<h3>3. Customising Slide Steps </h3>
+<strong>WHAT DO I MEAN MY CUSTOMISING SLIDE STEPS?<br />
+</strong> Most Carousels slide the full with of the visible window. So say you had four items (like in my sample above), it will slide all the four items. With this Carousel Component, You pass the number of slides and the step size of your choice.
+<blockquote> <code> var carousel1 =  new MooCarousel('carousel1_wrapper','carousel1_items_container','carousel1_moveleft','carousel1_moveright',<strong> c_ns,c_sss</strong>, true); <br />
+  <strong>c_ns= number of slides , c_sss = slide step size</strong><br />
+  </code></blockquote>
+Also, in my example1 I have calcuted the slide step size, based on logic where , I know number of items , width on each item and the margins that have given after each item in my CSS.
+<blockquote> <code> /*For Carousal 1 */<br />
+
+  var c1_w = 92; //  Carousal Item Width <br />
+
+  var c1_n = 10; // Total Number of Comparision Carousal Items  <br />
+
+  var c1_pp = 4  // Number of Comparision Carousal Items  perpage<br />
+
+  var c1_marginFactor = 51;<br />
+
+  
+  var c1_sss = c1_w * c1_pp ; //sss = slide step size <br />
+
+  var c1_ns =  parseInt(((c1_w * c1_n)/c1_sss) + .5); //ns= number of slides <br />
+
+  c1_sss += c1_marginFactor ; //sss = slide step size , 51 for margins <br />
+</code></blockquote>
+<p><strong><br />
+  Requirements: </strong>Mootools 1.2 <br />
+  <strong><a href="" target="_new">Download Source Here</a></strong>
+<hr/>
+<!-- The stuff below is for display and anlytics only, and is not required for the actual demo -->
+<!--<iframe src="http://developer.expressionz.in/downloads/demo_footer/demo_footer.html" frameborder="0" height="100" width="100%" ></iframe>
+-->
+</body>
+</html>
