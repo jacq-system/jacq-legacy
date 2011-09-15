@@ -9,30 +9,22 @@ Version : 1.0
  	Lesser General Public License for more details.
 */
 
-@charset "utf-8";
 /* CSS Document */
-body{ margin:25px; font-family:"trebuchet MS", Tahoma ; font-size:13px; border:1px solid #cfcfcf; padding:20px;}
-.clearfix{clear:both;display:block;}
-.text{ color:#555555;}
 
 /* carousel css*/
-.sprite_icon{background:url(images/sprite_carousel_icons.gif) no-repeat;}
+.sprite_icon{background:url(../images/sprite_carousel_icons.gif) no-repeat;}
 .carousel_container_l, .carousel_container_r{display:block; margin:50px 0 0 0 ; position: relative;width: 23px;height:20px; float:left; cursor:pointer; } 
 .carousel_container_r{background-position: 0 -38px; } 
 .carousel_container_l{background-position: 0 -58px; } 
 
-/* carousal 1*/
-#carousel1_container{width:480px;  float:left; border:1px solid #cccccc;}
-#carousel1_wrapper{overflow:hidden;margin: 0 2px; width:420px; position: relative; float:left;}
-#carousel1_items_container{margin:0px; padding:0px 2px; width:5000px;position: relative;  }
-.carousel1_items{ width:92px; height:125px; border:1px dotted #cfcfcf; margin:5px 5px; position:relative;float:left; text-align:center; overflow:hidden;}
-.carousel1_items img{margin:2px;}
 
-/* carousal 2*/
-#carousel2_container{width:200;  float:left; border:1px solid #cccccc;}
-#carousel2_wrapper{overflow:hidden;margin: 0 2px; width:180px; position: relative; float:left;}
+#carousel2_container{position:absolute;top:360px;right:25px;width:270px; z-index:100; border:1px solid #cccccc; background: black; opacity: 0.66; color:white; }
+#carousel2_wrapper{overflow:hidden;margin: 5px 2px; width:220px; position: relative; float:left;}
 #carousel2_items_container{margin:0px; padding:0px 2px; width:5000px;position: relative;  }
-.carousel2_items{ width:165px; height:110px; border:1px dotted #cfcfcf; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
+/*.carousel2_items{ width:95px; height:120px; border:0px dotted #cfcfcf; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
+*/
+.carousel2_items{  cursor:pointer;
+    cursor:hand;width:63px; height:120px; border:0px dotted #cfcfcf; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
 .carousel2_items img{margin:2px;}
 
 

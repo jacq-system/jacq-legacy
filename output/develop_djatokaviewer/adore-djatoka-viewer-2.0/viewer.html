@@ -1,91 +1,108 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
-    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" >
-
  <head>
-  <meta name="author" content="Ruven Pillay &lt;ruven@users.sourceforge.netm&gt;"/>
-  <meta name="author" content="Ryan Chute &lt;rchute@users.sourceforge.netm&gt;"/>
-  <meta name="keywords" content="djatoka IIPImage Ajax IIP Zooming Streaming High Resolution Mootools"/>
-  <meta name="description" content="djatoka IIPImage Viewer: High Resolution Remote Image Streaming Viewing"/>
-  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
+ <meta name="author" content="Ruven Pillay &lt;ruven@users.sourceforge.netm&gt;"/>
+ <meta name="author" content="Ryan Chute &lt;rchute@users.sourceforge.netm&gt;"/>
+ <meta name="keywords" content="djatoka IIPImage Ajax IIP Zooming Streaming High Resolution Mootools"/>
+ <meta name="description" content="djatoka IIPImage Viewer: High Resolution Remote Image Streaming Viewing"/>
+ <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
 
-  <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
-  <link rel="shortcut icon" href="images/djatoka.16x16.png" />
-  <title>djatoka Viewer, based on IIPMooViewer 1.1</title>
+ <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
+ <link rel="stylesheet" type="text/css" media="all" href="css/carousel.css" />
+ <link rel="shortcut icon" href="images/djatoka.16x16.png" />
+ <title>Herbarium Viewer, Herbarium Wien</title>
 
-  <script type="text/javascript" src="javascript/mootools-1.2.5-core-nc.js"></script>
-  <script type="text/javascript" src="javascript/mootools-1.2.5.1-more.js"></script>
-   
-<script type="text/javascript" src="javascript/moocarousel_v1.0.js"></script>
-  <script type="text/javascript" src="javascript/iipmooviewer-1.1.js"></script>
+ <script type="text/javascript" src="javascript/mootools-1.2.5-core-nc.js"></script>
+ <script type="text/javascript" src="javascript/mootools-1.2.5.1-more.js"></script>
+ <script type="text/javascript" src="javascript/moocarousel_v1.0.js"></script>
+ <script type="text/javascript" src="javascript/iipmooviewer-1.1.js"></script>
 
-  <script type="text/javascript">
-// this code will send a data object via a GET request and alert the retrieved data.
-/*var jsonRequest = new Request.JSON({url: 'http://site.com/tellMeAge.php', onSuccess: function(person){
-    alert(person.age);    // alerts "25 years".
-    alert(person.height); // alerts "170 cm".
-    alert(person.weight); // alerts "120 kg".
-}}).get({'firstName': 'John', 'lastName': 'Doe'});
+ <script type="text/javascript">
+/*
+viewer.html?requestfilename=requ1&filename=req2&specimenID=444
 */
-  /*
-var myRequest = new Request({
-    url: 'getMyText.php',
-    method: 'get',
-    onRequest: function(){
-        myElement.set('text', 'loading...');
-    },
-    onSuccess: function(responseText){
-        myElement.set('text', responseText);
-    },
-    onFailure: function(){
-        myElement.set('text', 'Sorry, your request failed :(');
-    }
-});*/
- /*
-document.id('myLink').addEvent('click', function(event){
-    event.stop();
-    myRequest.send('userid=' + this.get('data-userid'));
+
+var server = 'http://localhost/djatoka/resolver.php';
+var images = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
+var credit = '<a href="http://herbarium.univie.ac.at/">Herbarium Wien</a> Rainer H.';// Copyright or information message
+
+var re={};
+
+//ObtainURLParametersifpresent
+var query=location.href.substring(location.href.indexOf('?')+1);
+var vars=query.split('&');
+for(var i=0;i<vars.length;i++){
+	var pair=vars[i].split('=');
+	if(pair[0]=='requestfilename'||pair[0]=='filename'||pair[0]=='specimenID'){
+		if(pair[1].indexOf('#')>0){
+			pair[1]=pair[1].substring(0,pair[1].length-1);
+		}
+		if(pair[0]=='requestfilename'){
+			images=pair[1];
+		}else{
+			re[pair[0]]=pair[1];
+		}
+	}
+}
+
+// Create our viewer object - note: must assign this to the 'iip' variable.
+// See documentation for more details of options
+iip=new IIP( "targetframe",{
+	image: images,
+	server: server,
+	credit: credit, 
+	zoom: 1,
+	render: 'random',
+	showNavButtons: true
+});
+
+var images=[['images/image1.jpg','Flower 2'],['images/image1.jpg','Flower 2'],['images/image1.jpg','Flower 3'],['images/image1.jpg','Flower 4']]
+
+
+window.addEvent('domready', function() {
+	/*var jsonRequest=new Request.JSON({
+		url: 'http://site.com/tellMeAge.php',
+		onSuccess: function(images){
+			makeCarousel(images);
+		}
+	}).get({'firstName': 'John', 'lastName': 'Doe'});
 	*/
-    // The iipsrv server path (/fcgi-bin/iipsrv.fcgi by default)
-    var server = 'http://localhost/djatoka/resolver.php';
+	 makeCarousel(images);
+});
 
-    // The *full* image path on the server. This path does *not* need to be in the web
-    // server root directory. On Windows, use Unix style forward slash paths without
-    // the "c:" prefix
-    var images = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
 
-    // Copyright or information message
-    var credit = '';
-    
-    // Obtain URL Parameters if present
-    var query = location.href.substring(location.href.indexOf("?")+1);
-    var vars = query.split("&");
-    for (var i=0;i<vars.length;i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] == "url" || pair[0] == "rft_id")
-         images = pair[1];
-         if (images.indexOf("#") > 0)
-           images = images.substring(0,images.length-1);
-    }
+function loadnew(requestfilename){
+	url=location.href.replace(/(.*)(requestfilename=)([^&]*)&(.*)/i,'$1$2'+requestfilename+'&$4');
+	//alert(url);
+	document.location.href=url;
+}
 
-    // Create our viewer object - note: must assign this to the 'iip' variable.
-    // See documentation for more details of options
-    iip = new IIP( "targetframe", {
-		image: images,
-		server: server,
-		credit: credit, 
-		zoom: 1,
-		render: 'random',
-        showNavButtons: true
-    });
+function makeCarousel(images){
+	images.each( function(val){
+		var carousel=new Element('div',{
+			html: '<div class="carousel2_items" onclick="loadnew(\'555'+val[0]+'\')"><img src="'+val[0]+'"><br><span class="text">'+val[1]+'</span><br></div>'
+		});
+		carousel.injectInside($('carousel2_items_container'));
+	});
+	var c2_ns=Math.ceil(images.length/3);
+	var carousel2 = new MooCarousel('carousel2_wrapper','carousel2_items_container','carousel2_moveleft','carousel2_moveright',c2_ns,220, true); //c_ns= number of slides , c_sss = slide step size
+}
 
-  </script>
+ </script>
 
- </head>
-
- <body>
-   <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe"></div>
+</head>
+<body>
+<div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe"></div>
+  
+<div id="carousel2_container">
+<a href="javascript:void(0);" id="carousel2_moveleft"><span id="carousel2_container_l" class="carousel_container_l sprite_icon" ></span></a>
+<div id="carousel2_wrapper">
+ <div id="carousel2_items_container" ></div>
+</div>
+<a href="javascript:void(0);" id="carousel2_moveright"> <span id="carousel2_container_r" class="carousel_container_r sprite_icon"></span> </a>
+<div class="clearfix"></div>
+</div>
  </body>
-
 </html>

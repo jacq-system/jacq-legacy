@@ -272,7 +272,8 @@ var IIP = new Class({
 
     // Delete our old image mosaic
     $('target').getChildren().each( function(el){
-        el.destroy();
+        el.src=''; // abort image loading.!!!!!!! 2h :'(
+		el.destroy();
     } );
     $('target').setStyles({
         left: 0,
@@ -464,18 +465,19 @@ var IIP = new Class({
 
   /* Refresh function to avoid the problem of tiles not loading
      properly in Firefox/Mozilla
+	 comment ghomolka: a very dangerours game, disabled.
    */
   refresh: function(){
 
     var unloaded = 0;
-
+/*
     $('target').getChildren().each( function(el){
       // If our tile has not yet been loaded, give it a prod ;-)
       if( el.width == 0 || el.height == 0 ){
 	el.src = el.src;
 	unloaded = 1;
       }
-    });
+    });*/
 
     /* If no tiles are missing, destroy our refresher timer, fade out our loading
        animation and and reset our cursor
