@@ -89,10 +89,22 @@ function saveMapLines(){
 				alert('All inserted!');
 			}else{
 				s='';
-				$.each(msg.error,function(index, value) { 
-					s+=value[0]+'=>'+value[1]+': '+((value[2]==1)?'already in db':'please check')+'\n';
+				if(msg.error && msg.error.length>0){
+					$.each(msg.error,function(index, value) {
+						if(value[3]==1){
+							s+=value[1]+'=>'+value[2]+': already in db\n';
+							$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-notice"/>');
+						}else{
+							s+=value[1]+'=>'+value[2]+': please check\n';
+							$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-help"/>');
+						}
+					});
+				}
+			}
+			if(msg.successx && msg.successx.length>0){
+				$.each(msg.successx,function(index, value) {
+					$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-check"/>');
 				});
-				alert('There have been problems:\n'+s);
 			}
 		}
 	});
@@ -164,8 +176,8 @@ function addMapLine(idnam,idtype,leftId,rightId,leftName,rightName){
 	}
 	
 	if(idtype==1){
-		ACFreudPrepare(serverACL,'acmap_l_'+x,((!isNaN(leftId) && leftName==undefined)?leftId:'0'),3,1,2);
-		ACFreudPrepare(serverACR,'acmap_r_'+x,((!isNaN(rightId) && rightName==undefined)?rightId:'0'),3,1,2);
+		ACFreudPrepare(serverACL,'acmap_l_'+x,((!isNaN(leftId) && leftName==undefined)?leftId:'0'),2,0,1,2);
+		ACFreudPrepare(serverACR,'acmap_r_'+x,((!isNaN(rightId) && rightName==undefined)?rightId:'0'),2,0,1,2);
 
 		$('#ajax_acmap_r_'+x).focus(function(){
 			if($('#'+idnam+' tr:last input:text:first').val().length>0){

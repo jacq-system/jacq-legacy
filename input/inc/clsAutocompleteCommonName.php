@@ -117,7 +117,7 @@ public function cname_person($value,$id=0){
 		if(strlen($id)>0 && $id!='0' ){
 			$sql.=" person_ID='{$id}'";
 		}else{
-			if (!$value || strlen($value)==0)return;
+			if (!$value || strlen($value)==0)return array();
 			if ($value && strlen($value) > 1) {
 				$pieces = explode(", ", $value, 2);
 				$p_familyname = $pieces[0];
@@ -183,8 +183,9 @@ public function cname_person($value,$id=0){
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
 public function cname_taxon ($value,$id=0){
-	$results = array();
-			try {
+
+		$results = array();
+		try {
 			$db = clsDbAccess::Connect('INPUT');
 
 			/* @var $db clsDbAccess */
@@ -202,14 +203,15 @@ public function cname_taxon ($value,$id=0){
 			
 			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" ts.taxonID='{$id}'";
+				
 			}else{
-				if (!$value || strlen($value)==0)return;
+			
+				if (!$value || strlen($value)==0)return array();
 				$pieces = explode(chr(194) . chr(183), $value);
 				$pieces = explode(" ",$pieces[0]);
-	
 				$sql.=" tg.genus LIKE " . $db->quote ($pieces[0] . '%');
 				$sql.= " AND ts.external = 0";
-			
+		
 				if (!empty($pieces[1])) {
 					$sql .= " AND te0.epithet LIKE " . $db->quote ($pieces[1] . '%');
 				} else {
@@ -218,7 +220,7 @@ public function cname_taxon ($value,$id=0){
 				$sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet  LIMIT 100";
 			}
 
-			//echo $sql;
+			
 			/* @var $dbst PDOStatement */
 			$dbst = $db->query($sql);
 			$rows = $dbst->fetchAll();
@@ -235,8 +237,8 @@ public function cname_taxon ($value,$id=0){
 					$results[$k]['value'] = preg_replace("/ [\s]+/"," ",$v['value']);
 				}
 			}
-		}
-		catch (Exception $e) {
+		}catch (Exception $e) {
+		
 			error_log($e->getMessage());
 		}
 	
@@ -261,7 +263,7 @@ public function cname_commonname ($value,$id=0){
 			if(strlen($id)>0 && $id!='0' ){
 				$where="common_id ='$id'";
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				$where="common_name LIKE " . $db->quote($value . '%')." LIMIT 100";
 			}
 			
@@ -309,7 +311,7 @@ public function cname_transliteration($value,$id=0){
 		
 		/* @var $db clsDbAccess */
 			
-		$sql = "SELECT trans.transliteration_id, trans.name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations WHERE ";
+		$sql = "SELECT transliteration_id, name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations WHERE ";
 		if(strlen($id)>0 && $id!='0' ){
 			if(substr($id,0,1)=='c'){
 				$id=substr($id,1);
@@ -325,10 +327,12 @@ WHERE
  com.common_id =" . $db->quote($id)." LIMIT 1";
 		
 			}else{
+				
 				$sql.="  transliteration_id =" . $db->quote($id)." LIMIT 1";
+			//	$results[]=$sql;
 			}
 		}else{
-			if (!$value || strlen($value)==0)return;
+			if (!$value || strlen($value)==0)return array();
 			$sql.=" name LIKE " . $db->quote($value . '%')." LIMIT 100";
 		}
 			
@@ -376,7 +380,7 @@ public function cname_tribe($value,$id=0){
 		if(strlen($id)>0 && $id!='0' ){
 			$sql.="  tribe_id=" . $db->quote($id)."";
 		}else{
-			if (!$value || strlen($value)==0)return;
+			if (!$value || strlen($value)==0)return array();
 			$sql.=" tribe_name LIKE " . $db->quote($value . '%')." LIMIT 100";
 		}
 			
@@ -427,7 +431,7 @@ public function cname_geoname ($value,$id=0){
 			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" geonameId=".$db->quote ($id)." ";
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				$sql.="name LIKE ".$db->quote($value .'%')." LIMIT 100";
 			}
 			
@@ -643,7 +647,7 @@ public function cname_literature ($value,$id=0){
 					'color' => '');
 
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				$pieces = explode(" ", $value);
 				$autor = $pieces[0];
 				if (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.')) {
@@ -769,7 +773,7 @@ WHERE
 					);
 				}
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				
 				// Get TypingCache
 				$cacheoption=$this->getCacheOption();
@@ -1052,7 +1056,7 @@ WHERE
 			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" serviceID= ".$db->quote ($id)." ";
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				
 			
 				$sql.=" name LIKE " . $db->quote ($value . '%').
@@ -1112,7 +1116,7 @@ WHERE
 			if(strlen($id)>0 && $id!='0' ){
 				$sql.=" period_id =".$db->quote ($id)." ";
 			}else{
-				if (!$value || strlen($value)==0)return;
+				if (!$value || strlen($value)==0)return array();
 				
 				$sql.="period LIKE " . $db->quote ($value . '%')."  LIMIT 100";
 			}
@@ -1152,7 +1156,7 @@ public function cname_geospecification ($value){
     global $_CONFIG;
     
 	$results = array();
-	if (!$value || strlen($value)==0)return;
+	if (!$value || strlen($value)==0)return array();
 				
 	try{
 		$db = clsDbAccess::Connect('INPUT');
@@ -1202,7 +1206,7 @@ public function cname_tribes ($value,$id=0){
     global $_CONFIG;
     
 	$results = array();
-	if (!$value || strlen($value)==0)return;
+	if (!$value || strlen($value)==0)return array();
 				
 	try{
 		$db = clsDbAccess::Connect('INPUT');
@@ -1217,7 +1221,7 @@ WHERE
 		if(strlen($id)>0 && $id!='0' ){
 			$sql.=" tribe_id =".$db->quote ($id)." ";
 		}else{
-			if (!$value || strlen($value)==0)return;
+			if (!$value || strlen($value)==0)return array();
 			
 			$sql.="tribe_name LIKE " . $db->quote ($value . '%')."  LIMIT 100";
 		}

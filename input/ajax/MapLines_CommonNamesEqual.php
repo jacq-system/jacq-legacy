@@ -207,8 +207,9 @@ VALUES
 ";	
 		$val='';
 		$notdone=array();
+		$successx=array();
 		foreach($new as $taxonID=>$obj){
-			foreach($obj as $acctaxonID=>$nop){
+			foreach($obj as $acctaxonID=>$x){
 				// If not in database yet, add it
 				$row2=array();
 				$sql2 = "SELECT COUNT(*) as 'c' FROM {$this->dbprefix}tbl_name_names_equals WHERE tbl_name_names_name_id='{$params['leftID']}' and tbl_name_names_name_id1='{$params['rightID']}' LIMIT 1";
@@ -219,18 +220,19 @@ VALUES
 						$result2 = db_query($sql2);
 						if($result2){
 							logTbl_name_names_equals($params['leftID'],$params['rightID'],2);
+							$successx[]=$x;
 							continue;
 						}
 					}
 				}
 				$existed=(isset($row2['c']) && $row2['c']>0);
-				$notdone[]=array($taxonID,$acctaxonID,$existed);
+				$notdone[]=array($x,$taxonID,$acctaxonID,$existed);
 			}
 		}
 		if(count($notdone)>0){
-			$res=array('success'=>0, 'error'=>$notdone);
+			$res=array('success'=>0, 'error'=>$notdone,'successx'=>$successx);
 		}else{
-			$res=array('success'=>1);
+			$res=array('success'=>1,'successx'=>$successx);
 		}
 		return $res;
 	}

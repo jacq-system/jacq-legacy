@@ -6,16 +6,11 @@ require_once('../inc/log_functions.php');
 require_once('../inc/mapLines.php');
 no_magic();
 
+//debug
 foreach($_GET as $k=>$v){
 	$params[$k]=$v;
 }
-
-
-
-		
-
-
-		
+	
 class MapLines_editLit extends MapLines{
 	var $pagination=5;
 
@@ -327,8 +322,9 @@ VALUES
 ";	
 		$val='';
 		$notdone=array();
+		$successx=array();
 		foreach($new as $taxonID=>$obj){
-			foreach($obj as $acctaxonID=>$nop){
+			foreach($obj as $acctaxonID=>$x){
 				// If not in database yet, add it
 				$row2=array();
 				$sql2 = "SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
@@ -340,18 +336,19 @@ VALUES
 						if($result2){
 							$tax_syn_ID=mysql_insert_id();
 							logTbl_tax_synonymy($tax_syn_ID,0);
+							$successx[]=$x;
 							continue;
 						}
 					}
 				}
 				$existed=(isset($row2['c']) && $row2['c']>0);
-				$notdone[]=array($taxonID,$acctaxonID,$existed);
+				$notdone[]=array($x,$taxonID,$acctaxonID,$existed);
 			}
 		}
 		if(count($notdone)>0){
-			$res=array('success'=>0, 'error'=>$notdone);
+			$res=array('success'=>0, 'error'=>$notdone,'successx'=>$successx);
 		}else{
-			$res=array('success'=>1);
+			$res=array('success'=>1,'successx'=>$successx);
 		}
 		return $res;
 	}

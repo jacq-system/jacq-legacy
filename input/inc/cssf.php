@@ -355,41 +355,45 @@ class CSSF{
 	// mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
 	// no Index, mustmatch=2: => must much + "0" allowed
 	// textarea>0 => $rows of textarea, otherwise textinput
-	function inputJqAutocomplete2($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $autoFocus=false,$idequval=0,$textarea=0) {
+	function inputJqAutocomplete2($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $fullFocus=false,$idequval=0,$textarea=0) {
 		
 		$acdone=0;
-		//$val=$idequval?$index:'';
-		$val='';
+		$val=$idequval?$index:'';
 		$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
 		$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
 		$title=($title=='')?"":" title='{$title}'";
+		$z='';
 		if($this->doEcho){
 			$pi=parse_url($serverScript);
 			parse_str($pi['query'],$pv);
 			$res=array();
-			//static call: $res=call_user_func_array( array('clsAutocompleteCommonName', $pv['field']), array('--',$index));
-			if(strpos($pi['path'],'index_autocomplete_commoname.php')!==false){
-				if(method_exists('clsAutocompleteCommonName',$pv['field'])){
-				
-					if(!isset($GLOBALS['ACFREUD2']))$GLOBALS['ACFREUD2']=clsAutocompleteCommonName::Load();
-					$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array('--',$index));
-					$acdone=1;
-				}
-			}else/*if(strpos($pi['path'],'index_jq_autocomplete.php')!==false)*/{
-				if(method_exists('clsAutocomplete',$pv['field'])){
-					if(!isset($GLOBALS['ACFREUD1']))$GLOBALS['ACFREUD1']=clsAutocomplete::Load();
-					$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array('--',$index));
-					$acdone=1;
+			if($val==''){
+			
+				//static call: $res=call_user_func_array( array('clsAutocompleteCommonName', $pv['field']), array('--',$index));
+				if(strpos($pi['path'],'index_autocomplete_commoname.php')!==false){
+					if(method_exists('clsAutocompleteCommonName',$pv['field'])){
 					
+						if(!isset($GLOBALS['ACFREUD2']))$GLOBALS['ACFREUD2']=clsAutocompleteCommonName::Load();
+						$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array('--',$index));
+						$acdone=1;
+						//$z=$pv['field'].$index.print_r($res,1);
+					}
+				}else/*if(strpos($pi['path'],'index_jq_autocomplete.php')!==false)*/{
+					if(method_exists('clsAutocomplete',$pv['field'])){
+						if(!isset($GLOBALS['ACFREUD1']))$GLOBALS['ACFREUD1']=clsAutocomplete::Load();
+						$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array('--',$index));
+						$acdone=1;
+						
+					}
 				}
-			}
-			if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
-				$val=$res[0]['value'];
-				$index=$res[0]['id'];
+				if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
+					$val=$res[0]['value'];
+					$index=$res[0]['id'];
+				}
 			}
 		}
 		
-		if( (strlen($index)==0 || ($index=='0' &&$mustmatch!=2) ) && ( strlen($val)==0 || ($val=='0' &&$mustmatch!=2)) && isset($_POST['ajax_'.$name]) ){
+		if( !isset($_POST['ACREALUPDATE']) && (strlen($index)==0 || ($index=='0' &&$mustmatch!=2) ) && ( strlen($val)==0 || ($val=='0' &&$mustmatch!=2)) && isset($_POST['ajax_'.$name]) ){
 			$val=$_POST['ajax_'.$name];
 			$index=$_POST[$name.'Index'];
 			$acdone=1;
@@ -406,7 +410,7 @@ EOF;
 		}else{
 			$val=htmlspecialchars($val, ENT_QUOTES);
 			$ret=<<<EOF
- <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" value="{$val}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title} />
+ <input tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' type="text" value="{$z}{$val}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title} />
 EOF;
 		}
 		
@@ -416,7 +420,7 @@ EOF;
 		if($this->doEcho){
 			$ret.=<<<EOF
 </div>
-<script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$acdone}','{$autoFocus}','{$minLength}']);</script>
+<script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$acdone}','{$fullFocus}','{$minLength}']);</script>
 EOF;
 			$this->_divclass($x, $y, "cssfinput");
 			echo $ret;
@@ -464,8 +468,10 @@ var searchString='';
 var x=0;
 
 function getACTableCode(idtype,x){
-	/*return '<tr id="acmap_tr_'+x+'"><td><?PHP echo $htmla; ?></td><td><?PHP echo $htmlb; ?></td><td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';*/
-	return '<tr id="acmap_tr_'+x+'"><td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td><td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td><td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><img src="webimages/remove.png" title="delete entry" border="0"></a>';
+	return '<tr id="acmap_tr_'+x+'">'
+	+'<td><input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td>'
+	+'<td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td>'
+	+'<td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><span class="ui-icon ui-icon-closethick"/></a><a style="float:left" id="feedback_'+x+'"></a>';
 }
 
 </script>

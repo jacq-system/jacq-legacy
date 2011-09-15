@@ -63,7 +63,7 @@ function selectTaxon() {
 	taxwin.focus();
 }
 function UpdateTaxon(taxonID) {
-	searchID('taxon',taxonID);
+	ACdoSearchID('taxon',taxonID);
 }
 
 
@@ -73,7 +73,7 @@ function selectLiterature() {
 	citwin.focus();
 }
 function UpdateLiterature(literatureID) {
-	searchID('sourceval',literatureID);
+	ACdoSearchID('sourceval',literatureID);
 }
 
 function selectGeoname() {
@@ -88,7 +88,7 @@ function selectGeoname() {
 	geowin.focus();
 }
 function UpdateGeoname(geonameID) {
-	searchID('geoname',geonameID);
+	ACdoSearchID('geoname',geonameID);
 /*	if(!data){
 			$('#ajax_geoname').val('geonames.org databases not synced yet for ID '+geonameID+'. But you can store it anyway.');
 			$('#geonameIndex').val(geonameID);
@@ -114,28 +114,31 @@ function changeSource(to){
 	}else/* if(to=='literature')*/{
 		url+='cname_literature';
 	}
+	
 	$('#ajax_sourcevalue').autocomplete('option' , 'serverScript' ,url );
 	$('#ajax_sourcevalue').val('');
-	$('#sourcevalueIndex').val('0');
+	$('#sourcevalueIndex').val('');
 	
 }
 
 $(document).ready(function() {
 	// selection
 
-	$("#source").change(function() {
-		changeSource($("#source").val());
+	$('#sourceType').change(function() {
+		changeSource($('#sourceType').val());
 	});
 	ACFreudInit();
 	
-	$("#ajax_taxon").focus();
+	$('#ajax_taxon').focus();
 
-	$( "#ajax_geospecification").resizable({handles:"se"});//.css('z-index','10000');
+	$( '#ajax_geospecification').resizable({handles:'se'});//.css('z-index','10000');
 	
 	$('#ajax_common_name').change(function(){
+		//alert('s'+$('#common_nameIndex').val());
 		if($('#common_nameIndex').val()!=''){
+			//alert('toll');
 			$('#ajax_transliteration').attr('disabled', true);
-			searchID('transliteration', 'c'+$('#common_nameIndex').val());
+			ACdoSearchID('transliteration', 'c'+$('#common_nameIndex').val());
 		}else{
 			$('#ajax_transliteration').removeAttr('disabled');
 		}
@@ -278,7 +281,7 @@ $_dvar=array(
 	'annotations'		=> '',
 	
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id')),
+	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id','tribe_id')),
 
 	'enableClose'	=> ((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0
 
@@ -297,7 +300,15 @@ $action=isset($_POST['submitDelete'])?'doDelete':(isset($_POST['submitUpdate'])?
 
 if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==false ){
 	
-	echo "Was here";
+	// clean pairs...
+	foreach($_POST as $k=>$v){
+		if(preg_match('/ajax_(?P<name>.+)/', $k, $matches)==1){
+			if(strlen($v)==0 && $v!='0'){
+				$_POST[ $matches['name'].'Index' ]='';
+			}
+		}
+	}
+	
 	$errr=error_reporting($debuger);
 	$_dvar=array_merge($_dvar, array(
 		'taxonIndex' => $_POST['taxonIndex'],
@@ -336,8 +347,9 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==fals
 	
 	doQuotes($_dvar,1);
 	$quotesdone=1;
-		print_r($_POST);
-print_r($_dvar);
+
+		
+	//print_r($_dvar);
 	
 }
 
@@ -360,7 +372,7 @@ if ($action=='doDelete' ) {
 	$result = doDBQuery($sql);
 	
 
-	if($result && ($row = mysql_fetch_array($result) ) && mysql_num_rows($result)==1 ){
+	if($result && ($row = mysql_fetch_assoc($result) ) && mysql_num_rows($result)==1 ){
 		$_dvar=array_merge($_dvar, array(
 			'entityIndex'=>$row['entity_id'],
 			'entityType'		=> 'taxon',
@@ -383,7 +395,7 @@ if ($action=='doDelete' ) {
 			'language'=>$row['language'],
 
 			'tribe_name'		=>  $row['tribe_name'],
-			'tribeIndex'		=> $row['tribeIndex'],
+			'tribeIndex'		=> $row['tribe_id'],
 			
 			'periodIndex'=>$row['period_id'],
 			'period'=>$row['period'],
@@ -396,7 +408,14 @@ if ($action=='doDelete' ) {
 			
 			'locked'=>isset($row['locked'])?$row['locked']:$_dvar['locked'],
 		));
-		
+		echo<<<EOF
+<script>
+$(document).ready(function() {
+	$('#ajax_transliteration').attr('disabled', true);
+});
+</script>
+EOF;
+		$_POST['ACREALUPDATE']=1;
 		
 	// If no row found, prepare for search vars;
 	}else{
@@ -423,7 +442,6 @@ $_dvar['update']=checkRowExists($_dvar['active_id']);
 $_dvar['active_id']=$_dvar['active_id'];
 
 $msgs='';
-//$msgs.=print_r($msg,1);
 
 if($msg['result']=="0"){
 	$msgs.=" Error:<br>{$msg['err']} ";
@@ -446,23 +464,23 @@ $unlock_tbl_name_applies_to=checkRight('unlock_tbl_name_applies_to');
 $cf = new CSSF();
 $cf->setYRelative(true);
 
-if($_dvar['enableClose']){
-	$cf->buttonJavaScript(11, 2, " Close Window", "window.opener.location.reload(true);self.close()");
-}
 
 echo "<input type=\"hidden\" name=\"enableClose\" value=\"{$_dvar['enableClose']}\">\n";
 echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"active_id\" value=\"".$_dvar['active_id']->toString()."\">\n";
 
+$cf->label(60.5,1,"locked");
 if($unlock_tbl_name_applies_to) {
-    $cf->label(60.5,0,"locked");
     $cf->checkbox(60.5,0,"locked",$_dvar['locked']);
 }else if($isLocked){
-    $cf->label(60.5,0,"locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"{$_dvar['locked']}\">\n";
 }
+if($_dvar['enableClose']){
+	$cf->buttonJavaScript(11, 0, " Close Window", "window.opener.location.reload(true);self.close()");
+}
 
-$cf->label(10, 3, "Scientific Name","javascript:selectTaxon()");
+
+$cf->label(10, 2.5, "Scientific Name","javascript:selectTaxon()");
 $cf->inputJqAutocomplete2(11, 0, 50, "taxon", $_dvar['taxonIndex'], "index_autocomplete_commoname.php?field=cname_taxon",520,2,'','',1,1,0);
 
 $cf->label(10, 2.5, "Common Name","javascript:editCommoname()");
@@ -473,7 +491,7 @@ $cf->inputJqAutocomplete2(11, 0, 50, "transliteration",$_dvar['transliterationIn
 
 $cf->label(10, 2.5, "Geography","javascript:selectGeoname()");
 $cf->label(10.5, 0, "*","javascript:showGeonameInfo()");
-$cf->inputJqAutocomplete2(11, 0, 50, "geoname", $_dvar['geonameIndex'], "index_autocomplete_commoname.php?field=cname_geoname",520,2,'','',1,0,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "geoname", $_dvar['geonameIndex'], "index_autocomplete_commoname.php?field=cname_geoname",520,2,'','',1,1,0);
 
 $cf->label(10, 2.5, "Geo Specification");
 $cf->inputJqAutocomplete2(14, 0, 47, "geospecification", $_dvar['geospecification'],"index_autocomplete_commoname.php?field=cname_geospecification",520,2,'','',0,0,1);
@@ -514,13 +532,13 @@ if(($_SESSION['editControl'] & 0x20000) != 0 ){
 }
 
 $cf->setYRelative(false);
-$cf->buttonSubmit(20, 2, "submitSearch", " Search");
+$cf->buttonSubmit(20, 1, "submitSearch", " Search");
 
 echo<<<EOF
 <div style="position: absolute; left: 11em; top: 33em; width:672px;">
 {$msgs}
 </div>
-<div style="position: absolute; left: 11em; top: 36em; width:660px;">
+<div style="position: absolute; left: 2em; top: 36em; width:2024px; ">
 {$search_result}
 </div>
 EOF;
@@ -628,19 +646,23 @@ WHERE
  1=1 
 ";
  	if(count($_dvar)==0)return $sql;
-
+	
+	if(!checkempty($_dvar,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
+	if(!checkempty($_dvar,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
+	if(!checkempty($_dvar,'transliteration'))$sql.="\n and com.common_id = '{$_dvar['transliterationIndex']}'";
+	if(!checkempty($_dvar,'geoname'))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
+	if(!checkempty($_dvar,'geospecification'))$sql.="\n and a.geospecification = '{$_dvar['geospecification']}'";
+	if(!checkempty($_dvar,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
+	if(!checkempty($_dvar,'language'))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
+	if(!checkempty($_dvar,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
+	
  	switch($_dvar['sourceType']){
-		default: case 'literature':if(!checkempty($_dvar,$get,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'service':if(!checkempty($_dvar,$get,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'person':if(!checkempty($_dvar,$get,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
+		default: case 'literature':if(!checkempty($_dvar,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'service':if(!checkempty($_dvar,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'person':if(!checkempty($_dvar,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
 	}
-
-	if(!checkempty($_dvar,$get,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
-	if(!checkempty($_dvar,$get,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
-	if(!checkempty($_dvar,$get,'language',1))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
-	if(!checkempty($_dvar,$get,'geoname',1))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
-	if(!checkempty($_dvar,$get,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
-	if(!checkempty($_dvar,$get,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
+	if(!checkempty($_dvar,'annotations'))$sql.="\n and a.annotations= '{$_dvar['annotations']}'";
+	
 	return $sql;
 }
 
@@ -657,7 +679,7 @@ function checkRowExists($id){
 	if(!is_object($id) || !$id->checkID() )return false;
 	$whereID=$id->getWhere();
 	$result=doDBQuery("SELECT COUNT(*) as 'count' FROM {$dbprefix}tbl_name_applies_to WHERE {$whereID}");
-	$row = mysql_fetch_array($result);
+	$row = mysql_fetch_assoc($result);
 
 	return ($row['count']==1);
 }
@@ -691,7 +713,6 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 			return array("No Set for update choosen",0);
 		}
 	}
-	print_r($_dvar);
 	if(intval($_dvar['taxonIndex'])==0)$msg['tax']="Please insert valid Taxon";
 	if(strlen($_dvar['common_name'])<1)$msg['cname']="Please insert valid Common Name";
 
@@ -707,7 +728,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		case 'literature':
 			
 			$result = doDBQuery("SELECT literature_id FROM {$dbprefix}tbl_name_literature WHERE citationID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysql_fetch_array($result)){
+			if($result && $row=mysql_fetch_assoc($result)){
 				$_dvar['referenceIndex']=$row['literature_id'];
 			}else{
 				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
@@ -718,7 +739,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 
 		case 'person':
 			$result = doDBQuery("SELECT person_id FROM {$dbprefix}tbl_name_persons WHERE personID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysql_fetch_array($result)){
+			if($result && $row=mysql_fetch_assoc($result)){
 				$_dvar['referenceIndex']=$row['person_id'];
 			}else{
 				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
@@ -729,7 +750,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 
 		case 'service':
 			$result = doDBQuery("SELECT webservice_id FROM {$dbprefix}tbl_name_webservices WHERE serviceID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysql_fetch_array($result)){
+			if($result && $row=mysql_fetch_assoc($result)){
 				$_dvar['referenceIndex']=$row['webservice_id'];
 			}else{$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
 				$_dvar['referenceIndex']=mysql_insert_id();
@@ -744,7 +765,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	// Language
 	if($_dvar['languageIndex']==0 || $_dvar['languageIndex']==''){
 		$result = doDBQuery("SELECT language_id FROM {$dbprefix}tbl_name_languages WHERE name='{$_dvar['language']}'");
-		if($result && $row=mysql_fetch_array($result)){
+		if($result && $row=mysql_fetch_assoc($result)){
 			$_dvar['languageIndex']=$row['language_id'];
 		}else{
 			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
@@ -758,14 +779,14 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	
 	//tribe
 	$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_tribes (tribe_name) VALUES ('{$_dvar['tribe_name']}') ON DUPLICATE KEY UPDATE tribe_id=LAST_INSERT_ID(tribe_id)");
-	$_dvar['tribeIndexIndex']=mysql_insert_id();
+	$_dvar['tribeIndex']=mysql_insert_id();
 
 	
 	//NAMES
 	//commonname
 	$_dvar['nameIndex']=0;
-	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons LEFT JOIN  WHERE common_name='{$_dvar['common_name']}'");
-	if($result && $row=mysql_fetch_array($result)){
+	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['common_name']}'");
+	if($result && $row=mysql_fetch_assoc($result)){
 		$_dvar['common_nameIndex']=$row['common_id'];
 		$_dvar['nameIndex']=$_dvar['common_nameIndex'];
 	}else{
@@ -785,7 +806,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 	// taxon
 	$_dvar['entityIndex']=0;
 	$result = doDBQuery("SELECT taxon_id FROM {$dbprefix}tbl_name_taxa WHERE taxonID='{$_dvar['taxonIndex']}'");
-	if($result && $row=mysql_fetch_array($result)){
+	if($result && $row=mysql_fetch_assoc($result)){
 		$_dvar['entityIndex']=$row['taxon_id'];
 	}else{
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_entities (entity_id) VALUES (NULL)");
@@ -807,27 +828,28 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		'geonameId'=>$_dvar['geonameIndex'],
 		'language_id'=>$_dvar['languageIndex'],
 		'period_id'=>$_dvar['periodIndex'],
-		'reference_id'=>$_dvar['referenceIndex']
+		'reference_id'=>$_dvar['referenceIndex'],
+		'tribe_id'=>$_dvar['tribeIndex']
 	));
 	
 	// Update fields
 	$sql = $_dvar['active_id']->getIDFields();
 	
 	$sql.=", annotations='{$_dvar['annotations']}'"
-		 .", tribe_id='{$_dvar['tribe_id']}'"
 		 .", geospecification='{$_dvar['geospecification']}'";
 
 	if(checkRight('unlock_tbl_name_applies_to')){
 		$sql .= ", locked = '{$_dvar['locked']}'";
 	}
 
-	echo $sql;
+	
 	// insert new dataset
 	if($update){
 		$sql="UPDATE {$dbprefix}tbl_name_applies_to SET {$sql} WHERE {$where} ";
 		if(doDBQuery($sql)){
 			// Log it
 			logCommonNamesAppliesTo($_dvar['active_id'],1,$old);
+			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully updated");
 		}
 	
@@ -836,7 +858,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		if(doDBQuery($sql)){
 			// Log it
 			logCommonNamesAppliesTo($_dvar['active_id'],0);
-
+			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully inserted");
 		}
 	}
@@ -889,28 +911,33 @@ function doSearch($_dvar,$get=false){
 
 	// Mark collums that was searched...
 	$class=array();
-	$a='ac"';
-	$b='';
+	$a='';
+	$b='ac"';
+	
+	//todo...
 	$class=array(
 		'lock'=>'',
-		'ent'=>(!checkempty($_dvar,$get,'taxon'))?$a:$b,
-		'geo'=>(!checkempty($_dvar,$get,'geoname',1))?$a:$b,
-		'lang'=>(!checkempty($_dvar,$get,'language',1))?$a:$b,
-		'com'=>(!checkempty($_dvar,$get,'common_name'))?$a:$b,
-		'per'=>(!checkempty($_dvar,$get,'period'))?$a:$b,
-		'ref'=>(!checkempty($_dvar,$get,'literature')||!checkempty($_dvar,$get,'person')||!checkempty($_dvar,$get,'service'))?$a:$b,
-		'ann'=>(!checkempty($_dvar,$get,'annotations'))?$a:$b,
+		'ent'=>(checkempty($_dvar,'taxon'))?$a:$b,
+		'ges'=>$a,
+		'com'=>(checkempty($_dvar,'common_name'))?$a:$b,
+		'trans'=>(checkempty($_dvar,'transliteration'))?$a:$b,
+		'geo'=>(checkempty($_dvar,'geoname'))?$a:$b,
+		'geospec'=>(checkempty($_dvar,'geospecification'))?$a:$b,
+		'tribe'=>(checkempty($_dvar,'tribe'))?$a:$b,
+		'lang'=>(checkempty($_dvar,'language'))?$a:$b,
+		'per'=>(checkempty($_dvar,'period'))?$a:$b,
+		'ref'=>(checkempty($_dvar,'sourcevalue'))?$a:$b,
+		'ann'=>(checkempty($_dvar,'annotations'))?$a:$b,
 	);
 
 	// get search query
 	$sql=getAppliesQuery($_dvar);
 	$sql.="\n LIMIT 101";
 	
-	echo $sql;
 	$result = doDBQuery($sql);
 
 	$i=0;$search_result='';
-	while($row = mysql_fetch_array($result)){
+	while($row = mysql_fetch_assoc($result)){
 		
 		doQuotes($row,3);
 		
@@ -938,11 +965,20 @@ function doSearch($_dvar,$get=false){
 		
 		$trclass=($i%2)?'odd':'even';
 		$eo=($i%2)?'o':'e';
-
 		$locked=$row['locked']?'<b>&lt;locked&gt;</b><br>':'';
+		
+		$ganz=<<<EOF
+	{$taxon}-{$row['common_name']}<br>{$row['transliteration']}<br>{$geo}<br>{$row['tribe_name']}<br>{$lan}<br>{$row['period']}<br>{$literature}<br>{$row['annotations']}	
+EOF;
+		
 		$search_result.=<<<EOF
-<tr onclick="selectID('{$row['entity_id']}:{$row['name_id']}:{$row['geoname_id']}:{$row['language_id']}:{$row['period_id']}:{$row['reference_id']}')" >
-<td class="{$eo}{$class['lock']}">{$locked}</td><td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td><td class="{$eo}{$class['geo']}">{$geo}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td><td class="{$eo}{$class['ref']}">{$literature}</td><td class="{$eo}{$class['ann']}">{$row['annotations']}</td></tr>
+<tr onclick="selectID('{$row['entity_id']}:{$row['name_id']}:{$row['geoname_id']}:{$row['language_id']}:{$row['period_id']}:{$row['reference_id']}:{$row['tribe_id']}')" >
+<td class="{$eo}{$class['lock']}">{$locked}</td><td class="{$eo}{$class['ent']}">{$ganz}</td><td class="{$eo}{$class['ent']}">{$taxon}</td><td class="{$eo}{$class['com']}">{$row['common_name']}</td>
+<td class="{$eo}{$class['trans']}">{$row['transliteration']}</td><td class="{$eo}{$class['geo']}">{$row['geoname']}</td><td class="{$eo}{$class['geospec']}">{$row['geospecification']}</td>
+<td class="{$eo}{$class['tribe']}">{$row['tribe_name']}</td><td class="{$eo}{$class['lang']}">{$lan}</td><td class="{$eo}{$class['per']}">{$row['period']}</td>
+<td class="{$eo}{$class['ref']}">{$literature}</td><td class="{$eo}{$class['ann']}">{$row['annotations']}</td>
+
+</tr>
 EOF;
 		$i++;
 	}
@@ -954,11 +990,14 @@ EOF;
 	// Make Table
 	$search_result=<<<EOF
 {$msg2}
-<table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter" border="1" style="border: 1px solid #000;border-collapse:collapse" width="700">
-<colgroup><col width="10px"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"><col width="16%"></colgroup>
+<table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter" border="1" style="border: 1px solid #000;border-collapse:collapse">
+<colgroup><col width="10px"><col width="500px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"><col width="200px"></colgroup>
 <thead>
 <tr>
- <th class="l{$class['lock']}"><span>Locked</span></th><th class="l{$class['ent']}"><span>Entity</span></th><th class="l{$class['com']}"><span>Common Name</span></th><th class="l{$class['geo']}"><span>Geography</span></th><th class="l{$class['lang']}"><span>Language</span></th><th class="l{$class['per']}"><span>Period</span></th><th class="l{$class['ref']}"><span>Reference</span></th><th class="l{$class['ann']}"><span>annotations </span></th>
+ <th class="l{$class['lock']}"><span>Locked</span></th><th class="l{$class['ges']}"><span>Name</span></th><th class="l{$class['ent']}"><span>Scientific Name</span></th><th class="l{$class['com']}"><span>Common Name</span></th>
+ <th class="l{$class['trans']}"><span>Transliteration</span></th><th class="l{$class['geo']}"><span>Geography</span></th><th class="l{$class['geospec']}"><span>Geospec</span></th><th class="l{$class['tribe']}"><span>Tribe</span></th>
+ <th class="l{$class['lang']}"><span>Language</span></th><th class="l{$class['per']}"><span>Period</span></th><th class="l{$class['ref']}"><span>Reference</span></th>
+ <th class="l{$class['ann']}"><span>annotations </span></th>
 </tr>
 </thead>
 <tbody>
@@ -1043,7 +1082,7 @@ WHERE
 ";
 
 	$result = doDBQuery($sql);
-	$row = mysql_fetch_array($result);
+	$row = mysql_fetch_assoc($result);
 
 	return "{$row['name']} ({$row['serviceID']}, {$row['url_head']})";
 }
@@ -1058,7 +1097,7 @@ WHERE
  person_ID='{$personID}'
 ";
     $result = doDBQuery($sql);
-	$row = mysql_fetch_array($result);
+	$row = mysql_fetch_assoc($result);
 	return $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
 }
 
@@ -1094,12 +1133,13 @@ WHERE
  taxonID = '" . $taxon_id . "'";
 
 	$result = doDBQuery($sql);
-	$row = mysql_fetch_array($result);
+	$row = mysql_fetch_assoc($result);
 	return taxon($row);
 }
 
 // Copied From ??
 function getliterature($literatur_id){
+	if($literatur_id=='0')return '';
 	 $sql = "
 SELECT
  citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -1111,6 +1151,6 @@ FROM
 WHERE
  citationID = '" . $literatur_id . "'";
 	$result = doDBQuery($sql);
-	return protolog(mysql_fetch_array($result));
+	return protolog(mysql_fetch_assoc($result));
 }
 ?>

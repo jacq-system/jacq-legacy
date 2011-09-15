@@ -38,15 +38,15 @@ class MapLines{
 				$rightVal=$_POST['ajax_acmap_r_'.$x];
 				
 				if(is_numeric($leftID) && is_numeric($rightID)){		
-					$new[ $leftID ][ $rightID ]=1;
+					$new[ $leftID ][ $rightID ]=$x;
 				}else if(is_numeric($leftID) && is_numeric($rightVal)){		
-					if(!$valonlyzero || $rightVal=='0')$new[ $leftID ][ $rightVal ]=1;
+					if(!$valonlyzero || $rightVal=='0')$new[ $leftID ][ $rightVal ]=$x;
 					
 				}else if(is_numeric($leftVal) && is_numeric($rightID)){
-					if(!$valonlyzero || $leftVal=='0')$new[ $leftVal ][ $rightID ]=1;
+					if(!$valonlyzero || $leftVal=='0')$new[ $leftVal ][ $rightID ]=$x;
 					
 				}else if(is_numeric($leftVal) && is_numeric($rightVal)){
-					if(!$valonlyzero || ($leftVal=='0' && $rightVal=='0'))$new[ $leftVal ][ $rightVal ]=1;
+					if(!$valonlyzero || ($leftVal=='0' && $rightVal=='0'))$new[ $leftVal ][ $rightVal ]=$x;
 				}
 				
 			}

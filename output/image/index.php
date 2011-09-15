@@ -4,58 +4,106 @@ require("../inc/functions.php");
 
 @list($filename,$method)=explode('/',$_GET['id']);
 
-if($method=='allpics'){
-	doPicInfo($id);
-}else{
-	doRedirectPic($id);
-}
-  
-function doPicInfo($request){
-	$key='';
-	$picinfo=getServer($request);
-	
-	if(isset($picinfo['url']) &&$picinfo['url']!==false ){
-		header('Content-type: text/json');
-		header('Content-type: application/json');
-		$a=array('filename'=>$picinfo['filename'],'specimenID'=>$picinfo['specimenID']);
-		
-		if($picinfo['djatoka']=='1'){
-			// JSON RPC
-			$url=$picinfo['url']."/getPicInfo/";
+/*
 
-		}else{
-			
-		}
-		
-		exit;
-	}else{
-		//header("");
-		echo<<<EOF
-		Not found
+UPDATE tbl_img_definition SET img_service_path='/database'
+
+=> downpic und imgBrowser (redirect), getPicInfo old, 
+=> jdoka + view new (redirect), servlet JSONRPC new
+
+*/
+
+$picinfo=getServer($filename);
+
+$size=0;
+	
+if(isset($picinfo['url']) &&$picinfo['url']!==false ){
+	switch($method){
+		default:
+		case 'all':
+			doPicInfo($filename);
+			break;
+		case 'download':
+		case 'jpcdownload':
+			doRedirectDownloadPic($filename,'jpc',$size);
+			break;
+		case 'tiffdownload':
+			doRedirectDownloadPic($filename,'tiff',$size);
+			break;
+		case 'show':
+			doRedirectShowPic($filename);
+			break;
+	}
+}else{
+	switch($method){
+		default:
+		case 'all':
+			echo json_encode(array('error'=>'not found'));
+			break;
+		case 'download':
+		case 'jpcdownload':
+		case 'tiffdownload':
+			// display error image
+			//header("");
+			break;
+		case 'show':
+			echo<<<EOF
+	Not found
 EOF;
-		exit;
+			break;
 	}
 }
+exit;
 
-function doRedirectPic($request){
-	$picinfo=getServer($request);
-	
-	if(isset($picinfo['url']) &&$picinfo['url']!==false ){
-		if($picinfo['djatoka']=='1'){
-			$url=$picinfo['url']."/showPic/?filename=".=$picinfo['filename']."&specimenID=".$picinfo['specimenID'];
-			header("location: {url}");
-			// viewer.html?url=http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2
-			// viewer.html?specimenID=ID&collection=filename&show=$requestedFilename
-		}else{	
-			$url=$picinfo['url']."/showPic/?filename=".=$picinfo['filename']."&specimenID=".$picinfo['specimenID'];
-			header("location: {url}");
-			// viewer.html?url=http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2
-			// viewer.html?specimenID=ID&collection=filename&show=$requestedFilename
-		}
+function doPicInfo($request){
+	if($picinfo['djatoka']=='1'){
+		// JSON RPC
+		$a=array('filename'=>$picinfo['filename'],'specimenID'=>$picinfo['specimenID']);
+		$url="{$picinfo['url']}/servlet.php";
+		$a=@file_get_contents($url,"r"));
+		$a=@json_decode($a,1);
 	}else{
-		echo<<<EOF
-		Not found
-EOF;
+		$key='DKsuuewwqsa32czucuwqdb576i12';
+		$url="{$picinfo['url']}/detail_server.php?key={$key}&ID={$picinfo['specimenID']}";
+		$a=@file_get_contents($url,"r"));
+		$a=@unserialize($a);
+	}
+	if(!is_array($a)){
+		$a=array('error'=>"couldn't get information");
+	}
+	header('Content-type: text/json');
+	header('Content-type: application/json');
+	$a=json_encode($a);
+	echo $a;
+	exit;
+}
+
+function doRedirectShowPic($picinfo){
+	if($picinfo['djatoka']=='1'){
+		$url="{$picinfo['url']}/adore-djatoka-viewer-2.0/viewer.html?requestfilename{$picinfo['requestFileName']}&filename{$picinfo['filename']}&specimenID={$picinfo['specimenID']}";
+	}else{
+		$url="{$picinfo['url']}/img/imgBrowser.php?name{$picinfo['requestFileName']}";
+	}
+	header("location: {url}");
+}
+
+function doRedirectDownloadPic($picinfo,$type,$size=0){
+	if($picinfo['djatoka']=='1'){
+		$d='';
+		if($type=='tiff'){
+			$d='';
+		}
+		$url="{$picinfo['url']}/djatoka?filename={$picinfo['filename']}";
+	}else{
+		$d='';
+		if($type=='tiff'){
+			$d='&type=1';
+		}
+		$url="{$picinfo['url']}/img/downPic.php?name={$picinfo['requestFileName']}{$d}";
+	}
+	
+	if(is_file($url)){
+		header("location: {url}");
 	}
 }
 
