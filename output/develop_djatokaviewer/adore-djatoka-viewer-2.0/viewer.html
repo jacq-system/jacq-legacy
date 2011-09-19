@@ -8,29 +8,32 @@
  <meta name="keywords" content="djatoka IIPImage Ajax IIP Zooming Streaming High Resolution Mootools"/>
  <meta name="description" content="djatoka IIPImage Viewer: High Resolution Remote Image Streaming Viewing"/>
  <meta name="copyright" content="&copy; 2003-2008 Ruven Pillay"/>
+ <title>Herbarium Viewer, Herbarium Wien</title>
 
  <link rel="stylesheet" type="text/css" media="all" href="css/iip.compressed.css" />
  <link rel="stylesheet" type="text/css" media="all" href="css/carousel.css" />
  <link rel="shortcut icon" href="images/djatoka.16x16.png" />
- <title>Herbarium Viewer, Herbarium Wien</title>
-
+ 
  <script type="text/javascript" src="javascript/mootools-1.2.5-core-nc.js"></script>
  <script type="text/javascript" src="javascript/mootools-1.2.5.1-more.js"></script>
  <script type="text/javascript" src="javascript/moocarousel_v1.0.js"></script>
  <script type="text/javascript" src="javascript/iipmooviewer-1.1.js"></script>
-
  <script type="text/javascript">
-/*
-viewer.html?requestfilename=requ1&filename=req2&specimenID=444
-*/
 
-var server = 'http://localhost/djatoka/resolver.php';
-var images = 'http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2';
+// viewer.html?requestfilename=requ1&filename=req2&specimenID=444
+
+var server='http://131.130.131.9/djatoka/adore-djatoka/resolver';
+var imgInfoPath='http://131.130.131.9/FReuD-Servlet/ImageScan';
+
+//server = 'http://localhost/tomcat/djatoka/adore-djatoka/resolver';
+//imgInfoPath= 'http://localhost/tomcat/FReuD-Servlet/ImageScan';
+
 var credit = '<a href="http://herbarium.univie.ac.at/">Herbarium Wien</a> Rainer H.';// Copyright or information message
+var image='http://memory.loc.gov/gmd/gmd433/g4330/g4330/np000066.jp2'; // default image
 
-var re={};
 
 //ObtainURLParametersifpresent
+var jsonReq={'id':'1','method':'list','params':{}};
 var query=location.href.substring(location.href.indexOf('?')+1);
 var vars=query.split('&');
 for(var i=0;i<vars.length;i++){
@@ -40,9 +43,9 @@ for(var i=0;i<vars.length;i++){
 			pair[1]=pair[1].substring(0,pair[1].length-1);
 		}
 		if(pair[0]=='requestfilename'){
-			images=pair[1];
+			image=pair[1];
 		}else{
-			re[pair[0]]=pair[1];
+			jsonReq['params'][pair[0]]=pair[1];
 		}
 	}
 }
@@ -50,59 +53,89 @@ for(var i=0;i<vars.length;i++){
 // Create our viewer object - note: must assign this to the 'iip' variable.
 // See documentation for more details of options
 iip=new IIP( "targetframe",{
-	image: images,
+	image: image,
 	server: server,
 	credit: credit, 
 	zoom: 1,
-	render: 'random',
-	showNavButtons: true
+	render: 'spiral',
+	showNavButtons: true,
+	navhook:function(){
+		var jsonRequest=new Request.JSON({
+			url: imgInfoPath,
+			data:jsonReq,
+			onSuccess: function(response){
+				if(response.id && response.id==jsonReq.id &&  response.status && response.status=='1' && response.files && response.files.length>0){
+					makeCarousel(response.files);
+				}
+			}
+		}).get();
+	},
 });
 
-var images=[['images/image1.jpg','Flower 2'],['images/image1.jpg','Flower 2'],['images/image1.jpg','Flower 3'],['images/image1.jpg','Flower 4']]
-
-
-window.addEvent('domready', function() {
-	/*var jsonRequest=new Request.JSON({
-		url: 'http://site.com/tellMeAge.php',
-		onSuccess: function(images){
-			makeCarousel(images);
+function makeCarousel(imagethumbs){
+	var imgstartindex=1;
+	imagethumbs.each( function(val,index){
+	
+		var imgsrc=val;
+		var cl2='';
+		if(imgsrc==image){
+			imgstartindex=index+1;
+			cl2=' cl2act';
 		}
-	}).get({'firstName': 'John', 'lastName': 'Doe'});
-	*/
-	 makeCarousel(images);
-});
-
-
-function loadnew(requestfilename){
-	url=location.href.replace(/(.*)(requestfilename=)([^&]*)&(.*)/i,'$1$2'+requestfilename+'&$4');
-	//alert(url);
-	document.location.href=url;
-}
-
-function makeCarousel(images){
-	images.each( function(val){
+		var desc=val.substring(val.lastIndexOf('/')+1);
+		desc=desc.substring(0,10);
+		var imgurl=server+'?url_ver=Z39.88-2004&rft_id='+imgsrc+'&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format=image/jpeg&svc.level=1&svc.rotate=0&svc.scale=95';
 		var carousel=new Element('div',{
-			html: '<div class="carousel2_items" onclick="loadnew(\'555'+val[0]+'\')"><img src="'+val[0]+'"><br><span class="text">'+val[1]+'</span><br></div>'
+			html: '<div class="carousel2_items '+cl2+'" onclick="loadPic(\''+imgsrc+'\')"><img src="'+imgurl+'"><br><span class="text">'+desc+'</span><br></div>'
 		});
 		carousel.injectInside($('carousel2_items_container'));
 	});
-	var c2_ns=Math.ceil(images.length/3);
-	var carousel2 = new MooCarousel('carousel2_wrapper','carousel2_items_container','carousel2_moveleft','carousel2_moveright',c2_ns,220, true); //c_ns= number of slides , c_sss = slide step size
+	imgstartindex=slides=Math.ceil(imgstartindex/2);
+	var slides=Math.ceil(imagethumbs.length/2);
+	var carousel2 = new MooCarousel('carousel2_wrapper','carousel2_items_container','carousel2_moveleft','carousel2_moveright',slides,220, true);
+	
+		
+	var p=carousel2.carousel_paging;
+	var o=p.getElements('a')[imgstartindex-1];
+	
+	var pagenum=imgstartindex;	
+	var sss = ((pagenum-1)*carousel2.offset) ;
+	if(pagenum > this.slides) return;
+	if(pagenum == 1) sss = 0;
+	carousel2.currentslide = pagenum
+	carousel2.pos = sss;
+	
+	$('carousel2_container').injectInside($('navcontainer'));
+	$('carousel2_wrapper_p').injectInside($('navcontainer'));
+	$('carousel2_container').setStyle('display', 'block');
+
+	carousel2.wrapper.scrollTo(sss,0);
+	carousel2.resetcss(o,p);
 }
 
+function loadPic(requestfilename){
+	url=location.href;
+	if(url.indexOf('requestfilename')!=-1){
+		url=url.replace(/(.*)(requestfilename=)([^&]*)(.*)/i,'$1$2'+requestfilename+'$4');
+	}else{
+		url =(url.indexOf('#')>0)?url.substring(0,url.indexOf('#')):url;
+		url+=(url.indexOf('?')!==-1)?'&':'?';
+		url+='requestfilename='+requestfilename;
+	}
+	document.location.href=url;
+}
  </script>
-
 </head>
 <body>
+
 <div style="width:99%;height:99%;margin-left:auto;margin-right:auto" id="targetframe"></div>
-  
-<div id="carousel2_container">
+
+<div id="carousel2_container" style="display:none">
 <a href="javascript:void(0);" id="carousel2_moveleft"><span id="carousel2_container_l" class="carousel_container_l sprite_icon" ></span></a>
-<div id="carousel2_wrapper">
- <div id="carousel2_items_container" ></div>
-</div>
+<div id="carousel2_wrapper"><div id="carousel2_items_container" ></div></div>
 <a href="javascript:void(0);" id="carousel2_moveright"> <span id="carousel2_container_r" class="carousel_container_r sprite_icon"></span> </a>
 <div class="clearfix"></div>
 </div>
- </body>
+
+</body>
 </html>

@@ -172,6 +172,8 @@ var IIP = new Class({
     this.source = main_id || alert( 'No element ID given to IIP constructor' );
 
     this.server = options['server'] || '/fcgi-bin/iipsrv.fcgi';
+	
+	this.navhook = options['navhook'] ||false;
 
     this.render = options['render'] || 'random';
 
@@ -194,6 +196,7 @@ var IIP = new Class({
 
     this.showNavButtons = true;
     if( options['showNavButtons'] == false ) this.showNavButtons = false;
+	
 
     // If we want to assign a function for a click within the image
     // - used for multispectral curve visualization, for example
@@ -272,7 +275,9 @@ var IIP = new Class({
 
     // Delete our old image mosaic
     $('target').getChildren().each( function(el){
+		// NHM GHomolka
         el.src=''; // abort image loading.!!!!!!! 2h :'(
+		
 		el.destroy();
     } );
     $('target').setStyles({
@@ -346,10 +351,10 @@ var IIP = new Class({
     this.nTilesLoaded = 0;
     this.nTilesToLoad = ntiles*this.images.length;
 
-    //map.sort(function s(a,b){return a.n - b.n;});
+    map.sort(function s(a,b){return a.n - b.n;});
     
     // djatoka mods 
-    map.sort(function (a,b){return a > b;});
+    //map.sort(function (a,b){return a > b;});
     var first = true;
     var r = this.num_resolutions - this.res;
     var f = this.getMultiplier(r, this.tileSize[0]);
@@ -810,6 +815,8 @@ var IIP = new Class({
     if( this.scale ){
       new Element( 'div', {id: 'scale'} ).injectInside(this.source);
     }
+	
+	
 
 
     // Zoom in by the desired level
@@ -817,7 +824,11 @@ var IIP = new Class({
     this.zoomOut();
     this.requestImages();
     this.positionZone();
-
+	
+	// NHM Hook GHomolka
+	if( this.navhook){
+		this.navhook();
+    }
   },
 
 
@@ -952,7 +963,9 @@ var IIP = new Class({
     $('navigation').addEvent( 'mousewheel', this.zoom.bindWithEvent(this) );
     $('zone').addEvent( 'mousewheel', this.zoom.bindWithEvent(this) );
     $('zone').addEvent( 'dblclick', this.zoom.bindWithEvent(this) );
-
+	
+	
+	
   },
 
 

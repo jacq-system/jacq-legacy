@@ -18,18 +18,22 @@ Version : 1.0
 .carousel_container_l{background-position: 0 -58px; } 
 
 
-#carousel2_container{position:absolute;top:360px;right:25px;width:270px; z-index:100; border:1px solid #cccccc; background: black; opacity: 0.66; color:white; }
-#carousel2_wrapper{overflow:hidden;margin: 5px 2px; width:220px; position: relative; float:left;}
-#carousel2_items_container{margin:0px; padding:0px 2px; width:5000px;position: relative;  }
-/*.carousel2_items{ width:95px; height:120px; border:0px dotted #cfcfcf; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
-*/
-.carousel2_items{  cursor:pointer;
-    cursor:hand;width:63px; height:120px; border:0px dotted #cfcfcf; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
-.carousel2_items img{margin:2px;}
+#carousel2_container{position:absolute;right:0px;margin-top:20px;padding:0px; width:273px;height:140px; background: #222222; opacity: 0.6; }
+#carousel2_wrapper{overflow:hidden;margin: 20px 2px 0px 0px; padding:0px; width:225px; position: relative; float:left;}
+#carousel2_items_container{margin:0px; padding:0px; width:5000px;position: relative;  font-size:14px;color:white;}
+.carousel2_items{ cursor:pointer;width:100px; height:120px; margin:0 5px; position:relative;float:left; text-align:center; overflow:hidden;}
 
+.carousel2_items img{margin:0px;}
 
+.cl2act {
+	border: 1px solid white;
+}
 /* carousel paging css*/
-.carousel_paging {text-align:right; margin:5px 10px 0 0;}
+.carousel_paging {position:absolute;right:0px;margin-top:160px;height:20px;padding:10px 0px 10px 0px;clear:both; width:273px;background: #222222; opacity: 0.6;   }
 .carousel_paging .current, .carousel_paging .page{ outline:none;  width:15px; height:15px; line-height:15px; text-align:center; display:block; float:left; background:#D8D8EB; margin:0 1px 0 0; text-decoration:none;}
 .carousel_paging a:hover, .carousel_paging .current{background:#4D4D9B; color:#ffffff;}
+.carousel_paging a:first-child{margin-left:20px;}
 
+div#credit {
+width:263px;
+}
