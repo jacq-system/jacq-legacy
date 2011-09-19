@@ -133,10 +133,8 @@ $(document).ready(function() {
 
 	$( '#ajax_geospecification').resizable({handles:'se'});//.css('z-index','10000');
 	
-	$('#ajax_common_name').change(function(){
-		//alert('s'+$('#common_nameIndex').val());
+	$('#ajax_common_name').change(function(){$(this).trigger('blur');}).blur(function(){
 		if($('#common_nameIndex').val()!=''){
-			//alert('toll');
 			$('#ajax_transliteration').attr('disabled', true);
 			ACdoSearchID('transliteration', 'c'+$('#common_nameIndex').val());
 		}else{

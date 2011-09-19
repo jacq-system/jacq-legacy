@@ -25,7 +25,13 @@ session_start();
  * check if the user is logged in and send him to the login if not
  */
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
-    header("Location: login.php");
+    $f=FREUDABSDIR."login.php";
+	
+	if(is_file($f)){
+		header("Location: {$f}");
+	}else{
+		header("Location: login.php");
+	}
     exit();
 }
 

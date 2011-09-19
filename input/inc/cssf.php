@@ -68,6 +68,12 @@ class CSSF{
 	function setEcho($doEcho){
 		$this->doEcho=$doEcho;
 	}
+	
+	function putToHeader($html){
+	
+	
+	}
+	
 	/**
 	 * prints any necessary javascript code
 	 *
@@ -109,6 +115,11 @@ class CSSF{
 			//Fatal error
 			die('<B>CSSF error: </B>'.$msg);
 	}*/
+	public function printHeader($title){
+	
+	
+	}
+	
 	
 	function label($x,$y,$label,$link="",$id="") {
 		if($this->yrelative){

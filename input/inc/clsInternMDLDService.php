@@ -27,7 +27,15 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * @author sergio <jsonrpcphp@inservibile.org>
  */
-class internMDLDService{
+class clsInternMDLDService{
+	private static $instance = null;
+
+	public static function Load($url,$password='',$debug=false){
+		if (self::$instance == null) {
+			self::$instance = new clsInternMDLDService($url,$password,$debug);
+		}
+		return self::$instance;
+	}
 
 	/**
 	 * Debug state
@@ -63,7 +71,7 @@ class internMDLDService{
 	 * @param string $url
 	 * @param boolean $debug
 	 */
-	public function __construct($url,$password='',$debug=false){
+	protected function __construct($url,$password='',$debug=false){
 		// server URL
 		$this->url=$url;
 		// proxy
@@ -85,7 +93,12 @@ class internMDLDService{
 		empty($notification)?$this->notification=false:$this->notification=true;
 	}
 	
-	function makeKey(){
+	/**
+	 * generates the salted hash key
+	 *
+	 * @return string hashed key
+	 */
+	private function makeKey(){
 		$salt=substr(uniqid(mt_rand(),true),0,5);
 		$key=$salt.md5($salt.md5($this->password).date('d.m.Y H:i'));
 		return $key;

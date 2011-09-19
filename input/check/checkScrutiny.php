@@ -1,4 +1,9 @@
 <?PHP
+
+session_start();
+require("../inc/connect.php");
+
+
 $path="../inc/";
 //$path="../develop/input/inc/";
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -99,16 +104,10 @@ error_reporting(E_ALL);
  ini_set("display_errors", TRUE);
 // Todo, 3.8.2011!
 // ghomolka
-
+/*
 require("$path/variables.php");// develop/input/
 require("$path/internMDLDService.php");// develop/input/
-
-if (!mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) || !mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])){
-	echo 'no database connection';
-	exit;
-}
-mysql_query("SET character set utf8"); //<= do not use it!
-
+*/
 
 
 
@@ -214,7 +213,7 @@ if(isset($_POST['update'])){
 			$result[$p[1]][$p[2]]=$v;
 		}
 	}
-echo<<<EOF
+	echo<<<EOF
 <br>
 
 <b>Results</b><br>
@@ -431,8 +430,8 @@ $where
 limit 1000
 ";
 		
-		$service = new internMDLDService($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
-		
+		$service = clsInternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
+			
 		try {
 			$res = $service->getSQLResults($query);
 		}catch (Exception $e) {

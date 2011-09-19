@@ -4,11 +4,23 @@ require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
-    header("Location: login.php");
+	$f=FREUDABSDIR."login.php";
+	
+	if(is_file($f)){
+		header("Location: {$f}");
+	}else{
+		header("Location: login.php");
+	}
     exit();
 } else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-    header("Location: login.php");
-    exit();
+	$f=FREUDABSDIR."login.php";
+	
+	if(is_file($f)){
+		header("Location: {$f}");
+	}else{
+		header("Location: login.php");
+	}
+	exit();
 } else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
        . "<html>\n"

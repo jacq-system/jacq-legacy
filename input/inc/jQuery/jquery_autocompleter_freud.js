@@ -166,7 +166,7 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 		},
 		delay:100,
 		minLength:minlength,
-		selectFirst: (mustMatch==1)?true:false
+		selectFirst: (mustMatch==1 || mustMatch==2)?true:false
 	}).data('autocomplete')._renderItem=function(ul, item){
 		//p($at.autocomplete('option', 'populate'));
 	//	alert('df'+$at.autocomplete('option', 'populate')+' '+$at.autocomplete('option','results')+' '+$at.autocomplete('option', 'exact'));

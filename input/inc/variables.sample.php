@@ -68,3 +68,6 @@ $_OPTIONS['debug'] = 0;
 
 //  BP, 08/2010: use TCPDF 4.5 or 5.8
 $_OPTIONS['tcpdf_5_8'] = false;
+
+define('FREUDDIR',str_replace('\\','/',dirname(__FILE__)).'/../');
+define('FREUDABSDIR'   , '/'.str_replace( str_replace('\\','/',$_SERVER['DOCUMENT_ROOT']).'','',FREUDDIR) );

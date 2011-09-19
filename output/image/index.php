@@ -2,7 +2,10 @@
 session_start();
 require("../inc/functions.php");
 
+$_OPTIONS['key']='DKsuuewwqsa32czucuwqdb576i12';
 @list($filename,$method)=explode('/',$_GET['id']);
+
+
 
 /*
 
@@ -12,98 +15,163 @@ UPDATE tbl_img_definition SET img_service_path='/database'
 => jdoka + view new (redirect), servlet JSONRPC new
 
 */
-
+error_reporting(E_ALL);
 $picinfo=getServer($filename);
 
 $size=0;
 	
-if(isset($picinfo['url']) &&$picinfo['url']!==false ){
+if(isset($picinfo['url']) && $picinfo['url']!==false ){
 	switch($method){
 		default:
-		case 'all':
-			doPicInfo($filename);
+		case 'show':
+			doRedirectShowPic($picinfo);
+			break;
+		case 'thumbs':
+			doPicInfo($picinfo);
 			break;
 		case 'download':
 		case 'jpcdownload':
-			doRedirectDownloadPic($filename,'jpc',$size);
+			doRedirectDownloadPic($picinfo,'jpc',$size);
 			break;
 		case 'tiffdownload':
-			doRedirectDownloadPic($filename,'tiff',$size);
-			break;
-		case 'show':
-			doRedirectShowPic($filename);
+			doRedirectDownloadPic($picinfo,'tiff',$size);
 			break;
 	}
+	exit;
 }else{
 	switch($method){
 		default:
-		case 'all':
-			echo json_encode(array('error'=>'not found'));
-			break;
+		case 'thumbs':
+			jsonError('not found');
 		case 'download':
 		case 'jpcdownload':
 		case 'tiffdownload':
-			// display error image
-			//header("");
-			break;
+			imgError('not found');
 		case 'show':
-			echo<<<EOF
-	Not found
-EOF;
-			break;
+			textError('not found');
 	}
 }
-exit;
 
-function doPicInfo($request){
+function jsonError($msg=''){
+	header('Content-type: text/json');
+	header('Content-type: application/json');
+	echo json_encode(array('error'=>$msg));
+	exit;
+}
+function textError($msg=''){
+	echo "{$msg}";
+	exit;
+}
+function imgError($msg=''){
+	//header("");
+	//mkimage
+	exit;
+}
+
+function doPicInfo($picinfo){
+
 	if($picinfo['djatoka']=='1'){
 		// JSON RPC
-		$a=array('filename'=>$picinfo['filename'],'specimenID'=>$picinfo['specimenID']);
-		$url="{$picinfo['url']}/servlet.php";
-		$a=@file_get_contents($url,"r"));
-		$a=@json_decode($a,1);
+		$url="{$picinfo['url']}/FReuD-Servlet/ImageScan";
+		
+		$request=json_encode(array(
+			'filename'=>$picinfo['filename'],
+			'specimenID'=>$picinfo['specimenID']
+		));
+		
+		// performs the HTTP POST
+		$opts=array(
+			'http' => array(
+				'method'  => 'POST',
+				'header'  => 'Content-type: application/json',
+				'content' => $request
+			)
+		);
+		
+		$context =stream_context_create($opts);
+		if($fp=fopen($this->url, 'r', false, $context)){
+			$response='';
+			while($row=fgets($fp)){
+				$response.=trim($row)."\n";
+			}
+			$response=json_decode($response,true);
+			$response=array(
+				$output=>'',
+				$pics=>$response
+			);
+		}else{
+			throw new Exception('Unable to connect to '.$this->url);
+		}
+		
 	}else{
-		$key='DKsuuewwqsa32czucuwqdb576i12';
-		$url="{$picinfo['url']}/detail_server.php?key={$key}&ID={$picinfo['specimenID']}";
-		$a=@file_get_contents($url,"r"));
-		$a=@unserialize($a);
+		global $_OPTIONS;
+		$url="{$picinfo['url']}/detail_server.php?key={$_OPTIONS['key']}&ID={$picinfo['specimenID']}";
+		$response=@file_get_contents($url,"r");
+		$response=@unserialize($response);
 	}
-	if(!is_array($a)){
-		$a=array('error'=>"couldn't get information");
+	
+	if(!is_array($response)){
+		jsonError("couldn't get information");
 	}
 	header('Content-type: text/json');
 	header('Content-type: application/json');
-	$a=json_encode($a);
-	echo $a;
-	exit;
+	echo json_encode($response);
+}
+
+function url_exists($url){
+	$opts=array(
+		'http' => array(
+			'method'  => 'POST',
+			'header'  => 'Content-type: application/json',
+			'timeout'=>10,
+		)
+		//timeout..
+	);
+	$context =stream_context_create($opts);
+	if($fp=fopen($url, 'r', false, $context)){
+		return true;
+	}
+	
+	return false;
 }
 
 function doRedirectShowPic($picinfo){
 	if($picinfo['djatoka']=='1'){
-		$url="{$picinfo['url']}/adore-djatoka-viewer-2.0/viewer.html?requestfilename{$picinfo['requestFileName']}&filename{$picinfo['filename']}&specimenID={$picinfo['specimenID']}";
+		$url="{$picinfo['url']}/viewer.html?requestfilename={$picinfo['requestFileName']}&filename={$picinfo['filename']}&specimenID={$picinfo['specimenID']}";
 	}else{
-		$url="{$picinfo['url']}/img/imgBrowser.php?name{$picinfo['requestFileName']}";
+		$url="{$picinfo['url']}/img/imgBrowser.php?name={$picinfo['requestFileName']}";
 	}
-	header("location: {url}");
+	if(url_exists($url)){
+		header("location: {$url}");
+	}else{
+		textError("couldn't find url");
+	}
 }
-
+	
 function doRedirectDownloadPic($picinfo,$type,$size=0){
 	if($picinfo['djatoka']=='1'){
-		$d='';
-		if($type=='tiff'){
-			$d='';
+		switch($type){
+			default:case'':case 'jpeg':
+				$format='image/jpeg';break;
+			case'tiff':
+				$format='image/tiff';break;
 		}
-		$url="{$picinfo['url']}/djatoka?filename={$picinfo['filename']}";
+		$scale='1.0';
+		$url="{$picinfo['url']}/resolver?url_ver=Z39.88-2004&rft_id={$picinfo['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.level=1&svc.rotate=0&svc.scale={$scale}";
 	}else{
-		$d='';
-		if($type=='tiff'){
-			$d='&type=1';
+		switch($type){
+			default:case'':case 'jpeg':
+				$format='';break;
+			case'tiff':
+				$format='&type=1';break;
 		}
-		$url="{$picinfo['url']}/img/downPic.php?name={$picinfo['requestFileName']}{$d}";
+		$url="{$picinfo['url']}/img/downPic.php?name={$picinfo['requestFileName']}{$format}";
 	}
 	
-	if(is_file($url)){
-		header("location: {url}");
+	if(url_exists($url)){
+		header("location: {$url}");
+	}else{
+		imgError("couldn't find url");
 	}
 }
 
@@ -146,7 +214,7 @@ SELECT
  i.imgserver_IP,
  i.img_service_path,
  i.djatoka,
- s.specimenID,
+ s.specimen_ID,
  s.filename
  
 FROM
@@ -159,13 +227,14 @@ WHERE
  AND m.collectionID = s.collectionID
  AND i.source_id_fk = m.source_id
 ";
-	if($searchpicFilename){
-		$picFilename=$row['filename'];
-	}
+
 	$result=mysql_query($sql);
-	if($result && $row=mysql_fetch_array($result)){
-		$url="http://{$row['imgserver_IP']}/{$row['img_service_path']}/";
-		return array('url'=>$url,'requestFileName'=>$picFilename,'filename'=>$row['filename'],'specimenID'=>$row['specimenID'],'djatoka'=>$row['djatoka']);
+	if($result ){
+		$row=mysql_fetch_array($result);
+		if(count($row)>0){
+			$url="http://{$row['imgserver_IP']}/{$row['img_service_path']}/";
+			return array('url'=>$url,'requestFileName'=>$picFilename,'filename'=>$row['filename'],'specimenID'=>$row['specimen_ID'],'djatoka'=>$row['djatoka']);
+		}
 	}
 	return false;
 }

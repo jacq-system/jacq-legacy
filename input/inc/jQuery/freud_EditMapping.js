@@ -85,10 +85,10 @@ function saveMapLines(){
 		/*timeout: 1000,*/
 		success: function(msg){
 			$('#PageInfo2').html('');
+			s='';
 			if(msg.success && msg.success==1){
-				alert('All inserted!');
+				s='All inserted!\n';
 			}else{
-				s='';
 				if(msg.error && msg.error.length>0){
 					$.each(msg.error,function(index, value) {
 						if(value[3]==1){
@@ -101,11 +101,14 @@ function saveMapLines(){
 					});
 				}
 			}
+		
 			if(msg.successx && msg.successx.length>0){
 				$.each(msg.successx,function(index, value) {
+					//s+=value[0]+'=>'+value[2]+':okay!\n';
 					$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-check"/>');
 				});
 			}
+			alert(s);
 		}
 	});
 }
