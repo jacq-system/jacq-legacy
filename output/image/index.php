@@ -30,11 +30,14 @@ if(isset($picinfo['url']) && $picinfo['url']!==false ){
 			doPicInfo($picinfo);
 			break;
 		case 'download':
-		case 'jpcdownload':
+		case 'jpc':
 			doRedirectDownloadPic($picinfo,'jpc',$size);
 			break;
-		case 'tiffdownload':
+		case 'tiff':
 			doRedirectDownloadPic($picinfo,'tiff',$size);
+			break;
+		case 'jpeg':
+			doRedirectDownloadPic($picinfo,'jpeg',$size);
 			break;
 	}
 	exit;
@@ -44,8 +47,9 @@ if(isset($picinfo['url']) && $picinfo['url']!==false ){
 		case 'thumbs':
 			jsonError('not found');
 		case 'download':
-		case 'jpcdownload':
-		case 'tiffdownload':
+		case 'jpeg':
+		case 'jpc':
+		case 'tiff':
 			imgError('not found');
 		case 'show':
 			textError('not found');
@@ -118,22 +122,7 @@ function doPicInfo($picinfo){
 	echo json_encode($response);
 }
 
-function url_exists($url){
-	$opts=array(
-		'http' => array(
-			'method'  => 'POST',
-			'header'  => 'Content-type: application/json',
-			'timeout'=>10,
-		)
-		//timeout..
-	);
-	$context =stream_context_create($opts);
-	if($fp=fopen($url, 'r', false, $context)){
-		return true;
-	}
-	
-	return false;
-}
+
 
 function doRedirectShowPic($picinfo){
 	if($picinfo['djatoka']=='1'){
@@ -178,25 +167,23 @@ function doRedirectDownloadPic($picinfo,$type,$size=0){
 // request: can be specimen ID or filename
 function getServer($request){
 	$picFilename='';
-	$searchpicFilename=false;
 	$where='';
 	$specimenID=0;
 	//specimenid
 	if(is_numeric($request)){
 		$specimenID=$request;
-		$searchpicFilename=true;
 	//tabs..
 	}else if(strpos($request,'tab_')!==false){
 		$result=preg_match('/tab_(?P<specimenID>\d+\.(.*))/',$request,$matches);
 		if($result==1){
-			$specimenID=$result['specimenID'];
+			$specimenID=$matches['specimenID'];
 		}
 		$picFilename=$request;
 	// obs digital_image_obs
 	}else if(strpos($request,'obs_')!==false){
 		$result=preg_match('/obs_(?P<specimenID>\d+\.(.*))/',$request,$matches);
 		if($result==1){
-			$specimenID=$result['specimenID'];
+			$specimenID=$matches['specimenID'];
 		}
 		$picFilename=$request;
 	// filename
@@ -236,6 +223,23 @@ WHERE
 			return array('url'=>$url,'requestFileName'=>$picFilename,'filename'=>$row['filename'],'specimenID'=>$row['specimen_ID'],'djatoka'=>$row['djatoka']);
 		}
 	}
+	return false;
+}
+
+function url_exists($url){
+	$opts=array(
+		'http' => array(
+			'method'  => 'POST',
+			'header'  => 'Content-type: application/json',
+			'timeout'=>10,
+		)
+		//timeout..
+	);
+	$context =stream_context_create($opts);
+	if($fp=fopen($url, 'r', false, $context)){
+		return true;
+	}
+	
 	return false;
 }
 
