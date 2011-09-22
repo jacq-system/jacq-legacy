@@ -28,8 +28,59 @@ SELECT
 FROM
  herbarinput.meta m
  LEFT JOIN  herbarinput.metadb mdb ON mdb.source_id_fk=m.source_id
+WHERE
+  m.source_id=7
 ;
+/*
+-- ===========================================
+-- ready
+-- view_sp2000_sourcedatabase ausführlich....
+--
+-- ===========================================
+CREATE OR REPLACE
+ ALGORITHM = UNDEFINED
+ VIEW herbar_view.view_sp2000_sourcedatabase
+ AS
+SELECT DISTINCT 
+ m.source_name AS 'DatabaseFullName',
+ m.source_code AS 'DatabaseShortName',
+ m.source_version  AS 'DatabaseVersion',
+ m.source_update AS 'ReleaseDate',
+ mdb.supplier_person AS 'AuthorsEditors',
+ 'TaxonomicCoverage' AS 'TaxonomicCoverage',
+ m.source_abbr_engl AS 'GroupNameInEnglish',
+ mdb.description AS 'Abstract',
+ mdb.supplier_organisation AS 'Organisation',
+ mdb.supplier_url AS 'HomeURL',
+ '' AS 'Coverage',
+ '' AS 'Completeness',
+ mdb.disclaimer AS 'Confidence',
+ mdb.logo_url AS 'LogoFileName',
+ mdb.supplier_person  AS 'ContactPerson'
 
+FROM
+ herbarinput.tbl_tax_species ts
+ LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
+ LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
+ LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
+ 
+ LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
+ LEFT JOIN herbarinput.tbl_tax_families tf ON tf.familyID=tg.familyID
+
+ LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID = ts.taxonID
+ LEFT JOIN herbarinput.tbl_management_collections mg ON mg.collectionID=sp.collectionID
+ 
+ LEFT JOIN herbarinput.meta m ON m.source_id=mg.source_id
+ LEFT JOIN herbarinput.metadb mdb ON mdb.source_id_fk=m.source_id
+ 
+WHERE
+     tg.familyID='30' --  tf.family='Annonaceae' 
+ AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+ AND(
+   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL) -- ttr.rank='species' or ( genus and species = Null)
+ )
+;
+*/
 -- ===========================================
 -- ready
 -- view_sp2000_acceptedspecies
@@ -90,7 +141,7 @@ WHERE
      tg.familyID='30' --  tf.family='Annonaceae' 
  AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
  AND(
-   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL) -- ttr.rank='species' or ( genus and species = Null)
+   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL) -- ttr.rank='species' or ( rank=genus and species = Null)
  )
 ;
  
@@ -225,10 +276,10 @@ SELECT
  '' AS 'GSDNameGUI'
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- LEFT JOIN herbarinput.tbl_tax_synonymy tsyn ON tsyn.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
- CROSS JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsyn.acc_taxon_ID
+ INNER JOIN herbarinput.tbl_tax_synonymy tsyn ON tsyn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
+ LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsyn.taxonID
 
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsyn.taxonID
+ LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsyn.acc_taxon_ID
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
@@ -340,6 +391,8 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
+GROUP BY
+ tmp_ID
 
 UNION ALL
 -- Synonyms
@@ -357,7 +410,9 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-
+GROUP BY
+ tmp_ID
+ 
 UNION ALL
 -- CommonNames
 SELECT
@@ -406,6 +461,8 @@ FROM
  LEFT JOIN herbarinput.tbl_person pers ON pers.person_ID=per.personID
  
  LEFT JOIN herbarinput.tbl_nom_service serv ON serv.serviceID=ser.serviceID
+GROUP BY
+ ReferenceID
 ;
 
 -- ===========================================
@@ -418,10 +475,11 @@ CREATE OR REPLACE
  VIEW herbar_view.view_sp2000_references
  AS
 SELECT
- ref.ReferenceID,
- ref.Year,
- ref.Title,
- ref.Details
+ ref.ReferenceID as 'ReferenceID',
+ ref.Authors as 'Authors',
+ ref.Year as 'Year',
+ ref.Title as 'Title',
+ ref.Details as 'Details'
  
 FROM
  herbar_view.view_sp2000_tmp_references ref
@@ -443,4 +501,6 @@ SELECT
  ref.ReferenceID AS 'ReferenceID'
 FROM
  herbar_view.view_sp2000_tmp_references ref
+WHERE
+ tmp_type in ('TaxAccRef','Nomenclatural reference')
 ;

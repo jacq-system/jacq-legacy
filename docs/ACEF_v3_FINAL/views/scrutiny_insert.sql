@@ -105,14 +105,14 @@ DELIMITER ;
 -- ===========================================
 CALL do_synonym_normalizing;
 */
-
+-- 2536
 INSERT INTO herbarinput.tbl_tax_synonymy
 (taxonID, acc_taxon_ID, ref_date, preferred_taxonomy, annotations, locked, source, source_citationID,
  source_person_ID, source_serviceID, source_specimenID, userID)
  
  SELECT 
-  taxsyns.AcceptedTaxonID as 'taxonID',
-  taxsyns.SynonymID as 'acc_taxon_ID',
+  taxsyns.SynonymID as 'taxonID',
+  taxsyns.AcceptedTaxonID as 'acc_taxon_ID',
   lit.jahr as 'ref_date',
   '' AS 'preferred_taxonomy',
 	
