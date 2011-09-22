@@ -38,7 +38,10 @@ $_CONFIG['DATABASE']=array(
 $_CONFIG['CONNECTION']['secure'] = true;
 
 // Mdld only on Outputserver => JSON RPC Service
-$_OPTIONS['internMDLDService']='';
+$_OPTIONS['internMDLDService']=array(
+	'url'=>'http://www.website.com/internMDLDService.php',
+	'password'='geheim'
+);
 
 /*
  * Older settings start here (need to be changed to the new config structure)
