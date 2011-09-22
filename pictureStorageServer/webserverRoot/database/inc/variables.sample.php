@@ -7,3 +7,5 @@ $_CONFIG['DATABASES']['INPUT'] = array(
 		'pass' => ''
 	)
 );
+
+$_OPTIONS['internMDLDService']['password']='geheim';
