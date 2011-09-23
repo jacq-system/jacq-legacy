@@ -6,15 +6,6 @@ if (isset($_GET['name']))
 else
   $usedName = $_GET['ID'];
 
-/*require_once("../inc/connect.php");
-require_once("inc/getPathPic.php");
-
-if (!file_exists($path.$pic))
-  @readfile("pics/blind.png");
-else
-  passthru("convert -geometry 150x225 $path$pic JPG:-");
-*/
-
 // Remove the extension from the name
 $info = pathinfo( $usedName );
 $usedName = basename( $usedName, '.' . $info['extension'] );

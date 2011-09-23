@@ -1,16 +1,16 @@
 <?php
-$_CONFIG['DATABASES']['INPUT'] = array(
+$_CONFIG['DATABASE']['INPUT'] = array(
     "host" => "localhost",
-    "db" => "",
+    "db" => "input",
     "readonly" => array(
         "user" => "",
         "pass" => ""
     )
 );
 
-$_CONFIG['DATABASES']['PICTURES'] = array(
+$_CONFIG['DATABASE']['PICTURES'] = array(
     "host" => "localhost",
-    "db" => "",
+    "db" => "pictures",
     "readwrite" => array(
         "user" => "",
         "pass" => ""
@@ -20,3 +20,5 @@ $_CONFIG['DATABASES']['PICTURES'] = array(
         "pass" => ""
     )
 );
+
+$_OPTIONS['internMDLDService']['password']='geheim';

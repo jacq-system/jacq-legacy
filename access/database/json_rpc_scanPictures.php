@@ -38,9 +38,9 @@ public function getPictures ($ip, $secret)
 
     // connect to the database or stop on any connect error
     try {
-        $db = new PDO('mysql:host=' . $_CONFIG['DATABASES']['INPUT']['host'] . ';dbname=' . $_CONFIG['DATABASES']['INPUT']['db'],
-                      $_CONFIG['DATABASES']['INPUT']['readonly']['user'],
-                      $_CONFIG['DATABASES']['INPUT']['readonly']['pass'],
+        $db = new PDO('mysql:host=' . $_CONFIG['DATABASE']['INPUT']['host'] . ';dbname=' . $_CONFIG['DATABASE']['INPUT']['db'],
+                      $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
+                      $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],
                       array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET character set utf8"));
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }

@@ -19,9 +19,9 @@ class PictureServer {
 
         // connect to the database or stop on any connect error
         try {
-            $db = new PDO('mysql:host=' . $_CONFIG['DATABASES']['PICTURES']['host'] . ';dbname=' . $_CONFIG['DATABASES']['PICTURES']['db'],
-                          $_CONFIG['DATABASES']['PICTURES']['readonly']['user'],
-                          $_CONFIG['DATABASES']['PICTURES']['readonly']['pass'],
+            $db = new PDO('mysql:host=' . $_CONFIG['DATABASE']['PICTURES']['host'] . ';dbname=' . $_CONFIG['DATABASE']['PICTURES']['db'],
+                          $_CONFIG['DATABASE']['PICTURES']['readonly']['user'],
+                          $_CONFIG['DATABASE']['PICTURES']['readonly']['pass'],
                           array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET character set utf8"));
             $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         }

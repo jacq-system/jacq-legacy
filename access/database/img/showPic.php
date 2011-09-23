@@ -1,8 +1,8 @@
 <?php
-require_once("../inc/connect.php");
+require_once("../../inc/connect.php");
 
 // Connect to database
-db_connect( $_CONFIG['DATABASES']['INPUT'] );
+db_connect( $_CONFIG['DATABASE']['INPUT'] );
 
 header ("Content-type: image/jpeg");
 
@@ -107,7 +107,7 @@ else {
         $fmtime = filemtime( $cache_name );
         if( $fmtime ) {
           // Connect to the DB
-          db_connect($_CONFIG['DATABASES']['PICTURES']);
+          db_connect($_CONFIG['DATABASE']['PICTURES']);
             
           // Check if the picture was updated
           $result = mysql_query( "SELECT ID FROM files WHERE file LIKE '$imgname' AND mtime > FROM_UNIXTIME( '$fmtime' )" );

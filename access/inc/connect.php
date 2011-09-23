@@ -4,8 +4,8 @@ require( "variables.php" );
 function db_connect( $dbConfig, $dbAccess = "readonly" ) {
     $host = $dbConfig["host"];
     $db = $dbConfig["db"];
-    $user = $dbConfig['readonly']["user"];
-    $pass = $dbConfig['readonly']["pass"];
+    $user = $dbConfig[$dbAccess]["user"];
+    $pass = $dbConfig[$dbAccess]["pass"];
 
     if (!@mysql_connect($host,$user,$pass) || !@mysql_select_db($db)) {
       echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n".
@@ -20,25 +20,7 @@ function db_connect( $dbConfig, $dbAccess = "readonly" ) {
 }
 
 // Connect to Input DB by default
-db_connect( $_CONFIG['DATABASES']['INPUT'] );
-
-// Set access values from global config
-/*$host = $_CONFIG['DATABASES'][_DATABASE]["host"];
-$db = $_CONFIG['DATABASES'][_DATABASE]["db"];
-$user = $_CONFIG['DATABASES'][_DATABASE][_DBACCESS]["user"];
-$pass = $_CONFIG['DATABASES'][_DATABASE][_DBACCESS]["pass"];
-
-if (!@mysql_connect($host,$user,$pass) || !@mysql_select_db($db)) {
-  echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n".
-       "<html>\n".
-       "<head><titel>Sorry, no connection ...</title></head>\n".
-       "<body><p>Sorry, no connection to database ...</p></body>\n".
-       "</html>\n";
-  exit();
-}
-//mysql_query("SET character_set_results='utf8'");
-mysql_query("SET character set utf8");
-*/
+db_connect( $_CONFIG['DATABASE']['INPUT'] );
 
 function no_magic() {  // PHP >= 4.1
   if (get_magic_quotes_gpc()) {
