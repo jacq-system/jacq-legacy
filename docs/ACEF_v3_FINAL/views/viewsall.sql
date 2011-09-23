@@ -232,9 +232,10 @@ SELECT
 
 FROM
  herbar_view.view_sp2000_acceptedspecies acc
- LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON ( sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2) and sc.acc_taxon_ID=0)
-
- LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=sc.taxonID
+ 
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
+ 
+ LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON (sc.taxonID=tso.taxonID and sc.acc_taxon_ID=0)
  LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=sc.citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
  

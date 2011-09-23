@@ -131,6 +131,16 @@ CREATE TABLE `exp_tbl_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+/*
+TRUNCATE `exp_tbl_AcceptedInfraSpecificTaxa`;
+TRUNCATE `exp_tbl_AcceptedSpecies`;
+TRUNCATE `exp_tbl_CommonNames`;
+TRUNCATE `exp_tbl_Distribution`;
+TRUNCATE `exp_tbl_NameReferencesLinks`;
+TRUNCATE `exp_tbl_References`;
+TRUNCATE `exp_tbl_SourceDatabase`;
+TRUNCATE `exp_tbl_Synonyms`;
+*/
 INSERT INTO exp_tbl_AcceptedInfraSpecificTaxa SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa;
 INSERT INTO exp_tbl_AcceptedSpecies SELECT * FROM  view_sp2000_acceptedspecies;
 INSERT INTO exp_tbl_CommonNames SELECT * FROM  view_sp2000_commonnames;
