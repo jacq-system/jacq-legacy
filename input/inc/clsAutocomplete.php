@@ -780,22 +780,29 @@ public function taxon($value, $noExternals=false, $withDT=false){
 			$sql.=" ts.taxonID='{$value['id']}'";
 			if($noExternals) $sql .=" AND external=0";
 		}else{
+		
+			$v=isset($value['exact'])?$value['exact']:$value['search'];
 			
+			$pieces=explode(chr(194) . chr(183), $v);
+			$v=explode(" ",$pieces[0]);
+		
 			if(isset($value['exact'])){
-				$value['search']=$value['exact'];
 				$equ='=';
 			}else{
 				$value['search']=$value['search'].'%';
+				
+				if(isset($v[0]))$v[0].='%';
+				if(isset($v[1]))$v[1].='%';
 				$equ='LIKE';
 			}
 			
 			$equ='LIKE';
 				
-			$sql.=" tg.genus {$equ} '{$value['search']}'";
+			$sql.=" tg.genus {$equ} '{$v[0]}'";
 			if($noExternals) $sql .=" AND external=0";
 			
-			if(!empty($pieces[1])){
-				$sql.=" AND te0.epithet {$equ} '{$value['search']}'";
+			if(!empty($v[1])){
+				$sql.=" AND te0.epithet {$equ} '{$v[1]}'";
 			}else{
 				$sql.=" AND te0.epithet IS NULL";
 			}
