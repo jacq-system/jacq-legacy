@@ -100,7 +100,8 @@ SELECT
 
 FROM
  herbarinput.tbl_tax_synonymy syn
-
+/*
+-- very havy for a view...
 WHERE
  IFNULL(syn.ref_date,0)=(
   SELECT
@@ -113,7 +114,7 @@ WHERE
  )
 GROUP BY
  syn.taxonID, 
- syn.acc_taxon_ID;
+ syn.acc_taxon_ID*/;
  
  
 -- ===========================================

@@ -5,13 +5,15 @@ INSERT INTO herbarinput.tbl_tax_synonymy
  SELECT 
   taxsyns.SynonymID as 'taxonID',
   taxsyns.AcceptedTaxonID as 'acc_taxon_ID',
-  lit.jahr as 'ref_date',
+  '' as 'ref_date',
+ /* lit.jahr as 'ref_date',*/
   '' AS 'preferred_taxonomy',
 	
   'import11' as 'annotations',
   '1' as 'locked',
   'literature' as 'source',
-  lit.citationID as 'source_citationID',
+ /* lit.citationID as 'source_citationID',*/
+  '' as 'source_citationID',
   '' as 'source_person_ID',
   '' as 'source_serviceID',
   '' as 'source_specimenID',
@@ -19,8 +21,8 @@ INSERT INTO herbarinput.tbl_tax_synonymy
   '2' as 'userID'
  FROM
    herbar_view.view_sp2000_tmp_tabl_synonyms_normalized taxsyns
-   LEFT JOIN sp2000.tmp_scrutiny_import_all scr on scr.taxonID = taxsyns.AcceptedTaxonID
+   /*LEFT JOIN sp2000.tmp_scrutiny_import_all scr on scr.taxonID = taxsyns.AcceptedTaxonID
    LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
-   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON sy.taxonID=scr.taxonID
+   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON sy.taxonID=scr.taxonID*/
   WHERE
-   sy.taxonID is null;
+   and sy.taxonID is null;
