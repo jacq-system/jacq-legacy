@@ -122,7 +122,9 @@ function listLib($periodical)
 
     $response = "<tr class=\"out\"><td class=\"out\" colspan=\"4\">no entries</td></tr>\n";
 
-    $id = extractID($periodical['periodical']);
+    //$id = extractID($periodical['periodical']);
+	$id = $periodical['periodicalIndex'];
+
     if ($id!='NULL') {
         $sql = "SELECT lib_period_ID, signature, bestand, url, library
                 FROM tbl_lit_lib_period, tbl_lit_libraries

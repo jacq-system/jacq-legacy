@@ -64,6 +64,7 @@ $_dvar=array(
 	'common_nameIndex'		=> '',
 	'common_name'			=> '',
 	'new_common_name'		=> '',
+	'transliteration'		=> '',
 	'locked'				=> '1',
 );
 
@@ -74,21 +75,34 @@ if( $action=='doUpdate'){
 	$_dvar=array_merge($_dvar, array(
 		'common_nameIndex'	=> $_POST['common_nameIndex'],
 		'new_common_name'	=> $_POST['new_common_name'],
+		'transliteration'	=> $_POST['transliteration'],
 		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 	));
 	
-	print_r($_POST);
-	print_r($_dvar);
 	// Insert/Update
 	if($action=='doUpdate') {
 		list($msg['err'],$msg['result'])=UpdateCommonName($_dvar);
 	}
+	
 }else if(isset($_GET['common_nameIndex'])){
 	$_dvar['common_nameIndex']=$_GET['common_nameIndex'];
 	
-	$result = doDBQuery("SELECT common_name FROM {$dbprefix}tbl_name_commons WHERE common_id='{$_dvar['common_nameIndex']}'");
+	$sql="
+SELECT
+ com.common_name as 'common_name',
+ trans.name as 'tranlit'
+FROM
+ {$dbprefix}tbl_name_commons  com
+ LEFT JOIN {$dbprefix}tbl_name_names nam on nam.name_id=com.common_id
+ LEFT JOIN {$dbprefix}tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
+WHERE
+ com.common_id='{$_dvar['common_nameIndex']}'";
+	
+	$result = doDBQuery($sql);
 	if($row=mysql_fetch_array($result)){
 		$_dvar['common_name']=$row['common_name'];
+		$_dvar['new_common_name']=$row['common_name'];
+		$_dvar['transliteration']=$row['tranlit'];
 	}
 }
 //print_r($_dvar);
@@ -130,31 +144,27 @@ $cf->text(12, 3, "{$_dvar['common_name']}");
 
 
 $cf->label(11, 5, "Common Name");
-$cf->inputText(12, 5, 50, "new_common_name", ($_dvar['new_common_name']!='')?$_dvar['new_common_name']:$_dvar['common_name'],"0","","\" id=\"new_common_name");
+$cf->inputText(12, 5, 50, "new_common_name", $_dvar['new_common_name'],"0","","\" id=\"new_common_name");
 
 $cf->label(11, 8, "Transliteration");
-$cf->inputText(12, 8, 50, "transliterations", ($_dvar['new_common_name']!='')?$_dvar['new_common_name']:$_dvar['common_name'],"0","","\" id=\"new_common_name");
+$cf->inputText(12, 8, 50, "transliteration", $_dvar['transliteration'],"0","","\" id=\"new_common_name");
 
-// Todo: equals...
 
-if (($_SESSION['editControl'] & 0x200) != 0) {
-
-	
-	if(/* checkRight('commonnameUpdate') && */($unlock_tbl_name_commons || !$isLocked) ){
-		$cf->buttonSubmit(12,11, "submitUpdate", " Update");
-	}
-
+if( ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_tbl_name_commons || !$isLocked) ){
+	$cf->buttonSubmit(12,11, "submitUpdate", " Update");
 }
+
 $cf->buttonJavaScript(18, 11, " Close Window", "self.close()");
 
 echo<<<EOF
 <div style="position: absolute; left: 12em; top: 12em; width:672px;">
 {$msgs}
 </div>
+</form>
 EOF;
 
 $title="Common Names equals";
-$serverParams="";
+$serverParams="&cid={$_dvar['common_nameIndex']}";
 
 $searchjs=<<<EOF
 function createMapSearchstring(){
@@ -174,68 +184,72 @@ EOF;
 </table>
 EOF;
 
-$cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_autocomplete_commoname.php?field=cname_commonname',
-'index_autocomplete_commoname.php?field=cname_commonname','ajax/MapLines_CommonNamesEqual.php',$serverParams,$searchjs,$searchhtml);
+$cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_jq_autocomplete_commoname.php?field=cname_name',
+'index_jq_autocomplete_commoname.php?field=cname_name','ajax/MapLines_CommonNamesEqual.php',$serverParams,$searchjs,$searchhtml);
 
 
 ?>
 
-</form>
-<div style="display:none">
-
-<div id="dialog-information" title="Information">
-	<p><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 20px 0;"></span></p><div id="dinformation" style="float:left"> These items will be permanently deleted and cannot be recovered. Are you sure?</div>
-</div>
-<div id="dialog-warning" title="Warning">
-	<p><span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 20px 0;"></span></p><div id="dwarning" style="float:left">These items will be permanently deleted and cannot be recovered. Are you sure?</div>
-</div>
-<div id="dialog-error" title="Error">
-	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p><div id="derror" style="float:left">These items will be permanently deleted and cannot be recovered. Are you sure?</div>
-</div>
-
-</div>
 </body>
 </html>
 
 <?php
 
-function UpdateCommonName(&$_dvar, $update=false){
+function UpdateCommonName(&$_dvar){
 	global $dbprefix;
 	
 	$msg=array();
-	/*if(!$update && !checkRight('commonnameInsert')){
-		return array("You have no Rights for Insert",0);
-	}*/
-
+	if(($_SESSION['editControl'] & 0x10000) == 0){
+		return array("You have no Rights for Update",0);
+	}
+	
 	if($_dvar['common_nameIndex']==''){
 		return array("Wrong original Common name",0);
 	}
-	if(strlen($_dvar['new_common_name'])<3){
+	
+	if(strlen($_dvar['new_common_name'])<2){
 		return array("Wrong New Common name",0);
 	}
-	// Already the same???
-	$result = doDBQuery("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
-	if($row=mysql_fetch_array($result)){
-		return array("The typed in Common Name is already in the Database.",0);
-	}
 	
-	$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}',locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
-	if($result){
-		echo mysql_insert_id();
+	// Already the same???
+	$result=doDBQuery("SELECT common_id, common_name FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
+	if($result && $row=mysql_fetch_array($result)){
 		
+		if($_dvar['common_nameIndex']!=$row['common_id']){
+			return array("The typed in Common Name is already in the Database.",0);
+		}
+	}else{
+		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}', locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
+		if(!$result){
+			return array("mysql error: Update CommonName".mysql_error(),0);
+		}
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],1);
-		
-		echo <<<EOF
-<script>
-window.opener.location.reload(true);
-self.close()
-</script>
-EOF;
-		return array(0,"Successfully updated");
-	
 	}
-	return array("Error ".mysql_errno() . ": " . mysql_error() . "",0);
+	
+	if(strlen($_dvar['transliteration'])<2){
+		return array("Ttransliteration too short, not considert.",0);
+	}
+	
+	$result = doDBQuery("SELECT transliteration_id FROM {$dbprefix}tbl_name_transliterations WHERE name='{$_dvar['transliteration']}'");
+	if($result && $row=mysql_fetch_assoc($result)){
+		$_dvar['transliterationIndex']=$row['transliteration_id'];
+	}else{
+		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}')");
+		$_dvar['transliterationIndex']=mysql_insert_id();
+	}
+		
+	$result=doDBQuery("SELECT nam.name_id FROM {$dbprefix}tbl_name_commons  com LEFT JOIN {$dbprefix}tbl_name_names nam on nam.name_id=com.common_id WHERE com.common_id='{$_dvar['common_nameIndex']}'");
+	
+	if($result && $row=mysql_fetch_array($result)){
+		$_dvar['nameIndex']=$row['name_id'];
+		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_names SET transliteration_id='{$_dvar['transliterationIndex']}' WHERE name_id='{$_dvar['nameIndex']}'");
+		if(!$result){
+			return array("mysql error Update Transliteration: ".mysql_error(),0);
+		}
+		logNamesCommonName($_dvar['nameIndex'],1);
+	}
+	return array(0,"Successfully updated");
 }
 
 /**

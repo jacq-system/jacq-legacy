@@ -26,7 +26,7 @@ class MapLines{
 
 	}
 
-	function getMapLines($p,$valonlyzero=0){
+	function getMapLines($p,$allowEmptyRight=false, $valonlyzero=0){
 		$new=array();
 		foreach($_POST as $k=>$v){
 			if(preg_match('/acmap_l_(\d+)Index/', $k, $matches)==1){
@@ -37,7 +37,10 @@ class MapLines{
 				$leftVal=$_POST['ajax_acmap_l_'.$x];
 				$rightVal=$_POST['ajax_acmap_r_'.$x];
 				
-				if(is_numeric($leftID) && is_numeric($rightID)){		
+				if(is_numeric($leftID) && $rightID=='' && $allowEmptyRight){
+					$new[ $leftID ][ 0 ]=$x;
+					
+				}else if(is_numeric($leftID) && is_numeric($rightID)){		
 					$new[ $leftID ][ $rightID ]=$x;
 				}else if(is_numeric($leftID) && is_numeric($rightVal)){		
 					if(!$valonlyzero || $rightVal=='0')$new[ $leftID ][ $rightVal ]=$x;

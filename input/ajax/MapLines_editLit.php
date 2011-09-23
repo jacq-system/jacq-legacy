@@ -3,7 +3,7 @@ session_start();
 require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
 require_once('../inc/log_functions.php');
-require_once('../inc/mapLines.php');
+require_once('mapLines.php');
 no_magic();
 
 //debug
@@ -12,7 +12,7 @@ foreach($_GET as $k=>$v){
 }
 	
 class MapLines_editLit extends MapLines{
-	var $pagination=5;
+	var $pagination=10;
 
 	function taxon1($row,$t=0){
 		if($row['taxonID'.$t]==0)return '0 ';
@@ -312,7 +312,7 @@ WHERE
 		$citid=$params['citationID'];
 		$uid=$_SESSION['uid'];
 		
-		$new=$this->getMapLines($params,1);
+		$new=$this->getMapLines($params,1,1);
 		
 		// todo: review...
 		$sql="
@@ -327,28 +327,37 @@ VALUES
 			foreach($obj as $acctaxonID=>$x){
 				// If not in database yet, add it
 				$row2=array();
-				$sql2 = "SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
-				$result2 = db_query($sql2);
-				if($result2 && $row2 = mysql_fetch_array($result2)){
+				$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
+				$result2=db_query($sql2);
+				if($result2){
+					$row2=mysql_fetch_array($result2);
 					if($row2['c']==0){
 						$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
 						$result2 = db_query($sql2);
 						if($result2){
 							$tax_syn_ID=mysql_insert_id();
 							logTbl_tax_synonymy($tax_syn_ID,0);
-							$successx[]=$x;
+							$successx[]=array($x,$taxonID,$acctaxonID);
 							continue;
+						}else{
+							$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
 						}
+					}else{
+						$existed=(isset($row2['c']) && $row2['c']>0);
+						$notdone[]=array($x,$taxonID,$acctaxonID,$existed?1:'unknown');
 					}
+				}else{
+					$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
 				}
-				$existed=(isset($row2['c']) && $row2['c']>0);
-				$notdone[]=array($x,$taxonID,$acctaxonID,$existed);
 			}
 		}
+
 		if(count($notdone)>0){
 			$res=array('success'=>0, 'error'=>$notdone,'successx'=>$successx);
-		}else{
+		}else if(count($successx)>0){
 			$res=array('success'=>1,'successx'=>$successx);
+		}else{
+			$res=array('success'=>0);
 		}
 		return $res;
 	}

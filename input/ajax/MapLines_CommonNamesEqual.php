@@ -3,8 +3,8 @@ session_start();
 require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
 require_once('../inc/log_functions.php');
-require_once('../inc/mapLines.php');
-require_once('../inc/internMDLDService.php');
+require_once('mapLines.php');
+
 no_magic();
 
 foreach($_GET as $k=>$v){
@@ -13,7 +13,8 @@ foreach($_GET as $k=>$v){
 
 class MapLines_editLit extends MapLines{
 	var $pagination=5;
-	
+	var $dbprefix;
+
 	function __construct(){
 		global $_CONFIG;
 		$this->dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
@@ -30,7 +31,7 @@ class MapLines_editLit extends MapLines{
 	
 	function LoadMapLines($params){
 		
-		$cid=0;
+		$cid=$params['cid'];
 		$page=$params['pageIndex'];
 		$pbegin=$page*$this->pagination;
 		
@@ -50,8 +51,8 @@ FROM
  LEFT JOIN {$this->dbprefix}tbl_name_commons com1 ON com1.common_id = nam1.name_id
  ";
 		$whereCountAll="
-   eq.tbl_name_names_name_id='{$cid}'
-OR eq.tbl_name_names_name_id1='{$cid}'	
+ {$cid}='0' or (  eq.tbl_name_names_name_id='{$cid}'
+OR eq.tbl_name_names_name_id1='{$cid}')
 ";
 		// get all counts..
 		$sqlcountall="
@@ -61,7 +62,8 @@ SELECT
 WHERE
  {$whereCountAll}
  ";
-		//mdld => Service!
+
+		//mdld => Service! auslagern.
 		if(isset($params['mdldSearch']) && strlen($params['mdldSearch'])>0){
 			global $_OPTIONS;
 			
@@ -76,12 +78,12 @@ WHERE
 			$whereSearch="
 (
      mdld('{$uninomial}',com0.common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(com0.common_name)/2,{$lenlim})
- AND eq.tbl_name_names_name_id1='{$cid}'
+ AND (eq.tbl_name_names_name_id1='{$cid}' or  {$cid}='0')
 )
 OR
 (
      mdld('{$uninomial}',com1.common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(com1.common_name)/2,{$lenlim})
- AND eq.tbl_name_names_name_id='{$cid}'
+ AND (eq.tbl_name_names_name_id='{$cid}' or  {$cid}='0')
 )
 LIMIT {$pbegin},{$this->pagination}
 ";
@@ -94,8 +96,8 @@ SELECT
 WHERE
  {$whereSearch}
 ";
-		// get count of results
-		$sqlcountsearch="
+			// get count of results
+			$sqlcountsearch="
 SELECT 
  COUNT(*) as 'c'
 {$tables}
@@ -121,12 +123,12 @@ WHERE
 				$whereSearch="
 (
      com0.common_name LIKE {$search}
- AND eq.tbl_name_names_name_id1='{$cid}'
+ AND ( eq.tbl_name_names_name_id1='{$cid}' or  {$cid}='0')
 )
 OR
 (
      com1.common_name LIKE {$search}
- AND eq.tbl_name_names_name_id='{$cid}'
+ AND (eq.tbl_name_names_name_id='{$cid}' or  {$cid}='0')
 )
 ";
 				$sqlSearch="
@@ -162,17 +164,28 @@ WHERE
  ";
 			}
 			
-			$sql=array($sqlSearch,$sqlcountsearch,$sqlcountall);
+			$c1=0;
+			$c2=0;$res=array();
+			$resdb=mysql_query($sqlcountsearch);
+			if($resdb){
+				$row=mysql_fetch_assoc($resdb);
+				if(isset($row['c'])){
+					$c1=$row['c'];
+				}
+			}
+
+			$resdb=mysql_query($sqlcountall);
+			if($resdb){
+				$row=mysql_fetch_assoc($resdb);
+				if(isset($row['c'])){
+					$c2=$row['c'];
+				}
+			}
 			
-			$res=array();
-			$res[0]='';
-			foreach($sql as $k=>$v){
-				$resdb=mysql_query($v);
-				//echo $v;
-				if($resdb){
-					while($row=mysql_fetch_assoc($resdb)){
-						$res[$k][]=$row;
-					}
+			$resdb=mysql_query($sqlSearch);
+			if($resdb){
+				while($row=mysql_fetch_assoc($resdb)){
+					$res[]=array($row['id0'],$row['name0'],$row['id1'],$row['name1']);
 				}
 			}
 
@@ -181,61 +194,67 @@ WHERE
 		}
 		//print_r($res);
 		
-		$res=array('cf'=>$res[1][0]['c'],'ca'=>$res[2][0]['c'],'syns'=>$res[0]);
+		$res=array('cf'=>$c1,'ca'=>$c2,'syns'=>$res);
 		
 		
 		
 		return $res;
 	}
-	
 	// Save new pairs...
 	function SaveMapLines($params){
 	
-		$citid=$params['citationID'];
-		$uid=$_SESSION['uid'];
+		$new=$this->getMapLines($params,1,1);
 		
-		$new=$this->getMapLines($params,1);
-		
-		$sql = "DELETE FROM {$this->dbprefix}tbl_name_names_equals WHERE tbl_name_names_name_id='{$params['leftID']}' and tbl_name_names_name_id1='{$params['rightID']}' LIMIT 1";
-		logTbl_name_names_equals($params['leftID'],$params['rightID'],2);
-		
-		// todo: review...
 		$sql="
 INSERT INTO {$this->dbprefix}tbl_name_names_equals
 (tbl_name_names_name_id,tbl_name_names_name_id1)
 VALUES 
 ";	
-		$val='';
+
 		$notdone=array();
 		$successx=array();
-		foreach($new as $taxonID=>$obj){
-			foreach($obj as $acctaxonID=>$x){
+		foreach($new as $id1=>$obj){
+			foreach($obj as $id2=>$x){
 				// If not in database yet, add it
 				$row2=array();
-				$sql2 = "SELECT COUNT(*) as 'c' FROM {$this->dbprefix}tbl_name_names_equals WHERE tbl_name_names_name_id='{$params['leftID']}' and tbl_name_names_name_id1='{$params['rightID']}' LIMIT 1";
-				$result2 = db_query($sql2);
-				if($result2 && $row2 = mysql_fetch_array($result2)){
+				$sql2="SELECT COUNT(*) as 'c' FROM {$this->dbprefix}tbl_name_names_equals WHERE (
+				    (tbl_name_names_name_id ='{$id1}' and tbl_name_names_name_id1='{$id2}')
+				 or (tbl_name_names_name_id ='{$id2}' and tbl_name_names_name_id1='{$id1}')
+				)
+				LIMIT 1";
+				$result2=db_query($sql2);
+				if($result2){
+					$row2=mysql_fetch_array($result2);
 					if($row2['c']==0){
-						$sql2 = $sql." ('{$params['leftID']}','{$params['rightID']}') ";
+						$sql2 = $sql." ('{$id1}','{$id2}') ";
 						$result2 = db_query($sql2);
 						if($result2){
-							logTbl_name_names_equals($params['leftID'],$params['rightID'],2);
-							$successx[]=$x;
+							logTbl_name_names_equals($id1,$id2,0);
+							$successx[]=array($x,$id1,$id2);
 							continue;
+						}else{
+							$notdone[]=array($x,$id1,$id2,mysql_error());
 						}
+					}else{
+						$existed=(isset($row2['c']) && $row2['c']>0);
+						$notdone[]=array($x,$id1,$id2,$existed?1:'unknown');
 					}
+				}else{
+					$notdone[]=array($x,$id1,$id2,mysql_error());
 				}
-				$existed=(isset($row2['c']) && $row2['c']>0);
-				$notdone[]=array($x,$taxonID,$acctaxonID,$existed);
 			}
 		}
+
 		if(count($notdone)>0){
 			$res=array('success'=>0, 'error'=>$notdone,'successx'=>$successx);
-		}else{
+		}else if(count($successx)>0){
 			$res=array('success'=>1,'successx'=>$successx);
+		}else{
+			$res=array('success'=>0);
 		}
 		return $res;
 	}
+
 }
 
 		

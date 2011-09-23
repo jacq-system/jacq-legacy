@@ -8,7 +8,7 @@ $(function() {
 	$( "#editMapping" ).dialog({
 		autoOpen: false,
 		height: 750,
-		width: 770,
+		width: 790,
 		modal: true,
 		bgiframe: true,
 		buttons: {
@@ -39,11 +39,15 @@ $(function() {
 				
 });
 
-function searchMapLines(){
-	if(typeof createMapSearchstring == 'function') { 
-		searchString=createMapSearchstring(); 
+function searchMapLines(searchstringVal){
+	if(searchstringVal==undefined){
+		if(typeof createMapSearchstring == 'function') { 
+			searchString=createMapSearchstring(); 
+		}else{
+			searchString='';
+		}
 	}else{
-		searchString='';
+		searchString=searchstringVal;
 	}
 	newsearch=true;
 	pageselectCallback(0);
@@ -67,7 +71,6 @@ function pageselectCallback(page_index, jq){
 			if(newsearch){
 				newPaginator(msg.cf);
 				$('#PageInfo').html('all: '+msg.ca+', found: '+msg.cf);
-				
 				newsearch=false;
 			}
 		}
@@ -86,29 +89,40 @@ function saveMapLines(){
 		success: function(msg){
 			$('#PageInfo2').html('');
 			s='';
-			if(msg.success && msg.success==1){
-				s='All inserted!\n';
-			}else{
-				if(msg.error && msg.error.length>0){
-					$.each(msg.error,function(index, value) {
-						if(value[3]==1){
-							s+=value[1]+'=>'+value[2]+': already in db\n';
-							$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-notice"/>');
-						}else{
-							s+=value[1]+'=>'+value[2]+': please check\n';
-							$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-help"/>');
-						}
-					});
-				}
-			}
-		
-			if(msg.successx && msg.successx.length>0){
-				$.each(msg.successx,function(index, value) {
-					//s+=value[0]+'=>'+value[2]+':okay!\n';
-					$('#feedback_'+value[0]).html('<span class="ui-icon ui-icon-check"/>');
+			s1='';
+			if(msg.error && msg.error.length>0){
+				$.each(msg.error,function(index, value) {
+					if(value[3]==1){
+						s+=value[1]+'=>'+value[2]+': already in db<br>';
+					}else{
+						s+=value[1]+'=>'+value[2]+': '+value[3]+'<br>';
+					}
 				});
 			}
-			alert(s);
+			if(msg.successx && msg.successx.length>0){
+				s1= msg.successx.length+/*' of '+ (msg.successx.length+msg.error.length) +*/' sucessfully added.<br>';
+				$.each(msg.successx,function(index, value) {
+					s+=value[1]+'=>'+value[2]+':okay!<br>';
+				});
+			}
+			
+			if(s!=''){
+				$("#dinformation").html(s1+'<br>'+s);
+				$("#dialog-information").dialog({
+					resizable: false,
+					modal: false,
+					width:400,
+					buttons:[
+						{text: "OK",click: function(){$(this).dialog("close");}}
+					]
+				});
+			}
+			
+			$('#insertLineTable').find('tr:gt(0)').remove();
+			addMapLine('insertLineTable',1,0,0);
+			addMapLine('insertLineTable',1,0,0);
+			
+			searchMapLines('');
 		}
 	});
 }
@@ -137,7 +151,7 @@ function newPaginator(numentries1){
 		num_edge_entries: 2,
 		num_display_entries: 8,
 		callback: pageselectCallback,
-		items_per_page:10
+		items_per_page:ITEMSPERPAGE
 	});
 }
 

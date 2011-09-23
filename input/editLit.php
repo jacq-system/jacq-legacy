@@ -268,7 +268,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 	 */
 	* html .ui-autocomplete {
 		height: 200px;
-	}
+		}++
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
@@ -352,7 +352,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         return true;
     }
     function call_listLib() {
-      xajax_listLib(xajax.getFormValues('f',0,'periodical'));
+      xajax_listLib(xajax.getFormValues('f',0,'periodicalIndex'));
     }
     function call_makeAutocompleter(name) {
       $('#' + name).autocomplete ({
@@ -409,9 +409,8 @@ EOF;
 </table>
 EOF;
 
-$cf->inputMapLines(45,2.5,1,'edit Mapping',$title,'index_autocomplete_commoname.php?field=cname_taxon',
-'index_autocomplete_commoname.php?field=cname_taxon','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml);
-
+$cf->inputMapLines(45,2.5,1,'edit Mapping',$title,'index_jq_autocomplete.php?field=taxon',
+'index_jq_autocomplete.php?field=taxon','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml);
 
 
 
@@ -553,6 +552,7 @@ if (($_SESSION['editControl'] & 0x20) != 0) {
 $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?nr=$nr'");
 ?>
 </form>
+
 
 <div id="xajax_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
 

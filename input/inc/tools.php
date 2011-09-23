@@ -7,6 +7,25 @@
  * @version 14.07.2010
  */
 
+function AjaxParseValue($value){
+	$ret=array();
+	
+	$result=preg_match('/\<\<(?P<exact>.*)\>/',$value,$matches);
+	if($result==1){
+		$exact=$matches['exact'];
+		return array('exact'=>$exact);
+	}
+	
+	$result=preg_match('/\<(?P<ID>.*)\>/',$value,$matches);
+	if($result==1){
+		$ID=$matches['ID'];
+		return array('id'=>$ID);
+	}
+
+	$result=preg_replace('/\<.*\>/','',$value);
+	return array('search'=>$result);
+}
+
 
 /**
  * extracts an ID from a string. ID must be enclosed in "<>" brackets and be positioned at the end

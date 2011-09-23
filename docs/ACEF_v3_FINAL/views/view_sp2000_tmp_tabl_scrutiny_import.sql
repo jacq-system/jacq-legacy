@@ -22,22 +22,23 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `tmp_scrutiny_import`
+-- Tabellenstruktur für Tabelle `view_sp2000_tmp_tabl_scrutiny_import`
 --
 
-CREATE TABLE IF NOT EXISTS `tmp_scrutiny_import` (
+CREATE TABLE IF NOT EXISTS `view_sp2000_tmp_tabl_scrutiny_import` (
   `taxonID` int(5) default NULL,
   `scrutiny` varchar(66) default NULL,
   `author` varchar(255) NOT NULL,
   `date` varchar(255) NOT NULL,
+  `citationID` int(10) default NULL,
   UNIQUE KEY `taxonID` (`taxonID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Daten für Tabelle `tmp_scrutiny_import`
+-- Daten für Tabelle `view_sp2000_tmp_tabl_scrutiny_import`
 --
 
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (11080, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
 (11081, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
 (11082, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
@@ -770,7 +771,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (11918, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992'),
 (11919, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992'),
 (11920, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (11921, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992'),
 (11922, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992'),
 (11923, 'Maas, P. J. M.et al. 1992', 'Maas, P. J. M.et al. ', '1992'),
@@ -1446,7 +1447,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (47498, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (47499, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (47500, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (47501, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (47502, 'Steenis, C. G. J. van 1948', 'Steenis, C. G. J. van ', '1948'),
 (47503, 'Saunders, R. M. K. et al. in prep.', 'Saunders, R. M. K. et al. ', 'in prep.'),
@@ -2155,7 +2156,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (48443, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
 (48444, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
 (48445, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (48446, 'Johnson, D. M. & Murray, N. A. in prep.', 'Johnson, D. M. & Murray, N. A. ', 'in prep.'),
 (48447, 'Boutique, R. 1951', 'Boutique, R. ', '1951'),
 (48448, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
@@ -2842,7 +2843,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (50448, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (50449, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (50450, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (50451, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (50452, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (50453, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
@@ -3497,7 +3498,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (54864, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (54865, 'Erkens, R. et al. in prep.', 'Erkens, R. et al. ', 'in prep.'),
 (54867, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (54868, 'Saunders, R. M. K. et al. in prep.', 'Saunders, R. M. K. et al. ', 'in prep.'),
 (54919, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (55156, 'Pirie, M. D. 2005', 'Pirie, M. D. ', '2005'),
@@ -4147,7 +4148,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (61747, 'Bân, N. T. 1974', 'Bân, N. T. ', '1974'),
 (61748, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (61749, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (61750, 'Bân, N. T. 1974', 'Bân, N. T. ', '1974'),
 (61751, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (61752, 'Bân, N. T. 1974', 'Bân, N. T. ', '1974'),
@@ -4763,7 +4764,7 @@ INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALU
 (64119, 'Annonaceae WorkingGroup, 2006', 'Annonaceae WorkingGroup, ', '2006'),
 (64130, 'Su, Y. C. F. & Saunders, R. M. K. 2006', 'Su, Y. C. F. & Saunders, R. M. K. ', '2006'),
 (64155, 'Maas, P. J. M. & Westra, L. Y. T. 1984 , 1985', 'Maas, P. J. M. & Westra, L. Y. T. ', '1984 , 1985');
-INSERT INTO `tmp_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
+INSERT INTO `view_sp2000_tmp_tabl_scrutiny_import` (`taxonID`, `scrutiny`, `author`, `date`) VALUES
 (64156, 'Bân, N. T. 1974', 'Bân, N. T. ', '1974'),
 (64157, 'Su, Y. C. F. & Saunders, R. M. K. 2006', 'Su, Y. C. F. & Saunders, R. M. K. ', '2006'),
 (64159, 'Su, Y. C. F. & Saunders, R. M. K. 2006', 'Su, Y. C. F. & Saunders, R. M. K. ', '2006'),

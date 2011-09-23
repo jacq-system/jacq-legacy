@@ -81,6 +81,41 @@ WHERE
  )
 ;
 */
+
+-- ===========================================
+-- ready
+-- view_sp2000_tmp_latest_scrutiny
+--
+-- ===========================================
+CREATE OR REPLACE
+ ALGORITHM = UNDEFINED
+ VIEW herbar_view.view_sp2000_tmp_latest_scrutiny
+ AS
+
+SELECT
+ syn.taxonID as 'taxonID',
+ syn.acc_taxon_ID as 'acc_taxon_ID',
+ syn.ref_date as 'ref_date',
+ source_citationID as 'citationID'
+
+FROM
+ herbarinput.tbl_tax_synonymy syn
+
+WHERE
+ IFNULL(syn.ref_date,0)=(
+  SELECT
+   IFNULL(MAX(syn2.ref_date),0) 
+  FROM
+   herbarinput.tbl_tax_synonymy syn2
+  WHERE
+       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
+   and IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+ )
+GROUP BY
+ syn.taxonID, 
+ syn.acc_taxon_ID;
+ 
+ 
 -- ===========================================
 -- ready
 -- view_sp2000_acceptedspecies
@@ -116,8 +151,8 @@ SELECT
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
  
- sc.author AS 'LTSSpecialist',
- sc.date AS 'LTSDate',
+ aut.autor AS 'LTSSpecialist',
+ sc.ref_date AS 'LTSDate',
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
@@ -126,7 +161,10 @@ SELECT
 
 FROM
  herbarinput.tbl_tax_species ts
- LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
+ LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON ( sc.taxonID=ts.taxonID and sc.acc_taxon_ID=0)
+ LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=sc.citationID
+ LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
+ 
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
  
@@ -183,8 +221,8 @@ SELECT
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
 
- sc.author AS 'LTSSpecialist',
- sc.date AS 'LTSDate',
+ aut.autor AS 'LTSSpecialist',
+ sc.ref_date AS 'LTSDate',
 
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
@@ -193,8 +231,12 @@ SELECT
 
 FROM
  herbar_view.view_sp2000_acceptedspecies acc
- LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
+ LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON ( sc.taxonID=SUBSTR(acc.AcceptedTaxonID,2) and sc.acc_taxon_ID=0)
+
  LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=sc.taxonID
+ LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=sc.citationID
+ LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
+ 
  LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
  
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID

@@ -123,6 +123,7 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 					}else{
 						//response( [] );
 					}
+					$at.trigger('afterACchangetrigger');
 				},
 				error: function() {
 					if ( this.autocompleteRequest === $at.data('autocomplete').requestIndex ) {
@@ -147,7 +148,7 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 						$at.addClass('newItem');
 					}
 					
-					ACdoSearch(nam, $at.val(),1);
+					ACdoSearchExact(nam, $at.val());
 				}
 			}
 		},
@@ -164,17 +165,15 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 				$at.autocomplete( "close" );
 			}
 		},
-		delay:100,
+		delay:300,
 		minLength:minlength,
 		selectFirst: (mustMatch==1 || mustMatch==2)?true:false
 	}).data('autocomplete')._renderItem=function(ul, item){
-		//p($at.autocomplete('option', 'populate'));
-	//	alert('df'+$at.autocomplete('option', 'populate')+' '+$at.autocomplete('option','results')+' '+$at.autocomplete('option', 'exact'));
 		if($at.autocomplete('option', 'populate')=='1'){
 			if($at.autocomplete('option','results')=='1'){
 				if($at.autocomplete('option', 'exact')=='0' || ($at.autocomplete('option', 'exact')=='1' && $at.val()==item.value )){
 					$ati.val(item.id);
-					$at.val(item.value).removeClass('wrongItem newItem').trigger('change');
+					$at.val(item.value).removeClass('wrongItem newItem');
 				}
 				
 			}
@@ -224,9 +223,13 @@ function ACdoSearchID(nam, id){
 	ACdoSearch(nam,'<'+id+'>',0);
 }
 
-function ACdoSearch(nam, id,exact){
+function ACdoSearchExact(nam, val){
+	ACdoSearch(nam,'<<'+val+'>',1);
+}
+
+function ACdoSearch(nam, search,exact){
 	if(exact==1){
 		$('#ajax_'+nam).autocomplete('option', 'exact',1);
 	}
-	$('#ajax_'+nam).autocomplete('option','populate','1').autocomplete('search',id);
+	$('#ajax_'+nam).autocomplete('option','populate','1').autocomplete('search',search);
 }

@@ -369,7 +369,12 @@ class CSSF{
 	function inputJqAutocomplete2($x, $y, $w, $name, $index, $serverScript, $maxsize = 0, $minLength=1, $bgcol = "", $title = "",$mustmatch=0, $fullFocus=false,$idequval=0,$textarea=0) {
 		
 		$acdone=0;
-		$val=$idequval?$index:'';
+		$val='';
+		if($idequval){
+			$val=$index;
+			$acdone=1;
+		}
+
 		$bgcol=($bgcol=='')?"":" background-color: {$bgcol};";
 		$maxsize=($maxsize=='')?"":" maxlength='{$maxsize}'";
 		$title=($title=='')?"":" title='{$title}'";
@@ -380,26 +385,22 @@ class CSSF{
 			$res=array();
 			if($val==''){
 			
-				//static call: $res=call_user_func_array( array('clsAutocompleteCommonName', $pv['field']), array('--',$index));
-				if(strpos($pi['path'],'index_autocomplete_commoname.php')!==false){
+				if(strpos($pi['path'],'index_jq_autocomplete_commoname.php')!==false){
 					if(method_exists('clsAutocompleteCommonName',$pv['field'])){
-					
 						if(!isset($GLOBALS['ACFREUD2']))$GLOBALS['ACFREUD2']=clsAutocompleteCommonName::Load();
-						$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array('--',$index));
-						$acdone=1;
-						//$z=$pv['field'].$index.print_r($res,1);
+						$res=call_user_func_array( array($GLOBALS['ACFREUD2'], $pv['field']), array(array('id'=>$index)) );
 					}
 				}else/*if(strpos($pi['path'],'index_jq_autocomplete.php')!==false)*/{
 					if(method_exists('clsAutocomplete',$pv['field'])){
 						if(!isset($GLOBALS['ACFREUD1']))$GLOBALS['ACFREUD1']=clsAutocomplete::Load();
-						$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array('--',$index));
-						$acdone=1;
-						
+						$res=call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array(array('id'=>$index)));
 					}
 				}
+				
 				if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
 					$val=$res[0]['value'];
 					$index=$res[0]['id'];
+					$acdone=1;
 				}
 			}
 		}
@@ -477,12 +478,12 @@ EOF;
 var newsearch=false;
 var searchString='';
 var x=0;
-
+var ITEMSPERPAGE=10;
 function getACTableCode(idtype,x){
 	return '<tr id="acmap_tr_'+x+'">'
 	+'<td><input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td>'
 	+'<td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td>'
-	+'<td><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><span class="ui-icon ui-icon-closethick"/></a><a style="float:left" id="feedback_'+x+'"></a>';
+	+'<td><div style="float:left"><div style="float:left"><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><span class="ui-icon ui-icon-closethick"/></a></div><div style="float:left" id="feedback_'+x+'"></div></div>';
 }
 
 </script>
@@ -509,13 +510,14 @@ EOF;
 <h3><a href="#section1">Insert New and save</a></h3>
 <div>
 <form name="insertLineForm" id="insertLineForm" onsubmit="return false;">
-<table id="insertLineTable">
+<table id="insertLineTable" width="700">
 <tr><td colspan="2"></td></tr>
 </table>
 <input class="cssftext" type="submit" name="doSearch" value="Save" >
 <div style="float:left;margin-left:10px;" id="PageInfo3"></div>
 </form>
 </div>
+
 <h3><a href="#section2">Search and instant deletion</a></h3>
 <div>
 <form  id="searchLineForm" onsubmit="return false;">
@@ -527,7 +529,23 @@ EOF;
 <div id="PageInfo"  style="float:left;"></div><div style="float:left;margin-left:10px;" id="PageInfo2"></div><div style="clear:both;" id="Pagination"></div>
 </form>
 </div>
+
 </div>
+
+</div>
+
+<div style="display:none">
+
+<div id="dialog-information" title="Information">
+	<p><span class="ui-icon ui-icon-info" style="float:left; margin:0 7px 20px 0;"></span></p><div id="dinformation" style="float:left"> These items will be permanently deleted and cannot be recovered. Are you sure?</div>
+</div>
+<div id="dialog-warning" title="Warning">
+	<p><span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 20px 0;"></span></p><div id="dwarning" style="float:left">These items will be permanently deleted and cannot be recovered. Are you sure?</div>
+</div>
+<div id="dialog-error" title="Error">
+	<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span></p><div id="derror" style="float:left">These items will be permanently deleted and cannot be recovered. Are you sure?</div>
+</div>
+
 </div>
 
 <?PHP

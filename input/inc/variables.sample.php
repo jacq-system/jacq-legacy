@@ -40,7 +40,7 @@ $_CONFIG['CONNECTION']['secure'] = true;
 // Mdld only on Outputserver => JSON RPC Service
 $_OPTIONS['internMDLDService']=array(
 	'url'=>'http://www.website.com/internMDLDService.php',
-	'password'='geheim'
+	'password'=>'geheim'
 );
 
 /*

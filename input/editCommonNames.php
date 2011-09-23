@@ -16,8 +16,6 @@ $debuger=0;
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
-   <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
-   <link rel="stylesheet" href="inc/jQuery/jquery-autocomplete/jquery.autocomplete.css" type="text/css" />
    <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
@@ -106,13 +104,12 @@ function editCommoname(){
 
 
 function changeSource(to){
-	var url='index_autocomplete_commoname.php?field=';
 	if(to=='service'){
-		url+='cname_service';
+		url='index_jq_autocomplete_commoname.php?field=cname_service';
 	}else if(to=='person'){
-		url+='cname_person';
+		url='index_jq_autocomplete.php?field=person';
 	}else/* if(to=='literature')*/{
-		url+='cname_literature';
+		url='index_jq_autocomplete.php?field=citation';
 	}
 	
 	$('#ajax_sourcevalue').autocomplete('option' , 'serverScript' ,url );
@@ -134,11 +131,17 @@ $(document).ready(function() {
 	$( '#ajax_geospecification').resizable({handles:'se'});//.css('z-index','10000');
 	
 	$('#ajax_common_name').change(function(){$(this).trigger('blur');}).blur(function(){
+		$('#ajax_transliteration').attr('disabled', true);
+		
+		ACdoSearchExact('common_name', $('#ajax_common_name').val());
+	});
+	
+	$('#ajax_common_name').bind('afterACchangetrigger',function(){
 		if($('#common_nameIndex').val()!=''){
-			$('#ajax_transliteration').attr('disabled', true);
 			ACdoSearchID('transliteration', 'c'+$('#common_nameIndex').val());
 		}else{
 			$('#ajax_transliteration').removeAttr('disabled');
+			$('#ajax_common_name').addClass('newItem');
 		}
 	});
 	
@@ -479,35 +482,40 @@ if($_dvar['enableClose']){
 
 
 $cf->label(10, 2.5, "Scientific Name","javascript:selectTaxon()");
-$cf->inputJqAutocomplete2(11, 0, 50, "taxon", $_dvar['taxonIndex'], "index_autocomplete_commoname.php?field=cname_taxon",520,2,'','',1,1,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "taxon", $_dvar['taxonIndex'], "index_jq_autocomplete.php?field=taxon",520,2,'','',1,1,0);
 
 $cf->label(10, 2.5, "Common Name","javascript:editCommoname()");
-$cf->inputJqAutocomplete2(11, 0, 50, "common_name",$_dvar['common_nameIndex'], "index_autocomplete_commoname.php?field=cname_commonname",520,2,'','',0,0,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "common_name",$_dvar['common_nameIndex'], "index_jq_autocomplete_commoname.php?field=cname_commonname",520,2,'','',0,0,0);
 
 $cf->label(10, 2.5, "transliteration","javascript:editCommoname()");
-$cf->inputJqAutocomplete2(11, 0, 50, "transliteration",$_dvar['transliterationIndex'], "index_autocomplete_commoname.php?field=cname_transliteration",520,2,'','',0,0,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "transliteration",$_dvar['transliterationIndex'], "index_jq_autocomplete_commoname.php?field=cname_transliteration",520,2,'','',0,0,0);
 
 $cf->label(10, 2.5, "Geography","javascript:selectGeoname()");
 $cf->label(10.5, 0, "*","javascript:showGeonameInfo()");
-$cf->inputJqAutocomplete2(11, 0, 50, "geoname", $_dvar['geonameIndex'], "index_autocomplete_commoname.php?field=cname_geoname",520,2,'','',1,1,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "geoname", $_dvar['geonameIndex'], "index_jq_autocomplete_commoname.php?field=cname_geoname",520,2,'','',1,1,0);
 
 $cf->label(10, 2.5, "Geo Specification");
-$cf->inputJqAutocomplete2(14, 0, 47, "geospecification", $_dvar['geospecification'],"index_autocomplete_commoname.php?field=cname_geospecification",520,2,'','',0,0,1);
+$cf->inputJqAutocomplete2(14, 0, 47, "geospecification", $_dvar['geospecification'],"index_jq_autocomplete_commoname.php?field=cname_geospecification",520,2,'','',0,0,1);
 
 $cf->label(10, 2.5, "Tribe");
-$cf->inputJqAutocomplete2(11, 0, 50, "tribe", $_dvar['tribeIndex'],"index_autocomplete_commoname.php?field=cname_tribe",520,2,'','',0,0,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "tribe", $_dvar['tribeIndex'],"index_jq_autocomplete_commoname.php?field=cname_tribe",520,2,'','',0,0,0);
 
 
 $cf->label(10, 2.5, "Language");
-$cf->inputJqAutocomplete2(11, 0, 50, "language", $_dvar['languageIndex'], "index_autocomplete_commoname.php?field=cname_language",520,2,'','',0,1,0);
+$cf->inputJqAutocomplete2(11, 0, 50, "language", $_dvar['languageIndex'], "index_jq_autocomplete_commoname.php?field=cname_language",520,2,'','',0,1,0);
 
 $cf->label(10, 2.5, "Period");
-$cf->inputJqAutocomplete2(11,0, 50, "period", $_dvar['periodIndex'], "index_autocomplete_commoname.php?field=cname_period",520,2,'','',0,0,0);
+$cf->inputJqAutocomplete2(11,0, 50, "period", $_dvar['periodIndex'], "index_jq_autocomplete_commoname.php?field=cname_period",520,2,'','',0,0,0);
 
+$ac_url=array(
+	'literature'=>'index_jq_autocomplete.php?field=citation',
+	'service'=>'index_jq_autocomplete_commoname.php?field=cname_service',
+	'person'=>'index_jq_autocomplete.php?field=person'
+);
 
 $cf->nameIsID=true;
 $cf->dropdown(4,2.5,"sourceType",$_dvar['sourceType'],array('literature','service','person'),array('Literature','Service','Person'));
-$cf->inputJqAutocomplete2(11,0, 50, "sourcevalue", $_dvar['sourcevalueIndex'], "index_autocomplete_commoname.php?field=cname_".$_dvar['sourceType'],520,2,'','',1,1,0);
+$cf->inputJqAutocomplete2(11,0, 50, "sourcevalue", $_dvar['sourcevalueIndex'], $ac_url[ $_dvar['sourceType'] ],520,2,'','',1,1,0);
 
 $cf->label(10, 2.5, "annotations");
 $cf->textarea(11, 0, 50,2.5, "annotations", $_dvar['annotations'], "", "", "");
@@ -794,7 +802,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')",1);
 		$_dvar['nameIndex']=mysql_insert_id();
 		$_dvar['common_nameIndex']=$_dvar['nameIndex'];
-		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')",1);
+		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
 		
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],0);

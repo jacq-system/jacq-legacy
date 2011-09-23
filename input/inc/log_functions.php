@@ -3,6 +3,28 @@
 require_once('variables.php');
 
 
+function logNamesCommonName($id,$updated){
+	global $_CONFIG;
+	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
+	
+	$sql = "SELECT * FROM  {$dbprefix}tbl_name_names WHERE name_id='{$id}' LIMIT 1";
+	$result = db_query($sql);
+	$row = mysql_fetch_array($result);
+	doQuotes($row,4);
+	$sql='INSERT INTO herbarinput_log.log_commonnames_tbl_names '.
+		'(name_id,transliteration_id,'.
+		'userID, updated) VALUES ('.
+		'\''.$row['name_id'].'\', '.
+		'\''.$row['transliteration_id'].'\', '.
+
+		'\''.$_SESSION['uid'].'\', '.
+		'\''.$updated.'\' '.
+		')';
+		echo $sql;
+	db_query($sql);
+}
+
+
 function logTbl_name_names_equals($id1,$id2,$updated){
 	global $_CONFIG;
 	$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
@@ -23,6 +45,10 @@ function logTbl_name_names_equals($id1,$id2,$updated){
 	db_query($sql);
 }
 
+
+
+	
+	
 function logTbl_tax_synonymy($id,$updated) {
 	global $_CONFIG;
 	
