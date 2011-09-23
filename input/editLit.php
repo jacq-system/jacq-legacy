@@ -248,6 +248,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
+  <!link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
 
 
@@ -385,7 +386,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 $cf = new CSSF();
 
 $display = clsDisplay::Load();
-$title=$display->protolog($p_citationID);
+$title="Taxon Synonymy<br>".$display->protolog($p_citationID);
 $serverParams="&citationID={$p_citationID}";
 
 $searchjs=<<<EOF
@@ -409,7 +410,7 @@ EOF;
 </table>
 EOF;
 
-$cf->inputMapLines(45,2.5,1,'edit Mapping',$title,'index_jq_autocomplete.php?field=taxon',
+$cf->inputMapLines(47,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon',
 'index_jq_autocomplete.php?field=taxon','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml);
 
 

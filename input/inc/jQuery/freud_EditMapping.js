@@ -7,8 +7,8 @@ $(function() {
 
 	$( "#editMapping" ).dialog({
 		autoOpen: false,
-		height: 750,
-		width: 790,
+		height: 800,
+		width: 700,
 		modal: true,
 		bgiframe: true,
 		buttons: {

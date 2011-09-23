@@ -795,9 +795,7 @@ public function taxon($value, $noExternals=false, $withDT=false){
 				if(isset($v[1]))$v[1].='%';
 				$equ='LIKE';
 			}
-			
-			$equ='LIKE';
-				
+
 			$sql.=" tg.genus {$equ} '{$v[0]}'";
 			if($noExternals) $sql .=" AND external=0";
 			

@@ -487,6 +487,7 @@ function getACTableCode(idtype,x){
 }
 
 </script>
+  
 <div id="dialog-confirm" title="Delete Item?" style="display:none;">
 <p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><div sytle="float:left"><span id="dialog-confirm-t"></span>This Item will be deleted. Are you sure?</div></p>
 </div>
@@ -496,7 +497,7 @@ function getACTableCode(idtype,x){
 		// do Label text
 		$this->label($x,$y,$label,'#" onclick="editMapping();');
 		echo<<<EOF
-<div id="editMapping" style="display:none;" title="Taxon Synonymy<br>{$title}">
+<div id="editMapping" style="display:none;" title="{$title}">
 EOF;
 	}else{
 		$this->_divclass($x,$y,"editMapping1");
@@ -510,7 +511,7 @@ EOF;
 <h3><a href="#section1">Insert New and save</a></h3>
 <div>
 <form name="insertLineForm" id="insertLineForm" onsubmit="return false;">
-<table id="insertLineTable" width="700">
+<table id="insertLineTable" width="100%">
 <tr><td colspan="2"></td></tr>
 </table>
 <input class="cssftext" type="submit" name="doSearch" value="Save" >
@@ -523,7 +524,7 @@ EOF;
 <form  id="searchLineForm" onsubmit="return false;">
 <?PHP echo $searchhtml; ?>
 <input class="cssftext" type="submit" name="doSearch" value="Search" >
-<table id="searchLineTable">
+<table id="searchLineTable" width="100%">
 <tr><td colspan="2"></td></tr>
 </table>
 <div id="PageInfo"  style="float:left;"></div><div style="float:left;margin-left:10px;" id="PageInfo2"></div><div style="clear:both;" id="Pagination"></div>
