@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 15. September 2011 um 15:21
+-- Erstellungszeit: 23. September 2011 um 01:26
 -- Server Version: 5.0.41
 -- PHP-Version: 5.3.4
 
@@ -18,6 +18,23 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 --
 -- Datenbank: `herbarinput_log`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `log_commonnames_tbl_names`
+--
+
+DROP TABLE IF EXISTS `log_commonnames_tbl_names`;
+CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_names` (
+  `log_name_id` int(11) NOT NULL auto_increment,
+  `name_id` int(11) NOT NULL,
+  `transliteration_id` int(11) NOT NULL,
+  `userID` int(11) NOT NULL,
+  `updated` int(4) NOT NULL,
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`log_name_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=7 ;
 
 -- --------------------------------------------------------
 
@@ -43,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_applies_to` (
   `updated` int(4) NOT NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`logID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=300 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=304 ;
 
 -- --------------------------------------------------------
 
@@ -61,16 +78,16 @@ CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_commons` (
   `updated` int(4) NOT NULL,
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
   PRIMARY KEY  (`log_common_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=52 ;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=57 ;
 
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle ` log_commonnames_tbl_name_names_equals`
+-- Tabellenstruktur für Tabelle `log_commonnames_tbl_name_names_equals`
 --
 
-DROP TABLE IF EXISTS ` log_commonnames_tbl_name_names_equals`;
-CREATE TABLE IF NOT EXISTS ` log_commonnames_tbl_name_names_equals` (
+DROP TABLE IF EXISTS `log_commonnames_tbl_name_names_equals`;
+CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_names_equals` (
   `names_equals_id` int(11) NOT NULL auto_increment,
   `tbl_name_names_name_id` int(11) NOT NULL,
   `tbl_name_names_name_id1` int(11) NOT NULL,
@@ -574,7 +591,7 @@ CREATE TABLE IF NOT EXISTS `log_tbl_tax_synonymy` (
   KEY `acc_taxon_ID` (`acc_taxon_ID`),
   KEY `locked` (`locked`),
   KEY `userID` (`userID`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12419 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12457 ;
 
 -- --------------------------------------------------------
 
@@ -673,7 +690,7 @@ CREATE TABLE IF NOT EXISTS `tbl_herbardb_unlock` (
   PRIMARY KEY  (`ID`),
   KEY `groupID` (`groupID`),
   KEY `table` (`table`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=48 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=49 ;
 
 -- --------------------------------------------------------
 

@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Erstellungszeit: 15. September 2011 um 15:21
+-- Erstellungszeit: 23. September 2011 um 01:28
 -- Server Version: 5.0.41
 -- PHP-Version: 5.3.4
 
@@ -1403,7 +1403,7 @@ CREATE TABLE IF NOT EXISTS `tbl_tax_synonymy` (
   KEY `acc_taxon_ID` (`acc_taxon_ID`),
   KEY `locked` (`locked`),
   KEY `userID` (`userID`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12436 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=12471 ;
 
 -- --------------------------------------------------------
 
@@ -1466,6 +1466,18 @@ CREATE TABLE IF NOT EXISTS `tbl_typi` (
   KEY `typus` (`typus`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=35 ;
 
+-- --------------------------------------------------------
+
+--
+-- Stellvertreter-Struktur des Views `tet`
+--
+DROP VIEW IF EXISTS `tet`;
+CREATE TABLE IF NOT EXISTS `tet` (
+`tax_syn_ID` int(11)
+,`taxonID` int(11)
+,`acc_taxon_ID` int(11)
+,`ref_date` date
+);
 -- --------------------------------------------------------
 
 --
@@ -1556,6 +1568,15 @@ CREATE TABLE IF NOT EXISTS `view_sourcedatabase` (
 ,`LogoFileName` varchar(250)
 ,`ContactPerson` varchar(250)
 );
+-- --------------------------------------------------------
+
+--
+-- Struktur des Views `tet`
+--
+DROP TABLE IF EXISTS `tet`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `tet` AS select `syn`.`tax_syn_ID` AS `tax_syn_ID`,`syn`.`taxonID` AS `taxonID`,`syn`.`acc_taxon_ID` AS `acc_taxon_ID`,`syn`.`ref_date` AS `ref_date` from `tbl_tax_synonymy` `syn` where ((ifnull(`syn`.`ref_date`,0) = (select ifnull(max(`syn2`.`ref_date`),0) AS `IFNULL(MAX(syn2.ref_date),0)` from `tbl_tax_synonymy` `syn2` where ((ifnull(`syn2`.`taxonID`,0) = ifnull(`syn`.`taxonID`,0)) and (ifnull(`syn2`.`acc_taxon_ID`,0) = ifnull(`syn`.`acc_taxon_ID`,0))))) and (`syn`.`taxonID` in (_utf8'6856',_utf8'5200'))) group by `syn`.`taxonID`,`syn`.`acc_taxon_ID`;
+
 -- --------------------------------------------------------
 
 --
