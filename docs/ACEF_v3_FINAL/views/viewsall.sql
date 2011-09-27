@@ -149,8 +149,8 @@ WHERE
   FROM
    herbarinput.tbl_tax_synonymy syn2
   WHERE
-       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
-   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+       syn2.taxonID=syn.taxonID
+   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
   ORDER BY
    syn2.ref_date DESC
   LIMIT 1)
@@ -239,8 +239,8 @@ WHERE
   FROM
    herbarinput.tbl_tax_synonymy syn2
   WHERE
-       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
-   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+       syn2.taxonID= syn.taxonID
+   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
   ORDER BY
    syn2.ref_date DESC
   LIMIT 1)
@@ -342,8 +342,8 @@ WHERE
   FROM
    herbarinput.tbl_tax_synonymy syn2
   WHERE
-       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
-   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+       syn2.taxonID= syn.taxonID
+   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
   ORDER BY
    syn2.ref_date DESC
   LIMIT 1)
