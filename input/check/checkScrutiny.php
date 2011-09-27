@@ -219,7 +219,7 @@ if(isset($_POST['update'])){
 <b>Results</b><br>
 <hr>
 <table cellspacing="0" cellpadding="0" id="rowclick1" border="0">
-<tr><td  width="70px">intern ID</td><td width="400px">String</td><td width="100px">AuthorID</td><td  width="100px">year</td>
+<tr><td  width="70px">intern ID</td><td width="400px">String</td><td width="100px">CitationID</td><td  width="100px">year</td>
 </tr>
 EOF;
 
