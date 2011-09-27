@@ -21,7 +21,7 @@ class internMDLDService {
 				}
 			}
 		}
-		if($sc){
+		if($sc && isset($res[0]) ){
 			return $res[0];
 		}
 		return $res;

@@ -35,38 +35,16 @@ class MapLines_editLit extends MapLines{
 		$page=$params['pageIndex'];
 		$pbegin=$page*$this->pagination;
 		
-		$fields="
- eq.tbl_name_names_name_id as 'id0',
- eq.tbl_name_names_name_id1 as 'id1',
- com0.common_name as 'name0',
- com1.common_name as 'name1'
-";
-		$tables="
-FROM
- {$this->dbprefix}tbl_name_names_equals eq
- LEFT JOIN {$this->dbprefix}tbl_name_names nam0 ON nam0.name_id = eq.tbl_name_names_name_id
- LEFT JOIN {$this->dbprefix}tbl_name_commons com0 ON com0.common_id = nam0.name_id
- 
- LEFT JOIN {$this->dbprefix}tbl_name_names nam1 ON nam1.name_id = eq.tbl_name_names_name_id1
- LEFT JOIN {$this->dbprefix}tbl_name_commons com1 ON com1.common_id = nam1.name_id
- ";
-		$whereCountAll="
- {$cid}='0' or (  eq.tbl_name_names_name_id='{$cid}'
-OR eq.tbl_name_names_name_id1='{$cid}')
-";
-		// get all counts..
-		$sqlcountall="
-SELECT 
- COUNT(*) as 'c'
-{$tables}
-WHERE
- {$whereCountAll}
- ";
-
+		$countAllSearch="
+ (    eq.tbl_name_names_name_id='{$cid}'
+  OR eq.tbl_name_names_name_id1='{$cid}'
+)";
+		
 		//mdld => Service! auslagern.
 		if(isset($params['mdldSearch']) && strlen($params['mdldSearch'])>0){
 			global $_OPTIONS;
 			
+			// MDLD Search for commonnames.
 			$this->limit=4;
 			$this->block_limit=2;
 			
@@ -75,129 +53,134 @@ WHERE
 			$lenlim=min($lenUninomial/2,$this->limit);
 			$uninomial=strtolower($uninomial);
 		
-			$whereSearch="
-(
-     mdld('{$uninomial}',com0.common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(com0.common_name)/2,{$lenlim})
- AND (eq.tbl_name_names_name_id1='{$cid}' or  {$cid}='0')
-)
-OR
-(
-     mdld('{$uninomial}',com1.common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(com1.common_name)/2,{$lenlim})
- AND (eq.tbl_name_names_name_id='{$cid}' or  {$cid}='0')
-)
-LIMIT {$pbegin},{$this->pagination}
-";
-			
-
-			$sqlSearch="
-SELECT 
- {$fields}
-{$tables}
+			$sqlMDLD="
+SELECT
+ com.common_id as 'i'
+FROM
+ {$this->dbprefix}tbl_name_names nam
+ LEFT JOIN {$this->dbprefix}tbl_name_commons com ON com.common_id = nam.name_id
+ LEFT JOIN {$this->dbprefix} tbl_name_transliterations translit ON translit.transliteration_id = nam.transliteration_id
 WHERE
- {$whereSearch}
+(
+     mdld('{$uninomial}',com.common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(com.common_name)/2,{$lenlim})
+  OR mdld('{$uninomial}',translit.name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(translit.name)/2,{$lenlim})
+)
+LIMIT 1000
 ";
-			// get count of results
-			$sqlcountsearch="
-SELECT 
- COUNT(*) as 'c'
-{$tables}
-WHERE
- {$whereSearch}
- ";
-		
-			$sql=array($sqlSearch,$sqlcountsearch,$sqlcountall);
+			$service = clsInternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
 			
-			$service = new internMDLDService($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password'],1);
-			$sql=base64_encode($query);
 			try {
-				$res = $service->getSQLResults($sql);
+				$res1 = $service->getSQLResults($sqlMDLD);
 			}catch (Exception $e) {
 				echo "Fehler " . nl2br($e);
 			}
-		
-		}else{
-			
-			if(isset($params['mysqlSearch']) && strlen($params['mysqlSearch'])>0){
+			$lookup='';
+			if(isset($res1['error']) ) {
+				echo $res1['error'];
+			}else{
+				if(count($res1)>0){
+					foreach($res1 as $row){
+						$lookup.=",'{$row['i']}'";
+					}
+				}
+				$lookup=substr($lookup,1);
+			}
+			$whereSearch="
+   ( com0.common_id IN ($lookup) AND eq.tbl_name_names_name_id1='{$cid}')
+OR ( com1.common_id IN ($lookup) AND eq.tbl_name_names_name_id='{$cid}')
+";
+		}else if(isset($params['mysqlSearch']) && strlen($params['mysqlSearch'])>0){
 				$search="'".mysql_escape_string("%".$params['mysqlSearch']) . "%'";
 				
 				$whereSearch="
 (
-     com0.common_name LIKE {$search}
- AND ( eq.tbl_name_names_name_id1='{$cid}' or  {$cid}='0')
+     ( com0.common_name LIKE {$search} or translit0.name LIKE {$search} )
+ AND eq.tbl_name_names_name_id1='{$cid}'
 )
 OR
 (
-     com1.common_name LIKE {$search}
- AND (eq.tbl_name_names_name_id='{$cid}' or  {$cid}='0')
+     ( com1.common_name LIKE {$search} or translit1.name LIKE {$search} )
+ AND eq.tbl_name_names_name_id='{$cid}'
 )
 ";
-				$sqlSearch="
-SELECT 
- {$fields}
-{$tables}
-WHERE
- {$whereSearch}
-";
-				// get count of results
-				$sqlcountsearch="
-SELECT 
- COUNT(*) as 'c'
-{$tables}
-WHERE
- {$whereSearch}
- ";
-			}else{
-				$sqlSearch="
-SELECT 
- {$fields}
-{$tables}
-WHERE
-  {$whereCountAll}
-";
-				// get count of results
-				$sqlcountsearch="
-SELECT 
- COUNT(*) as 'c'
-{$tables}
-WHERE
-  {$whereCountAll}
- ";
-			}
-			
-			$c1=0;
-			$c2=0;$res=array();
-			$resdb=mysql_query($sqlcountsearch);
-			if($resdb){
-				$row=mysql_fetch_assoc($resdb);
-				if(isset($row['c'])){
-					$c1=$row['c'];
-				}
-			}
-
-			$resdb=mysql_query($sqlcountall);
-			if($resdb){
-				$row=mysql_fetch_assoc($resdb);
-				if(isset($row['c'])){
-					$c2=$row['c'];
-				}
-			}
-			
-			$resdb=mysql_query($sqlSearch);
-			if($resdb){
-				while($row=mysql_fetch_assoc($resdb)){
-					$res[]=array($row['id0'],$row['name0'],$row['id1'],$row['name1']);
-				}
-			}
-
+		}else{
+			$whereSearch=$countAllSearch;
+		}
 		
+		$tables="
+ {$this->dbprefix}tbl_name_names_equals eq
+ LEFT JOIN {$this->dbprefix}tbl_name_names nam0 ON nam0.name_id = eq.tbl_name_names_name_id
+ LEFT JOIN {$this->dbprefix}tbl_name_commons com0 ON com0.common_id = nam0.name_id
+ LEFT JOIN {$this->dbprefix} tbl_name_transliterations translit0 ON translit0.transliteration_id = nam0.transliteration_id
+ 
+ LEFT JOIN {$this->dbprefix}tbl_name_names nam1 ON nam1.name_id = eq.tbl_name_names_name_id1
+ LEFT JOIN {$this->dbprefix}tbl_name_commons com1 ON com1.common_id = nam1.name_id
+ LEFT JOIN {$this->dbprefix} tbl_name_transliterations translit1 ON translit1.transliteration_id = nam1.transliteration_id
+ ";
+		
+		$sqlSearch="
+SELECT
+ IF(eq.tbl_name_names_name_id='{$cid}',eq.tbl_name_names_name_id1,eq.tbl_name_names_name_id) as 'id',
+ IF(eq.tbl_name_names_name_id='{$cid}',com1.common_name,com0.common_name) as 'name',
+ IF(eq.tbl_name_names_name_id='{$cid}',translit1.name,translit0.name) as 'translit'
+ 
+FROM 
+ {$tables}
+WHERE
+ {$whereSearch}
+ORDER BY
+ name, translit
+";
+		
+		// get count of results
+		$sqlcountsearch="
+SELECT 
+ COUNT(*) as 'c'
+FROM
+ {$tables}
+WHERE
+ {$whereSearch}
+ ";
+			
+		// get count of results
+		$sqlcountall="
+SELECT 
+ COUNT(*) as 'c'
+FROM
+ {$tables}
+WHERE
+ {$countAllSearch}
+ ";
 
+
+		$c1=0;
+		$c2=0;$res=array();
+		$resdb=mysql_query($sqlcountsearch);
+		if($resdb){
+			$row=mysql_fetch_assoc($resdb);
+			if(isset($row['c'])){
+				$c1=$row['c'];
+			}
+		}
+
+		$resdb=mysql_query($sqlcountall);
+		if($resdb){
+			$row=mysql_fetch_assoc($resdb);
+			if(isset($row['c'])){
+				$c2=$row['c'];
+			}
+		}
+		
+		$resdb=mysql_query($sqlSearch);
+		if($resdb){
+			while($row=mysql_fetch_assoc($resdb)){
+				$res[]=array('',0,$row['id'],"{$row['name']}   ({$row['translit']})");
+			}
 		}
 		//print_r($res);
 		
 		$res=array('cf'=>$c1,'ca'=>$c2,'syns'=>$res);
-		
-		
-		
+
 		return $res;
 	}
 	// Save new pairs...
@@ -210,38 +193,43 @@ INSERT INTO {$this->dbprefix}tbl_name_names_equals
 (tbl_name_names_name_id,tbl_name_names_name_id1)
 VALUES 
 ";	
-
+		$cid=$params['cid'];
+		$id2=$cid;
 		$notdone=array();
 		$successx=array();
-		foreach($new as $id1=>$obj){
-			foreach($obj as $id2=>$x){
-				// If not in database yet, add it
-				$row2=array();
-				$sql2="SELECT COUNT(*) as 'c' FROM {$this->dbprefix}tbl_name_names_equals WHERE (
-				    (tbl_name_names_name_id ='{$id1}' and tbl_name_names_name_id1='{$id2}')
-				 or (tbl_name_names_name_id ='{$id2}' and tbl_name_names_name_id1='{$id1}')
-				)
-				LIMIT 1";
-				$result2=db_query($sql2);
-				if($result2){
-					$row2=mysql_fetch_array($result2);
-					if($row2['c']==0){
-						$sql2 = $sql." ('{$id1}','{$id2}') ";
-						$result2 = db_query($sql2);
-						if($result2){
-							logTbl_name_names_equals($id1,$id2,0);
-							$successx[]=array($x,$id1,$id2);
-							continue;
-						}else{
-							$notdone[]=array($x,$id1,$id2,mysql_error());
-						}
+		foreach($new as $id1=>$x){
+			if($id1=='error'){
+				foreach($x as $err){
+					$notdone[]=array($err[0],$err[1],$err[1],'Not an ID.');
+				}
+				continue;
+			}
+			// If not in database yet, add it
+			$row2=array();
+			$sql2="SELECT COUNT(*) as 'c' FROM {$this->dbprefix}tbl_name_names_equals WHERE (
+			    (tbl_name_names_name_id ='{$id1}' and tbl_name_names_name_id1='{$id2}')
+			 or (tbl_name_names_name_id ='{$id2}' and tbl_name_names_name_id1='{$id1}')
+			)
+			LIMIT 1";
+			$result2=db_query($sql2);
+			if($result2){
+				$row2=mysql_fetch_array($result2);
+				if($row2['c']==0){
+					$sql2 = $sql." ('{$id1}','{$id2}') ";
+					$result2 = db_query($sql2);
+					if($result2){
+						logTbl_name_names_equals($id1,$id2,0);
+						$successx[]=array($x,$id1,$id2);
+						continue;
 					}else{
-						$existed=(isset($row2['c']) && $row2['c']>0);
-						$notdone[]=array($x,$id1,$id2,$existed?1:'unknown');
+						$notdone[]=array($x,$id1,$id2,mysql_error());
 					}
 				}else{
-					$notdone[]=array($x,$id1,$id2,mysql_error());
+					$existed=(isset($row2['c']) && $row2['c']>0);
+					$notdone[]=array($x,$id1,$id2,$existed?1:'unknown');
 				}
+			}else{
+				$notdone[]=array($x,$id1,$id2,mysql_error());
 			}
 		}
 

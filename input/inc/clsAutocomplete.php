@@ -346,16 +346,16 @@ public function citation($value){
 	$results=array();
 	try{
 		$db=clsDbAccess::Connect('INPUT');
-			
+
 		if(isset($value['id'])){
-			if($value['id']=='')return array();
+			if($value['id']=='' || $value['id']=='0' || $value['id']==0 )return array();
 			$display=clsDisplay::Load();
 					
 			$label=$display->protolog($value['id'], true);
 			$results[]=array(
 				'id'	=> $value['id'],
 				'label'=>$label,
-				'value'=> ".{$value['id']}.".$label,
+				'value'=> "$label <{$value['id']}>",
 				'color'=> ''
 			);
 		}else{
@@ -375,8 +375,6 @@ public function citation($value){
 					LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
 					WHERE
 				";
-			//todo
-			// not really working... do we need exact here?
 			if(isset($value['exact'])){
 				$equ='=';
 				
@@ -748,7 +746,6 @@ public function epithetNoExternals($value)
 	return $this->epithet($value, true);
 }
 
-
 /** W
  * autocomplete a taxon entry field
  * If the searchstring has only one part before the separator only taxa with empty species are presented.
@@ -759,12 +756,26 @@ public function epithetNoExternals($value)
  * @param bool[optional] $withDT adds the DallaTorre information(default no)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */
-public function taxon($value, $noExternals=false, $withDT=false){
+public function taxon2($value, $noExternals=false, $withDT=false){
+
+	return $this->taxon($value,$noExternals,$withDT,2);
+
+}
+/** W
+ * autocomplete a taxon entry field
+ * If the searchstring has only one part before the separator only taxa with empty species are presented.
+ * If the searchstring consists of two parts the first one is used for genus, the second one for species
+ *
+ * @param string $value text to search for
+ * @param bool[optional] $noExternals only results for "external=0"(default no)
+ * @param bool[optional] $withDT adds the DallaTorre information(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxon($value, $noExternals=false, $withDT=false,$withID=true){
 
 	$results=array();
 	try{
 		$db=clsDbAccess::Connect('INPUT');
-
 		$sql="SELECT taxonID, ts.external
 				FROM tbl_tax_species ts
 				 LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID=ts.speciesID
@@ -780,7 +791,7 @@ public function taxon($value, $noExternals=false, $withDT=false){
 			$sql.=" ts.taxonID='{$value['id']}'";
 			if($noExternals) $sql .=" AND external=0";
 		}else{
-		
+			
 			$v=isset($value['exact'])?$value['exact']:$value['search'];
 			
 			$pieces=explode(chr(194) . chr(183), $v);
@@ -800,9 +811,15 @@ public function taxon($value, $noExternals=false, $withDT=false){
 			if($noExternals) $sql .=" AND external=0";
 			
 			if(!empty($v[1])){
+				if($withID==2){
+					$withID=true;
+				}
 				$sql.=" AND te0.epithet {$equ} '{$v[1]}'";
 			}else{
 				$sql.=" AND te0.epithet IS NULL";
+				if($withID==2){
+					$withID=false;
+				}
 			}
 			
 			if(isset($value['exact'])){
@@ -820,7 +837,7 @@ public function taxon($value, $noExternals=false, $withDT=false){
 			foreach($rows as $row){
 				$results[]=array('id'	=> $row['taxonID'],
 					'label'=> $display->taxon($row['taxonID'], true, $withDT, true),
-					'value'=> $display->taxon($row['taxonID'], true, $withDT, true),
+					'value'=> $display->taxon($row['taxonID'], true, $withDT, $withID),
 					'color'=>($row['external']) ? 'red' : '');
 			}
 			foreach($results as $k=> $v){   // eliminate multiple whitespaces within the result

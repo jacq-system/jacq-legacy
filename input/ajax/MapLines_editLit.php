@@ -68,11 +68,18 @@ class MapLines_editLit extends MapLines{
 		// Switch Search
 		// species...
 		if(isset($params['speciesSearch']) && strlen($params['speciesSearch'])>0){
-			$params['speciesSearch']=strtolower(trim(removeID($params['speciesSearch'])));
-			$params['genusSearch']=strtolower(trim(removeID($params['genusSearch'])));
-		
-			$spec="'{$params['speciesSearch']}%'";
-			$gen="'{$params['genusSearch']}%'";
+			$params['speciesSearch']=trim(removeID($params['speciesSearch']));
+			$params['genusSearch']=trim(removeID($params['genusSearch']));
+			
+			$pieces=explode(chr(194) . chr(183), $params['speciesSearch']);
+			$v=explode(" ",$pieces[0]);
+			if(strlen($params['genusSearch'])>0 && !isset($v[1])){
+				$spec="'{$params['speciesSearch']}%'";
+				$gen="'{$params['genusSearch']}%'";
+			}else{
+				$spec="'{$v[1]}%'";
+				$gen="'{$v[0]}%'";
+			}
 			
 			$where2="
 AND (
@@ -312,7 +319,7 @@ WHERE
 		$citid=$params['citationID'];
 		$uid=$_SESSION['uid'];
 		
-		$new=$this->getMapLines($params,1,1);
+		$new=$this->getMapLines($params,1,0);
 		
 		// todo: review...
 		$sql="
@@ -323,35 +330,43 @@ VALUES
 		$val='';
 		$notdone=array();
 		$successx=array();
-		foreach($new as $taxonID=>$obj){
-			foreach($obj as $acctaxonID=>$x){
-				// If not in database yet, add it
-				$row2=array();
-				$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
-				$result2=db_query($sql2);
-				if($result2){
-					$row2=mysql_fetch_array($result2);
-					if($row2['c']==0){
-						$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
-						$result2 = db_query($sql2);
-						if($result2){
-							$tax_syn_ID=mysql_insert_id();
-							logTbl_tax_synonymy($tax_syn_ID,0);
-							$successx[]=array($x,$taxonID,$acctaxonID);
-							continue;
+		if(count($new)>0){
+			foreach($new as $taxonID=>$obj){
+				if($taxonID=='error'){
+					foreach($obj as $err){
+						$notdone[]=array($err[0],$err[1],$err[1],'Not an ID.');
+					}
+					continue;
+				}
+				if(count($obj)==0)continue;
+				foreach($obj as $acctaxonID=>$x){
+					// If not in database yet, add it
+					$row2=array();
+					$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
+					$result2=db_query($sql2);
+					if($result2){
+						$row2=mysql_fetch_array($result2);
+						if($row2['c']==0){
+							$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
+							$result2 = db_query($sql2);
+							if($result2){
+								$tax_syn_ID=mysql_insert_id();
+								logTbl_tax_synonymy($tax_syn_ID,0);
+								$successx[]=array($x,$taxonID,$acctaxonID);
+								continue;
+							}else{
+								$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
+							}
 						}else{
-							$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
+							$existed=(isset($row2['c']) && $row2['c']>0);
+							$notdone[]=array($x,$taxonID,$acctaxonID,$existed?1:'unknown');
 						}
 					}else{
-						$existed=(isset($row2['c']) && $row2['c']>0);
-						$notdone[]=array($x,$taxonID,$acctaxonID,$existed?1:'unknown');
+						$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
 					}
-				}else{
-					$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
 				}
 			}
 		}
-
 		if(count($notdone)>0){
 			$res=array('success'=>0, 'error'=>$notdone,'successx'=>$successx);
 		}else if(count($successx)>0){

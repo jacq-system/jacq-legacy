@@ -392,26 +392,33 @@ $serverParams="&citationID={$p_citationID}";
 $searchjs=<<<EOF
 function createMapSearchstring(){
 	searchString='';
-	if($('#speciesSearch').val().length>0)
-		searchString='&genusSearch='+$('#genusSearch').val()+'&speciesSearch='+$('#speciesSearch').val();
-	else if($('#genusSearch').val().length>0)
-		searchString='&genusSearch='+$('#genusSearch').val();
+	if($('#ajax_speciesSearch').val().length>0)
+		searchString='&genusSearch='+$('#ajax_genusSearch').val()+'&speciesSearch='+$('#ajax_speciesSearch').val();
+	else if($('#ajax_genusSearch').val().length>0)
+		searchString='&genusSearch='+$('#ajax_genusSearch').val();
 	else
 		searchString='&mdldSearch='+$('#mdldSearch').val();
 	
 	return searchString;
 }
 EOF;
-		$searchhtml=<<<EOF
+
+$searchhtml=<<<EOF
 <table>
 <tr><td>MDLD Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mdldSearch" value="" maxlength="200" ></td></tr>
-<tr><td>genus Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="genusSearch" value="" maxlength="200" ></td></tr>
-<tr><td>Species:</td><td><input class="cssftext" style="width: 25em;" type="text" id="speciesSearch" value="" maxlength="200" ></td></tr>
+<tr><td>genus Search:</td><td><input tabindex="2" class='cssftextAutocomplete' style='width: 25em;' type="text" value="" name="ajax_genusSearch" id="ajax_genusSearch" maxlength='520' /></td></tr>
+<tr><td>Species:</td><td><input tabindex="2" class='cssftextAutocomplete' style='width: 25em;' type="text" value="" name="ajax_speciesSearch" id="ajax_speciesSearch" maxlength='520' /></td></tr>
 </table>
+<input type="hidden" name="speciesSearchIndex" id="common_nameIndex" value=""/>
+<input type="hidden" name="genusSearchIndex" id="common_nameIndex" value=""/>
+<script>
+ACFreudConfig.push(['index_jq_autocomplete.php?field=taxon','speciesSearch','','0','0','0','2']);
+ACFreudConfig.push(['index_jq_autocomplete.php?field=taxon2','genusSearch','','0','0','0','2']);
+</script>
 EOF;
 
-$cf->inputMapLines(47,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon',
-'index_jq_autocomplete.php?field=taxon','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml);
+$cf->inputMapLines(47,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
+'index_jq_autocomplete.php?field=taxon2','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml,2);
 
 
 

@@ -383,7 +383,7 @@ class CSSF{
 			$pi=parse_url($serverScript);
 			parse_str($pi['query'],$pv);
 			$res=array();
-			if($val==''){
+			if($val=='' && $index!=''){
 			
 				if(strpos($pi['path'],'index_jq_autocomplete_commoname.php')!==false){
 					if(method_exists('clsAutocompleteCommonName',$pv['field'])){
@@ -397,10 +397,12 @@ class CSSF{
 					}
 				}
 				
-				if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
-					$val=$res[0]['value'];
-					$index=$res[0]['id'];
-					$acdone=1;
+				if(count($res)==1){
+					if(isset($res[0]) && isset($res[0]['value']) && isset($res[0]['id']) ){
+						$val=$res[0]['value'];
+						$index=$res[0]['id'];
+						$acdone=1;
+					}
 				}
 			}
 		}
@@ -444,7 +446,7 @@ EOF;
 	}
 	
 
-	function inputMapLines($x, $y, $asdialog, $label, $title, $serverACL,$serverACR,$callbackUrl,$serverParams,$searchjs,$searchhtml){
+	function inputMapLines($x, $y, $asdialog, $label, $title, $serverACL,$serverACR,$callbackUrl,$serverParams,$searchjs,$searchhtml,$cols=2){
 		$htmla=$htmlb='';
 		/*
 		$r=array(array("\n","'"),array("",'"'));
@@ -464,27 +466,36 @@ EOF;
 <script>
 
 <?PHP
-echo<<<EOF
-		
+	echo<<<EOF
+var COLS=$cols;
 var serverACL='{$serverACL}';
 var serverACR='{$serverACR}';
 var serverUrl='{$callbackUrl}';
 var serverParams='{$serverParams}';
 
 {$searchjs}
-EOF;
-?>
-
 var newsearch=false;
 var searchString='';
 var x=0;
 var ITEMSPERPAGE=10;
 function getACTableCode(idtype,x){
 	return '<tr id="acmap_tr_'+x+'">'
-	+'<td><input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td>'
-	+'<td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td>'
-	+'<td><div style="float:left"><div style="float:left"><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><span class="ui-icon ui-icon-closethick"/></a></div><div style="float:left" id="feedback_'+x+'"></div></div>';
+	
+EOF;
+
+	if($cols==2){
+		echo<<<EOF
+		+'<td><input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_l_'+x+'" id="ajax_acmap_l_'+x+'" title="1" /><input type="hidden" name="acmap_l_'+x+'Index" id="acmap_l_'+x+'Index" value=""/></td>'
+EOF;
+
+	}
+	echo<<<EOF
+		+'<td> <input tabindex="1" class="cssftextAutocomplete" style="width: 20em;" type="text" value="" name="ajax_acmap_r_'+x+'" id="ajax_acmap_r_'+x+'" title="1" /><input type="hidden" name="acmap_r_'+x+'Index" id="acmap_r_'+x+'Index" value=""/></td>'
+		+'<td><div style="float:left"><div style="float:left"><a href="javascript:'+((idtype==1)?'removeInputLine':'deleteSearchedLine')+'(\''+x+'\')"><span class="ui-icon ui-icon-closethick"/></a></div><div style="float:left" id="feedback_'+x+'"></div></div>';
 }
+EOF;
+
+?>
 
 </script>
   

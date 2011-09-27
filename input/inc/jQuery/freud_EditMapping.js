@@ -128,7 +128,9 @@ function saveMapLines(){
 }
 
 function deleteSearchedLine2(oid){	
-	leftID=$('#acmap_l_'+oid+'Index').val();
+	if(COLS==2){
+		leftID=$('#acmap_l_'+oid+'Index').val();
+	}
 	rightID=$('#acmap_r_'+oid+'Index').val();
 	$.ajax({
 		type: 'POST',
@@ -160,9 +162,9 @@ function removeAllSearchMapLines(){
 }
 
 function deleteSearchedLine(oid){
-	left=$('#ajax_acmap_l_'+oid).val();
+	left=(COLS==2)?($('#ajax_acmap_l_'+oid).val()+'=>'):'';
 	right=$('#ajax_acmap_r_'+oid).val();
-	$('#dialog-confirm-t').html(' '+left+'=>'+right+' ');
+	$('#dialog-confirm-t').html(' '+left+right+' ');
 	$( "#dialog-confirm" ).dialog({
 		resizable: false,
 		height:280,
@@ -182,24 +184,28 @@ function addMapLine(idnam,idtype,leftId,rightId,leftName,rightName){
 	var code=getACTableCode(idtype,x);
 	$('#'+idnam+' tr:last').after(code);
 
-	if(leftName!=undefined && leftName!=''){
-		$('#acmap_l_'+x+'Index').val(leftId);
-		$('#ajax_acmap_l_'+x).val(leftName).removeClass('wrongItem');
+	if(COLS==2){
+		if(leftName!=undefined && leftName!=''){
+			$('#acmap_l_'+x+'Index').val(leftId);
+			$('#ajax_acmap_l_'+x).val(leftName).removeClass('wrongItem');
+		}
 	}
-	
 	if(rightName!=undefined && rightName!=''){
 		$('#acmap_r_'+x+'Index').val(rightId);
 		$('#ajax_acmap_r_'+x).val(rightName).removeClass('wrongItem');
 	}
+
 	
 	if(idtype==1){
-		ACFreudPrepare(serverACL,'acmap_l_'+x,((!isNaN(leftId) && leftName==undefined)?leftId:'0'),2,0,1,2);
+		if(COLS==2){
+			ACFreudPrepare(serverACL,'acmap_l_'+x,((!isNaN(leftId) && leftName==undefined)?leftId:'0'),2,0,1,2);
+		}
 		ACFreudPrepare(serverACR,'acmap_r_'+x,((!isNaN(rightId) && rightName==undefined)?rightId:'0'),2,0,1,2);
 
 		$('#ajax_acmap_r_'+x).focus(function(){
-			if($('#'+idnam+' tr:last input:text:first').val().length>0){
+		//	if($('#'+idnam+' tr:last input:text:first').val().length>0 || ( COLS==1 && $('#'+idnam+' tr:nth-child('++') input:text:first').prev().val().length>0) ){
 				addMapLine(idnam,idtype,0,0,'','');
-			}
+			//}
 		});
 	}
 	x++;

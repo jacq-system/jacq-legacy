@@ -98,7 +98,7 @@ function editCommoname(){
 	cid='?a=b';
 	if($('#common_nameIndex').val()!='')cid+='&common_nameIndex='+$('#common_nameIndex').val();
 	
-	comwin = window.open("editCommonName.php"+cid, "editCommonName", "width=850 height=150, top=50, right=50, scrollbars=auto, resizable=yes");
+	comwin = window.open("editCommonName.php"+cid, "editCommonName", "width=850 height=500, top=50, right=50, scrollbars=auto, resizable=yes");
 	comwin.focus();
 }
 
@@ -137,6 +137,7 @@ $(document).ready(function() {
 	});
 	
 	$('#ajax_common_name').bind('afterACchangetrigger',function(){
+		
 		if($('#common_nameIndex').val()!=''){
 			ACdoSearchID('transliteration', 'c'+$('#common_nameIndex').val());
 		}else{
@@ -145,6 +146,7 @@ $(document).ready(function() {
 		}
 	});
 	
+	$('#ajax_common_name').trigger('change');
 	// Validation
 	$('input[type=submit]').bind('click', function(){
 
@@ -364,7 +366,7 @@ if ($action=='doDelete' ) {
 
 	list($msg['err'],$msg['result'])=InsertUpdateCommonName($_dvar,$action=='doUpdate');
 	$doSearch=true;
-
+	$searchNameNotEmpty=false;
 // Show a Common Name Set with given GET vars...
 }else if(isset($_GET['show'])) {
 	
@@ -421,16 +423,18 @@ EOF;
 	// If no row found, prepare for search vars;
 	}else{
 		$doSearch=true;
+		$searchNameNotEmpty=true;
 	}
 
 // Do Search
 }else if($action=='doSearch'){
 	$doSearch=true;
+	$searchNameNotEmpty=false;
 }
 doQuotes($_dvar,($quotesdone==1)?2:3);
 
 if($doSearch){
-	$search_result=doSearch($_dvar,$strict);
+	$search_result=doSearch($_dvar,$searchNameNotEmpty);
 }
 //print_r($_dvar);
 
@@ -581,7 +585,7 @@ EOF;
  * @return sql string
  */
 
-function getAppliesQuery($_dvar=array(),$get=false){
+function getAppliesQuery($_dvar=array(),$strict=false){
 	global $dbprefix;
 	
 	$sql="
@@ -653,21 +657,21 @@ WHERE
 ";
  	if(count($_dvar)==0)return $sql;
 	
-	if(!checkempty($_dvar,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
-	if(!checkempty($_dvar,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
-	if(!checkempty($_dvar,'transliteration'))$sql.="\n and com.common_id = '{$_dvar['transliterationIndex']}'";
-	if(!checkempty($_dvar,'geoname'))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
-	if(!checkempty($_dvar,'geospecification'))$sql.="\n and a.geospecification = '{$_dvar['geospecification']}'";
-	if(!checkempty($_dvar,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
-	if(!checkempty($_dvar,'language'))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
-	if(!checkempty($_dvar,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
+	if(!checkempty($_dvar,$strict,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
+	if(!checkempty($_dvar,$strict,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
+	if(!checkempty($_dvar,$strict,'transliteration'))$sql.="\n and translit.transliteration_id = '{$_dvar['transliterationIndex']}'";
+	if(!checkempty($_dvar,$strict,'geoname'))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
+	if(!checkempty($_dvar,$strict,'geospecification'))$sql.="\n and a.geospecification = '{$_dvar['geospecification']}'";
+	if(!checkempty($_dvar,$strict,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
+	if(!checkempty($_dvar,$strict,'language'))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
+	if(!checkempty($_dvar,$strict,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
 	
  	switch($_dvar['sourceType']){
-		default: case 'literature':if(!checkempty($_dvar,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'service':if(!checkempty($_dvar,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'person':if(!checkempty($_dvar,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
+		default: case 'literature':if(!checkempty($_dvar,$strict,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'service':if(!checkempty($_dvar,$strict,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'person':if(!checkempty($_dvar,$strict,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
 	}
-	if(!checkempty($_dvar,'annotations'))$sql.="\n and a.annotations= '{$_dvar['annotations']}'";
+	if(!checkempty($_dvar,$strict,'annotations'))$sql.="\n and a.annotations= '{$_dvar['annotations']}'";
 	
 	return $sql;
 }
@@ -799,7 +803,7 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 		$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}') ON DUPLICATE KEY UPDATE transliteration_id=LAST_INSERT_ID(transliteration_id)");
 		$_dvar['transliterationIndex']=mysql_insert_id();
 		
-		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')",1);
+		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')");
 		$_dvar['nameIndex']=mysql_insert_id();
 		$_dvar['common_nameIndex']=$_dvar['nameIndex'];
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
@@ -912,7 +916,7 @@ function deleteCommonName($_dvar){
  * @param 
  * @return sql string
  */
-function doSearch($_dvar,$get=false){
+function doSearch($_dvar,$strict=false){
 	global $_OPTIONS;
 
 	// Mark collums that was searched...
@@ -923,23 +927,22 @@ function doSearch($_dvar,$get=false){
 	//todo...
 	$class=array(
 		'lock'=>'',
-		'ent'=>(checkempty($_dvar,'taxon'))?$a:$b,
+		'ent'=>(checkempty($_dvar,$strict,'taxon'))?$a:$b,
 		'ges'=>$a,
-		'com'=>(checkempty($_dvar,'common_name'))?$a:$b,
-		'trans'=>(checkempty($_dvar,'transliteration'))?$a:$b,
-		'geo'=>(checkempty($_dvar,'geoname'))?$a:$b,
-		'geospec'=>(checkempty($_dvar,'geospecification'))?$a:$b,
-		'tribe'=>(checkempty($_dvar,'tribe'))?$a:$b,
-		'lang'=>(checkempty($_dvar,'language'))?$a:$b,
-		'per'=>(checkempty($_dvar,'period'))?$a:$b,
-		'ref'=>(checkempty($_dvar,'sourcevalue'))?$a:$b,
-		'ann'=>(checkempty($_dvar,'annotations'))?$a:$b,
+		'com'=>(checkempty($_dvar,$strict,'common_name'))?$a:$b,
+		'trans'=>(checkempty($_dvar,$strict,'transliteration'))?$a:$b,
+		'geo'=>(checkempty($_dvar,$strict,'geoname'))?$a:$b,
+		'geospec'=>(checkempty($_dvar,$strict,'geospecification'))?$a:$b,
+		'tribe'=>(checkempty($_dvar,$strict,'tribe'))?$a:$b,
+		'lang'=>(checkempty($_dvar,$strict,'language'))?$a:$b,
+		'per'=>(checkempty($_dvar,$strict,'period'))?$a:$b,
+		'ref'=>(checkempty($_dvar,$strict,'sourcevalue'))?$a:$b,
+		'ann'=>(checkempty($_dvar,$strict,'annotations'))?$a:$b,
 	);
 
 	// get search query
-	$sql=getAppliesQuery($_dvar);
+	$sql=getAppliesQuery($_dvar,$strict);
 	$sql.="\n LIMIT 101";
-	
 	$result = doDBQuery($sql);
 
 	$i=0;$search_result='';
@@ -1030,19 +1033,7 @@ EOF;
 	return $search_result;
 }
 
-/**
- * getAppliesQuery:
- * @param 
- * @param 
- * @return sql string
- */
-function cleanPair($name,$def=0){
-	/*global $_dvar;
-	if(strlen($_dvar[$name])==0 || intval($_dvar[$name.'Index'])==0){
-		$_dvar[$name.'Index']=$def;
-		$_dvar[$name]='';
-	}*/
-}
+
 
 
 /**
@@ -1051,10 +1042,12 @@ function cleanPair($name,$def=0){
  * @param 
  * @return sql string
  */
-function checkempty(&$_dvar,$strict=true,$name='',$not=''){
+function checkempty($_dvar,$strict,$name){
 
 	if(isset($_dvar[$name.'Index']) && intval($_dvar[$name.'Index'])>0){
-		return false;
+		if(!$strict || strlen($_POST['ajax_'.$name])>0){
+			return false;
+		}
 	}
 	return true;
 

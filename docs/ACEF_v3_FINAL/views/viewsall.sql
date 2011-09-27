@@ -59,8 +59,9 @@ SELECT DISTINCT
  mdb.supplier_person  AS 'ContactPerson'
 
 FROM
- herbarinput.tbl_tax_species ts
- LEFT JOIN sp2000.tmp_scrutiny_import sc ON sc.taxonID=ts.taxonID
+ herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
+
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
  
@@ -81,41 +82,6 @@ WHERE
  )
 ;
 */
-
--- ===========================================
--- ready
--- view_sp2000_tmp_latest_scrutiny
---
--- ===========================================
-CREATE OR REPLACE
- ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_tmp_latest_scrutiny
- AS
-
-SELECT
- syn.taxonID as 'taxonID',
- syn.acc_taxon_ID as 'acc_taxon_ID',
- syn.ref_date as 'ref_date',
- source_citationID as 'citationID'
-
-FROM
- herbarinput.tbl_tax_synonymy syn
-/*
--- very havy for a view...
-WHERE
- IFNULL(syn.ref_date,0)=(
-  SELECT
-   IFNULL(MAX(syn2.ref_date),0) 
-  FROM
-   herbarinput.tbl_tax_synonymy syn2
-  WHERE
-       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
-   and IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
- )
-GROUP BY
- syn.taxonID, 
- syn.acc_taxon_ID*/;
- 
  
 -- ===========================================
 -- ready
@@ -153,7 +119,7 @@ SELECT
  '' AS 'AdditionalData',
  
  aut.autor AS 'LTSSpecialist',
- sc.ref_date AS 'LTSDate',
+ syn.ref_date AS 'LTSDate',
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
@@ -161,9 +127,9 @@ SELECT
  ts.taxonID AS 'GSDNameGUI'
 
 FROM
- herbarinput.tbl_tax_species ts
- LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON ( sc.taxonID=ts.taxonID and sc.acc_taxon_ID=0)
- LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=sc.citationID
+ herbarinput.tbl_tax_synonymy syn
+ LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=syn.taxonID
+ LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
  
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
@@ -175,14 +141,26 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_authors ta ON ta.authorID=ts.authorID
  LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts.speciesID
  
-
 WHERE
-     tg.familyID='30' --  tf.family='Annonaceae' 
- AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
- AND(
-   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL) -- ttr.rank='species' or ( rank=genus and species = Null)
+     ( syn.acc_taxon_ID=0 OR syn.acc_taxon_ID=syn.taxonID ) -- accepted
+ AND ( IFNULL(syn.ref_date,0)=(
+  SELECT
+   IFNULL(syn2.ref_date,0) AS 'ref_date'
+  FROM
+   herbarinput.tbl_tax_synonymy syn2
+  WHERE
+       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
+   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+  ORDER BY
+   syn2.ref_date DESC
+  LIMIT 1)
  )
-;
+ AND( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
+ AND  tg.familyID='30' --  tf.family='Annonaceae' 
+
+GROUP BY
+ AcceptedTaxonID, LTSDate
+ ;
  
 -- ===========================================
 -- ready
@@ -223,7 +201,7 @@ SELECT
  '' AS 'AdditionalData',
 
  aut.autor AS 'LTSSpecialist',
- sc.ref_date AS 'LTSDate',
+ syn.ref_date AS 'LTSDate',
 
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
@@ -231,15 +209,13 @@ SELECT
  ts.taxonID AS 'GSDNameGUI'
 
 FROM
- herbar_view.view_sp2000_acceptedspecies acc
+ herbar_view.view_sp2000_acceptedspecies acc  -- only from accepted taxons
+ LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)  -- accepted
+ INNER JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
+ INNER JOIN herbarinput.tbl_tax_synonymy syn ON (syn.acc_taxon_ID=0 OR syn.acc_taxon_ID=syn.taxonID)
  
- LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)
- 
- LEFT JOIN herbar_view.view_sp2000_tmp_latest_scrutiny sc ON (sc.taxonID=tso.taxonID and sc.acc_taxon_ID=0)
- LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=sc.citationID
+ LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
- 
- LEFT JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
  
  LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
@@ -257,9 +233,22 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
  
 WHERE
-     ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+( IFNULL(syn.ref_date,0)=(
+  SELECT
+   IFNULL(syn2.ref_date,0) AS 'ref_date'
+  FROM
+   herbarinput.tbl_tax_synonymy syn2
+  WHERE
+       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
+   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+  ORDER BY
+   syn2.ref_date DESC
+  LIMIT 1)
+ )
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
- ;
+GROUP BY
+ AcceptedTaxonID, LTSDate
+;
  
 -- ===========================================
 -- 
@@ -320,10 +309,10 @@ SELECT
  '' AS 'GSDNameGUI'
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- INNER JOIN herbarinput.tbl_tax_synonymy tsyn ON tsyn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
- LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=tsyn.taxonID
+ INNER JOIN herbarinput.tbl_tax_synonymy syn ON syn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
+ LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=syn.taxonID
 
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=tsyn.acc_taxon_ID
+ LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=syn.acc_taxon_ID
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
@@ -346,6 +335,21 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te3 ON te3.epithetID=tss.subvarietyID
  LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=tss.formaID
  LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=tss.subformaID
+WHERE
+( IFNULL(syn.ref_date,0)=(
+  SELECT
+   IFNULL(syn2.ref_date,0) AS 'ref_date'
+  FROM
+   herbarinput.tbl_tax_synonymy syn2
+  WHERE
+       IFNULL(syn2.taxonID,0)= IFNULL(syn.taxonID,0)
+   AND IFNULL(syn2.acc_taxon_ID,0)= IFNULL(syn.acc_taxon_ID,0)
+  ORDER BY
+   syn2.ref_date DESC
+  LIMIT 1)
+ )
+GROUP BY
+ ID, syn.ref_date
 ;
 
 -- ===========================================
@@ -420,7 +424,7 @@ CREATE OR REPLACE
  ALGORITHM = UNDEFINED
  VIEW herbar_view.view_sp2000_tmp_references
  AS
--- accepted TAXA
+-- accepted TAXA (no shared references)
 SELECT
  taxonids.AcceptedTaxonID  AS 'tmp_ID',
  'TaxAccRef'  AS 'tmp_type',
@@ -435,11 +439,10 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY
- tmp_ID
+GROUP BY tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
 
 UNION ALL
--- Synonyms
+-- Synonyms (no shared references)
 SELECT
  synonymids.ID  AS 'tmp_ID',
  'Nomenclatural reference'  AS 'tmp_type',
@@ -454,11 +457,10 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY
- tmp_ID
+GROUP BY tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
  
 UNION ALL
--- CommonNames
+-- CommonNames (shared references)
 SELECT
  cmnames.AcceptedTaxonID  AS 'tmp_ID',
  'Common Name Reference'  AS 'tmp_type',
@@ -505,8 +507,7 @@ FROM
  LEFT JOIN herbarinput.tbl_person pers ON pers.person_ID=per.personID
  
  LEFT JOIN herbarinput.tbl_nom_service serv ON serv.serviceID=ser.serviceID
-GROUP BY
- ReferenceID
+GROUP BY ReferenceID -- is needed, because we are interested in shared references only.
 ;
 
 -- ===========================================

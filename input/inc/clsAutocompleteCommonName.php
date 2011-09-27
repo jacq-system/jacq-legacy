@@ -113,12 +113,68 @@ WHERE
 		if (count($rows) > 0) {
 			foreach ($rows as $row) {
 				$id=$row['common_id'];
-				$label=$row['common_name'];
+				
+				$value=$row['common_name'];
+				$label="{$value} &nbsp;&nbsp;&nbsp;(<i>{$row['tranlit']}</i>)";
+				if(isset($search['params']) && isset($search['params']['showtranslit'])){
+					$value="{$value}     ({$row['tranlit']})";
+				}
+				$results[]=array(
+					'id'	=> $id,
+					'label' => $label,
+					'value' => $value,
+					'color' => ''
+				);
+			}
+		}
+	}catch (Exception $e){
+		error_log($e->getMessage());
+	}
+	
+	return $results;
+}
+
+public function cname_commonname_translit ($value){
+    global $_CONFIG;
+	
+	$results=array();
+	try{
+	
+		$db=clsDbAccess::Connect('INPUT');
+		$sql="
+SELECT
+ com.common_name,
+ com.common_id,
+ trans.name as 'tranlit'
+FROM
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
+ LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
+WHERE
+";	
+		if(isset($value['id'])){
+			$sql.=" com.common_id ='{$value['id']}' or trans.transliteration_id ='{$value['id']}'";
+		}else if(isset($value['exact'])){
+			$sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}' LIMIT 2";	
+		}else{
+			$sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}'  LIMIT 100";
+		}
+		
+		$dbst=$db->query($sql);
+		$rows=$dbst->fetchAll();
+		
+		if (count($rows) > 0) {
+			foreach ($rows as $row) {
+				$id=$row['common_id'];
+				
+				$value=$row['common_name'];
+				$label="{$value} &nbsp;&nbsp;&nbsp;(<i>{$row['tranlit']}</i>)";
+				//$value="{$value}     ({$row['tranlit']})";
 				
 				$results[]=array(
 					'id'	=> $id,
-					'label' => "{$label} &nbsp;&nbsp;&nbsp;(<i>{$row['tranlit']}</i>)",
-					'value' => $label,
+					'label' => $label,
+					'value' => $value,
 					'color' => ''
 				);
 			}

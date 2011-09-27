@@ -26,32 +26,34 @@ class MapLines{
 
 	}
 
-	function getMapLines($p,$allowEmptyRight=false, $valonlyzero=0){
+	function getMapLines($p,$emptyRightIsZero=false, $onlyRightCollumn=false){
 		$new=array();
 		foreach($_POST as $k=>$v){
-			if(preg_match('/acmap_l_(\d+)Index/', $k, $matches)==1){
+			if(preg_match('/acmap_r_(\d+)Index/', $k, $matches)==1){
 				$x=$matches[1];
-				$leftID=$_POST['acmap_l_'.$x.'Index'];
-				$rightID=$_POST['acmap_r_'.$x.'Index'];
+				$leftID=isset($_POST['acmap_l_'.$x.'Index'])?$_POST['acmap_l_'.$x.'Index']:'';
+				$rightID=isset($_POST['acmap_r_'.$x.'Index'])?$_POST['acmap_r_'.$x.'Index']:'';
 				
-				$leftVal=$_POST['ajax_acmap_l_'.$x];
-				$rightVal=$_POST['ajax_acmap_r_'.$x];
+				$leftVal=isset($_POST['ajax_acmap_l_'.$x])?$_POST['ajax_acmap_l_'.$x]:'';
+				$rightVal=isset($_POST['ajax_acmap_r_'.$x])?$_POST['ajax_acmap_r_'.$x]:'';
 				
-				if(is_numeric($leftID) && $rightID=='' && $allowEmptyRight){
-					$new[ $leftID ][ 0 ]=$x;
-					
-				}else if(is_numeric($leftID) && is_numeric($rightID)){		
-					$new[ $leftID ][ $rightID ]=$x;
-				}else if(is_numeric($leftID) && is_numeric($rightVal)){		
-					if(!$valonlyzero || $rightVal=='0')$new[ $leftID ][ $rightVal ]=$x;
-					
-				}else if(is_numeric($leftVal) && is_numeric($rightID)){
-					if(!$valonlyzero || $leftVal=='0')$new[ $leftVal ][ $rightID ]=$x;
-					
-				}else if(is_numeric($leftVal) && is_numeric($rightVal)){
-					if(!$valonlyzero || ($leftVal=='0' && $rightVal=='0'))$new[ $leftVal ][ $rightVal ]=$x;
+				if($onlyRightCollumn){
+					if(is_numeric($rightID)){
+						$new[ $rightID ]=$x;
+						continue;
+					}
+				}else{
+					if(is_numeric($leftID) && $rightID=='' && $emptyRightIsZero){
+						$new[ $leftID ][ 0 ]=$x;
+						continue;
+						
+					}else if(is_numeric($leftID) && is_numeric($rightID)){		
+						$new[ $leftID ][ $rightID ]=$x;
+						continue;
+					}
 				}
-				
+				if(($leftID=='' || $leftID=='0') && ($rightID=='' || $rightID=='0'))continue;
+				$new['error'][]=array($x,$leftID,$rightID);
 			}
 		}
 		return $new;

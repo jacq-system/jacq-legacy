@@ -169,8 +169,8 @@ $serverParams="&cid={$_dvar['common_nameIndex']}";
 $searchjs=<<<EOF
 function createMapSearchstring(){
 	searchString='';
-	if($('#mysqlSearch').val().length>0)
-		searchString='&mysqlSearch='+$('#mysqlSearch').val();
+	if($('#ajax_mysqlSearch').val().length>0)
+		searchString='&mysqlSearch='+$('#ajax_mysqlSearch').val();
 	else
 		searchString='&mdldSearch='+$('#mdldSearch').val();
 	
@@ -180,12 +180,14 @@ EOF;
 		$searchhtml=<<<EOF
 <table>
 <tr><td>MDLD Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mdldSearch" value="" maxlength="200" ></td></tr>
-<tr><td>mysql Search:</td><td><input class="cssftext" style="width: 25em;" type="text" id="mysqlSearch" value="" maxlength="200" ></td></tr>
+<tr><td>mysql Search:</td><td><input tabindex="2" class='cssftextAutocomplete' style='width: 25em;' type="text" value="" name="ajax_mysqlSearch" id="ajax_mysqlSearch" maxlength='520' /></td></tr>
 </table>
+<input type="hidden" name="mysqlSearchIndex" id="mysqlSearchIndex" value="">
+<script>ACFreudConfig.push(['index_jq_autocomplete_commoname.php?field=cname_commonname_translit','mysqlSearch','','0','0','0','2']);</script>
 EOF;
 
 $cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_jq_autocomplete_commoname.php?field=cname_name',
-'index_jq_autocomplete_commoname.php?field=cname_name','ajax/MapLines_CommonNamesEqual.php',$serverParams,$searchjs,$searchhtml);
+'index_jq_autocomplete_commoname.php?field=cname_name','ajax/MapLines_CommonNamesEqual.php',$serverParams,$searchjs,$searchhtml,1);
 
 
 ?>

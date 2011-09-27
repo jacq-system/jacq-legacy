@@ -69,6 +69,7 @@ function ACFreudInit(){
 // mustmach: 0 => don't need to match, symbol: !, mustmatch=1: => must match, orange + !,
 //  mustmatch=2: => must much + "0" allowed
 // Autocompleter
+// acdone: autocompleteralready filled with value.
 function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,minlength){
 
 	//alert(serverScript+', '+nam+', '+startval+', '+mustMatch+', '+fullfocus+', '+minlength); 
