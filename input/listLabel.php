@@ -237,7 +237,7 @@ function collectionItem($coll)
       xajax_updtStandardLabel(id, data);
     }
     function showImage(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + sel;
+      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }

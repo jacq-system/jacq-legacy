@@ -34,27 +34,7 @@ catch (Exception $e) {
   </style>
   <?php $xajaxObject->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
-    function openBrowser(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + encodeURIComponent(sel);
-      MeinFenster = window.open(target,"imgBrowser");
-      MeinFenster.focus();
-    }
-    function editSpecimens(sel) {
-      target = "editSpecimens.php?sel=" + encodeURIComponent(sel);
-      options = "width=";
-      if (screen.availWidth<990)
-        options += (screen.availWidth - 10) + ",height=";
-      else
-        options += "990, height=";
-      if (screen.availHeight<710)
-        options += (screen.availHeight - 10);
-      else
-        options += "710";
-      options += ", top=10,left=10,scrollbars=yes,resizable=yes";
-
-      newWindow = window.open(target,"Specimens",options);
-      newWindow.focus();
-    }
+    
     xajax.callback.global.onRequest = function() {
       xajax. $('loadingMsg').style.display = 'block';
       xajax. $('checkResults').style.display = 'none';

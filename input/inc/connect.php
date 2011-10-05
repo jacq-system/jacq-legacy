@@ -164,7 +164,8 @@ function isLocked($table, $id){
     return false;
 }
 
-/**
+/** 
+ * deprecated
  * get the IP of the appropriate picture server
  *
  * @param integer $specimenID Specimen ID
@@ -172,14 +173,7 @@ function isLocked($table, $id){
  */
 function getPictureServerIP($specimenID)
 {
-    $sql = "SELECT imgserver_IP
-            FROM tbl_img_definition id, tbl_management_collections mc, tbl_specimens s
-            WHERE s.collectionID = mc.collectionID
-             AND mc.source_id = id.source_id_fk
-             AND s.specimen_ID = '" . intval($specimenID) . "'";
-    $row = mysql_fetch_array(db_query($sql));
-
-    return $row['imgserver_IP'];
+    return ''; 
 }
 
 /**

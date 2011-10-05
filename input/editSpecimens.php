@@ -618,13 +618,13 @@ if (isset($_GET['sel'])) {
     }
 
     function showImage(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + sel;
+      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }
 
     function showImageObs(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + sel + "&obs=1";
+	  target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show&obs=1";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }

@@ -13,7 +13,7 @@ function listInstitutions($formData)
 
     $text = "<option value=\"0\">--- all ---</option>\n";
 
-    $sql = "SELECT source_name, tbl_management_collections.source_id
+    $sql = "SELECT source_name, tbl_management_collections.source_id,is_djatoka
             FROM tbl_management_collections, herbarinput.meta, tbl_img_definition
             WHERE tbl_management_collections.source_id = herbarinput.meta.source_id
              AND tbl_management_collections.source_id = tbl_img_definition.source_id_fk
@@ -23,7 +23,9 @@ function listInstitutions($formData)
     while ($row = mysql_fetch_array($result)) {
         $text .= "<option value=\"{$row['source_id']}\"";
         if ($_POST['source_id'] == $row['source_id']) $text .=  " selected";
-        $text .=  ">{$row['source_name']}</option>\n";
+        $text .=  ">{$row['source_name']}";
+		if ($row['is_djatoka']==1) $text .=  " (Djatoka Server)";
+		$text .=  "</option>\n";
     }
 
     $objResponse->assign('source_id', 'innerHTML', $text);

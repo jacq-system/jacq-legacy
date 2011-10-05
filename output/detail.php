@@ -478,7 +478,8 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 
   //$pics = array();
   //$handle = fopen("http://".$row['imgserver_IP']."/database/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID=".$row['specimen_ID'],"r");
-  $transfer = unserialize(@file_get_contents("http://".$row['imgserver_IP']."/database/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID=".$row['specimen_ID'],"r"));
+  $transfer = @file_get_contents("/image/{$row['specimen_ID']}/thumbs?key=DKsuuewwqsa32czucuwqdb576i12"));
+  $transfer = json_decode($transfer);
   //if ($handle) {
   //  while (!feof($handle)) {
   //    $buffer = trim(fgets($handle, 4096));
@@ -489,10 +490,13 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   if ($transfer) {
     if (count($transfer['pics'])>0) {
       foreach ($transfer['pics'] as $v) {
-        echo "<td valign='top' align='center'><a href=\"http://".$row['imgserver_IP']."/database/img/imgBrowser.php?name=".basename($v)."&ID=".$row['specimen_ID']."\" target=\"imgBrowser\">".
-             "<img src=\"http://".$row['imgserver_IP']."/database/img/mktn.php?name=".basename($v)."\" border=\"2\"></a>\n" . 
-             "<br>( <a href='http://".$row['imgserver_IP']."/database/img/downPic.php?name=".basename($v)."'>JPEG2000</a>, <a href='http://".$row['imgserver_IP']."/database/img/downPic.php?name=".basename($v)."&type=1'>TIFF</A> )</td>\n";
-      }
+			$file=basename($v);
+			echo<<<EOF
+<td valign='top' align='center'><a href="/image/{$file}/show target="imgBrowser">".
+<img src="image/{$file}/thumb" border="2"></a>\n" . 
+<br>( <a href='image/{$file}'>JPEG2000</a>, <a href='image/{$file}/tiff'>TIFF</A> )</td>\n";
+EOF;
+ 	 }
     }
     else
       echo "no pictures found\n";

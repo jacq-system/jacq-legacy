@@ -202,7 +202,9 @@ $typusText = makeTypus($ID);
 
 $URI = '';
 if ($row['digital_image'] || $row['digital_image_obs']) {
-  $transfer = unserialize(@file_get_contents("http://".$row['imgserver_IP']."/database/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID=".$row['specimen_ID'],"r"));
+  $transfer = @file_get_contents("/image/{$row['specimen_ID']}/thumbs?key=DKsuuewwqsa32czucuwqdb576i12"));
+  $transfer = json_decode($transfer);
+  
   if( count($transfer['pics']) > 0 ) {
     // Correct the name if necessary
     $fileName = basename($transfer['pics'][0]);
@@ -211,8 +213,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
       $fileName = $treffer[1] . '.tif';
       echo $fileName . "\n";
     }
-    
-    $URI = 'http://'.$row['imgserver_IP'].'/database/img/mktn_kp.php?name=' . $fileName;
+    $URI="http://herbarium.univie.ac.at/database/image/{$row['specimen_ID']}/resized"
     $inventarnummer = basename( $fileName, '.tif' );
     
     //Write Image-Filename into file

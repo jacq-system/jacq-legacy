@@ -109,7 +109,7 @@ function collectionItem($coll) {
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <script type="text/javascript" language="JavaScript">
     function showImage(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + sel;
+      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }

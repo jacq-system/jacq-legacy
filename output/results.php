@@ -202,7 +202,7 @@ while ($row=mysql_fetch_array($result)) {
   if (strlen($image)>0) {
     echo "<td class=\"result\">";
     if ($link)
-      echo "<a href=\"http://".$row['imgserver_IP']."/database/img/imgBrowser.php?name=".$row['specimen_ID']."\" target=\"imgBrowser\">".
+      echo "<a href=\"image/{$row['specimen_ID']}/show\" target=\"imgBrowser\">".
            "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
     else
       echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";

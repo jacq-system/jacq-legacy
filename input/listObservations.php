@@ -220,7 +220,7 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
     function showImage(sel, server) {
-      target = "http://" + server + "/database/img/imgBrowser.php?name=" + sel;
+      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }
