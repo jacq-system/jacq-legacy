@@ -1,7 +1,8 @@
+
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
 #----------------------------
-CREATE TABLE `exp_tbl_AcceptedInfraSpecificTaxa` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` (
 `AcceptedTaxonID` varchar(50) PRIMARY KEY,
 `ParentSpeciesID` varchar(50) default NULL,
 `InfraSpeciesEpithet` varchar(50) default NULL,
@@ -22,7 +23,7 @@ CREATE TABLE `exp_tbl_AcceptedInfraSpecificTaxa` (
 #----------------------------
 # Table structure for AcceptedSpecies
 #----------------------------
-CREATE TABLE `exp_tbl_AcceptedSpecies` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` (
 `AcceptedTaxonID` varchar(50) PRIMARY KEY,
 `Kingdom` varchar(50) default NULL,
 `Phylum` varchar(50) default NULL,
@@ -49,7 +50,7 @@ CREATE TABLE `exp_tbl_AcceptedSpecies` (
 #----------------------------
 # Table structure for CommonNames
 #----------------------------
-CREATE TABLE `exp_tbl_CommonNames` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` (
 `AcceptedTaxonID` varchar(50) NOT NULL,
 `CommonName` varchar(255) NOT NULL,
 `Transliteration` varchar(255) default NULL,
@@ -62,7 +63,7 @@ CREATE TABLE `exp_tbl_CommonNames` (
 #----------------------------
 # Table structure for Distribution
 #----------------------------
-CREATE TABLE `exp_tbl_Distribution` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Distribution` (
 `AcceptedTaxonID` varchar(50) NOT NULL,
 `Distribution` text NOT NULL,
 `StandardInUse` varchar(50) default NULL,
@@ -73,7 +74,7 @@ CREATE TABLE `exp_tbl_Distribution` (
 #----------------------------
 # Table structure for References
 #----------------------------
-CREATE TABLE `exp_tbl_References` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_References` (
 `ReferenceID` varchar(50) PRIMARY KEY,
 `Authors` varchar(255) default NULL,
 `Year` varchar(255) default NULL,
@@ -84,7 +85,7 @@ CREATE TABLE `exp_tbl_References` (
 #----------------------------
 # Table structure for NameReferencesLinks
 #----------------------------
-CREATE TABLE `exp_tbl_NameReferencesLinks` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` (
 `ID` varchar(50) PRIMARY KEY,
 /*`ID` integer(10) PRIMARY KEY,*/
 `ReferenceType` varchar(50) default NULL,
@@ -94,7 +95,7 @@ CREATE TABLE `exp_tbl_NameReferencesLinks` (
 #----------------------------
 # Table structure for SourceDatabase
 #----------------------------
-CREATE TABLE `exp_tbl_SourceDatabase` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` (
 `DatabaseFullName` varchar(255) NOT NULL,
 `DatabaseShortName` varchar(50) NOT NULL,
 `DatabaseVersion` varchar(5) NOT NULL,
@@ -115,7 +116,7 @@ CREATE TABLE `exp_tbl_SourceDatabase` (
 #----------------------------
 # Table structure for Synonyms
 #----------------------------
-CREATE TABLE `exp_tbl_Synonyms` (
+CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` (
 `ID` varchar(50) PRIMARY KEY,
 /*`ID` integer(10) PRIMARY KEY,*/
 `AcceptedTaxaID` varchar(50) NOT NULL,
@@ -131,21 +132,20 @@ CREATE TABLE `exp_tbl_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-/*
-TRUNCATE `exp_tbl_AcceptedInfraSpecificTaxa`;
-TRUNCATE `exp_tbl_AcceptedSpecies`;
-TRUNCATE `exp_tbl_CommonNames`;
-TRUNCATE `exp_tbl_Distribution`;
-TRUNCATE `exp_tbl_NameReferencesLinks`;
-TRUNCATE `exp_tbl_References`;
-TRUNCATE `exp_tbl_SourceDatabase`;
-TRUNCATE `exp_tbl_Synonyms`;
-*/
-INSERT INTO exp_tbl_AcceptedInfraSpecificTaxa SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa;
-INSERT INTO exp_tbl_AcceptedSpecies SELECT * FROM  view_sp2000_acceptedspecies;
-INSERT INTO exp_tbl_CommonNames SELECT * FROM  view_sp2000_commonnames;
-INSERT INTO exp_tbl_Distribution SELECT * FROM  view_sp2000_distribution;
-INSERT INTO exp_tbl_NameReferencesLinks SELECT * FROM view_sp2000_namereferenceslinks;
-INSERT INTO exp_tbl_References SELECT * FROM view_sp2000_references;
-INSERT INTO exp_tbl_SourceDatabase SELECT * FROM  view_sp2000_sourcedatabase;
-INSERT INTO exp_tbl_Synonyms SELECT * FROM  view_sp2000_synonyms;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_Distribution`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_References`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase`;
+TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms`;
+
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SELECT * FROM  view_sp2000_acceptedspecies WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` SELECT * FROM  view_sp2000_commonnames WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Distribution` SELECT * FROM  view_sp2000_distribution WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` SELECT * FROM view_sp2000_namereferenceslinks WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_References` SELECT * FROM view_sp2000_references WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT * FROM  view_sp2000_sourcedatabase WHERE family='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` SELECT * FROM  view_sp2000_synonyms WHERE family='IFAMILYNAME';

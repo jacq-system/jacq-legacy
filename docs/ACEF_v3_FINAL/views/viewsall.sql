@@ -94,7 +94,7 @@ CREATE OR REPLACE
  AS
 
 SELECT
- 
+ tf.family AS 'familyPre',
  CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  
  'Plantae' AS 'Kingdom',
@@ -156,10 +156,10 @@ WHERE
   LIMIT 1)
  )
  AND( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
- AND  tg.familyID='30' --  tf.family='Annonaceae' 
+ AND  tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
 
 GROUP BY
- AcceptedTaxonID, LTSDate
+ familyPre,AcceptedTaxonID, LTSDate
  ;
  
 -- ===========================================
@@ -173,6 +173,7 @@ CREATE OR REPLACE
  AS
 
 SELECT 
+ acc.family AS 'familyPre',
  CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  acc.AcceptedTaxonID AS 'ParentSpeciesID',
 
@@ -247,7 +248,7 @@ WHERE
  )
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
 GROUP BY
- AcceptedTaxonID, LTSDate
+ familyPre,AcceptedTaxonID, LTSDate
 ;
  
 -- ===========================================
@@ -261,9 +262,9 @@ CREATE OR REPLACE
  VIEW herbar_view.view_sp2000_tmp_AcceptedTaxonID
  AS
 
-SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedspecies acc 
+SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedspecies acc 
 UNION ALL
-SELECT AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedinfraspecifictaxa acc 
+SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedinfraspecifictaxa acc 
 ;
 
 
@@ -276,7 +277,8 @@ CREATE OR REPLACE
  ALGORITHM = UNDEFINED
  VIEW herbar_view.view_sp2000_synonyms
  AS
-SELECT 
+SELECT
+ taxonids.familyPre AS 'familyPre',
  CONCAT('s',tss.taxonID) AS 'ID',
  CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
  tg.genus AS 'Genus',
@@ -349,7 +351,7 @@ WHERE
   LIMIT 1)
  )
 GROUP BY
- ID, syn.ref_date
+ familyPre,ID, syn.ref_date
 ;
 
 -- ===========================================
@@ -362,6 +364,7 @@ CREATE OR REPLACE
  VIEW herbar_view.view_sp2000_commonnames
  AS
 SELECT
+ taxonids.familyPre AS 'familyPre',
  taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
  co.common_name AS 'CommonName',
  '' AS 'Transliteration',
@@ -403,6 +406,7 @@ CREATE OR REPLACE
  AS
 
 SELECT
+ taxonids.familyPre AS 'familyPre',
  taxonids.AcceptedTaxonID AS 'AcceptedTaxonID',
  gn.iso_alpha_2_code AS 'DistributionElement',
  'ISO2Alpha' AS 'StandardInUse',
@@ -426,6 +430,7 @@ CREATE OR REPLACE
  AS
 -- accepted TAXA (no shared references)
 SELECT
+ taxonids.familyPre AS 'familyPre',
  taxonids.AcceptedTaxonID  AS 'tmp_ID',
  'TaxAccRef'  AS 'tmp_type',
  taxonids.AcceptedTaxonID AS 'ReferenceID',
@@ -439,11 +444,12 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
+GROUP BY familyPre,tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
 
 UNION ALL
 -- Synonyms (no shared references)
 SELECT
+ synonymids.familyPre AS 'familyPre',
  synonymids.ID  AS 'tmp_ID',
  'Nomenclatural reference'  AS 'tmp_type',
  synonymids.ID AS 'ReferenceID',
@@ -457,11 +463,12 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
+GROUP BY familyPre,tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
  
 UNION ALL
 -- CommonNames (shared references)
 SELECT
+ cmnames.familyPre AS 'familyPre',
  cmnames.AcceptedTaxonID  AS 'tmp_ID',
  'Common Name Reference'  AS 'tmp_type',
  cmnames.ReferenceID AS 'ReferenceID',
@@ -507,7 +514,7 @@ FROM
  LEFT JOIN herbarinput.tbl_person pers ON pers.person_ID=per.personID
  
  LEFT JOIN herbarinput.tbl_nom_service serv ON serv.serviceID=ser.serviceID
-GROUP BY ReferenceID -- is needed, because we are interested in shared references only.
+GROUP BY familyPre,ReferenceID -- is needed, because we are interested in shared references only.
 ;
 
 -- ===========================================
@@ -520,6 +527,7 @@ CREATE OR REPLACE
  VIEW herbar_view.view_sp2000_references
  AS
 SELECT
+ ref.familyPre AS 'familyPre',
  ref.ReferenceID as 'ReferenceID',
  ref.Authors as 'Authors',
  ref.Year as 'Year',
@@ -541,6 +549,7 @@ CREATE OR REPLACE
  AS
 
 SELECT
+ ref.familyPre AS 'familyPre',
  ref.tmp_ID AS 'ID',
  ref.tmp_type AS 'Reference Type',
  ref.ReferenceID AS 'ReferenceID'

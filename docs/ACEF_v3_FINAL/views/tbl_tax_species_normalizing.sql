@@ -49,10 +49,19 @@ BEGIN
        ( ts3.synID=ts.taxonID AND ts3.basID=ts2.taxonID ) -- echo: 336-358/338-340  (query: 324/336/354)
     OR ( ts3.taxonID=ts2.taxonID ) -- echo: 332-335/350-353
    );
-   
- DECLARE cur_taxonids CURSOR FOR 
-  SELECT SUBSTR(taxonids.AcceptedTaxonID,2) AS 'AcceptedTaxonID' FROM  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids;
- 
+
+  DECLARE cur_taxonids CURSOR FOR 
+   SELECT
+    ts.taxonID AS 'AcceptedTaxonID'
+   FROM  
+    herbarinput.tbl_tax_species ts
+	LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
+   WHERE
+         ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+    AND ( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
+    AND  tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+   ;
+
  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
  OPEN cur_taxonids;
