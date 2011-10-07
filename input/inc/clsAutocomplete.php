@@ -808,18 +808,12 @@ public function taxon($value, $noExternals=false, $withDT=false,$withID=true){
 			}
 
 			$sql.=" tg.genus {$equ} '{$v[0]}'";
-			if($noExternals) $sql .=" AND external=0";
+			if($noExternals) $sql .=" AND ts.external=0";
 			
 			if(!empty($v[1])){
-				if($withID==2){
-					$withID=true;
-				}
 				$sql.=" AND te0.epithet {$equ} '{$v[1]}'";
 			}else{
 				$sql.=" AND te0.epithet IS NULL";
-				if($withID==2){
-					$withID=false;
-				}
 			}
 			
 			if(isset($value['exact'])){

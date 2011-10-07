@@ -196,7 +196,7 @@ if (isset($_GET['new'])) {
     }
     $annotations = $_POST['annotations'];
     $sqldata = "taxonID = " . extractID($_POST['taxon']) . ",
-                acc_taxon_ID = '" . intval($_POST['taxonAccIndex']) . "',
+                acc_taxon_ID = " . ( ( intval($_POST['taxonAccIndex'])==0 || strlen($_POST['taxonAcc'])==0 || $_POST['taxonAcc']=='0' || $_POST['taxonAcc']=='· <>')?'null':"'".intval($_POST['taxonAccIndex'])."'" ). ",
                 preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                 annotations = " . quoteString($annotations) . ",
                 ref_date = '" . dateconvert($_POST['ref_date'],true) . "',
@@ -227,8 +227,7 @@ if (isset($_GET['new'])) {
         $sql = "INSERT INTO tbl_tax_synonymy SET
                 $sqldata";
         $updated = 0;
-    }
-
+    }//echo $sql;exit;
     $result = db_query($sql);
     $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : mysql_insert_id();
     //logTaxSynonymy($p_tax_syn_ID, $updated);

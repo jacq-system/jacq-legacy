@@ -342,12 +342,12 @@ VALUES
 				foreach($obj as $acctaxonID=>$x){
 					// If not in database yet, add it
 					$row2=array();
-					$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
+					$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and IFNULL(acc_taxon_ID,0)='{$acctaxonID}' LIMIT 1";
 					$result2=db_query($sql2);
 					if($result2){
 						$row2=mysql_fetch_array($result2);
 						if($row2['c']==0){
-							$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
+							$sql2 = $sql." ('{$taxonID}',".(($acctaxonID==0)?'null':"'{$acctaxonID}'").",null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
 							$result2 = db_query($sql2);
 							if($result2){
 								$tax_syn_ID=mysql_insert_id();

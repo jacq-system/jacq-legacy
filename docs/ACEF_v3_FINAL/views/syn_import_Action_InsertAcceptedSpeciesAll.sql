@@ -5,7 +5,7 @@ INSERT INTO herbarinput.tbl_tax_synonymy
  
  SELECT 
   ts.taxonID as 'taxonID',
-  '0' as 'acc_taxon_ID',
+  null as 'acc_taxon_ID',
   lit.jahr as 'ref_date',
   '' AS 'preferred_taxonomy',
 	
@@ -24,7 +24,7 @@ INSERT INTO herbarinput.tbl_tax_synonymy
    LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
    LEFT JOIN herbar_view.syn_import_tmp_msaccess_scrutiny scr on scr.taxonID = ts.taxonID
    LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
-   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON (sy.taxonID=ts.taxonID and sy.acc_taxon_ID=0)
+   LEFT JOIN herbarinput.tbl_tax_synonymy sy ON (sy.taxonID=ts.taxonID and sy.acc_taxon_ID is null )
   WHERE
    sy.tax_syn_ID is null  -- not already accepted in tbl_tax_synonymy
    -- taken from checkSyn.php => exclude wrong taxons

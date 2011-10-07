@@ -109,7 +109,7 @@ SELECT
  'Magnoliopsida' AS 'Class',
  'Magnoliales' AS 'Order',
  '' AS 'Superfamily',
- 
+ tax_syn_ID,
  tf.family AS 'Family',
  tg.genus AS 'Genus',
 
@@ -126,7 +126,7 @@ SELECT
  '' AS 'AdditionalData',
  
  aut.autor AS 'LTSSpecialist',
- syn.ref_date AS 'LTSDate',
+ lit.jahr AS 'LTSDate',
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
@@ -149,24 +149,34 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts.speciesID
  
 WHERE
-     ( syn.acc_taxon_ID=0 OR syn.acc_taxon_ID=syn.taxonID ) -- accepted
- AND ( IFNULL(syn.ref_date,0)=(
+     ( syn.acc_taxon_ID is null OR syn.acc_taxon_ID=syn.taxonID ) -- accepted
+ AND ( IFNULL(syn.source_citationID,0)=
+ (
   SELECT
-   IFNULL(syn2.ref_date,0) AS 'ref_date'
+   IFNULL(syn2.source_citationID,0)
   FROM
    herbarinput.tbl_tax_synonymy syn2
+   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
   WHERE
        syn2.taxonID=syn.taxonID
-   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
+   AND ( syn2.acc_taxon_ID is null or syn2.acc_taxon_ID=syn2.taxonID)
   ORDER BY
-   syn2.ref_date DESC
-  LIMIT 1)
+   CASE
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
+    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
+    WHEN lit2.jahr='in prep.' THEN 'b'
+    ELSE 'c' 
+   END 
+   DESC
+  LIMIT
+   1
+ )
  )
  AND( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
  AND  tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
-
 GROUP BY
- tf.family, ts.taxonID, syn.ref_date
+ tf.family, ts.taxonID, lit.jahr
  ;
  
 -- ===========================================
@@ -209,7 +219,7 @@ SELECT
  '' AS 'AdditionalData',
 
  aut.autor AS 'LTSSpecialist',
- syn.ref_date AS 'LTSDate',
+ lit.jahr AS 'LTSDate',
 
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
@@ -241,21 +251,31 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
  
 WHERE
-( IFNULL(syn.ref_date,0)=(
+ IFNULL(syn.source_citationID,0)=
+ (
   SELECT
-   IFNULL(syn2.ref_date,0) AS 'ref_date'
+   IFNULL(syn2.source_citationID,0)
   FROM
    herbarinput.tbl_tax_synonymy syn2
+   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
   WHERE
-       syn2.taxonID= syn.taxonID
-   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
+       syn2.taxonID=syn.taxonID
+   AND ( syn2.acc_taxon_ID is null or syn2.acc_taxon_ID=syn2.taxonID)
   ORDER BY
-   syn2.ref_date DESC
-  LIMIT 1)
+   CASE
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
+    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
+    WHEN lit2.jahr='in prep.' THEN 'b'
+    ELSE 'c' 
+   END 
+   DESC
+  LIMIT
+   1
  )
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
 GROUP BY
- acc.family,ts.taxonID, syn.ref_date
+ acc.family,ts.taxonID, lit.jahr
 ;
  
 -- ===========================================
@@ -345,20 +365,30 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=tss.formaID
  LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=tss.subformaID
 WHERE
-( IFNULL(syn.ref_date,0)=(
+ IFNULL(syn.source_citationID,0)=
+ (
   SELECT
-   IFNULL(syn2.ref_date,0) AS 'ref_date'
+   IFNULL(syn2.source_citationID,0)
   FROM
    herbarinput.tbl_tax_synonymy syn2
+   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
   WHERE
-       syn2.taxonID= syn.taxonID
-   AND syn2.acc_taxon_ID= syn.acc_taxon_ID
+       syn2.taxonID=syn.taxonID
+   AND syn2.acc_taxon_ID=syn.acc_taxon_ID
   ORDER BY
-   syn2.ref_date DESC
-  LIMIT 1)
+   CASE
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
+    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
+    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
+    WHEN lit2.jahr='in prep.' THEN 'b'
+    ELSE 'c' 
+   END 
+   DESC
+  LIMIT
+   1
  )
 GROUP BY
- taxonids.familyPre, tss.taxonID, syn.ref_date
+ taxonids.familyPre, tss.taxonID
 ;
 
 -- ===========================================
