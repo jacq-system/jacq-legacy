@@ -20,9 +20,9 @@ INSERT INTO herbarinput.tbl_tax_synonymy
   '2' as 'userID'
   FROM
    herbar_view.syn_import_tmp_allacceptedspecies acc
-   LEFT JOIN  herbarinput.tbl_tax_species ts ON ts.taxonID=acc.taxonID
+   LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=acc.taxonID
    LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
-   LEFT JOIN sp2000.syn_import_tmp_msaccess_scrutiny scr on scr.taxonID = ts.taxonID
+   LEFT JOIN herbar_view.syn_import_tmp_msaccess_scrutiny scr on scr.taxonID = ts.taxonID
    LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
    LEFT JOIN herbarinput.tbl_tax_synonymy sy ON (sy.taxonID=ts.taxonID and sy.acc_taxon_ID=0)
   WHERE

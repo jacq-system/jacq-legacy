@@ -21,7 +21,7 @@ SELECT
  m.source_version  AS 'DatabaseVersion',
  m.source_update AS 'ReleaseDate',
  mdb.supplier_person AS 'AuthorsEditors',
- 'TaxonomicCoverage' AS 'TaxonomicCoverage',
+ '' AS 'TaxonomicCoverage',
  m.source_abbr_engl AS 'GroupNameInEnglish',
  mdb.description AS 'Abstract',
  mdb.supplier_organisation AS 'Organisation',
@@ -130,7 +130,7 @@ SELECT
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
- 'GSDTaxonGUI' AS 'GSDTaxonGUI',
+ '' AS 'GSDTaxonGUI',
  ts.taxonID AS 'GSDNameGUI'
 
 FROM
@@ -315,7 +315,7 @@ SELECT
  '' AS 'GSDNameStatus',
  tts.status_sp2000 AS 'Sp2000NameStatus',
 
- '' AS 'GSDNameGUI'
+ ts.taxonID AS 'GSDNameGUI'
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
  INNER JOIN herbarinput.tbl_tax_synonymy syn ON syn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
