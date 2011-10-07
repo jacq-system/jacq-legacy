@@ -14,9 +14,9 @@ INSERT INTO herbarinput.tbl_tax_synonymy
   
   'literature' as 'source',
   lit.citationID as 'source_citationID',
-  '' as 'source_person_ID',
-  '' as 'source_serviceID',
-  '' as 'source_specimenID',
+  null as 'source_person_ID',
+  null as 'source_serviceID',
+  null as 'source_specimenID',
 	
   '2' as 'userID'
  FROM
