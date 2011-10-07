@@ -18,14 +18,12 @@ INSERT INTO herbarinput.tbl_tax_synonymy
 	
   '2' as 'userID'
   FROM
-   herbarinput.tbl_tax_species ts
+   herbar_view.tbltaxspecies_acceptedspecies acc
+   LEFT JOIN  herbarinput.tbl_tax_species ts ON ts.taxonID=acc.taxonID
    LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
    LEFT JOIN sp2000.tmp_scrutiny_import_all scr on scr.taxonID = ts.taxonID
    LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID= scr.citationID
    LEFT JOIN herbarinput.tbl_tax_synonymy sy ON (sy.taxonID=ts.taxonID and sy.acc_taxon_ID=0)
   WHERE
-       sy.tax_syn_ID is null
-   AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
-   AND ( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
-   AND tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+   sy.tax_syn_ID is null
   ;

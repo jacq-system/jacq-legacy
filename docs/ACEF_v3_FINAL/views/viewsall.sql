@@ -213,7 +213,7 @@ FROM
  herbar_view.view_sp2000_acceptedspecies acc  -- only from accepted taxons
  LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)  -- accepted
  INNER JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
- INNER JOIN herbarinput.tbl_tax_synonymy syn ON (syn.acc_taxon_ID=0 OR syn.acc_taxon_ID=syn.taxonID)
+ INNER JOIN herbarinput.tbl_tax_synonymy syn ON ( syn.taxonID=ts.taxonID and (syn.acc_taxon_ID=0 OR syn.acc_taxon_ID=syn.taxonID) )
  
  LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID

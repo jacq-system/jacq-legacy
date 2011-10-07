@@ -51,8 +51,6 @@ if(isset($picinfo['url']) && $picinfo['url']!==false ){
 	}
 }
 
-
-
 function doPicInfo($picinfo){
 	global $q,$debug;
 	if($picinfo['is_djatoka']=='1'){
@@ -107,8 +105,6 @@ function doPicInfo($picinfo){
 	header('Content-type: application/json');
 	echo json_encode($response);
 }
-
-
 
 function doRedirectShowPic($picinfo){
 	global $q,$debug;
