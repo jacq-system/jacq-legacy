@@ -17,7 +17,15 @@
 # ===========================================
 
 
-	
+	DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_AcceptedInfraSpecificTaxa`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_AcceptedSpecies`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_CommonNames`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_Distribution`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_NameReferencesLinks`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_References`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_SourceDatabase`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Annonaceae_Synonyms`;
+
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
 #----------------------------
@@ -151,6 +159,7 @@ CREATE TABLE `herbar_view`.`exp2000_Annonaceae_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+/*
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_AcceptedInfraSpecificTaxa`;
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_AcceptedSpecies`;
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_CommonNames`;
@@ -159,15 +168,18 @@ TRUNCATE `herbar_view`.`exp2000_Annonaceae_NameReferencesLinks`;
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_References`;
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_SourceDatabase`;
 TRUNCATE `herbar_view`.`exp2000_Annonaceae_Synonyms`;
+*/
 
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_AcceptedInfraSpecificTaxa` SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_AcceptedSpecies` SELECT * FROM  view_sp2000_acceptedspecies WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_CommonNames` SELECT * FROM  view_sp2000_commonnames WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_Distribution` SELECT * FROM  view_sp2000_distribution WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_NameReferencesLinks` SELECT * FROM view_sp2000_namereferenceslinks WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_References` SELECT * FROM view_sp2000_references WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_SourceDatabase` SELECT * FROM  view_sp2000_sourcedatabase WHERE family='Annonaceae';
-INSERT INTO `herbar_view`.`exp2000_Annonaceae_Synonyms` SELECT * FROM  view_sp2000_synonyms WHERE family='Annonaceae';
+
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedspecies` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `herbar_view`.`view_sp2000_commonnames` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `herbar_view`.`view_sp2000_distribution` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `herbar_view`.`view_sp2000_namereferenceslinks` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Annonaceae';
+INSERT INTO `herbar_view`.`exp2000_Annonaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Annonaceae';
+
 
 
 
@@ -176,7 +188,15 @@ INSERT INTO `herbar_view`.`exp2000_Annonaceae_Synonyms` SELECT * FROM  view_sp20
 # ===========================================
 
 
-	
+	DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_AcceptedInfraSpecificTaxa`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_AcceptedSpecies`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_CommonNames`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_Distribution`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_NameReferencesLinks`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_References`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_SourceDatabase`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Chenopodiaceae_Synonyms`;
+
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
 #----------------------------
@@ -310,6 +330,7 @@ CREATE TABLE `herbar_view`.`exp2000_Chenopodiaceae_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+/*
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_AcceptedInfraSpecificTaxa`;
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_AcceptedSpecies`;
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_CommonNames`;
@@ -318,15 +339,18 @@ TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_NameReferencesLinks`;
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_References`;
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_SourceDatabase`;
 TRUNCATE `herbar_view`.`exp2000_Chenopodiaceae_Synonyms`;
+*/
 
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_AcceptedInfraSpecificTaxa` SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_AcceptedSpecies` SELECT * FROM  view_sp2000_acceptedspecies WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_CommonNames` SELECT * FROM  view_sp2000_commonnames WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Distribution` SELECT * FROM  view_sp2000_distribution WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_NameReferencesLinks` SELECT * FROM view_sp2000_namereferenceslinks WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_References` SELECT * FROM view_sp2000_references WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_SourceDatabase` SELECT * FROM  view_sp2000_sourcedatabase WHERE family='Chenopodiaceae';
-INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Synonyms` SELECT * FROM  view_sp2000_synonyms WHERE family='Chenopodiaceae';
+
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedspecies` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `herbar_view`.`view_sp2000_commonnames` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `herbar_view`.`view_sp2000_distribution` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `herbar_view`.`view_sp2000_namereferenceslinks` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Chenopodiaceae';
+INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Chenopodiaceae';
+
 
 
 
@@ -335,7 +359,15 @@ INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Synonyms` SELECT * FROM  view_
 # ===========================================
 
 
-	
+	DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_AcceptedInfraSpecificTaxa`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_AcceptedSpecies`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_CommonNames`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_Distribution`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_NameReferencesLinks`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_References`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_SourceDatabase`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_Ebenaceae_Synonyms`;
+
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
 #----------------------------
@@ -469,6 +501,7 @@ CREATE TABLE `herbar_view`.`exp2000_Ebenaceae_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+/*
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_AcceptedInfraSpecificTaxa`;
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_AcceptedSpecies`;
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_CommonNames`;
@@ -477,15 +510,18 @@ TRUNCATE `herbar_view`.`exp2000_Ebenaceae_NameReferencesLinks`;
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_References`;
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_SourceDatabase`;
 TRUNCATE `herbar_view`.`exp2000_Ebenaceae_Synonyms`;
+*/
 
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_AcceptedInfraSpecificTaxa` SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_AcceptedSpecies` SELECT * FROM  view_sp2000_acceptedspecies WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_CommonNames` SELECT * FROM  view_sp2000_commonnames WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_Distribution` SELECT * FROM  view_sp2000_distribution WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_NameReferencesLinks` SELECT * FROM view_sp2000_namereferenceslinks WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_References` SELECT * FROM view_sp2000_references WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_SourceDatabase` SELECT * FROM  view_sp2000_sourcedatabase WHERE family='Ebenaceae';
-INSERT INTO `herbar_view`.`exp2000_Ebenaceae_Synonyms` SELECT * FROM  view_sp2000_synonyms WHERE family='Ebenaceae';
+
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedspecies` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `herbar_view`.`view_sp2000_commonnames` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `herbar_view`.`view_sp2000_distribution` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `herbar_view`.`view_sp2000_namereferenceslinks` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Ebenaceae';
+INSERT INTO `herbar_view`.`exp2000_Ebenaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Ebenaceae';
+
 
 
 #</pre>

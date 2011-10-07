@@ -1,3 +1,11 @@
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_CommonNames`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_Distribution`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_References`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase`;
+DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_Synonyms`;
 
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
@@ -132,6 +140,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+/*
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames`;
@@ -140,12 +149,15 @@ TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_References`;
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase`;
 TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms`;
+*/
 
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SELECT * FROM  view_sp2000_acceptedinfraspecifictaxa WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SELECT * FROM  view_sp2000_acceptedspecies WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` SELECT * FROM  view_sp2000_commonnames WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Distribution` SELECT * FROM  view_sp2000_distribution WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` SELECT * FROM view_sp2000_namereferenceslinks WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_References` SELECT * FROM view_sp2000_references WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT * FROM  view_sp2000_sourcedatabase WHERE family='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` SELECT * FROM  view_sp2000_synonyms WHERE family='IFAMILYNAME';
+
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedspecies` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `herbar_view`.`view_sp2000_commonnames` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `herbar_view`.`view_sp2000_distribution` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `herbar_view`.`view_sp2000_namereferenceslinks` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='IFAMILYNAME';
+INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='IFAMILYNAME';
+
