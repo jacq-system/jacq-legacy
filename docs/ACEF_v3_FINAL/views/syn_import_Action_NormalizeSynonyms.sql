@@ -3,6 +3,7 @@
 -- view_sp2000_tmp_tabl_synonyms_normalized
 -- old: for tbl_tax_specimens
 -- ===========================================
+-- TRUNCATE view_sp2000_tmp_tabl_synonyms_normalized
 DROP TABLE IF EXISTS herbar_view.view_sp2000_tmp_tabl_synonyms_normalized;
 CREATE TABLE herbar_view.view_sp2000_tmp_tabl_synonyms_normalized(
 AcceptedTaxonID INT NOT NULL ,
@@ -14,10 +15,10 @@ SynonymID INT NOT NULL
 -- do_synonym_normalizing
 --
 -- ===========================================
-DROP PROCEDURE IF EXISTS do_synonym_normalizing;
+DROP PROCEDURE IF EXISTS herbar_view.do_synonym_normalizing;
 DELIMITER $$
 
-CREATE PROCEDURE do_synonym_normalizing()
+CREATE PROCEDURE herbar_view.do_synonym_normalizing()
 BEGIN
  
  DECLARE taxon_search INT DEFAULT 48465 ; 
@@ -51,7 +52,7 @@ BEGIN
    );
 
   DECLARE cur_taxonids CURSOR FOR 
-   SELECT acc.taxonID AS 'AcceptedTaxonID' FROM herbar_view.tbltaxspecies_acceptedspecies acc;
+   SELECT acc.taxonID AS 'AcceptedTaxonID' FROM herbar_view.syn_import_tmp_allacceptedspecies acc;
 
  DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 

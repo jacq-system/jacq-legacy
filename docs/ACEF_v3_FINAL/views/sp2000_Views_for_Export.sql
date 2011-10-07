@@ -9,6 +9,13 @@ CREATE OR REPLACE
  AS
  
 SELECT
+ CASE
+  WHEN m.source_id=7  THEN 'Annonaceae'
+  WHEN m.source_id=25 THEN 'Chenopodiaceae'
+  WHEN m.source_id=26 THEN 'Ebenaceae'
+  ELSE ''
+ END AS 'familyPre',
+ 
  m.source_name AS 'DatabaseFullName',
  m.source_code AS 'DatabaseShortName',
  m.source_version  AS 'DatabaseVersion',
@@ -29,7 +36,7 @@ FROM
  herbarinput.meta m
  LEFT JOIN  herbarinput.metadb mdb ON mdb.source_id_fk=m.source_id
 WHERE
-  m.source_id=7
+  m.source_id in('7','25','26')
 ;
 /*
 -- ===========================================
@@ -159,7 +166,7 @@ WHERE
  AND  tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
 
 GROUP BY
- familyPre,AcceptedTaxonID, LTSDate
+ tf.family, ts.taxonID, syn.ref_date
  ;
  
 -- ===========================================
@@ -248,7 +255,7 @@ WHERE
  )
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
 GROUP BY
- familyPre,AcceptedTaxonID, LTSDate
+ acc.family,ts.taxonID, syn.ref_date
 ;
  
 -- ===========================================
@@ -351,7 +358,7 @@ WHERE
   LIMIT 1)
  )
 GROUP BY
- familyPre,ID, syn.ref_date
+ taxonids.familyPre, tss.taxonID, syn.ref_date
 ;
 
 -- ===========================================
@@ -444,7 +451,7 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY familyPre,tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
+GROUP BY taxonids.familyPre,taxonids.AcceptedTaxonID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
 
 UNION ALL
 -- Synonyms (no shared references)
@@ -463,7 +470,7 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
-GROUP BY familyPre,tmp_ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
+GROUP BY synonymids.familyPre, synonymids.ID -- shouldn be needed, because tmp_ID is unique in taxonids. need to be checked: tbli, lit, ta
  
 UNION ALL
 -- CommonNames (shared references)
@@ -514,7 +521,7 @@ FROM
  LEFT JOIN herbarinput.tbl_person pers ON pers.person_ID=per.personID
  
  LEFT JOIN herbarinput.tbl_nom_service serv ON serv.serviceID=ser.serviceID
-GROUP BY familyPre,ReferenceID -- is needed, because we are interested in shared references only.
+GROUP BY cmnames.familyPre, cmnames.ReferenceID -- is needed, because we are interested in shared references only.
 ;
 
 -- ===========================================
