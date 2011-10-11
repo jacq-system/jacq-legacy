@@ -1,6 +1,6 @@
 <?php
-require_once('jsonRPCServer.php');
-require_once('../../inc/connect.php');
+require_once('inc/jsonRPCServerCustom.php');
+require_once('../inc/connect.php');
 
 
 error_reporting(E_ALL);
