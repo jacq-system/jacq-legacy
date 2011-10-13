@@ -1,33 +1,11 @@
 <?php
-/*
-					COPYRIGHT
 
-Copyright 2007 Sergio Vaccaro <sergio@inservibile.org>
+require_once('jsonRPCServer.php');
 
-This file is part of JSON-RPC PHP.
 
-JSON-RPC PHP is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-JSON-RPC PHP is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with JSON-RPC PHP; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-/**
- * This class build a json-RPC Server 1.0
- * http://json-rpc.org/wiki/specification
- *
- * @author sergio <jsonrpcphp@inservibile.org>
- */
-class jsonRPCServer{
+class jsonRPCServerCustom extends jsonRPCServer{
+	private static $password=false;
+	private static $key=false;
 	
 	private function checkKey($key,$password){
 		$salt=substr($key,0,5);
@@ -44,77 +22,31 @@ class jsonRPCServer{
 		return false;
 	}
 	
+	public static function checkSecuredRequest(){
+		if(!self::$password || self::$password==''){
+			return true;
+		}
+		
+		if(self::checkKey(self::$key,self::$password)===true){
+				return true;
+		}
+
+		return array(
+			'error' => 'Key needed for this action and false provided.'
+		);
+	}
+	
 	/**
 	 * This function handle a request binding it to a given object
 	 *
 	 * @param object $object
 	 * @return boolean
 	 */
-	public static function handle($object,$password=''){
-		
-		// checks if a JSON-RCP request has been received
-		if($_SERVER['REQUEST_METHOD'] != 'POST' || empty($_SERVER['CONTENT_TYPE']) || $_SERVER['CONTENT_TYPE'] != 'application/json'){
-			// This is not a JSON-RPC request
-			return false;
-		}
-
-		// reads the input data
+	public static function handle($object,$password=false){
 		$request=json_decode(file_get_contents('php://input'),true);
-
-		// executes the task on local object
-		try{
-			$valid=false;
-			
-			if($password!=''){
-				if(($valid=self::checkKey($request['key'],$password))===false){
-					$response=array(
-						'id' => $request['id'],
-						'result' => NULL,
-						'error' => 'Key needed for this action and false provided.'
-					);
-				}
-			}
-			
-			if($valid || $password==''){
-				
-				/*$params=array();
-				foreach($request['params'] as $k=>$v){
-					if(is_scalar($v)){
-						$params[$k]=base64_decode($v);
-					}else{
-						$params[$k]=$v;
-					}
-				}*/
-				$params=$request['params'];
-				if($result=@call_user_func_array(array($object,$request['method']),$params)){
-					$response=array(
-						'id' => $request['id'],
-						'result' => $result,
-						'error' => NULL
-					);
-				}else{
-					$response=array(
-						'id' => $request['id'],
-						'result' => NULL,
-						'error' => 'unknown method or incorrect parameters'
-					);
-				}
-			}
-		}catch(Exception $e){
-			$response=array(
-				'id' => $request['id'],
-				'result' => NULL,
-				'error' => $e->getMessage()
-			);
-		}
-
-		// output the response
-		if(!empty($request['id'])){ // notifications don't want response
-			header('content-type: text/javascript');
-			echo json_encode($response);
-		}
-
-		// finish
-		return true;
+		self::$key=$request['params'][count($request['params'])-1];
+		self::$password=$password;
+		
+		return parent::handle($object);
 	}
 }

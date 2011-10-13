@@ -1,13 +1,8 @@
 <?php 
 
-// Todo, 3.8.2011!
-// ghomolka
-require("../inc/variables.php");
 
-if (!@mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) || !@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])){
-	echo 'no database connection';
-	exit;
-}
+require("../inc/connect.php");
+
 //mysql_query("SET character set utf8"); <= do not use it!
 
 $q='';
@@ -34,51 +29,9 @@ $q="\n INSERT IGNORE INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_langua
  
 file_put_contents('logs/'.date('d.m.Y_H.i').'_azquery.sql',$q);
 
-$res = mysql_query($q)
- or logerr();
+$res = mysql_query($q) or logerr("Error: ". mysql_error(). "(". mysql_errno().")");
  
- function logerr($val=''){
-	$errf='logs/err.log';
-	$e='';
-	
-	if(file_exists($errf)){
-		$e=file_get_contents($errf);
-	}
-	if($val==''){
-		$err=date('d.m.Y H:i').": Error: ". mysql_error(). "(". mysql_errno().")\n";
-	}else{
-		$err=date('d.m.Y H:i').": Successfully updated.\n";
-	}
-	file_put_contents($errf,$e.$err); 
-	exit;
- }
+logerr('Successfully updated.');
 
- function _get($host,$port='80',$path='/',$data='') { 
-	
-	$d='';
-	$str='';
-	if(!empty($data)){
-		foreach($data AS $k => $v){
-			$str .= urlencode($k).'='.urlencode($v).'&';
-		}
-		$str = substr($str,0,-1); 
-	}
-	
-	$fp = fsockopen($host,$port,$errno,$errstr,$timeout=30); 
-	if($fp){
-		fputs($fp, "POST $path HTTP/1.1\r\n"); 
-		fputs($fp, "Host: $host\r\n"); 
-		fputs($fp, "Content-type: application/x-www-form-urlencoded\r\n"); 
-		fputs($fp, "Content-length: ".strlen($str)."\r\n"); 
-		fputs($fp, "Connection: close\r\n\r\n"); 
-		fputs($fp, $str."\r\n\r\n"); 
-		
-		while(!feof($fp)){
-			$d .= fgets($fp,4096);
-		}
-		fclose($fp);
-	}
-	return $d;
-}
 
 ?>

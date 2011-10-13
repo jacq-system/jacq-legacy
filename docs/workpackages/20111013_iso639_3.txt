@@ -1,0 +1,3 @@
+iso639_6:
+ cronjob for cronUpdateISO639-6Language.php
+

@@ -203,7 +203,7 @@ foreach($a as $b){
 
 
 if(isset($_POST['update'])){
-
+	// Todo: Save!
 	$res=array();
 	
 	foreach($_POST as $k=>$v){
@@ -355,85 +355,18 @@ EOF;
 	$z++;
 
 	$i=0;
-	
-		$rr=trim(str_replace(array('-',$obj['y']),'',$obj['a']));
-		$parts=preg_split ('/\s|,|&|(\.[\w]+)/',$rr ,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+		$year=$obj['y'];
+		$author=trim(str_replace(array('-',$obj['y']),'',$obj['a']));
+		$parts=preg_split ('/\s|,|&|(\.[\w]+)/',$author ,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 		$parts2=array();
-		
 		foreach($parts as $k=>$pp2){
 			$parts2[$k]="<span class='highl'>{$pp2}</span>";
 		}
 		
-		$parts5=preg_split ('/-|\s|,|&|;|(\.[\w]+)/',$rr,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
-		
-		//print_r($parts);
-		$len=mb_strlen($rr,"UTF-8");
-		$checks="";
-		//echo "UPDATE  herbar_view.scrutiny SET date='{$obj['y']}', author='{$rr}' WHERE scrutiny='{$obj['a']}'; \n";continue;
-		$checks.="IF($len <= CHAR_LENGTH(a.autor)+1 and $len >= CHAR_LENGTH(a.autor)-1 ,2,0) as check_a_1_2, \n";
-		$checks.="IF(a.autor='{$rr}',2,0) as check_a_2_2,\n";
-		$checks.=" IF( mdld('{$rr}',a.autor, 3, 4)<4,2,0) as check_a_3_2,\n";
-		
-		//echo $rr;
-		$where="";
-		$where1="";
-		$where2="";
-		
-		$x=0;
-		foreach($parts5 as $part){
-			if(strpos($part,".")===false && strlen($part)>4){
-				
-				$where1.=" and a.autor LIKE '%{$part}%'";
-				$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as check_a_4{$x}_1,\n";
-				
-			}else{
-				
-				$where2.=" or  a.autor LIKE '%{$part}%'";
-				$checks.="IF(INSTR(a.autor,'{$part}' )>0 ,1,0) as check_a_5{$x}_1,\n";
-			}
-			$x++;
-		}
-		
-		$where=" mdld('{$rr}',a.autor, 3, 4)<4 or ( 1=1 {$where1} and ( 1=0 {$where} {$where2} )) ";
-
-		
-		$years="";
-		
-		$parts7=preg_split ('/-|\s|,|&|;|\./',$obj['y'],20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
-		
-		$x=0;
-		foreach($parts7 as $j){
-			$years.=" and lit.jahr like '%{$j}%'";
-			$checks.="IF(INSTR(lit.jahr,'{$j}' )>0 ,5,0) as  check_l_1{$x}_5,\n";
-			$x++;
-		}
-		
-		$query="
-SELECT
-
-a.autorID,
-a.autor,
-{$checks}
-autorsystbot,
-lit.jahr,
-lit.citationID,
-CONCAT(lit.titel,', ',lit.suptitel,', ',period.periodical) as 'litinfo'
-	
-
-FROM
-tbl_lit_authors a
-CROSS JOIN tbl_lit lit ON (lit.autorID = a.autorID)
-LEFT JOIN  tbl_lit_periodicals period on  period.periodicalID=lit.periodicalID
-WHERE
-
-$where
-limit 1000
-";
-		
 		$service = clsInternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
 			
 		try {
-			$res = $service->getSQLResults($query);
+			$res = $service->check_checkScrutiny($author, $year);
 		}catch (Exception $e) {
 			echo "Fehler " . nl2br($e);
 		}
@@ -446,7 +379,7 @@ limit 1000
 		$res3=array();
 		foreach($res as $row){
 			$t1=max(substr_count($row['autor'], ','),substr_count($row['autor'], '&'));
-			$t2=max(substr_count($rr, ','),substr_count($rr, '&')) ;
+			$t2=max(substr_count($author, ','),substr_count($author, '&')) ;
 			
 			if($t1==$t2){
 				$row['check_a_6_1']=1;
@@ -454,6 +387,7 @@ limit 1000
 				$row['check_a_6_1']=1;
 			}
 			
+			// Check-Auswertung
 			$listing=array();
 			$listing['ges']['m']=0;
 			$listing['ges']['r']=0;
@@ -488,7 +422,7 @@ limit 1000
 		ksort($res3);
 		$res3= array_reverse($res3,1);
 		echo<<<EOF
-<tr class="trtop4"><td></td><td colspan="5" >ID: <b>{$obj['id']}</b>,  Author: <span class="at"><b>{$rr}</b></span>, Year: <input type="text" class="inpyear" name="year_{$obj['id']}_{$i}" value="{$obj['y']}"></td></tr>
+<tr class="trtop4"><td></td><td colspan="5" >ID: <b>{$obj['id']}</b>,  Author: <span class="at"><b>{$author}</b></span>, Year: <input type="text" class="inpyear" name="year_{$obj['id']}_{$i}" value="{$obj['y']}"></td></tr>
 EOF;
 		
 		if(count($res3)==0){
@@ -626,7 +560,7 @@ EOF;
 					
 		echo<<<EOF
 				
-<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$rr}"{$c} jump="{$z}"></td><td></td><td>not now</td><td><span{$cl2}><b>check manually not now</b></span></td><td></td><td></td></tr>
+<tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$author}"{$c} jump="{$z}"></td><td></td><td>not now</td><td><span{$cl2}><b>check manually not now</b></span></td><td></td><td></td></tr>
 
 
 EOF;

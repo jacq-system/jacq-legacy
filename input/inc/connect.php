@@ -171,9 +171,10 @@ function isLocked($table, $id){
  * @param integer $specimenID Specimen ID
  * @return string IP of picture server
  */
-function getPictureServerIP($specimenID)
-{
-    return ''; 
+function getPictureServerIP($specimenID){
+	global $_OPTIONS;
+	
+    return $_OPTIONS['HERBARIMAGEURL']; 
 }
 
 /**

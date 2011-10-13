@@ -4,6 +4,7 @@
  */
 $options['hrdb']['dbhost'] = "host";        // hostname for heimo reiners database
 $options['hrdb']['dbname'] = "dbname";      // database name for heimo reiners database
+$options['hrdb']['dbnameCommonNames'] = "dbname"; // database name for heimo reiners database
 $options['hrdb']['dbuser'] = "username";    // username for heimo reiners database
 $options['hrdb']['dbpass'] = "password";    // password for heimo reiners database
 $options['col']['dbhost']  = "dbhost";      // hostname for catalogue of life
@@ -29,6 +30,47 @@ $options['log']['dbname'] = "dbname";       // database for logging
 $options['log']['dbuser'] = "username";     // username for logging
 $options['log']['dbpass'] = "password";     // password for logging
 
+/*
+$options=array(
+	'hrdb'=>array(
+		'dbhost'	=>	'localhost',        		// hostname for heimo reiners database
+		'dbname'	=>	'',     			// database name for heimo reiners database
+		'dbnameCommonNames'	=>	'',     // database name for heimo reiners database
+		'dbuser'	=>	'',    					// username for heimo reiners database
+		'dbpass'	=>	'',    					// password for heimo reiners database
+	),
+	'col'=>array(
+		'dbhost'	=>	'localhost',       			// hostname for catalogue of life
+		'dbname'	=>	'',     		// database name for catalogue of life
+		'dbuser'	=>	'',   					// username for catalogue of life
+		'dbpass'	=>	'',   					// password for catalogue of life
+	),
+	'col2011'=>array(
+		'dbhost'	=>	'localhost',       			// hostname for catalogue of life
+		'dbname'	=>	'',    			// database name for catalogue of life
+		'dbuser'	=>	'',    					// username for catalogue of life
+		'dbpass'	=>	'',    					// password for catalogue of life
+	),
+	'fev2'=>array(
+		'dbhost'	=>	'localhost',    			// hostname for catalogue of life
+		'dbname'	=>	'',     				// database name for catalogue of life
+		'dbuser'	=>	'',   					// username for catalogue of life
+		'dbpass'	=>	'',    					// password for catalogue of life
+	),
+	'fe'=>array(
+		'dbhost'	=>	'localhost',       			// hostname for fauna europea
+		'dbname'	=>	'',    	// database name for fauna europea
+		'dbuser'	=>	'',    					// username for fauna europea
+		'dbpass'	=>	'',   					// password for fauna europea
+	),
+	'log'=>array(
+		'dbhost'	=>	'localhost',				// hostname for logging
+		'dbname'	=>	'',						// database for logging
+		'dbuser'	=>	'',						// username for logging
+		'dbpass'	=>	'',						// password for logging
+	),
+);
+*/
 
 /**
  * strings that should be ignored by parsing/atomizing functions

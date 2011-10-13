@@ -22,39 +22,63 @@ if (isset($knownFunctions[$funcName])) {
 
 function showMatchJsonRPC($formData){
 	global $options;		// BP, 07.2010
+	
+	$formP=getFormParams($formData);
+	
+	$matches=getMatches($formP['database'], $formP['searchtext'], $formP['useNearMatch'], $formP['showSynonyms'], $formP['debug']);
+	
+	if($matches['failure']){
+		return $matches['failure'];
+	}
+	
+	$out = prettyPrintMatches(
+		$matches['matches'],$matches['start'],$matches['stop'],
+		$formData,$formP['searchtext'],$formP['showSynonyms'],
+		$matches['matchesNearMatch'],$formP['useNearMatch']
+	);
 
+
+	return $out;
+}
+
+function getFormParams($formData){
 	if($formData['database']=='extern'){
 		$formData['database']=$formData['database_extern'];
 	}
 	
 	$debug=($formData['debug'])?$formData['debug']:0;
 	
-	$start = microtime(true);
-
 	$searchtext = ucfirst(trim($formData['searchtext']));
 	if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
 	$useNearMatch = (!empty($formData['nearmatch'])) ? true : false;
 	$showSynonyms = (!empty($formData['showSyn'])) ? true : false;		  // BP, 07.2010: synonyms?
+	
+	return array('database'=>$formData['database'], 'searchtext'=>$searchtext,'useNearMatch'=>$useNearMatch,'showSynonyms'=>$showSynonyms,'debug'=>$debug);
+}
 
+function getMatches($database, $searchtext, $useNearMatch=false,$showSynonyms=false,$debug=false){
+	global $options;
+	
+	$start = microtime(true);
+	 
 	// BP, 07.2010: get IP-address of JSON-service from 'variables.php'
 	//$service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
 	$url = $options['hostAddr'] . "json_rpc_taxamatchMdld.php";
 	$service = new jsonRPCClient($url,$debug);
-
+	$failure=false;
 	try {
 		$matchesNearMatch = array();
 		$matches=array();
 		
-		if ($formData['database'] == 'vienna') {
-		//getMatches('vienna',$searchtext,$showSynonyms,$useNearMatch)
+		if ($database == 'vienna') {
 			$matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
 				$matchesNearMatch=$service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
-		}else if ($formData['database'] == 'vienna_common') {
+		}else if ($database == 'vienna_common') {
 			
 			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
 			
@@ -62,7 +86,7 @@ function showMatchJsonRPC($formData){
 				$matchesNearMatch=$service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 			
-		} else if ($formData['database'] == 'col2010ac') {
+		} else if ($database == 'col2010ac') {
 			
 			$matches = $service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>false));
 			
@@ -70,7 +94,7 @@ function showMatchJsonRPC($formData){
 				$matchesNearMatch=$service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>true));
 			}
 
-		} else if ($formData['database'] == 'col2011ac') {
+		} else if ($database == 'col2011ac') {
 			
 			$matches = $service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>false));
 			
@@ -79,7 +103,7 @@ function showMatchJsonRPC($formData){
 			}
 			
 
-		} else if ($formData['database'] == 'fe') {
+		} else if ($database == 'fe') {
 			
 			$matches = $service->getMatchesService('fe',$searchtext,array('NearMatch'=>false));
 			
@@ -87,7 +111,7 @@ function showMatchJsonRPC($formData){
 				$matchesNearMatch=$service->getMatchesService('fe',$searchtext,array('NearMatch'=>true));
 			}
 		
-		} else if ($formData['database'] == 'fev2') {
+		} else if ($database == 'fev2') {
 			
 			$matches = $service->getMatchesService('fev2',$searchtext,array('NearMatch'=>false));
 			
@@ -97,116 +121,33 @@ function showMatchJsonRPC($formData){
 
 		} else{
 			
-			$matches = $service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
+			$matches = $service->getMatchesService($database,$searchtext,array('showSyn'=>false,'NearMatch'=>false));
 			
 			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
+				$matchesNearMatch=$service->getMatchesService($database,$searchtext,array('showSyn'=>false,'NearMatch'=>true));
 			}
 		}
 
-		$stop = microtime(true);
-
-		// BP, 07.2010: invoke function for generating formatted output-string
-		$out = prettyPrintMatches(
-			$matches,$start,$stop,
-			$formData,$searchtext,$showSynonyms,
-			$matchesNearMatch,$useNearMatch
-		);
-
-
+		
+		
+	}catch (Exception $e) {
+		$failure =  "Fehler " . nl2br($e);
 	}
-	catch (Exception $e) {
-		$out =  "Fehler " . nl2br($e);
-	}
+	$stop = microtime(true);
+	return array('start'=>$start,'stop'=>$stop,'matches'=>$matches,'matchesNearMatch'=>$matchesNearMatch,'failure'=>$failure);
 
-	return $out;
 }
+
 
 function dumpMatchJsonRPC($formData){
 	global $options;	// BP, 07.2010
 	
-	if($formData['database']=='extern'){
-		$formData['database']=$formData['database_extern'];
-	}
+	$formP=getFormParams($formData);
 	
-	$searchtext = ucfirst(trim($formData['searchtext']));
-	if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
-
-	$showSynonyms = (!empty($formData['showSyn'])) ? true : false;		// BP, 08/2010: correction!
-
-	// BP, 07.2010
-	//$service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
-	$url = $options['hostAddr'] . "json_rpc_taxamatchMdld.php";
-	$service = new jsonRPCClient($url,1);
-
-	try {
-		$matchesNearMatch = array();
-		$matches=array();
-		
-		if ($formData['database'] == 'vienna') {
-		//getMatches('vienna',$searchtext,$showSynonyms,$useNearMatch)
-			$matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-			
-		}else if ($formData['database'] == 'vienna_common') {
-			
-			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-			
-		} else if ($formData['database'] == 'col2010ac') {
-			
-			$matches = $service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>true));
-			}
-
-		} else if ($formData['database'] == 'col2011ac') {
-			
-			$matches = $service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>true));
-			}
-			
-
-		} else if ($formData['database'] == 'fe') {
-			
-			$matches = $service->getMatchesService('fe',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('fe',$searchtext,array('NearMatch'=>true));
-			}
-		
-		} else if ($formData['database'] == 'fev2') {
-			
-			$matches = $service->getMatchesService('fev2',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('fev2',$searchtext,array('NearMatch'=>true));
-			}
-
-		} else{
-			
-			$matches = $service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService($formData['database'],$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-		}
-
-		$out = "<big><b>Dump or Results for search for '" . nl2br($searchtext) . "':</b></big><br>\n"
-			 . "<pre>" . var_export($matches, true) . "\n" . var_export($matchesNearMatch, true) . "</pre>\n";
-	}
-	catch (Exception $e) {
-		$out =  "Fehler " . nl2br($e);
-	}
+	$matches=getMatches($formP['searchtext'], $formP['useNearMatch'], $formP['showSynonyms'], $formP['debug']);
+	
+	$out = "<big><b>Dump or Results for search for '" . nl2br($formP['searchtext']) . "':</b></big><br>\n"
+			 . "<pre>" . var_export($matches['matches'], true) . "\n" . var_export($matches['matchesNearMatch'], true) . "</pre>\n";
 
    return $out;
 }

@@ -32,6 +32,8 @@ class natID{
 		foreach($order as $id){
 			if(isset($natID[$id])){
 				$str.=$this->token.$natID[$id];
+			}else{
+				$str.=$this->token;
 			}
 		}
 		return substr($str,1);

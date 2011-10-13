@@ -180,7 +180,7 @@ if (mysql_num_rows($result)>0) {
       }
     }
     function showImage(sel, server) {
-      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
+      target = server+"/"+sel+"/show";
 	  MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }

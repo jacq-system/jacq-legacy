@@ -2,7 +2,7 @@
 $debug=isset($_GET['debug']);
 $databases_cache='databases_cache.inc';
 
-if(isset($_POST['update']) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
+if(isset($_GET['update']) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
 	require_once('inc/jsonRPCClient.php');
 	require_once('inc/variables.php');   // BP, 07.2010
 

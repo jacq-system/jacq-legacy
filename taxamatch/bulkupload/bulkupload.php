@@ -13,7 +13,7 @@ if (empty($_SESSION['uid'])) {
 $debug=isset($_GET['debug']);
 $databases_cache='databases_cache.inc';
 
-if(isset($_POST['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
+if(isset($_GET['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
 	require_once('inc/jsonRPCClient.php');
 
 	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
@@ -58,17 +58,13 @@ if (!empty($_POST['username'])) {
 } elseif (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name'])) {
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
     if (mysql_num_rows($result) == 0) {
-        switch ($_POST['database']) {
-            case 'col': $database = 'col'; break;
-            case 'fe': $database = 'fe'; break;
-            default: 
-                $database = 'vhv';
-                // BP, 07.2010: if synonyms are checked, mark it in DB ('vhs' instead of 'vhv')
-                if ($_POST['showSyn'] == 'synonyms') {
-                    $database = "vhs";
-                }
-                // BP: END
-        }
+		
+		$database='';
+		if ($_POST['showSyn'] == 'synonyms') {
+			$database='s_';
+		}
+		$database.=$_POST['database'];
+		
         db_query("INSERT INTO tbljobs SET
                    uid = '" . $_SESSION['uid'] . "',
                    filename = " . quoteString($_FILES['userfile']['name']) . ",

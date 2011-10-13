@@ -485,16 +485,16 @@ SELECT
  mdld('{$commonName}', LOWER(com.common_name), {$this->block_limit}, {$this->limit}) as 'mdld'
 
 FROM
- names.tbl_name_applies_to a
- LEFT JOIN names.tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN names.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
+ {$options['hrdb']['dbnameCommonNames']}.tbl_name_applies_to a
+ LEFT JOIN {$options['hrdb']['dbnameCommonNames']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN {$options['hrdb']['dbnameCommonNames']}.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
 
- LEFT JOIN names.tbl_name_names nam ON nam.name_id = a.name_id
- LEFT JOIN names.tbl_name_commons com ON com.common_id = nam.name_id
+ LEFT JOIN {$options['hrdb']['dbnameCommonNames']}.tbl_name_names nam ON nam.name_id = a.name_id
+ LEFT JOIN {$options['hrdb']['dbnameCommonNames']}.tbl_name_commons com ON com.common_id = nam.name_id
 WHERE
  com.common_id IN({$s})
  ";
-  //echo $query;exit;
+ // echo $query;exit;
 		
 		$res = mysql_query($query);
         /**
@@ -515,7 +515,7 @@ WHERE
 			if ($speciesData['epithet4']) $taxon .= " forma "    . $speciesData['epithet4'] . " " . $speciesData['author4'];
 			if ($speciesData['epithet5']) $taxon .= " subforma " . $speciesData['epithet5'] . " " . $speciesData['author5'];
 
-			if ($speciesData['synID']) {
+			if (isset($speciesData['synID']) && $speciesData['synID'] ) {
 				$synData = $this->_getTaxonPartsOfSpecies($speciesData['synID']);
 				$syn = $synData['genus'];
 				if ($synData['epithet0']) $syn .= " " .          $synData['epithet0'] . " " . $synData['author0'];
@@ -643,11 +643,12 @@ private function _getTaxonPartsOfSpecies ($taxonID)
 private function _getGenusPartsOfSpecies ($taxonID)
 {
     $sql = "SELECT g.genID, g.genus, a.author
-            FROM tbl_tax_species s, tbl_tax_genera g, tbl_tax_authors a
+            FROM tbl_tax_species s, tbl_tax_genera g
+			LEFT JOIN  tbl_tax_authors a   ON (a.authorID =g.authorID )
             WHERE s.genID = g.genID
-             AND g.authorID = a.authorID
              AND s.taxonID = '" . mysql_escape_string($taxonID) . "'";
     $result = mysql_query($sql);
+	
     if ($result) {
         return mysql_fetch_array($result);
     } else {
@@ -664,11 +665,12 @@ private function _getGenusPartsOfSpecies ($taxonID)
 private function _getFamilyPartsOfSpecies ($taxonID)
 {
     $sql = "SELECT f.familyID, f.family, a.author
-            FROM tbl_tax_species s, tbl_tax_genera g, tbl_tax_families, tbl_tax_authors a
+            FROM tbl_tax_species s, tbl_tax_genera g, tbl_tax_families f
+			LEFT JOIN tbl_tax_authors a ON (a.authorID = f.authorID )
             WHERE s.genID = g.genID
              AND g.familyID = f.familyID
-             AND f.authorID = a.authorID
              AND s.taxonID = '" . mysql_escape_string($taxonID) . "'";
+			 
     $result = mysql_query($sql);
     if ($result) {
         return mysql_fetch_array($result);

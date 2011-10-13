@@ -67,7 +67,8 @@ $_OPTIONS['debug'] = 0;
 //  Use TCPDF 4.5 or 5.8
 $_OPTIONS['tcpdf_5_8'] = false;
 
-$_OPTIONS['HERBAROUTPUTURL'] = "http://herbarium.univie.ac.at";
+//$_OPTIONS['HERBARIMAGEURL'] = "http://herbarium.univie.ac.at/image/";
+$_OPTIONS['HERBARIMAGEURL'] = "http://herbarium.univie.ac.at/image.php?id=";
 
 // Define our base locations
 define('FREUDDIR', str_replace('\\', '/', dirname(__FILE__)) . '/../');

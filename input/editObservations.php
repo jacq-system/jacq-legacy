@@ -525,7 +525,7 @@ if (isset($_GET['sel'])) {
     }
 
     function showImage(sel, server) {
-	  target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show&obs=1";
+	  target = server+"/"+sel+"/show&obs=1";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }

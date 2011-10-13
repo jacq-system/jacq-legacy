@@ -314,7 +314,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       xajax_updtStandardLabel(id, data);
     }
     function showImage(sel, server) {
-      target = "<?PHP echo $_OPTIONS['HERBAROUTPUTURL']; ?>/image/" + sel+"/show";
+      target = server+"/"+sel+"/show";
       MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }
