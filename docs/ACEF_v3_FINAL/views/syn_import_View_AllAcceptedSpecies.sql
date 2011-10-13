@@ -36,7 +36,8 @@ CREATE OR REPLACE
    INNER JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
    
  WHERE
-   ts.tax_rankID IN (2,3,4,5,6) --  rank IN ('subspecies','variety','subvariety','forma','subforma')
+       ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
+  AND ts.tax_rankID IN (2,3,4,5,6) --  rank IN ('subspecies','variety','subvariety','forma','subforma')
  ;
  
  -- ===========================================
