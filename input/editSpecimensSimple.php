@@ -386,6 +386,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
   <title>herbardb - edit Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="JSparameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var reload = false;
 
@@ -441,11 +443,6 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
       MeinFenster.focus();
     }
 
-    function showImage(sel) {
-      target = "img/imgBrowser.php?name=" + sel;
-      MeinFenster = window.open(target,"imgBrowser");
-      MeinFenster.focus();
-    }
 
     function reloadButtonPressed() {
       reload = true;

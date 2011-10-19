@@ -137,12 +137,15 @@ $out->startDocument( "1.0", "UTF-8" );
 $out->startElement( 'kulturpool' );
 
 //Fetch all IDs (with pictures) and start to output the XML-Data
-$query = "SELECT specimen_ID FROM tbl_specimens WHERE digital_image = 1 AND ( collectionID IN ( 96, 91, 31, 37, 106, 107, 34, 35, 28, 29, 38, 36, 20, 21 ) OR ( collectionID = 19 AND SammlerID IN ( 7079, 9209, 10745, 6066, 8060, 8311, 11364, 916, 10397, 11089, 10183, 1116, 9603, 8116, 9812, 9002, 9003, 9004, 6119, 17120 ) ) ) ORDER BY specimen_ID";
+$query = "SELECT specimen_ID FROM tbl_specimens WHERE digital_image = 1 AND ( collectionID IN ( 96, 91, 31, 37, 106, 107, 34, 35, 28, 29, 38, 36, 20, 21 ) OR ( collectionID = 19 AND SammlerID IN ( 7079, 9209, 10745, 6066, 8060, 8311, 11364, 916, 10397, 11089, 10183, 1116, 9603, 8116, 9812, 9002, 9003, 9004, 6119, 17120 ) ) ) ORDER BY specimen_ID LIMIT 100";
 //$query = "SELECT specimen_ID FROM tbl_specimens WHERE digital_image = 1 AND ( collectionID IN ( 96, 91, 31, 37, 106, 107, 34, 35, 38, 36 ) ) ORDER BY specimen_ID";
 $data_result = mysql_query($query);
 $num_rows = mysql_num_rows($data_result);
 $curr_row = 0;
 
+$image_isIncluded=true;
+require_once('image.php');
+  
 while( $data_row=mysql_fetch_array($data_result) ) {
   $curr_row++;
   
@@ -202,8 +205,10 @@ $typusText = makeTypus($ID);
 
 $URI = '';
 if ($row['digital_image'] || $row['digital_image_obs']) {
-  $transfer = @file_get_contents("/image/{$row['specimen_ID']}/thumbs?key=DKsuuewwqsa32czucuwqdb576i12"));
-  $transfer = json_decode($transfer);
+ 
+
+  $picdetails=getPicDetails($row['specimen_ID']);
+  $transfer=getPicInfo($picdetails);
   
   if( count($transfer['pics']) > 0 ) {
     // Correct the name if necessary
@@ -213,8 +218,9 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
       $fileName = $treffer[1] . '.tif';
       echo $fileName . "\n";
     }
-    $URI="http://herbarium.univie.ac.at/database/image/{$row['specimen_ID']}/resized"
-    $inventarnummer = basename( $fileName, '.tif' );
+	
+    $URI='http'.(isset($_SERVER['HTTPS'])?'s':'').'://'.$_SERVER['SERVER_NAME'].'/'.dirname($_SERVER['PHP_SELF']).'/image.php?filename='.$row['specimen_ID'].'&method=resized';
+	$inventarnummer = basename( $fileName, '.tif' );
     
     //Write Image-Filename into file
     fwrite( $infp, $fileName . "\n" );
@@ -241,7 +247,8 @@ $out->writeElement( 'beitragender', $sammler );
 // Datierung
 $out->writeElement( 'datierung', $row['Datum'] . ( !empty($row['Datum_2']) ? ' / ' . $row['Datum_2'] : '' ) );
 // URI
-$out->writeElement( 'URI', $URI );
+//$out->writeElement( 'URI1', $URI );// => htmlentities, makes & to &amp;
+$out->writeRaw ("  <URI>{$URI}</URI>\n");
 // WebsiteLink
 $out->writeElement( 'websiteLink', 'http://herbarium.univie.ac.at/database/detail.php?ID=' . $row['specimen_ID'] );
 

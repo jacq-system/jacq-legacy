@@ -1,66 +1,85 @@
 <?php
-session_start();
-require("./inc/functions.php");
+@session_start();
+require_once("./inc/functions.php");
 
 /*
 image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
 */
 
 $_OPTIONS['key']='DKsuuewwqsa32czucuwqdb576i12';
-if($_GET['id'][0]=='/')$_GET['id']=substr($_GET['id'],1);
-@list($filename,$method,$format)=explode('/',$_GET['id']);
 
-$picinfo=getServer($filename);
-$q=getQuery();
-$debug=0;
-error_reporting(E_ALL);
-if($debug){
-	print_r($picinfo);
-}
-if(isset($picinfo['url']) && $picinfo['url']!==false ){
-	switch($method){
-		default:
-			doRedirectDownloadPic($picinfo,$method,0);
-			break;
-		case 'download':
-			doRedirectDownloadPic($picinfo,$format,0);
-			break;
-		case 'thumb':
-			doRedirectDownloadPic($picinfo,$format,1);
-			break;
-		case 'resized':
-			doRedirectDownloadPic($picinfo,$format,2);
-			break;
-		case 'thumbs':
-			doPicInfo($picinfo);
-			break;
-		case 'show':
-			doRedirectShowPic($picinfo);
-			break;
-	}
-	exit;
-}else{
-	switch($method){
-		default:
-		case 'download':
-		case 'thumb':
-			imgError('not found');
-		case 'thumbs':
-			jsonError('not found');
-		case 'show':
-			textError('not found');
-	}
+$q=array();
+
+//isIncluded: set in detail.php
+if(!isset($image_isIncluded)){
+	#if($_SERVER['PATH_INFO'][0]=='/')$_SERVER['PATH_INFO']=substr($_SERVER['PATH_INFO'],1);
+	#@list($filename,$method,$format)=explode('/',$_SERVER['PATH_INFO']);
+	$filename=isset($_GET['filename'])?$_GET['filename']:'';
+	$method=isset($_GET['method'])?$_GET['method']:'';
+	$format=isset($_GET['format'])?$_GET['format']:'';
+	$q=getQuery();
+	getResult($filename, $method, $format);
 }
 
-function doPicInfo($picinfo){
+
+function getResult($filename, $method, $format){
+	$picdetails=getPicDetails($filename);
+
+	$debug=0;
+	error_reporting(E_ALL);
+	if($debug){
+		print_r($picdetails);
+	}
+	if(isset($picdetails['url']) && $picdetails['url']!==false ){
+		switch($method){
+			default:
+				doRedirectDownloadPic($picdetails,$method,0);
+				break;
+			case 'download':
+				doRedirectDownloadPic($picdetails,$format,0);
+				break;
+			case 'thumb':
+				doRedirectDownloadPic($picdetails,$format,1);
+				break;
+			case 'resized':
+				doRedirectDownloadPic($picdetails,$format,2);
+				break;
+			case 'thumbs':
+				header('Content-type: text/json');
+				header('Content-type: application/json');
+				echo json_encode(getPicInfo($picdetails));
+				break;
+			case 'show':
+				doRedirectShowPic($picdetails);
+				break;
+		}
+		exit;
+	}else{
+		switch($method){
+			default:
+			case 'download':
+			case 'thumb':
+				imgError('not found');
+			case 'thumbs':
+				header('Content-type: text/json');
+				header('Content-type: application/json');
+				echo json_encode(jsonError('not found'));
+			case 'show':
+				textError('not found');
+		}
+	}
+}
+
+function getPicInfo($picdetails){
 	global $q,$debug;
-	if($picinfo['is_djatoka']=='1'){
+	
+	if($picdetails['is_djatoka']=='1'){
 		// JSON RPC
-		$url="{$picinfo['url']}/FReuD-Servlet/ImageScan?requestfilename={$picinfo['requestFileName']}&specimenID={$picinfo['specimenID']}";
+		$url="{$picdetails['url']}/FReuD-Servlet/ImageScan?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}";
 		
 		$request=json_encode(array(
-			'filename'=>$picinfo['filename'],
-			'specimenID'=>$picinfo['specimenID']
+			'filename'=>$picdetails['filename'],
+			'specimenID'=>$picdetails['specimenID']
 		));
 		
 		// performs the HTTP POST
@@ -84,12 +103,12 @@ function doPicInfo($picinfo){
 				$pics=>$response
 			);
 		}else{
-			throw new Exception('Unable to connect to '.$url);
+			return jsonError('Unable to connect to '.$url);
 		}
 		
 	}else{
 		global $_OPTIONS;
-		$url="{$picinfo['url']}/detail_server.php?key={$_OPTIONS['key']}&ID={$picinfo['specimenID']}{$q}";
+		$url="{$picdetails['url']}/detail_server.php?key={$_OPTIONS['key']}&ID={$picdetails['specimenID']}{$q}";
 	
 		$response=@file_get_contents($url,"r");
 		$response=@unserialize($response);
@@ -99,21 +118,19 @@ function doPicInfo($picinfo){
 		exit;
 	}
 	if(!is_array($response)){
-		jsonError("couldn't get information");
+		return jsonError("couldn't get information");
 	}
-	
-	header('Content-type: text/json');
-	header('Content-type: application/json');
-	echo json_encode($response);
+	return $response;
+
 }
 
-function doRedirectShowPic($picinfo){
+function doRedirectShowPic($picdetails){
 	global $q,$debug;
 	
-	if($picinfo['is_djatoka']=='1'){
-		$url="{$picinfo['url']}/viewer.html?requestfilename={$picinfo['requestFileName']}&specimenID={$picinfo['specimenID']}";
+	if($picdetails['is_djatoka']=='1'){
+		$url="{$picdetails['url']}/viewer.html?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}";
 	}else{
-		$url="{$picinfo['url']}/img/imgBrowser.php?name={$picinfo['requestFileName']}{$q}";
+		$url="{$picdetails['url']}/img/imgBrowser.php?name={$picdetails['requestFileName']}{$q}";
 	}
 	if($debug){
 		p($url);
@@ -127,12 +144,14 @@ function doRedirectShowPic($picinfo){
 	}
 }
 	
-function doRedirectDownloadPic($picinfo,$format,$thumb=0){
+function doRedirectDownloadPic($picdetails,$format,$thumb=0){
 	global $q,$debug;
 	
-	if($picinfo['is_djatoka']=='1'){
+	if($picdetails['is_djatoka']=='1'){
 		switch($format){
 			default:case'':case 'jpeg':
+				$format='image/jpeg';break;
+			case 'jpeg2000':
 				$format='image/jpeg';break;
 			case'tiff':
 				$format='image/tiff';break;
@@ -148,10 +167,10 @@ function doRedirectDownloadPic($picinfo,$format,$thumb=0){
 			}
 		}
 		
-		$url="{$picinfo['url']}/resolver?url_ver=Z39.88-2004&rft_id={$picinfo['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.level=1&svc.rotate=0&svc.scale={$scale}";
+		$url="{$picdetails['url']}/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.level=1&svc.rotate=0&svc.scale={$scale}";
 	}else{
 		switch($format){
-			default:case'':case 'jpeg':
+			default:case'':case 'jpeg2000':
 				$format='';break;
 			case'tiff':
 				$format='&type=1';break;
@@ -166,7 +185,7 @@ function doRedirectDownloadPic($picinfo,$format,$thumb=0){
 			}
 		}
 		
-		$url="{$picinfo['url']}/img/{$fileurl}?name={$picinfo['requestFileName']}{$format}{$q}";
+		$url="{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$format}{$q}";
 	}
 	$url=cleanURL($url);
 	if($debug){
@@ -177,7 +196,7 @@ function doRedirectDownloadPic($picinfo,$format,$thumb=0){
 }
 
 // request: can be specimen ID or filename
-function getServer($request){
+function getPicDetails($request){
 	global $debug;
 	
 	$requestFileName='';
@@ -259,10 +278,7 @@ WHERE
 }
 
 function jsonError($msg=''){
-	header('Content-type: text/json');
-	header('Content-type: application/json');
-	echo json_encode(array('error'=>$msg));
-	exit;
+	return array('error'=>$msg);
 }
 
 function textError($msg=''){
@@ -305,7 +321,7 @@ function cleanURL($url){
 function getQuery(){
 	$qstr='';
 	foreach($_GET as $k=>$v){
-		if($k!='imageQuery'){
+		if(in_array($k,array('method','filename','format'))===false){
 			$qstr.="&{$k}=".rawurlencode($v);
 		}
 	}

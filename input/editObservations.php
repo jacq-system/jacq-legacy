@@ -479,6 +479,8 @@ if (isset($_GET['sel'])) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="JSparameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var reload = false;
 
@@ -521,12 +523,6 @@ if (isset($_GET['sel'])) {
     function editSeries() {
       target = "editSeries.php?sel=" + document.f.series.options[document.f.series.selectedIndex].value;
       MeinFenster = window.open(target,"editSeries","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-
-    function showImage(sel, server) {
-	  target = server+"/"+sel+"/show&obs=1";
-      MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }
 
@@ -794,7 +790,7 @@ $cf->label(9, 0.5, "specimen_ID");
 $cf->text(9, 0.5, "&nbsp;" . $text);
 
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(33.5, 0, "digital image", "javascript:showImage('$p_specimen_ID', '" . getPictureServerIP($p_specimen_ID) . "')");
+    $cf->label(33.5, 0, "digital image", "javascript:showImage('$p_specimen_ID')");
 } else {
     $cf->label(33.5, 0, "digital image");
 }

@@ -287,6 +287,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <?php $xajax->printJavascript('inc/xajax'); ?>
+  <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="JSparameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
 
@@ -312,11 +314,6 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     }
     function updtLabelWrapper(id, data) {
       xajax_updtStandardLabel(id, data);
-    }
-    function showImage(sel, server) {
-      target = server+"/"+sel+"/show";
-      MeinFenster = window.open(target,"imgBrowser");
-      MeinFenster.focus();
     }
     function check_all() {
       for (var i=0, n=document.f.elements.length; i<n; i++) {
@@ -665,7 +662,7 @@ if ($_SESSION['sType'] == 1) {
                 $linkList[$nr] = $row['specimen_ID'];
 
                 if ($row['digital_image']) {
-                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "', '" . getPictureServerIP($row['specimen_ID']) . "')\">"
+                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
                                   .  "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
                                   . "</a>";
                 } else {

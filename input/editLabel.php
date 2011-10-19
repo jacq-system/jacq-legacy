@@ -157,6 +157,8 @@ if (mysql_num_rows($result)>0) {
   <style type="text/css">
     div.cssftext { font-weight: bold; }
   </style>
+  <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="JSparameters.php" type="text/javascript"></script>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
     var inpSLvalue;
@@ -179,11 +181,7 @@ if (mysql_num_rows($result)>0) {
                 break;
       }
     }
-    function showImage(sel, server) {
-      target = server+"/"+sel+"/show";
-	  MeinFenster = window.open(target,"imgBrowser");
-      MeinFenster.focus();
-    }
+
     function showPDF(sel) {
       switch (sel) {
         case 'typeMap':  target = "pdfLabelTypesMap.php"; label = "labelTypesMap"; break;
@@ -238,7 +236,7 @@ $cf->label(9,0.5,"specimen_ID");
 $cf->text(9,0.5,"&nbsp;".$p_specimen_ID);
 
 if ($p_digital_image && $p_specimen_ID) {
-  $cf->label(33.5,0,"digital image","javascript:showImage('$p_specimen_ID', '".getPictureServerIP($p_specimen_ID)."')");
+  $cf->label(33.5,0,"digital image","javascript:showImage('$p_specimen_ID')");
   $cf->text(33.5,0,"&nbsp;&radic;");
 }
 if ($p_checked) {

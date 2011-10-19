@@ -561,6 +561,8 @@ if (isset($_GET['sel'])) {
   <script type="text/javascript" src="inc/overlib/overlib.js"></script>
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="JSparameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var reload = false;
     var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
@@ -614,18 +616,6 @@ if (isset($_GET['sel'])) {
     function editSpecimensTypes(sel) {
       target = "listSpecimensTypes.php?ID=" + encodeURIComponent(sel);
       MeinFenster = window.open(target,"listSpecimensTypes","width=800,height=400,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-
-    function showImage(sel, server) {
-      target = server+"/"+sel+"/show";
-      MeinFenster = window.open(target,"imgBrowser");
-      MeinFenster.focus();
-    }
-
-    function showImageObs(sel, server) {
-	  target = server+"/"+sel+"/show&obs=1";
-      MeinFenster = window.open(target,"imgBrowser");
       MeinFenster.focus();
     }
 
@@ -974,13 +964,13 @@ if ($swBatch) {
 }
 
 if ($p_digital_image && $p_specimen_ID) {
-    $cf->label(30, $y, "dig.image", "javascript:showImage('$p_specimen_ID', '" . getPictureServerIP($p_specimen_ID) . "')");
+    $cf->label(30, $y, "dig.image", "javascript:showImage('$p_specimen_ID')");
 } else {
     $cf->label(30, $y, "dig.image");
 }
 $cf->checkbox(30, $y, "digital_image", $p_digital_image);
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(39, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID', '" . getPictureServerIP($p_specimen_ID) . "')");
+    $cf->label(39, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
 } else {
     $cf->label(39, $y, "dig.im.obs.");
 }

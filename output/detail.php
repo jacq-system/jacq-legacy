@@ -477,24 +477,20 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   //$v = $path.$pic;
 
   //$pics = array();
-  //$handle = fopen("http://".$row['imgserver_IP']."/database/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID=".$row['specimen_ID'],"r");
-  $transfer = @file_get_contents("/image/{$row['specimen_ID']}/thumbs?key=DKsuuewwqsa32czucuwqdb576i12"));
-  $transfer = json_decode($transfer);
-  //if ($handle) {
-  //  while (!feof($handle)) {
-  //    $buffer = trim(fgets($handle, 4096));
-  //    if ($buffer) $pics[] = $buffer;
-  //  }
-  //  fclose($handle);
-  //}
+ 
+  $image_isIncluded=true;
+  require_once('image.php');
+  $picdetails=getPicDetails($row['specimen_ID']);
+  $transfer=getPicInfo($picdetails);
+
   if ($transfer) {
     if (count($transfer['pics'])>0) {
       foreach ($transfer['pics'] as $v) {
-			$file=basename($v);
+			$file=rawurlencode(basename($v));//?='+sel+"&method=show
 			echo<<<EOF
-<td valign='top' align='center'><a href="/image/{$file}/show target="imgBrowser">".
-<img src="image/{$file}/thumb" border="2"></a>\n" . 
-<br>( <a href='image/{$file}'>JPEG2000</a>, <a href='image/{$file}/tiff'>TIFF</A> )</td>\n";
+<td valign='top' align='center'><a href="image.php?filename={$file}&method=show" target="imgBrowser">
+<img src="image.php?filename={$file}&method=thumb" border="2"></a> 
+<br>( <a href='image.php?filename={$file}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?filename={$file}&method=download&format=tiff'>TIFF</A> )</td>
 EOF;
  	 }
     }
