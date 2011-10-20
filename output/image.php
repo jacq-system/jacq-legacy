@@ -270,8 +270,10 @@ WHERE
 				//$row['is_djatoka']=1;
 				print_r($row);
 			}
-			$url="http://{$row['imgserver_IP']}/{$row['djatoka_path']}/";
-			return array('url'=>$url,'requestFileName'=>$requestFileName,'filename'=>$row['filename'],'specimenID'=>$row['specimen_ID'],'is_djatoka'=>$row['is_djatoka']);
+			$url="http://{$row['imgserver_IP']}/{$row['img_service_directory']}/";
+			
+			return array('url'=>$url,'requestFileName'=>$requestFileName,'filename'=>$row['filename'],
+						'specimenID'=>$row['specimen_ID'],'is_djatoka'=>$row['is_djatoka']);
 		}
 	}
 	return false;
