@@ -35,19 +35,13 @@ $_CONFIG['DATABASE'] = array(
 // Force HTTPS
 $_CONFIG['CONNECTION']['secure'] = false;
 
-// Mdld only on Outputserver => JSON RPC Service
+// JSON-RPC Service for internal mdld
 $_OPTIONS['internMDLDService'] = array(
-    'url' => 'http://www.website.com/internMDLDService.php',
+    'url' => 'http://website.com/access/internMDLDService.php',
     'password' => 'geheim'
 );
-
-/*
- * Older settings start here (need to be changed to the new config structure)
- */
-$_OPTIONS['DB']['INPUT']['HOST'] = $_CONFIG['DATABASE']['INPUT']['host'];    // hostname of herbarinput
-$_OPTIONS['DB']['INPUT']['NAME'] = $_CONFIG['DATABASE']['INPUT']['name'];  // database of herbarinput
 // Taxamatch JSON-RPC service
-$_OPTIONS['serviceTaxamatch'] = 'http://www.website.com/taxamatch/json_rpc_taxamatchMdld.php';
+$_OPTIONS['serviceTaxamatch'] = 'http://website.com/taxamatch/json_rpc_taxamatchMdld.php';
 
 // Geonames user / password
 $_OPTIONS['GEONAMES'] = array(
@@ -55,6 +49,18 @@ $_OPTIONS['GEONAMES'] = array(
     'password' => '',
     'cookieFile' => dirname(__FILE__) . "/tmp_cookie.txt"
 );
+
+// Url to herbarium
+$_OPTIONS['HERBARIMAGEURL'] = "http://website.com/output/";
+
+
+
+
+/*
+ * Older settings start here (need to be changed to the new config structure)
+ */
+$_OPTIONS['DB']['INPUT']['HOST'] = $_CONFIG['DATABASE']['INPUT']['host'];    // hostname of herbarinput
+$_OPTIONS['DB']['INPUT']['NAME'] = $_CONFIG['DATABASE']['INPUT']['name'];  // database of herbarinput
 
 $_OPTIONS['TYPINGCACHE']['SETTING'] = array(
     'type' => 'DAY', // Valid: MICROSECOND, SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, YEAR
@@ -66,8 +72,6 @@ $_OPTIONS['debug'] = 0;
 
 //  Use TCPDF 4.5 or 5.8
 $_OPTIONS['tcpdf_5_8'] = false;
-
-$_OPTIONS['HERBARIMAGEURL'] = "http://herbarium.univie.ac.at/";
 
 // Define our base locations
 define('FREUDDIR', str_replace('\\', '/', dirname(__FILE__)) . '/../');

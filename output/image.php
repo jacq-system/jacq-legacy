@@ -288,7 +288,7 @@ function textError($msg=''){
 
 function imgError($msg=''){
 	switch($msg){
-		default: case 'not found':$pic='../images/404.png';break;
+		default: case 'not found':$pic='images/404.png';break;
 	}
 	Header('Content-Type: image/png');
 	Header('Content-Length: '.filesize($pic));
@@ -331,5 +331,3 @@ function getQuery(){
 function p($var){
 	echo "<pre>".print_r($var,1)."</pre>";
 }
-
-?>

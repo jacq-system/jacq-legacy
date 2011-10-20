@@ -112,4 +112,3 @@ $xajax->registerFunction("getCollection");
 $xajax->registerFunction("getCountry");
 $xajax->registerFunction("getProvince");
 $xajax->processRequests();
-?>

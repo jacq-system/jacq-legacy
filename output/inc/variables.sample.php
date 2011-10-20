@@ -1,9 +1,9 @@
 <?php
 $_CONFIG['DATABASES']['OUTPUT'] = array(
     "host" => "localhost",
-    "db" => "herbardb",
+    "db" => "herbar",
     "readonly" => array(
-        "user" => "root",
-        "pass" => "toor"
+        "user" => "",
+        "pass" => ""
     )
 );

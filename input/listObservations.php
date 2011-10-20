@@ -219,7 +219,7 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
-  <script src="JSparameters.php" type="text/javascript"></script>
+  <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function check_all() {
       for (var i=0, n=document.f.elements.length; i<n; i++) {

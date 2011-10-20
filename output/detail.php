@@ -8,7 +8,7 @@ require("inc/functions.php");
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="description" content="FW4 DW4 HTML">
 <!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeurop�ische Normalzeit) 2002-->
-<link rel="stylesheet" href="../herbarium.css" type="text/css">
+<link rel="stylesheet" href="css/herbarium.css" type="text/css">
   <script type="text/javascript" language="JavaScript"><!--
     function showPicture(url) {
       MeinFenster =
@@ -514,13 +514,17 @@ EOF;
     <tr>
       <td valign="top" colspan="9" align="center">
         <HR SIZE=1  width="800" NOSHADE>
-        <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
-          Rainer<br></a><br>
-          <b>php-programming</b> -- <a href="mailto:joschach@EUnet.at">Johannes
-          Schachner</a></p>
+        <p class="normal">
+            <b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo Rainer</a>
+            <br />
+            <br />
+            <b>php-programming</b> -- <a href="mailto:joschach@EUnet.at">Johannes Schachner</a>
+        </p>
         <div class="normal" align="center">
-          <!-- #BeginEditable "Datum" --><B>Last modified:</B> <EM>2006-Apr-11,
-          HR</EM><!-- #EndEditable --> </div>
+          <!-- #BeginEditable "Datum" -->
+          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <!-- #EndEditable -->
+        </div>
       </td>
     </tr>
   </table>

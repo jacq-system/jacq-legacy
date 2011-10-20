@@ -158,7 +158,7 @@ if (mysql_num_rows($result)>0) {
     div.cssftext { font-weight: bold; }
   </style>
   <script src="js/freudLib.js" type="text/javascript"></script>
-  <script src="JSparameters.php" type="text/javascript"></script>
+  <script src="js/parameters.php" type="text/javascript"></script>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
     var inpSLvalue;

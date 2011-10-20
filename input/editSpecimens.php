@@ -562,7 +562,7 @@ if (isset($_GET['sel'])) {
   <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/freudLib.js" type="text/javascript"></script>
-  <script src="JSparameters.php" type="text/javascript"></script>
+  <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var reload = false;
     var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';

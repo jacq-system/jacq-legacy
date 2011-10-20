@@ -6,13 +6,11 @@
 <meta http-equiv="Content-Type" content="text/html;">
 <meta name="keywords" content="herbarium wu, herbarium vienna university, species 2000, digibota, gbif, projects, digitization, specimens">
 <meta name="description" content="FW4 DW4 HTML">
-<!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropäische Normalzeit) 2002-->
-<link rel="stylesheet" href="../herbarium.css" type="text/css">
+<link rel="stylesheet" href="css/herbarium.css" type="text/css">
 </head>
 <body bgcolor="#ffffff">
 <div align="center">
   <table border="0" cellpadding="0" cellspacing="0" width="800">
-    <!-- fwtable fwsrc="databasemenu.png" fwbase="databasemenu.gif" fwstyle="Dreamweaver" fwdocid = "742308039" fwnested="0" -->
    <tr> 
       <td height="50" valign="top" colspan="9"></td>
     </tr>
@@ -51,7 +49,7 @@
     <tr> 
       <td valign="top" colspan="8"><!-- #BeginEditable "Seiteninhalt" -->
         <p class="normal">We are in the process of digitizing our collections, which should enable international users in the future not only to have quick access to what is available in GZU, JE, W and WU but also to view images of specimens especially type material.</p>
-        <p class="links"><img src="../images/pfeil.jpg" width=20 height=18 border=0>&nbsp;&nbsp;<a href="search.php">Access the database</a></p>
+        <p class="links"><img src="images/pfeil.jpg" width=20 height=18 border=0>&nbsp;&nbsp;<a href="search.php">Access the database</a></p>
         <p></p>
         <p class="normal"><strong>conspectus of taxonomic databases</strong></p>
         <p class="links"><a href="http://darwin.zoology.gla.ac.uk/~rpage/portal/index.html" target="_blank">Taxonomic Search Engine - Rod Page / Glasgow University</a></p>
@@ -99,30 +97,34 @@
   </tr>
   <tr>
     <td align="center" colspan="2"></td>
-    <td align="center" colspan="3"><a href="http://eu-nomen.eu/pesi/" target="_blank"><img src="../images/PESI_logo_small.gif" alt="--> PESI - PanEuropean Species directoris Infrastructure"></a></td>
+    <td align="center" colspan="3"><a href="http://eu-nomen.eu/pesi/" target="_blank"><img src="images/PESI_logo_small.gif" alt="--> PESI - PanEuropean Species directoris Infrastructure"></a></td>
     <td align="center" colspan="2"></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><a href="http://www.enbi.info/" target="_blank"><img src="../images/enbi.gif" alt="--> ENBI - European Network fo Biodiversity Information"></a></td>
-    <td align="center" colspan="3"><a href="http://www.gbif.org" target="_blank"><img src="../images/gbif.jpg" alt="--> GBIF International"></a></td>
-    <td align="center" colspan="2"><a href="http://www.biocase.org/" target="_blank"><img src="../images/biocase.gif" alt="--> BIOCASE"></a></td>
+    <td align="center" colspan="2"><a href="http://www.enbi.info/" target="_blank"><img src="images/enbi.gif" alt="--> ENBI - European Network fo Biodiversity Information"></a></td>
+    <td align="center" colspan="3"><a href="http://www.gbif.org" target="_blank"><img src="images/gbif.jpg" alt="--> GBIF International"></a></td>
+    <td align="center" colspan="2"><a href="http://www.biocase.org/" target="_blank"><img src="images/biocase.gif" alt="--> BIOCASE"></a></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><a href="http://www.tdwg.org" target="_blank"><img src="../images/tdwg.gif" alt="--> Taxonomic Database Working Group"></a></td>
-    <td align="center" colspan="3"><a href="http://www.synthesys.info" target="_blank"><img src="../images/synthesys.gif" alt="--> SYNTHESYS Programm"></a></td>
-    <td align="center" colspan="2"><a href="http://sp2000europa.org/" target="_blank"><img src="../images/sp2keur.png" alt="--> Species2000 Europe"></a></td>
+    <td align="center" colspan="2"><a href="http://www.tdwg.org" target="_blank"><img src="images/tdwg.gif" alt="--> Taxonomic Database Working Group"></a></td>
+    <td align="center" colspan="3"><a href="http://www.synthesys.info" target="_blank"><img src="images/synthesys.gif" alt="--> SYNTHESYS Programm"></a></td>
+    <td align="center" colspan="2"><a href="http://sp2000europa.org/" target="_blank"><img src="images/sp2keur.png" alt="--> Species2000 Europe"></a></td>
   </tr>
 	<tr> 
       <td valign="top" colspan="8"> 
         <HR SIZE=1  width="800" NOSHADE>
         <div class="normal" align="center"> 
-          <p class="links" ><A HREF="http://www.botanik.univie.ac.at/index.htm">Homepage Institute</A> | <A HREF="mailto:heimo.rainer@univie.ac.at">Email 
-            contact</A></p>
-          <!-- #BeginEditable "Datum" --><B>Last modified:</B> <EM>2006-Apr-11, 
-          HR</EM><!-- #EndEditable --> </div>
+          <p class="links" >
+              <A HREF="http://www.botanik.univie.ac.at/index.htm">Homepage Institute</A> | <A HREF="mailto:heimo.rainer@univie.ac.at">Email contact</A>
+          </p>
+          <!-- #BeginEditable "Datum" -->
+          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <!-- #EndEditable -->
+        </div>
       </td>
     </tr>
   </table>
 </div>
 </body>
-<!-- #EndTemplate --></html>
+<!-- #EndTemplate -->
+</html>

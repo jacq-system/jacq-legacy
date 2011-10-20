@@ -310,7 +310,7 @@ tbl_wu_generale
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="description" content="FW4 DW4 HTML">
 <!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropische Normalzeit) 2002-->
-<link rel="stylesheet" href="../herbarium.css" type="text/css">
+<link rel="stylesheet" href="css/herbarium.css" type="text/css">
 <?php $xajax->printJavascript('inc/xajax'); ?>
 <script type="text/javascript" language="javascript"><!--
   function isEmpty(s) {
@@ -424,7 +424,7 @@ tbl_wu_generale
                     </select></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Herbar #:&nbsp;</td>
-                    <td><input type="text" name="HerbNummer" value="<?=$HerbNummer ?>" size="26"></td>
+                    <td><input type="text" name="HerbNummer" value="<?php echo $HerbNummer ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                   <tr>
@@ -452,7 +452,7 @@ tbl_wu_generale
                     </select></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Collection #:&nbsp;</td>
-                    <td><input type="text" name="CollNummer" value="<?=$CollNummer ?>" size="26"></td>
+                    <td><input type="text" name="CollNummer" value="<?php echo $CollNummer ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                   <tr>
@@ -461,16 +461,16 @@ tbl_wu_generale
                   <tr>
                     <td width="20"></td>
                     <td class="normal" align="right">Family:&nbsp;</td>
-                    <td><input type="text" name="family" value="<?=$family ?>" size="26"></td>
+                    <td><input type="text" name="family" value="<?php echo $family ?>" size="26"></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Taxon:&nbsp;</td>
-                    <td><input type="text" name="taxon" value="<?=$taxon ?>" size="26"></td>
+                    <td><input type="text" name="taxon" value="<?php echo $taxon ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                   <tr>
                     <td width="20"></td>
                     <td class="normal" align="right">ident. history:&nbsp;</td>
-                    <td><input type="text" name="taxon_alt" value="<?=$taxon_alt ?>" size="26"></td>
+                    <td><input type="text" name="taxon_alt" value="<?php echo $taxon_alt ?>" size="26"></td>
                     <td width="20"></td>
                     <td class="normal" align="right">incl. syn.&nbsp;</td>
                     <td><input type="checkbox" checked name="synonym"></td>
@@ -482,16 +482,16 @@ tbl_wu_generale
                   <tr>
                     <td width="20"></td>
                     <td class="normal" align="right">Collector:&nbsp;</td>
-                    <td><input type="text" name="Sammler" value="<?=$Sammler ?>" size="26"></td>
+                    <td><input type="text" name="Sammler" value="<?php echo $Sammler ?>" size="26"></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Series:&nbsp;</td>
-                    <td><input type="text" name="series" value="<?=$series ?>" size="26"></td>
+                    <td><input type="text" name="series" value="<?php echo $series ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                   <tr>
                     <td width="20"></td>
                     <td class="normal" align="right">Collector #:&nbsp;</td>
-                    <td><input type="text" name="SammlerNr" value="<?=$SammlerNr ?>" size="26"></td>
+                    <td><input type="text" name="SammlerNr" value="<?php echo $SammlerNr ?>" size="26"></td>
                     <td width="20"></td>
                     <td colspan="2"></td>
                     <td width="20"></td>
@@ -519,7 +519,7 @@ tbl_wu_generale
                     </select></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Country:&nbsp;</td>
-                    <td id="ajax_nation_engl"><input type="text" name="nation_engl" value="<?=$nation_engl ?>" size="26"></td>
+                    <td id="ajax_nation_engl"><input type="text" name="nation_engl" value="<?php echo $nation_engl ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                   <tr>
@@ -542,7 +542,7 @@ tbl_wu_generale
                     </select></td>
                     <td width="20"></td>
                     <td class="normal" align="right">State/Province:&nbsp;</td>
-                    <td id="ajax_provinz"><input type="text" name="provinz" value="<?=$provinz ?>" size="26"></td>
+                    <td id="ajax_provinz"><input type="text" name="provinz" value="<?php echo $provinz ?>" size="26"></td>
                     <td width="20"></td>
                   </tr>
                     <td width="20"></td>
@@ -550,7 +550,7 @@ tbl_wu_generale
                     <td></td>
                     <td width="20"></td>
                     <td class="normal" align="right">Locality:&nbsp;</td>
-                    <td id="ajax_provinz"><input type="text" name="Fundort" value="<?=$fundort ?>" size="26"></td>
+                    <td id="ajax_provinz"><input type="text" name="Fundort" value="<?php echo $fundort ?>" size="26"></td>
                     <td width="20"></td>
                   <tr>
                   </tr>
@@ -577,7 +577,7 @@ tbl_wu_generale
             <input type="reset" value="Reset">
           </p>
           <p class="normal" style="text-align:center">
-            <b>Last database update <?= $lastUpdate ?></b>
+            <b>Last database update <?php echo  $lastUpdate ?></b>
           </p>
         </form>
 
@@ -658,8 +658,10 @@ tbl_wu_generale
         <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo Rainer<br></a><br>
           <b>programming</b> -- <a href="mailto:joschach@ap4net.at">Johannes Schachner</a></p>
         <div class="normal" align="center">
-          <!-- #BeginEditable "Datum" --><B>Last modified:</B> <EM>2008-Feb-28,
-          HR</EM><!-- #EndEditable --> </div>
+          <!-- #BeginEditable "Datum" -->
+          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <!-- #EndEditable -->
+        </div>
       </td>
     </tr>
   </table>

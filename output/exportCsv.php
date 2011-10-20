@@ -211,4 +211,3 @@ header("Content-Disposition: attachment; filename=results.xls");
 header("Pragma: no-cache");
 header("Expires: 0");
 echo chr(0xef).chr(0xbb).chr(0xbf)."<table>".$csvHeader.$csvData."</table>";
-?>

@@ -8,7 +8,7 @@ require("inc/functions.php");
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="description" content="FW4 DW4 HTML">
 <!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeurop�ische Normalzeit) 2002-->
-<link rel="stylesheet" href="../herbarium.css" type="text/css">
+<link rel="stylesheet" href="css/herbarium.css" type="text/css">
 
 <script type="text/javascript" language="javascript"><!--
   function neuladen(url) {
@@ -151,7 +151,7 @@ $xml .= "  </records>".
 <td colspan="6" align="right">
 <form style="display:inline;" action="http://linuxgurrl.agr.gc.ca/mapdata/itis/itisrosa.php" method="post" target="showlinuxgurrl">
   <input type="button" value="Create google-map" onclick="googleMap()">
-  <input type="hidden" value="<?= $xml_head.urlencode($xml) ?>" name="xml">
+  <input type="hidden" value="<?php echo $xml_head.urlencode($xml) ?>" name="xml">
   <input type="hidden" value="L" name="msize">
   <input type="submit" value="Create map" style="width:100px;">
 </form>
@@ -287,8 +287,10 @@ echo "</table></div>\n";
           <b>php-programming</b> -- <a href="mailto:joschach@EUnet.at">Johannes
           Schachner</a></p>
         <div class="normal" align="center">
-          <!-- #BeginEditable "Datum" --><B>Last modified:</B> <EM>2006-Apr-11,
-          HR</EM><!-- #EndEditable --> </div>
+          <!-- #BeginEditable "Datum" -->
+          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <!-- #EndEditable -->
+        </div>
       </td>
     </tr>
   </table>
