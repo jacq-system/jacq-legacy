@@ -243,7 +243,7 @@ function getPicDetails($request){
 	$sql="
 SELECT
  i.imgserver_IP,
- i.djatoka_path,
+ i.img_service_directory,
  i.is_djatoka,
  s.specimen_ID,
  s.filename
