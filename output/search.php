@@ -140,7 +140,7 @@ tbl_wu_generale
                   te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                   te4.epithet epithet4, te5.epithet epithet5,
                   ts.taxonID, ts.statusID ";
-    $sql_tables = "FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc, tbl_img_definition tid, herbarinput.meta m)
+    $sql_tables = "FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc, tbl_img_definition tid, meta m)
                     LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                     LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
                     LEFT JOIN tbl_typi t ON t.typusID = s.typusID

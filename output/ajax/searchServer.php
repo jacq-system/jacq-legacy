@@ -20,8 +20,8 @@ function getCollection($data) {
 
   if (trim($data['source_name'])) {
     $sql = "SELECT collection
-            FROM tbl_management_collections, herbarinput.meta
-            WHERE tbl_management_collections.source_id=herbarinput.meta.source_id
+            FROM tbl_management_collections, meta
+            WHERE tbl_management_collections.source_id=meta.source_id
              AND source_name='".mysql_escape_string($data['source_name'])."'
             ORDER BY collection";
   } else {
