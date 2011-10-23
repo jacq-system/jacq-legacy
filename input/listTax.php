@@ -14,11 +14,38 @@ $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
 _logger("---- listTax.php (nrSel = " . $nrSel . " ---");
 
+if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
+	$_SESSION['taxon_list']=$_POST['taxon'];
+	if(strpos($_POST['taxon'],',')!==false){
+		$_POST['search']=1;
+		$_POST['species']=3;
+		$_POST['mdld']='';
+		$_POST['commonname']='';
+		$_POST['collector']='';
+		$_POST['number']='';
+		$_POST['date']='';
+		$_POST['family']='';
+		$_POST['genus']='';
+		$_POST['status']='';
+		$_POST['rank']='';
+		$_POST['author']='';
+		$_POST['annotation']='';
+		$_POST['external']='';
+		
+		
+	}else{
+		$location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
+		if (SID != "") $location .= "?" . SID;
+		Header($location);
+	}
+}
+
 if (!isset($_SESSION['taxStatus'])) $_SESSION['taxStatus'] = "";
 if (!isset($_SESSION['taxRank']))   $_SESSION['taxRank'] = "";
 if (!isset($_SESSION['taxMDLD']))   $_SESSION['taxMDLD'] = ""; // BP
 
 if (isset($_POST['search'])) {
+	if(!isset($_POST['taxon']))unset($_SESSION['taxon_list']);
     $_SESSION['taxMDLD'] = $_POST['mdld'];  // BP
     if ($_SESSION['editFamily']) $_POST['family'] = $_SESSION['editFamily'];
     if ($_POST['commonname']) {
@@ -37,6 +64,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet,common_name, author";
         $_SESSION['taxOrTyp']      = 51;
 	}else if ($_POST['collector'] || $_POST['number'] || $_POST['date']) {
+		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 4; // list Species, other display
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
@@ -52,6 +80,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxOrder']      = "Sammler, Sammler_2, series, leg_nr, tt.date";
         $_SESSION['taxOrTyp']      = 41;
     } else if ($_POST['species'] || $_POST['status']){
+		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 3; // list Species
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
@@ -68,6 +97,7 @@ if (isset($_POST['search'])) {
                                    . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
         $_SESSION['taxOrTyp']      = 31;
     } else if ($_POST['genus']) {
+		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 2; // list Genus
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
@@ -83,6 +113,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxOrder']      = "genus, auth_g, family";
         $_SESSION['taxOrTyp']      = 21;
     } else {
+		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 1; // list Family
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = "";
@@ -222,12 +253,6 @@ if (isset($_POST['search'])) {
         }
     }
     if ($_SESSION['taxOrTyp']<0) $_SESSION['taxOrder'] = implode(" DESC, ",explode(", ",$_SESSION['taxOrder']))." DESC";
-}
-
-if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
-    $location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
-    if (SID != "") $location .= "?" . SID;
-    Header($location);
 }
 
 // BP: logger: only log if set in variables.php
@@ -814,7 +839,7 @@ if ($result = db_query($sql)) {
 <td>
   <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST">
       <!-- BP: added id for Javascript -->
-    <b>taxonID:</b> <input type="text" name="taxon" id="taxon" value="<?php echoSpecial('taxon', 'POST'); ?>">
+    <b>taxonID:</b> <input type="text" name="taxon" id="taxon" value="<?php echoSpecial('taxon_list', 'SESSION'); ?>">
     <input class="button" type="submit" name="select" value=" Edit ">
   </form>
 </td></tr></table>
@@ -980,44 +1005,50 @@ if ($_SESSION['taxMDLD'] != "") {
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
-                 LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID "
-             . (($_SESSION['taxExternal']) ? "WHERE ts.external > 0 " : "WHERE ts.external = 0 ");
-        if ($_SESSION['taxStatus'] != "everything") {
-            if ($_SESSION['taxSpecies']) {
-                $sql .= "AND (te.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
-                          OR te1.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
-                          OR te2.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
-                          OR te3.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
-                          OR te4.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
-                          OR te5.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%') ";
-            } else {
-                $sql .= "AND te.epithet IS NULL ";
-            }
-            if ($_SESSION['taxStatus']) {
-                $sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
-            }
-        }
-        if ($_SESSION['taxRank']) {
-            $sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
-        }
-        if ($_SESSION['taxFamily']) {
-            $sql .= "AND family LIKE '" . mysql_escape_string($_SESSION['taxFamily']) . "%' ";
-        }
-        if ($_SESSION['taxGenus']) {
-            $sql .= "AND genus LIKE '" . mysql_escape_string($_SESSION['taxGenus']) . "%' ";
-        }
-        if ($_SESSION['taxAuthor']) {
-            $sql .= "AND (ta.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
-                      OR ta1.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
-                      OR ta2.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
-                      OR ta3.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
-                      OR ta4.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
-                      OR ta5.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%') ";
-        }
-        if ($_SESSION['taxAnnotation']) {
-            $sql .= "AND ts.annotation LIKE '%" . mysql_escape_string($_SESSION['taxAnnotation']) . "%' ";
-        }
-        $sql .= "ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
+                 LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID ";
+          
+		if(isset($_SESSION['taxon_list'])){
+			$sql .= " where ts.taxonID in (" . mysql_escape_string($_SESSION['taxon_list']) . ")";
+		}else{
+			$sql.= (($_SESSION['taxExternal']) ? "WHERE ts.external > 0 " : "WHERE ts.external = 0 ");
+			if ($_SESSION['taxStatus'] != "everything") {
+				if ($_SESSION['taxSpecies']) {
+					$sql .= "AND (te.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+							  OR te1.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+							  OR te2.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+							  OR te3.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+							  OR te4.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+							  OR te5.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%') ";
+				} else {
+					$sql .= "AND te.epithet IS NULL ";
+				}
+				if ($_SESSION['taxStatus']) {
+					$sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
+				}
+			}
+			if ($_SESSION['taxRank']) {
+				$sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
+			}
+			if ($_SESSION['taxFamily']) {
+				$sql .= "AND family LIKE '" . mysql_escape_string($_SESSION['taxFamily']) . "%' ";
+			}
+			if ($_SESSION['taxGenus']) {
+				$sql .= "AND genus LIKE '" . mysql_escape_string($_SESSION['taxGenus']) . "%' ";
+			}
+			if ($_SESSION['taxAuthor']) {
+				$sql .= "AND (ta.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
+						  OR ta1.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
+						  OR ta2.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
+						  OR ta3.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
+						  OR ta4.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%'
+						  OR ta5.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%') ";
+			}
+			if ($_SESSION['taxAnnotation']) {
+				$sql .= "AND ts.annotation LIKE '%" . mysql_escape_string($_SESSION['taxAnnotation']) . "%' ";
+			}
+		}
+        $sql .= " ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
+//echo $sql;exit;
         $result = db_query($sql);
         if (mysql_num_rows($result) > 1000) {
             echo "<b>no more than 1000 results allowed</b>\n";
