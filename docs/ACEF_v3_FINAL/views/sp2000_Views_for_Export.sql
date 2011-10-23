@@ -307,14 +307,14 @@ CREATE OR REPLACE
 SELECT
  taxonids.familyPre AS 'familyPre',
  CONCAT('s',tss.taxonID) AS 'ID',
- CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
+ CONCAT('t',syn.acc_taxon_ID) AS 'AcceptedTaxonID',
  tg.genus AS 'Genus',
  '' AS 'SubGenusName',
  te.epithet AS 'Species',
  
  ta.author AS 'AuthorString',
  
- CASE ts.tax_rankID
+ CASE tss.tax_rankID
   WHEN 2 THEN te1.epithet
   WHEN 3 THEN te2.epithet
   WHEN 4 THEN te3.epithet
@@ -322,9 +322,12 @@ SELECT
   ELSE te5.epithet
  END AS 'InfraSpecies',
  
- ttr.rank_abbr AS 'InfraSpecificMarker',
+ CASE tss.tax_rankID
+  WHEN 1 THEN NULL
+  ELSE  ttr.rank_abbr
+ END AS 'InfraSpecificMarker',
  
- CASE ts.tax_rankID
+ CASE tss.tax_rankID
   WHEN 2 THEN ta1.author
   WHEN 3 THEN ta2.author
   WHEN 4 THEN ta3.author
@@ -335,13 +338,11 @@ SELECT
  '' AS 'GSDNameStatus',
  tts.status_sp2000 AS 'Sp2000NameStatus',
 
- ts.taxonID AS 'GSDNameGUI'
+ tss.taxonID AS 'GSDNameGUI'
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
  INNER JOIN herbarinput.tbl_tax_synonymy syn ON syn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
- LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=syn.taxonID
-
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=syn.acc_taxon_ID
+ LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=syn.taxonID -- synonym
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
@@ -388,7 +389,7 @@ WHERE
    1
  )
 GROUP BY
- taxonids.familyPre, tss.taxonID
+ taxonids.familyPre, tss.taxonID,Sp2000NameStatus
 ;
 
 -- ===========================================
@@ -419,7 +420,7 @@ SELECT
   ' (',geo.geonameId,' geoname.org)'
  ) AS 'Area',
   
- CONCAT('c',ap.reference_id) AS 'ReferenceID'
+ ap.reference_id AS 'ReferenceID'
  
 FROM
  herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
@@ -508,7 +509,7 @@ SELECT
  cmnames.familyPre AS 'familyPre',
  cmnames.AcceptedTaxonID  AS 'tmp_ID',
  'Common Name Reference'  AS 'tmp_type',
- cmnames.ReferenceID AS 'ReferenceID',
+ CONCAT('c',cmnames.ReferenceID) AS 'ReferenceID',
  CASE
   WHEN lit.citationID IS NOT NULL THEN ta.autor
   WHEN ser.serviceID  IS NOT NULL THEN '-'
@@ -544,8 +545,7 @@ FROM
  LEFT JOIN herbar_names.tbl_name_persons per ON per.person_id=ref.reference_id
  LEFT JOIN herbar_names.tbl_name_webservices ser ON ser.webservice_id=ref.reference_id
  
- LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = nlit.literature_id
- LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
+ LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = nlit.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
  
  LEFT JOIN herbarinput.tbl_person pers ON pers.person_ID=per.personID

@@ -32,7 +32,6 @@ CREATE OR REPLACE
   FROM
    herbar_view.syn_import_tmp_acceptedspecies acc
    LEFT JOIN  herbarinput.tbl_tax_species tso ON tso.taxonID=acc.taxonID
-   LEFT JOIN herbarinput.tbl_tax_genera tgo ON tgo.genID=tso.genID
    INNER JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
    
  WHERE
