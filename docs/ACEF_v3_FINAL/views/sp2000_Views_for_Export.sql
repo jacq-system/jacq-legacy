@@ -126,6 +126,7 @@ WHERE
  AND ( tg.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
  -- where accepted
  AND ( syn.acc_taxon_ID IS NULL OR syn.acc_taxon_ID=syn.taxonID)
+ AND ts.statusID<>2
 GROUP BY
  tf.family, ts.taxonID, lit.jahr
  ;
@@ -239,7 +240,7 @@ WHERE
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
  -- and accepteds
  AND ( syn.acc_taxon_ID IS NULL OR syn.acc_taxon_ID=syn.taxonID)
- 
+ AND ts.statusID<>2
 GROUP BY
  tf.family,ts.taxonID, lit.jahr
 ;
@@ -361,7 +362,7 @@ WHERE
      ( tss.tax_rankID='1' OR ( tss.tax_rankID='7'  AND tss.speciesID IS NULL ) ) -- ttrs.rank='species' or ( rank=genus and species = Null)
  AND ( tgs.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
  AND ( syn.acc_taxon_ID IS NOT NULL AND syn.acc_taxon_ID<>0 AND syn.acc_taxon_ID<>syn.taxonID  )
-
+ AND tss.statusID<>2
 -- synonym infraspecies  
 UNION ALL
 SELECT
@@ -465,6 +466,7 @@ WHERE
  AND tss.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
  -- synonym
  AND ( syn.acc_taxon_ID IS NOT NULL AND syn.acc_taxon_ID<>0 AND syn.acc_taxon_ID<>syn.taxonID  )
+ AND tss.statusID<>2
 ;
 
 
