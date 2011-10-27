@@ -161,3 +161,6 @@ INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_References` SELECT `ReferenceID`,
 INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='IFAMILYNAME';
 INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='IFAMILYNAME';
 
+UPDATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+UPDATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+

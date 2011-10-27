@@ -180,6 +180,9 @@ INSERT INTO `herbar_view`.`exp2000_Annonaceae_References` SELECT `ReferenceID`,`
 INSERT INTO `herbar_view`.`exp2000_Annonaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Annonaceae';
 INSERT INTO `herbar_view`.`exp2000_Annonaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Annonaceae';
 
+UPDATE `herbar_view`.`exp2000_Annonaceae_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+UPDATE `herbar_view`.`exp2000_Annonaceae_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+
 
 
 
@@ -351,6 +354,9 @@ INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_References` SELECT `ReferenceI
 INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Chenopodiaceae';
 INSERT INTO `herbar_view`.`exp2000_Chenopodiaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Chenopodiaceae';
 
+UPDATE `herbar_view`.`exp2000_Chenopodiaceae_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+UPDATE `herbar_view`.`exp2000_Chenopodiaceae_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+
 
 
 
@@ -521,6 +527,9 @@ INSERT INTO `herbar_view`.`exp2000_Ebenaceae_NameReferencesLinks` SELECT `ID`,`R
 INSERT INTO `herbar_view`.`exp2000_Ebenaceae_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='Ebenaceae';
 INSERT INTO `herbar_view`.`exp2000_Ebenaceae_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='Ebenaceae';
 INSERT INTO `herbar_view`.`exp2000_Ebenaceae_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='Ebenaceae';
+
+UPDATE `herbar_view`.`exp2000_Ebenaceae_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+UPDATE `herbar_view`.`exp2000_Ebenaceae_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
 
 
 

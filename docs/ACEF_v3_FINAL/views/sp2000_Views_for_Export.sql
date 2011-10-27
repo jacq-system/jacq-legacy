@@ -38,57 +38,6 @@ FROM
 WHERE
   m.source_id in('7','25','26')
 ;
-/*
--- ===========================================
--- ready
--- view_sp2000_sourcedatabase ausführlich....
---
--- ===========================================
-CREATE OR REPLACE
- ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_sourcedatabase
- AS
-SELECT DISTINCT 
- m.source_name AS 'DatabaseFullName',
- m.source_code AS 'DatabaseShortName',
- m.source_version  AS 'DatabaseVersion',
- m.source_update AS 'ReleaseDate',
- mdb.supplier_person AS 'AuthorsEditors',
- 'TaxonomicCoverage' AS 'TaxonomicCoverage',
- m.source_abbr_engl AS 'GroupNameInEnglish',
- mdb.description AS 'Abstract',
- mdb.supplier_organisation AS 'Organisation',
- mdb.supplier_url AS 'HomeURL',
- '' AS 'Coverage',
- '' AS 'Completeness',
- mdb.disclaimer AS 'Confidence',
- mdb.logo_url AS 'LogoFileName',
- mdb.supplier_person  AS 'ContactPerson'
-
-FROM
- herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
-
- LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=ts.tax_rankID
- LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=ts.statusID
- 
- LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
- LEFT JOIN herbarinput.tbl_tax_families tf ON tf.familyID=tg.familyID
-
- LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID = ts.taxonID
- LEFT JOIN herbarinput.tbl_management_collections mg ON mg.collectionID=sp.collectionID
- 
- LEFT JOIN herbarinput.meta m ON m.source_id=mg.source_id
- LEFT JOIN herbarinput.metadb mdb ON mdb.source_id_fk=m.source_id
- 
-WHERE
-     tg.familyID='30' --  tf.family='Annonaceae' 
- AND ts.statusID IN (96,93,97,103) -- tts.status_sp2000 IN ('accepted name','provisionally accepted name') -- 
- AND(
-   ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL) -- ttr.rank='species' or ( genus and species = Null)
- )
-;
-*/
  
 -- ===========================================
 -- ready
@@ -118,15 +67,15 @@ SELECT
  
  ta.author AS 'AuthorString',
 
- status_description AS 'GSDNameStatus',
- tts.status_sp2000 AS 'Sp2000NameStatus',
+ 'accepted' AS 'GSDNameStatus',
+ 'accepted' AS 'Sp2000NameStatus',
  
  'No' AS 'IsFossil',
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
  
- aut.autor AS 'LTSSpecialist',
- lit.jahr AS 'LTSDate',
+ IFNULL(aut.autor,'') AS 'LTSSpecialist',
+ IFNULL(lit.jahr,'') AS 'LTSDate',
  
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'SpeciesURL',
  
@@ -134,8 +83,32 @@ SELECT
  ts.taxonID AS 'GSDNameGUI'
 
 FROM
- herbarinput.tbl_tax_synonymy syn
- LEFT JOIN herbarinput.tbl_tax_species ts ON ts.taxonID=syn.taxonID
+ herbarinput.tbl_tax_species ts
+ 
+ -- left join last synonym entry.
+ LEFT JOIN herbarinput.tbl_tax_synonymy syn  ON (
+  syn.tax_syn_ID=IFNULL(
+  (
+   SELECT
+    tax_syn_ID
+   FROM
+    herbarinput.tbl_tax_synonymy syn2
+    LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
+   WHERE
+    syn2.taxonID=ts.taxonID
+   ORDER BY
+    CASE
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m-%d')) 
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m'))
+     WHEN STR_TO_DATE(lit2.jahr,'%Y') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y'))
+     WHEN lit2.jahr='in prep.' THEN 'b'
+     ELSE 'c' 
+    END
+    DESC
+   LIMIT
+    1
+  ),-1)
+ )
  LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
  
@@ -149,32 +122,10 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=ts.speciesID
  
 WHERE
-     ( syn.acc_taxon_ID is null OR syn.acc_taxon_ID=syn.taxonID ) -- accepted
- AND ( IFNULL(syn.source_citationID,0)=
- (
-  SELECT
-   IFNULL(syn2.source_citationID,0)
-  FROM
-   herbarinput.tbl_tax_synonymy syn2
-   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
-  WHERE
-       syn2.taxonID=syn.taxonID
-   AND ( syn2.acc_taxon_ID is null or syn2.acc_taxon_ID=syn2.taxonID)
-  ORDER BY
-   CASE
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
-    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
-    WHEN lit2.jahr='in prep.' THEN 'b'
-    ELSE 'c' 
-   END 
-   DESC
-  LIMIT
-   1
- )
- )
- AND( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
- AND  tg.familyID IN ('30','115','182') --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+     ( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
+ AND ( tg.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ -- where accepted
+ AND ( syn.acc_taxon_ID IS NULL OR syn.acc_taxon_ID=syn.taxonID)
 GROUP BY
  tf.family, ts.taxonID, lit.jahr
  ;
@@ -190,10 +141,10 @@ CREATE OR REPLACE
  AS
 
 SELECT 
- acc.family AS 'familyPre',
+ tf.family AS 'familyPre',
  CONCAT('t',ts.taxonID) AS 'AcceptedTaxonID',
- acc.AcceptedTaxonID AS 'ParentSpeciesID',
-
+ CONCAT('t',tso.taxonID) AS 'ParentSpeciesID',
+ 
  CASE ts.tax_rankID
   WHEN 2 THEN te1.epithet
   WHEN 3 THEN te2.epithet
@@ -211,15 +162,15 @@ SELECT
  END AS 'InfraSpecificAuthorString',
  
  ttr.rank_abbr AS 'InfraSpecificMarker',
- status_description AS 'GSDNameStatus',
- tts.status_sp2000 AS 'Sp2000NameStatus',
+ 'accepted' AS 'GSDNameStatus',
+ 'accepted' AS 'Sp2000NameStatus',
 
  'No' AS 'IsFossil',
  'terrestial' AS 'LifeZone',
  '' AS 'AdditionalData',
 
- aut.autor AS 'LTSSpecialist',
- lit.jahr AS 'LTSDate',
+ IFNULL(aut.autor,'') AS 'LTSSpecialist',
+ IFNULL(lit.jahr,'') AS 'LTSDate',
 
  CONCAT('http://herbarium.botanik.univie.ac.at/annonaceae/listSynonyms.php?ID=',ts.taxonID) AS 'InfraSpeciesURL',
  
@@ -227,10 +178,40 @@ SELECT
  ts.taxonID AS 'GSDNameGUI'
 
 FROM
- herbar_view.view_sp2000_acceptedspecies acc  -- only from accepted taxons
- LEFT JOIN herbarinput.tbl_tax_species tso ON tso.taxonID=SUBSTR(acc.AcceptedTaxonID,2)  -- accepted
- INNER JOIN herbarinput.tbl_tax_species ts ON (ts.genID = tso.genID AND ts.speciesID=tso.speciesID)
- INNER JOIN herbarinput.tbl_tax_synonymy syn ON ( syn.taxonID=ts.taxonID and (syn.acc_taxon_ID is null OR syn.acc_taxon_ID=syn.taxonID) )
+ herbarinput.tbl_tax_species ts
+ LEFT JOIN herbarinput.tbl_tax_species tso ON (
+  tso.genID = ts.genID AND tso.speciesID=ts.speciesID
+  AND tso.subspeciesID IS NULL AND tso.varietyID IS NULL
+  AND tso.subvarietyID IS NULL AND tso.formaID IS NULL AND tso.subformaID IS NULL
+ )
+ LEFT JOIN herbarinput.tbl_tax_genera tgo ON tgo.genID=tso.genID
+
+ -- left join last synonym entry.
+ LEFT JOIN herbarinput.tbl_tax_synonymy syn  ON (
+  syn.tax_syn_ID=IFNULL(
+  (
+   SELECT
+    syn2.tax_syn_ID
+   FROM
+    herbarinput.tbl_tax_synonymy syn2
+    LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
+   WHERE
+    syn2.taxonID=ts.taxonID
+   ORDER BY
+    CASE
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m-%d')) 
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m'))
+     WHEN STR_TO_DATE(lit2.jahr,'%Y') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y'))
+     WHEN lit2.jahr='in prep.' THEN 'b'
+     ELSE 'c' 
+    END
+    DESC
+   LIMIT
+    1
+  ),-1)
+ )
+ LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=ts.genID
+ LEFT JOIN herbarinput.tbl_tax_families tf ON tf.familyID=tg.familyID
  
  LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
  LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
@@ -249,34 +230,20 @@ FROM
  LEFT JOIN herbarinput.tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
  LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
  LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
- 
+
 WHERE
- IFNULL(syn.source_citationID,0)=
- (
-  SELECT
-   IFNULL(syn2.source_citationID,0)
-  FROM
-   herbarinput.tbl_tax_synonymy syn2
-   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
-  WHERE
-       syn2.taxonID=syn.taxonID
-   AND ( syn2.acc_taxon_ID is null or syn2.acc_taxon_ID=syn2.taxonID)
-  ORDER BY
-   CASE
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
-    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
-    WHEN lit2.jahr='in prep.' THEN 'b'
-    ELSE 'c' 
-   END 
-   DESC
-  LIMIT
-   1
- )
+ -- next higher taxon is what we want
+     ( tso.tax_rankID='1' OR ( tso.tax_rankID='7'  AND tso.speciesID IS NULL ) ) -- ttro.rank='species' or ( ttro.rank=genus and tso.speciesID = Null)
+ AND ( tgo.familyID IN ('30','115','182') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ -- and wanted infraspecies rank...
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
+ -- and accepteds
+ AND ( syn.acc_taxon_ID IS NULL OR syn.acc_taxon_ID=syn.taxonID)
+ 
 GROUP BY
- acc.family,ts.taxonID, lit.jahr
+ tf.family,ts.taxonID, lit.jahr
 ;
+
  
 -- ===========================================
 -- 
@@ -304,93 +271,203 @@ CREATE OR REPLACE
  ALGORITHM = UNDEFINED
  VIEW herbar_view.view_sp2000_synonyms
  AS
+--  synonym for species
 SELECT
- taxonids.familyPre AS 'familyPre',
+ tfs.family 'familyPre',
  CONCAT('s',tss.taxonID) AS 'ID',
  CONCAT('t',syn.acc_taxon_ID) AS 'AcceptedTaxonID',
- tg.genus AS 'Genus',
+ tgs.genus AS 'Genus',
  '' AS 'SubGenusName',
- te.epithet AS 'Species',
+ tes.epithet AS 'Species',
  
- ta.author AS 'AuthorString',
+ tas.author AS 'AuthorString',
  
  CASE tss.tax_rankID
-  WHEN 2 THEN te1.epithet
-  WHEN 3 THEN te2.epithet
-  WHEN 4 THEN te3.epithet
-  WHEN 5 THEN te4.epithet
-  ELSE te5.epithet
+  WHEN 2 THEN tes1.epithet
+  WHEN 3 THEN tes2.epithet
+  WHEN 4 THEN tes3.epithet
+  WHEN 5 THEN tes4.epithet
+  ELSE tes5.epithet
  END AS 'InfraSpecies',
  
  CASE tss.tax_rankID
   WHEN 1 THEN NULL
-  ELSE  ttr.rank_abbr
+  ELSE  ttrs.rank_abbr
  END AS 'InfraSpecificMarker',
  
  CASE tss.tax_rankID
-  WHEN 2 THEN ta1.author
-  WHEN 3 THEN ta2.author
-  WHEN 4 THEN ta3.author
-  WHEN 5 THEN ta4.author
-  ELSE ta5.author
+  WHEN 2 THEN tas1.author
+  WHEN 3 THEN tas2.author
+  WHEN 4 THEN tas3.author
+  WHEN 5 THEN tas4.author
+  ELSE tas5.author
  END AS 'InfraSpecificAuthorString',
 
- '' AS 'GSDNameStatus',
- tts.status_sp2000 AS 'Sp2000NameStatus',
+ 'synonym' AS 'GSDNameStatus',
+ 'synonym' AS 'Sp2000NameStatus',
 
  tss.taxonID AS 'GSDNameGUI'
 FROM
- herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
- INNER JOIN herbarinput.tbl_tax_synonymy syn ON syn.acc_taxon_ID=SUBSTR(taxonids.AcceptedTaxonID,2)
- LEFT JOIN herbarinput.tbl_tax_species tss ON tss.taxonID=syn.taxonID -- synonym
+ herbarinput.tbl_tax_species tss
+ LEFT JOIN herbarinput.tbl_tax_genera tgs ON tgs.genID=tss.genID
+ LEFT JOIN herbarinput.tbl_tax_families tfs ON tfs.familyID=tgs.familyID
+ 
+ -- left join last synonym entry.
+ LEFT JOIN herbarinput.tbl_tax_synonymy syn  ON (
+  -- synonym
+ syn.tax_syn_ID=IFNULL(
+  (
+   SELECT
+    tax_syn_ID
+   FROM
+    herbarinput.tbl_tax_synonymy syn2
+    LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
+   WHERE
+    syn2.taxonID=tss.taxonID
+   ORDER BY
+    CASE
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m-%d')) 
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m'))
+     WHEN STR_TO_DATE(lit2.jahr,'%Y') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y'))
+     WHEN lit2.jahr='in prep.' THEN 'b'
+     ELSE 'c' 
+    END
+    DESC
+   LIMIT
+    1
+  ),-1)
+ )
 
  -- status, rank
  LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
- LEFT JOIN herbarinput.tbl_tax_rank ttr ON ttr.tax_rankID=tss.tax_rankID
- 
- -- genus
- LEFT JOIN herbarinput.tbl_tax_genera tg ON tg.genID=tss.genID
- LEFT JOIN herbarinput.tbl_tax_authors ta ON ta.authorID=tss.authorID
- LEFT JOIN herbarinput.tbl_tax_epithets te ON te.epithetID=tss.speciesID
+ LEFT JOIN herbarinput.tbl_tax_rank ttrs ON ttrs.tax_rankID=tss.tax_rankID
+ LEFT JOIN herbarinput.tbl_tax_authors tas ON tas.authorID=tss.authorID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes ON tes.epithetID=tss.speciesID
   
  -- infraspecific
- LEFT JOIN herbarinput.tbl_tax_authors ta1 ON ta1.authorID=tss.subspecies_authorID
- LEFT JOIN herbarinput.tbl_tax_authors ta2 ON ta2.authorID=tss.variety_authorID
- LEFT JOIN herbarinput.tbl_tax_authors ta3 ON ta3.authorID=tss.subvariety_authorID
- LEFT JOIN herbarinput.tbl_tax_authors ta4 ON ta4.authorID=tss.forma_authorID
- LEFT JOIN herbarinput.tbl_tax_authors ta5 ON ta5.authorID=tss.subforma_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas1 ON tas1.authorID=tss.subspecies_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas2 ON tas2.authorID=tss.variety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas3 ON tas3.authorID=tss.subvariety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas4 ON tas4.authorID=tss.forma_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas5 ON tas5.authorID=tss.subforma_authorID
  
- LEFT JOIN herbarinput.tbl_tax_epithets te1 ON te1.epithetID=tss.subspeciesID
- LEFT JOIN herbarinput.tbl_tax_epithets te2 ON te2.epithetID=tss.varietyID
- LEFT JOIN herbarinput.tbl_tax_epithets te3 ON te3.epithetID=tss.subvarietyID
- LEFT JOIN herbarinput.tbl_tax_epithets te4 ON te4.epithetID=tss.formaID
- LEFT JOIN herbarinput.tbl_tax_epithets te5 ON te5.epithetID=tss.subformaID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes1 ON tes1.epithetID=tss.subspeciesID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes2 ON tes2.epithetID=tss.varietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes3 ON tes3.epithetID=tss.subvarietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes4 ON tes4.epithetID=tss.formaID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes5 ON tes5.epithetID=tss.subformaID
 WHERE
- IFNULL(syn.source_citationID,0)=
- (
-  SELECT
-   IFNULL(syn2.source_citationID,0)
-  FROM
-   herbarinput.tbl_tax_synonymy syn2
-   LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
-  WHERE
-       syn2.taxonID=syn.taxonID
-   AND syn2.acc_taxon_ID=syn.acc_taxon_ID
-  ORDER BY
-   CASE
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m-%d')) 
-    WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y-%m'))
-    WHEN STR_TO_DATE(lit2.jahr,'%Y') is not null THEN CONCAT('a',STR_TO_DATE(jahr,'%Y'))
-    WHEN lit2.jahr='in prep.' THEN 'b'
-    ELSE 'c' 
-   END 
-   DESC
-  LIMIT
-   1
+   
+     ( tss.tax_rankID='1' OR ( tss.tax_rankID='7'  AND tss.speciesID IS NULL ) ) -- ttrs.rank='species' or ( rank=genus and species = Null)
+ AND ( tgs.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ AND ( syn.acc_taxon_ID IS NOT NULL AND syn.acc_taxon_ID<>0 AND syn.acc_taxon_ID<>syn.taxonID  )
+
+-- synonym infraspecies  
+UNION ALL
+SELECT
+ tfs.family 'familyPre',
+ CONCAT('s',tss.taxonID) AS 'ID',
+ CONCAT('t',syn.acc_taxon_ID) AS 'AcceptedTaxonID',
+ tgs.genus AS 'Genus',
+ '' AS 'SubGenusName',
+ tes.epithet AS 'Species',
+ 
+ tas.author AS 'AuthorString',
+ 
+ CASE tss.tax_rankID
+  WHEN 2 THEN tes1.epithet
+  WHEN 3 THEN tes2.epithet
+  WHEN 4 THEN tes3.epithet
+  WHEN 5 THEN tes4.epithet
+  ELSE tes5.epithet
+ END AS 'InfraSpecies',
+ 
+ CASE tss.tax_rankID
+  WHEN 1 THEN NULL
+  ELSE  ttrs.rank_abbr
+ END AS 'InfraSpecificMarker',
+ 
+ CASE tss.tax_rankID
+  WHEN 2 THEN tas1.author
+  WHEN 3 THEN tas2.author
+  WHEN 4 THEN tas3.author
+  WHEN 5 THEN tas4.author
+  ELSE tas5.author
+ END AS 'InfraSpecificAuthorString',
+
+ 'synonym' AS 'GSDNameStatus',
+ 'synonym' AS 'Sp2000NameStatus',
+
+ tss.taxonID AS 'GSDNameGUI'
+FROM
+ herbarinput.tbl_tax_species tss
+ LEFT JOIN herbarinput.tbl_tax_species tsso ON (
+  tsso.genID = tss.genID AND tsso.speciesID=tss.speciesID
+  AND tsso.subspeciesID IS NULL AND tsso.varietyID IS NULL
+  AND tsso.subvarietyID IS NULL AND tsso.formaID IS NULL AND tsso.subformaID IS NULL
  )
-GROUP BY
- taxonids.familyPre, tss.taxonID,Sp2000NameStatus
+ LEFT JOIN herbarinput.tbl_tax_genera tgs ON tgs.genID=tss.genID
+ LEFT JOIN herbarinput.tbl_tax_genera tgso ON tgso.genID=tsso.genID
+ LEFT JOIN herbarinput.tbl_tax_families tfs ON tfs.familyID=tgso.familyID
+ 
+ -- left join last synonym entry.
+ LEFT JOIN herbarinput.tbl_tax_synonymy syn  ON (
+  syn.tax_syn_ID=IFNULL(
+  (
+   SELECT
+    syn2.tax_syn_ID
+   FROM
+    herbarinput.tbl_tax_synonymy syn2
+    LEFT JOIN herbarinput.tbl_lit lit2 ON  lit2.citationID=syn2.source_citationID
+   WHERE
+    syn2.taxonID=tss.taxonID
+   ORDER BY
+    CASE
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m-%d') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m-%d')) 
+     WHEN STR_TO_DATE(lit2.jahr,'%Y-%m') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y-%m'))
+     WHEN STR_TO_DATE(lit2.jahr,'%Y') IS NOT NULL THEN CONCAT('a',STR_TO_DATE(lit2.jahr,'%Y'))
+     WHEN lit2.jahr='in prep.' THEN 'b'
+     ELSE 'c' 
+    END
+    DESC
+   LIMIT
+    1
+  ),-1)
+ )
+  
+ LEFT JOIN herbarinput.tbl_lit lit ON lit.citationID=syn.source_citationID
+ LEFT JOIN herbarinput.tbl_lit_authors aut ON aut.autorID=lit.autorID
+ 
+ -- status, rank
+ LEFT JOIN herbarinput.tbl_tax_status tts ON tts.statusID=tss.statusID
+ LEFT JOIN herbarinput.tbl_tax_rank ttrs ON ttrs.tax_rankID=tss.tax_rankID
+ LEFT JOIN herbarinput.tbl_tax_authors tas ON tas.authorID=tss.authorID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes ON tes.epithetID=tss.speciesID
+ 
+ 
+ LEFT JOIN herbarinput.tbl_tax_authors tas1 ON tas1.authorID=tss.subspecies_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas2 ON tas2.authorID=tss.variety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas3 ON tas3.authorID=tss.subvariety_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas4 ON tas4.authorID=tss.forma_authorID
+ LEFT JOIN herbarinput.tbl_tax_authors tas5 ON tas5.authorID=tss.subforma_authorID
+ 
+ LEFT JOIN herbarinput.tbl_tax_epithets tes1 ON tes1.epithetID=tss.subspeciesID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes2 ON tes2.epithetID=tss.varietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes3 ON tes3.epithetID=tss.subvarietyID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes4 ON tes4.epithetID=tss.formaID
+ LEFT JOIN herbarinput.tbl_tax_epithets tes5 ON tes5.epithetID=tss.subformaID
+
+WHERE
+ -- next higher taxon is what we want
+     ( tsso.tax_rankID='1' OR ( tsso.tax_rankID='7'  AND tsso.speciesID IS NULL ) ) -- ttro.rank='species' or ( ttro.rank=genus and tso.speciesID = Null)
+ AND ( tgso.familyID IN ('30','115','182') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ -- and wanted infraspecies rank...
+ AND tss.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
+ -- synonym
+ AND ( syn.acc_taxon_ID IS NOT NULL AND syn.acc_taxon_ID<>0 AND syn.acc_taxon_ID<>syn.taxonID  )
 ;
+
+
 
 -- ===========================================
 -- ready
@@ -566,10 +643,10 @@ CREATE OR REPLACE
 SELECT
  ref.familyPre AS 'familyPre',
  ref.ReferenceID as 'ReferenceID',
- ref.Authors as 'Authors',
- ref.Year as 'Year',
- ref.Title as 'Title',
- ref.Details as 'Details'
+ IFNULL(ref.Authors,'') as 'Authors',
+ IFNULL(ref.Year,'') as 'Year',
+ IFNULL(ref.Title,'') as 'Title',
+ IFNULL(ref.Details,'') as 'Details'
  
 FROM
  herbar_view.view_sp2000_tmp_references ref
