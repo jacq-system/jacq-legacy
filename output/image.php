@@ -140,7 +140,7 @@ function doRedirectShowPic($picdetails){
 	if(url_exists($url)){
 		header("location: {$url}");
 	}else{
-		textError("couldn't find url");
+		textError("couldn't find url: {$url}");
 	}
 }
 	
