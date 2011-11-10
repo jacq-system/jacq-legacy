@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `djatoka_files` (
+CREATE TABLE IF NOT EXISTS `herbar_pictures`.`djatoka_files` (
   `ID` int(11) NOT NULL auto_increment,
   `scan_id` int(11) NOT NULL,
   `filename` varchar(255) NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS `djatoka_files` (
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
 
-CREATE TABLE IF NOT EXISTS `djatoka_scans` (
+CREATE TABLE IF NOT EXISTS `herbar_pictures`.`djatoka_scans` (
   `scan_id` int(11) NOT NULL auto_increment,
   `thread_id` int(11) default NULL,
   `IP` varchar(40) NOT NULL,
@@ -22,4 +22,4 @@ CREATE TABLE IF NOT EXISTS `djatoka_scans` (
   KEY `IP` (`IP`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=0 ;
 
-ALTER TABLE `tbl_img_definition` ADD `key` VARCHAR( 50 ) NULL ;
+ALTER TABLE `herbarinput`.`tbl_img_definition` ADD `key` VARCHAR( 50 ) NULL ;

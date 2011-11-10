@@ -103,6 +103,17 @@ function editSpecimensSimple(filename) {
 function getImageServerIP(){
 	return $('#serverIP').val()
 }
+// load..
+function checkConsisty(){
+	PostIt(
+		'x_djatoka_consistency_check',
+		{'serverIP':getImageServerIP()},
+		function(data){
+			$('#res_tabs2').html(data);
+		}
+	);
+}
+			
 var $tabs;
 var tab_counter = 4;
 $(function() {
@@ -121,21 +132,14 @@ $(function() {
 		},
 		select: function(event, ui) {
 			if(ui.index==1){
-				// load..
-				PostIt(
-					'x_djatoka_consistency_check',
-					{'serverIP':getImageServerIP()},
-					function(data){
-						$('#res_tabs2').html(data);
-					}
-				);
+				checkConsisty();
 			}
 		}
 	});
 	
 		
 	$('#datepicker').datepicker({
-		showOn: "button",
+		showOn: "both",
 		//buttonImage: "images/calendar.gif",
 		constrainInput: true,
 		
@@ -215,12 +219,12 @@ function filterChecks(faulty){
 	);
 }
 
-function loadImportLog(threadid){
+function loadImportLog(threadid, times){
 	PostIt(
 		'x_listImportLogs',
 		{'serverIP':getImageServerIP() , 'thread_id':threadid},
 		function(data){
-			$tabs.tabs( "add", "#tabs-" + tab_counter,threadid);
+			$tabs.tabs( "add", "#tabs-" + tab_counter,"Log from "+times);
 			$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
 			$('#tab_res'+tab_counter).html(data);
 			tab_counter++;
@@ -234,13 +238,18 @@ function updateInstitutions(imgserverIP,source_id){
 		'x_listInstitutions',
 		{'serverIP':imgserverIP , 'source_id':source_id},
 		function(data){
-			$('#source_id').html(data);
+			$('#source_id').html(data.inst);
+			$('#lastScan2').html("Last Scan: "+data.lastscan);
+			$('#lastScan').html("");
+			if($tabs.tabs('option', 'selected')==1){
+				checkConsisty();
+			}
 		}
 	);
 }
 
 function processItem(itemname){
-	alert('dosomething');
+	//alert('dosomething');
 }
 
 function PostIt(method, params, callback){
@@ -322,7 +331,7 @@ function PostIt(method, params, callback){
 </td>
 </tr></table>
 
-
+<div id="lastScan2"></div>
 <div id="lastScan"></div>
 
 

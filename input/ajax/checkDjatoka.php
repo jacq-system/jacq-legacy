@@ -68,8 +68,8 @@ class checkDjatoka{
 		$this->getServerKey($serverIP);
 		
 		if(!$this->service){
-			$this->service=new jsonRPCClient("http://{$serverIP}/database/json_rpc_scanPictures.php");
-		//	$this->service=new jsonRPCClient("http://localhost/f/jsonservice/json_rpc_taxamatchMdld.php");
+			//$this->service=new jsonRPCClient("http://{$serverIP}/database/json_rpc_scanPictures.php");
+			$this->service=new jsonRPCClient("http://localhost/f/jsonservice/json_rpc_taxamatchMdld.php");
 		}
 		return $this->service;
 	}
@@ -102,6 +102,8 @@ class checkDjatoka{
 		$source_id=isset($params['source_id'])?$params['source_id']:false;
 		
 		$db=$this->getdB();
+		$serverIPd=$db->quote($serverIP);
+		
 		$dbst = $db->prepare("
 SELECT 
   source_name,
@@ -127,6 +129,19 @@ ORDER BY source_name
 			$res = "<option value=\"0\">--- all ---</option>\n".$res;
 		}
 		$res=str_replace("<option value=\"{$source_id}\"","<option value=\"{$source_id}\" selected",$res);
+		
+		$dbst2 = $db->query("SELECT  finish FROM herbar_pictures.djatoka_scans WHERE finish IS NOT NULL AND errors is null and IP ={$serverIPd} LIMIT 1");
+		$finish='';
+		$scan_id=false;
+		if (($row=$dbst2->fetch()) > 0) {
+			$finish= $row['finish'];
+		}
+		
+		$res=array(
+			'inst'=>$res,
+			'lastscan'=>$finish
+		);
+		
 		return $res;
 	}
 
@@ -177,7 +192,7 @@ ORDER BY source_name
 		$result="";
 		foreach($ImportThreads as $threadid=>$timestamp){
 			$d=date('d.m.Y H:i',$timestamp);
-			$result.="<a href=\"javascript:loadImportLog('{$threadid}')\">{$threadid},{$d}</a><br>";
+			$result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}')\">{$threadid},{$d}</a><br>";
 		}
 		
 		return $result;
@@ -256,7 +271,15 @@ EOF;
 </td><td width='20'>&nbsp;</td><td>
 EOF;
 		// inArchive_butnotinDB
-		// todo: filter with prefix (wu_) at institution
+		// filter with prefix (wu_) at institution
+		$where="";
+		if($source_id){
+			$dbst = $db->query("SELECT coll_short_prj FROM herbarinput.tbl_management_collections WHERE source_id = 1");
+			if ($row=$dbst->fetchColumn()) {
+				$where="and  dj.filename LIKE '{$row}_%'";
+			}
+		}
+		
 		$sql="
 SELECT
  dj.filename,
@@ -268,6 +291,7 @@ FROM
 WHERE
  dj.scan_id='{$scan_id}'
  and sp.specimen_ID is null
+{$where}
 {$limit}
 ";
 		$dbst = $db->query($sql);
@@ -318,7 +342,7 @@ WHERE
  dj.scan_id='{$scan_id}'
  and sp.specimen_ID is not null
  and sp.digital_image = 0
- 
+ {$where}
 ";
 		if ($source_id){
 			$sql.= " AND mc.source_id = $source_id";
