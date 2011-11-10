@@ -247,12 +247,10 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <title>herbardb - edit Literature</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <!link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
 
 
-  <!link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
   
   <style type="text/css">
 	.ui-autocomplete {
@@ -272,9 +270,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 		}++
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
  
   <script type="text/javascript" language="JavaScript">
     var reload = false;

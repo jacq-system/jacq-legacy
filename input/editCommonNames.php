@@ -1,6 +1,8 @@
 <?php
 session_start();
-require("inc/connect.php");
+require("inc/init.php");
+
+//require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
@@ -15,7 +17,7 @@ $debuger=0;
   <title>herbardb - edit CommonNames</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
    <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
@@ -47,10 +49,10 @@ $debuger=0;
 table.tablesorter thead tr th{border: 1px solid #CCC !important;}
 table.tablesorter tbody td {border: 1px solid #CCC !important;}
   </style>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
-  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
+  <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
 
   <script type="text/javascript" language="JavaScript">
   var geowin;
@@ -241,6 +243,16 @@ function showGeonameInfo(){
 <form Action="<?PHP echo $_SERVER['PHP_SELF'];?>" Method="POST" name="f" id="sendto">
 
 <?php
+-- $db = clsDbAccess::Connect('INPUT');
+ $dbst = $db->query("SELECT imgserver_IP FROM tbl_img_definition GROUP BY imgserver_IP");
+        foreach ($dbst as $row) {
+            echo "<option value=\"{$row['imgserver_IP']}\"";
+            if ($pictureServerIP == $row['imgserver_IP']) {
+                echo " selected";
+            }
+            echo ">{$row['imgserver_IP']}</option>\n";
+        }
+		
 $doSearch=false;
 $search_result='';
 $source_sel=array('service'=>'','person'=>'','literature'=>'');
@@ -252,39 +264,39 @@ $quotesdone=0;
 
 // dataVar
 $_dvar=array(
-	'entityIndex'		=> '',
+	'entityIndex'		=> null,
 	'entityType'		=> 'taxon',
-	'taxonIndex'		=> '',
+	'taxonIndex'		=> null,
 	
-	'nameIndex'			=> '',
-	'common_nameIndex'	=> '',
-	'common_name'		=> '',
+	'nameIndex'			=> null,
+	'common_nameIndex'	=> null,
+	'common_name'		=> null,
 	
-	'transliteration'	=> '',
-	'transliterationIndex'=> '',
+	'transliteration'	=> null,
+	'transliterationIndex'=> null,
 	
-	'geonameIndex'		=> '',
-	'geoname'			=> '',
+	'geonameIndex'		=> null,
+	'geoname'			=> null,
 	
-	'geospecification'=> '',
+	'geospecification'=> null,
 	
-	'languageIndex'		=> '',
-	'language'			=> '',
+	'languageIndex'		=> null,
+	'language'			=> null,
 	
-	'tribeIndex'		=> '',
-	'tribe_name'		=> '',
+	'tribeIndex'		=> null,
+	'tribe_name'		=> null,
 	
-	'periodIndex'		=> '',
-	'period'			=> '',
+	'periodIndex'		=> null,
+	'period'			=> null,
 
-	'referenceIndex'	=> '',
+	'referenceIndex'	=> null,
 	'sourceType'		=> 'literature',
-	'sourcevalueIndex'	=> '',
+	'sourcevalueIndex'	=> null,
 
-	'annotations'		=> '',
+	'annotations'		=> null,
 	
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id','tribe_id')),
+	'active_id'	=>	new natID(array('geonameId','language_id','period_id','entity_id','reference_id','name_id','tribe_id')),
 
 	'enableClose'	=> ((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0
 
@@ -587,7 +599,62 @@ EOF;
 
 function getAppliesQuery($_dvar=array(),$strict=false){
 	global $dbprefix;
-	
+/*
+-- ===========================================
+-- herbar_view.view_common_names
+--
+-- ===========================================
+CREATE OR REPLACE
+ ALGORITHM = UNDEFINED
+ VIEW herbar_view.view_common_names
+ AS
+  SELECT
+ a.*,
+ ent.*,
+ tax.*,
+ com.*,
+ translit.*,
+ geo.*,
+ lan.*,
+ per.*,
+ pers.*,
+ lit.*,
+ ser.*,
+ trib.*,
+ 
+ CASE
+  WHEN pers.personID THEN 'person'
+  WHEN ser.serviceID THEN 'service'
+  ELSE 'literature'
+ END as 'sourceType',
+ 
+ CASE
+  WHEN pers.personID THEN pers.personID
+  WHEN ser.serviceID THEN ser.serviceID
+  ELSE lit.citationID
+ END as 'sourcevalueIndex'
+ 
+FROM
+ herbar_names.tbl_name_applies_to a
+ LEFT JOIN herbar_names.tbl_name_entities ent ON ent.entity_id = a.entity_id
+ LEFT JOIN herbar_names.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
+
+ LEFT JOIN herbar_names.tbl_name_names nam ON nam.name_id = a.name_id
+ LEFT JOIN herbar_names.tbl_name_commons com ON com.common_id = nam.name_id
+ LEFT JOIN herbar_names.tbl_name_transliterations translit ON translit.transliteration_id=nam.transliteration_id
+ 
+ 
+ LEFT JOIN herbar_names.tbl_geonames_cache geo ON geo.geonameId = a.geonameId
+ LEFT JOIN herbar_names.tbl_name_languages lan ON  lan.language_id = a.language_id
+ LEFT JOIN herbar_names.tbl_name_periods per ON per.period_id= a.period_id
+
+ LEFT JOIN herbar_names.tbl_name_references ref ON ref.reference_id = a.reference_id
+ LEFT JOIN herbar_names.tbl_name_persons pers ON pers.person_id = ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_literature lit ON lit.literature_id = ref.reference_id
+ LEFT JOIN herbar_names.tbl_name_webservices ser ON ser.webservice_id = ref.reference_id
+ 
+ LEFT JOIN herbar_names.tbl_name_tribes trib ON trib.tribe_id=a.tribe_id
+*/ 
 	$sql="
 SELECT
  a.entity_id as 'entity_id',
@@ -656,7 +723,24 @@ WHERE
  1=1 
 ";
  	if(count($_dvar)==0)return $sql;
+
+/*	
+	if(!checkempty($_dvar,$strict,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
+	if(!checkempty($_dvar,$strict,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
+	if(!checkempty($_dvar,$strict,'transliteration'))$sql.="\n and translit.transliteration_id = '{$_dvar['transliterationIndex']}'";
+	if(!checkempty($_dvar,$strict,'geoname'))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
+	if(!checkempty($_dvar,$strict,'geospecification'))$sql.="\n and a.geospecification = '{$_dvar['geospecification']}'";
+	if(!checkempty($_dvar,$strict,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
+	if(!checkempty($_dvar,$strict,'language'))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
+	if(!checkempty($_dvar,$strict,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
 	
+ 	switch($_dvar['sourceType']){
+		default: case 'literature':if(!checkempty($_dvar,$strict,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'service':if(!checkempty($_dvar,$strict,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
+		case 'person':if(!checkempty($_dvar,$strict,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
+	}
+	if(!checkempty($_dvar,$strict,'annotations'))$sql.="\n and a.annotations= '{$_dvar['annotations']}'";
+*/
 	if(!checkempty($_dvar,$strict,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
 	if(!checkempty($_dvar,$strict,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
 	if(!checkempty($_dvar,$strict,'transliteration'))$sql.="\n and translit.transliteration_id = '{$_dvar['transliterationIndex']}'";

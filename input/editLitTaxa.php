@@ -206,7 +206,7 @@ if (isset($_GET['new'])) {
   <title>herbardb - edit Taxa</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -229,8 +229,8 @@ if (isset($_GET['new'])) {
 	}
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function hideParts() {
       var source = '<?php echo $p_source; ?>';

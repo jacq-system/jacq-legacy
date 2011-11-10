@@ -72,7 +72,7 @@ if ($result && mysql_num_rows($result) > 0) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <?php $xajax->printJavascript('inc/xajax'); ?>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery.fixedtableheader.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function checkNation(taxonID, checked) {

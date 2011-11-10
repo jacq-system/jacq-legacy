@@ -431,11 +431,14 @@ EOF;
 		$ret.=<<<EOF
 <input type="hidden" name="{$name}Index" id="{$name}Index" value="{$index}"/>
 EOF;
-		if($this->doEcho){
+		if(true){
 			$ret.=<<<EOF
 </div>
 <script>ACFreudConfig.push(['{$serverScript}','{$name}','{$index}','{$mustmatch}','{$acdone}','{$fullFocus}','{$minLength}']);</script>
 EOF;
+		}
+		if($this->doEcho){
+			
 			$this->_divclass($x, $y, "cssfinput");
 			echo $ret;
 			$this->tabindex++;
@@ -458,10 +461,10 @@ EOF;
 		$htmla=str_replace('###name###',"acmap_l_'+x+'",$htmla);
 		*/
 ?>
-<link rel="stylesheet" href="inc/jQuery/pagination.css" type="text/css" />
-<script type="text/javascript" src="inc/jQuery/jquery.pagination.js"></script>
-<script type="text/javascript" src="inc/jQuery/jquery.multi-open-accordion-1.5.3.min.js"></script>
-<script type="text/javascript" src="inc/jQuery/freud_EditMapping.js"></script>
+<link rel="stylesheet" href="js/lib/jQuery/css/pagination.css" type="text/css" />
+<script type="text/javascript" src="js/lib/jQuery/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/lib/jQuery/jquery.multi-open-accordion-1.5.3.min.js"></script>
+<script type="text/javascript" src="js/freud_EditMapping.js"></script>
 
 <script>
 

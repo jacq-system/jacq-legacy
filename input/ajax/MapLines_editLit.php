@@ -261,7 +261,8 @@ WHERE
 {$where1}
 {$where2}
 ORDER BY
- tg1.genus, tg2.genus,sy.tax_syn_ID
+ tg1.genus, te01.epithet, te11.epithet, te21.epithet, te31.epithet, te41.epithet, te51.epithet,
+ tg2.genus, te02.epithet, te12.epithet, te22.epithet, te32.epithet, te42.epithet, te52.epithet, sy.tax_syn_ID
 LIMIT
  {$pbegin},{$this->pagination}
 ";

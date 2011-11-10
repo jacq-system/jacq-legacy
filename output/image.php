@@ -128,7 +128,7 @@ function doRedirectShowPic($picdetails){
 	global $q,$debug;
 	
 	if($picdetails['is_djatoka']=='1'){
-		$url="{$picdetails['url']}/viewer.html?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}";
+		$url="{$picdetails['url']}/viewer.html?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}&herbarnumber={$picdetails['filename']}";
 	}else{
 		$url="{$picdetails['url']}/img/imgBrowser.php?name={$picdetails['requestFileName']}{$q}";
 	}

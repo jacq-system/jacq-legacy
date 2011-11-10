@@ -29,7 +29,6 @@ BEGIN
   
  SET tablename_log=CONCAT(tablename,tablename_log);
  
-  -- start main loop 
  WHILE IDS IS NOT NULL AND IDS<>"" DO
   SET IDS2=IDS;
   SET sql1="";
@@ -49,19 +48,20 @@ BEGIN
    IF c_key ='PRI' THEN
     SET keyval=SUBSTRING_INDEX(IDS2,',', 1);
     IF keyval<>"" THEN
-     -- first search is for the deletion...
+     
+	 -- first search is for the deletion...
      IF searchedfordelete =0 THEN
-      
       SET sql1=CONCAT(sql1, " and `old_",c_field,"`='",keyval,"' and `new_",c_field,"` is null");
       SET sql2=",`LOGID`"; -- dummy
       SET sql3=",',',''"; -- dummy
-      
      ELSE
       SET sql1=CONCAT(sql1, " and `new_",c_field,"`='",keyval,"'");
       SET sql2=CONCAT(sql2, ",`new_",c_field,"`");
       SET sql3=CONCAT(sql3, ",',',`old_",c_field,"`");
      END IF;   
+	 
      SET IDS2=SUBSTRING(IDS2,CHAR_LENGTH(keyval)+2);
+	 
     END IF;  
    END IF;
    

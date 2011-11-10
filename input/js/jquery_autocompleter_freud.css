@@ -1,0 +1,9 @@
+.ui-autocomplete-loading{background:url('css/loading.gif') no-repeat right center;}
+.wrongItem{background:url('css/wrong.gif') no-repeat right center; background-color:rgb(255, 185,79) !important;}
+.newItem{background:url('css/new.gif') no-repeat right center; }
+.ui-widget{
+ font-family: sans-serif; font-size: 100%; 
+}
+.ui-widget input{
+ font-family: sans-serif; font-size: 100%; 
+}

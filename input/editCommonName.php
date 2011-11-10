@@ -13,7 +13,7 @@ error_reporting(E_ALL);
   <title>herbardb - edit Index</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
    <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
    <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
@@ -43,9 +43,9 @@ error_reporting(E_ALL);
  background-color:rgb(255, 185,79) !important;
 }
   </style>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="inc/jQuery/jquery_autocompleter_freud.js"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
   <script type="text/javascript" language="JavaScript">
 	$(document).ready(function() {
 	  $("#new_common_name").select();

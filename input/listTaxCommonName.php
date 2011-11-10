@@ -680,7 +680,7 @@ function selectTaxon(taxonID){
 }
 </script>
   <!-- BP: use jQuery for disabling edit-fields if MDLD-search has been entered -->
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <!-- BP END -->
 
   <script type="text/javascript" language="JavaScript">

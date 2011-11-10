@@ -538,7 +538,7 @@ if (isset($_GET['sel'])) {
   <title>herbardb - edit Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="inc/jQuery/css/ui-lightness/jquery-ui.custom.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <style type="text/css">
     #log { position:absolute; bottom:1em; right:1em }
 	.ui-autocomplete {
@@ -559,8 +559,8 @@ if (isset($_GET['sel'])) {
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" src="inc/overlib/overlib.js"></script>
-  <script src="inc/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">

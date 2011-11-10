@@ -88,6 +88,35 @@ function makeSammler2($search, $nr)
 }
 
 // main program
+// Filename
+if(isset($_GET['filename'])){
+	$pieces = explode("_", basename($_GET['filename']),2);
+	
+	//$value= htmlspecialchars($filename);
+	$hardcoded_colshorts= array( 
+		'gjo'	=> 17,
+		'gzu'	=>	18,
+		'w'		=>	19,
+		'w-krypt' => 90,
+		'wu'	=> 1,
+	);
+	
+	if(!isset($hardcoded_colshorts[$pieces[0]])){
+		$sql="SELECT collectionID FROM tbl_management_collections WHERE coll_short_prj='".mysql_escape_string($pieces[0])."'";
+		$result = db_query($sql);
+        $row = mysql_fetch_array($result);
+		$collNr=$row['collectionID'];
+	}else{
+		$collNr =$hardcoded_colshorts[$pieces[0]];
+	}
+	
+	$_POST['checked']='1';
+	$_POST['accessible']='1';
+	$_POST['digital_image']='1';
+	$_POST['collection']=$collNr;
+	$_POST['HerbNummer']=$pieces[1];
+	
+}
 
 if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
     $sql = "SELECT wu.specimen_ID, wu.HerbNummer, wu.identstatusID, wu.checked, wu.accessible,

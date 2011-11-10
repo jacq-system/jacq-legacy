@@ -1,5 +1,5 @@
 <?php
-require("inc/functions.php");
+require("../inc/functions.php");
 require_once ("../inc/xajax/xajax.inc.php");
 
 /**

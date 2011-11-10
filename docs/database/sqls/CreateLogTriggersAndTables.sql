@@ -14,7 +14,7 @@ BEGIN
  
  DECLARE sqlstatement TEXT DEFAULT "";
  
- DECLARE pri_new,pri_old,pri_index,ins_trig,del_trig,upd_trig,fields_new TEXT DEFAULT "";
+ DECLARE pri_new,pri_old,pri_index,ins_trig,del_trig,upd_trig,fields_new,keys TEXT DEFAULT "";
  DECLARE s_null, s_default VARCHAR(20) DEFAULT "";
  
  DECLARE c_field, c_type, c_null, c_key, c_default, c_extra VARCHAR(20) DEFAULT "";
@@ -51,7 +51,8 @@ BEGIN
   IF c_key ='PRI' THEN
    SET pri_new=CONCAT(pri_new,",\n `new_",c_field,"` ",c_type," ",s_default,"");
    SET pri_old=CONCAT(pri_old,",\n `old_",c_field,"` ",c_type," ",s_default,"");
-  
+   SET keys=CONCAT(keys,",\n KEY  `new_",c_field,"` (`",c_field,"`), KEY  `old_",c_field,"` (`",c_field,"`)");
+
    SET ins_trig=CONCAT(ins_trig,",\n `new_",c_field,"`=new.`",c_field,"`, `old_",c_field,"`=null");
    SET upd_trig=CONCAT(upd_trig,",\n `new_",c_field,"`=new.`",c_field,"`, `old_",c_field,"`=old.`",c_field,"`");
    SET del_trig=CONCAT(del_trig,",\n `new_",c_field,"`=null, `old_",c_field,"`=old.`",c_field,"`");
@@ -73,6 +74,7 @@ BEGIN
  SET del_trig=SUBSTRING(del_trig,2);
  SET upd_trig=SUBSTRING(upd_trig,2);
  SET fields_new=SUBSTRING(fields_new,1);
+ -- SET keys=SUBSTRING(keys,1);
   
  SET @sqlstatement1a=CONCAT("DROP TABLE IF EXISTS `",logdb, "`.`",tablename_log,"`;");
  SET @sqlstatement1b=CONCAT("
@@ -83,7 +85,9 @@ CREATE TABLE `",logdb, "`.`",tablename_log,"` (
  fields_new,",
  `userid` VARCHAR(30) ,
  `action` TINYINT NOT NULL ,
- `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+ `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP",
+  keys,",
+  KEY `timestamp` (`timestamp`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 ");
 
@@ -146,7 +150,7 @@ END;
  EXECUTE statement;
  DEALLOCATE PREPARE statement; 
  
- 
+ -- http://forge.mysql.com/worklog/task.php?id=2871
  PREPARE statement FROM @sqlstatement2a;
  EXECUTE statement;
  DEALLOCATE PREPARE statement; 
