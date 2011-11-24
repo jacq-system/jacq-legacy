@@ -23,29 +23,13 @@ function dateconvert($date,$tomysql=false){
 	return $date;
 }
 
+		
 if (isset($_GET['new'])) {
-    $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
-            FROM tbl_tax_species ts
-             LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-             LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-             LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-            WHERE ts.taxonID = " . extractID($_GET['ID']);
+    $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
+         author, author1, author2, author3, author4, author5,
+         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+        WHERE taxonID = " . extractID($_GET['ID']);
     $result = db_query($sql);
     $p_taxon = taxon(mysql_fetch_array($result));
     $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
@@ -79,75 +63,28 @@ if (isset($_GET['new'])) {
         $p_user        = $row['firstname'] . " " . $row['surname'];
         $p_ref_date=dateconvert($row['ref_date']);
 		
-        $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                 LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-                WHERE ts.taxonID = '" . $row['taxonID'] . "'";
+        $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
+         author, author1, author2, author3, author4, author5,
+         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+        WHERE taxonID = '" . $row['taxonID'] . "'";
         $result = db_query($sql);
         $p_taxon = taxon(mysql_fetch_array($result));
 
-        $sql = "SELECT taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE taxonID = '" . $row['acc_taxon_ID'] . "'";
+        $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
+         author, author1, author2, author3, author4, author5,
+         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+        WHERE taxonID = '" . $row['acc_taxon_ID'] . "'";
         $result = db_query($sql);
         $p_taxonAcc = taxon(mysql_fetch_array($result));
         $p_taxonAccIndex = $row['acc_taxon_ID'];
        
- 	   $sql = "SELECT taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE taxonID = '" . $row['source_specimenID'] . "'";
+ 	   $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
+         author, author1, author2, author3, author4, author5,
+         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+        WHERE taxonID = '" . $row['source_specimenID'] . "'";
         $result = db_query($sql);
         $p_source_specimen=taxon(mysql_fetch_array($result));
         $p_source_specimenIndex=$row['source_specimenID'];

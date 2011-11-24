@@ -165,15 +165,26 @@ ORDER BY source_name
 	public function x_listImportLogs($params){
 		$serverIP=$params['serverIP'];
 		$thread_id=$params['thread_id'];
+		$start=isset($params['page_index'])?intval($params['page_index']):0;
+		$limit=isset($params['limit'])?intval($params['limit']):20;
 		
+		$start=$start*$limit;
+		
+		$end=$start+$limit;
 		$service = &$this->getService($serverIP);
 		$logs = $service->listImportLogs($this->sharedkey,$thread_id);
 		
+		$maxc=count($logs);
 		$result="";
+		$x=0;
 		foreach($logs as $logmsg){
+			$x++;
+			if($x<=$start)continue;
 			$result.="<a href=\"javascript:processItem()\">{$logmsg}</a><br>";
+			if($x>=$end)break;
+			
 		}
-		return $result;
+		return array('html'=>$result,'maxc'=>$maxc);
 	}
 
 
@@ -182,6 +193,11 @@ ORDER BY source_name
 
 		$serverIP=$params['serverIP'];
 		$starttime=$params['starttime'];
+		$start=isset($params['page_index'])?intval($params['page_index']):0;
+		$limit=isset($params['limit'])?intval($params['limit']):20;
+		
+		$start=$start*$limit;
+		$end=$start+$limit;
 		
 		$timestamp=strtotime($starttime); // 2011/1/19
 		$d=date('d.m.Y H:i',$timestamp);
@@ -189,24 +205,38 @@ ORDER BY source_name
 		$service = &$this->getService($serverIP);
 		$ImportThreads = $service->listImportThreads($this->sharedkey,$timestamp);
 		
+		$maxc=count($ImportThreads);
+		
 		$result="";
+		$x=0;
 		foreach($ImportThreads as $threadid=>$timestamp){
+			$x++;
+			if($x<=$start)continue;
 			$d=date('d.m.Y H:i',$timestamp);
 			$result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}')\">{$threadid},{$d}</a><br>";
+			if($x>=$end)break;
 		}
 		
-		return $result;
+		return array('html'=>$result,'maxc'=>$maxc);
 	}
 	
 	
 	public function x_pictures_check($params){
 		$serverIP=$params['serverIP'];
 		$family=isset($params['family'])?$params['family']:false;
-		$source_id=isset($params['source_id'])?$params['source_id']:false;
+		$source_id=isset($params['source_id'])?intval($params['source_id']):false;
 		$faulty=isset($params['faulty'])?$params['faulty']:false;
+		
+		$start=isset($params['page_index'])?intval($params['page_index']):0;
+		$limit=isset($params['limit'])?intval($params['limit']):20;
+		
+		$start=$start*$limit;
+		
 		$db=$this->getdB();
 		
-		$limit=' LIMIT 20'; 
+		$limit=" LIMIT {$start}, {$limit}"; 
+		
+
 		$scan_id=$this->getLatestScanId($serverIP);
 		
 		if($scan_id==0){
@@ -217,13 +247,17 @@ ORDER BY source_name
 		$tab1='';
 		
 		// inDBchecked_butnotinArchive
+		$fields="
+ sp.specimen_ID,
+ sp.filename
+";
+ 
 		$sql="
 SELECT
- sp.specimen_ID,
- sp.filename2
+ :fields
 FROM
- herbar_view.view_tbl_specimens sp
- LEFT JOIN herbar_pictures.djatoka_files dj ON ( dj.filename=sp.filename2 and dj.scan_id='{$scan_id}')
+ herbarinput.tbl_specimens sp  -- herbar_view.view_tbl_specimens sp -- too slow!!!
+ LEFT JOIN herbar_pictures.djatoka_files dj ON ( dj.filename=sp.filename and dj.scan_id='{$scan_id}')
 ";
 		if($family){
 			$sql.="LEFT JOIN tbl_tax_species ts ON ts.taxonID = sp.taxonID
@@ -252,12 +286,16 @@ WHERE
 		if ($family){
 			$sql .= " AND tf.family LIKE " . $db->quote($family . '%');
 		}
-		$sql.=" {$limit}";
+		// count
+		$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+		$c[0]=$dbst->fetchColumn();
+		
+		
+		$sql=str_replace(':fields',$fields,$sql)." {$limit}";
 
 		$dbst = $db->query($sql);
 		foreach($dbst as $row){
-			$c[0]++;
-			$value=htmlspecialchars($row['filename2']);
+			$value=htmlspecialchars($row['filename']);
 			if(!empty($row['specimen_ID'])){
 				$specLink=" href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')>\"";
 			}else{
@@ -280,30 +318,38 @@ EOF;
 			}
 		}
 		
-		$sql="
-SELECT
+		$fields="
  dj.filename,
  dj.inconsistency,
- sp.specimen_ID
+ sp.specimen_ID		
+		";
+		
+		$sql="
+SELECT
+ :fields
 FROM
  herbar_pictures.djatoka_files dj
- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename2=dj.filename)
+  -- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename=dj.filename)-- too slow!!!
+ LEFT JOIN herbarinput.tbl_specimens sp ON (sp.filename=dj.filename)
 WHERE
  dj.scan_id='{$scan_id}'
  and sp.specimen_ID is null
 {$where}
-{$limit}
 ";
+		// count
+		$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+		$c[1]=$dbst->fetchColumn();
+		
+		$sql=str_replace(':fields',$fields,$sql)."  order by dj.filename  {$limit}";
 		$dbst = $db->query($sql);
 		foreach($dbst as $row){
-			$c[1]++;
 			$val=htmlspecialchars($row['filename']);
 			$inc='';
 			if($row['inconsistency']!=0){
 				if($row['inconsistency']==1){
-					$inc=" (not in djatoka)";
+					$inc=" (pic not in djatoka)";
 				}else if($row['inconsistency']==2){
-					$inc=" (not in archive!!!)";
+					$inc=" (pic not in archive!!!)";
 				}
 			}
 			$specLink=" href=\"javascript:editSpecimensSimple('{$row['filename']}')\"";
@@ -319,15 +365,18 @@ EOF;
 		
 		
 		// inArchive_butnotCheckedinDB
-		$sql="
-SELECT
+		$fields="
  dj.filename,
  sp.specimen_ID,
  dj.inconsistency
- 
+";
+		$sql="
+SELECT
+ :fields
 FROM
  herbar_pictures.djatoka_files dj
- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename2=dj.filename)
+ -- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename=dj.filename)-- too slow!!!
+ LEFT JOIN herbarinput.tbl_specimens sp ON (sp.filename=dj.filename)
  LEFT JOIN herbarinput.tbl_management_collections mc ON mc.collectionID=sp.collectionID
  LEFT JOIN herbarinput.tbl_img_definition img ON img.source_id_fk=mc.source_id
 ";
@@ -351,18 +400,21 @@ WHERE
 		if ($family){
 			$sql .= " AND tf.family LIKE " . $db->quote ($family . '%');
 		}
-		$sql.=" {$limit} ";
-
+		
+		// count
+		$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+		$c[2]=$dbst->fetchColumn();
+		
+		$sql=str_replace(':fields',$fields,$sql)."  order by dj.filename  {$limit}";
 		$dbst = $db->query($sql);
 		foreach($dbst as $row){
-			$c[2]++;
 			$val=htmlspecialchars($row['filename']);
 			$inc='';
 			if($row['inconsistency']!=0){
 				if($row['inconsistency']==1){
-					$inc=" (not in djatoka)";
+					$inc=" (pic not in djatoka)";
 				}else if($row['inconsistency']==2){
-					$inc=" (not in archive!!!)";
+					$inc=" (pic not in archive!!!)";
 				}
 			}
 			if(!empty($row['specimen_ID'])){
@@ -384,12 +436,15 @@ EOF;
 		
 		if($faulty){
 			// herbanumber_Fault
-			$sql="
-SELECT
+			$fields="
  sp.specimen_ID,
  sp.herbNummer
+";
+			$sql="
+SELECT
+ :fields
 FROM
- herbar_view.view_tbl_specimens sp
+ herbarinput.tbl_specimens sp  -- herbar_view.view_tbl_specimens sp-- too slow!!!
  LEFT JOIN herbarinput.tbl_management_collections mc ON mc.collectionID=sp.collectionID
  LEFT JOIN herbarinput.tbl_img_definition img ON img.source_id_fk=mc.source_id
 ";
@@ -405,7 +460,7 @@ FROM
 WHERE
  img.imgserver_IP = ".$db->quote($serverIP)."
  and sp.digital_image != 0
- and sp.filename2 LIKE 'error%'
+ and sp.filename LIKE 'error%'
 ";
 			if ($source_id){
 				$sql.= " AND mc.source_id = '{$source_id}'";
@@ -413,11 +468,15 @@ WHERE
 			if ($family){
 				$sql .= " AND tf.family LIKE " . $db->quote ($family . '%');
 			}
-			$sql.=" {$limit}";
+			// count
+			$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+			$c[3]=$dbst->fetchColumn();
+			
+			$sql=str_replace(':fields',$fields,$sql)."  order by sp.filename {$limit}";
+			//echo $sql;
 			$dbst = $db->query($sql);
 			foreach($dbst as $row){
-				$c[3]++;
-				$val=htmlspecialchars($row['HerbNummer']);
+				$val=htmlspecialchars($row['herbNummer']);
 				if(!empty($row['specimen_ID'])){
 					$specLink=" href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')\"";
 				}else{
@@ -435,9 +494,10 @@ EOF;
 		}
 	
 	
+		$maxc=max($c[0],$c[1],$c[2],$c[3]);
 		
 		$tab1=<<<EOF
-<table align='center'>
+<table>
 <tr>
 <th>{$c[0]} missing Pics</th><th></th>
 <th>{$c[1]} missing database entries</th><th></th>
@@ -451,7 +511,7 @@ EOF;
 </tr>
 </table>
 EOF;
-		return $tab1;
+		return array('html'=>$tab1,'maxc'=>$maxc);
 
 	}
 
@@ -461,31 +521,49 @@ EOF;
 		$serverIP=$params['serverIP'];
 		$scan_id=$this->getLatestScanId($serverIP);
 		
-		$limit=' LIMIT 20'; 
+		$start=isset($params['page_index'])?intval($params['page_index']):0;
+		$limit=isset($params['limit'])?intval($params['limit']):20;
+		
+		$start=$start*$limit;
+		
+		$limit=" LIMIT {$start},{$limit}"; 
 		
 		if($scan_id==0){
 			return "A Scan is already running. refresh in a few seconds.";
 		}
 		$c=array(0,0);
 		$tab1='';
-		
+
+
+ 
+ 
 		// Consistency: In Djatoka Not in Archive
-		$sql="
-SELECT
+		$fields="
  dj.filename,
  sp.specimen_ID
+";
+		$sql="
+SELECT
+ :fields
 FROM
  herbar_pictures.djatoka_files dj
- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename2=dj.filename)
+ -- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename=dj.filename)-- too slow!!!
+ LEFT JOIN  herbarinput.tbl_specimens sp ON (sp.filename=dj.filename) 
 WHERE
  dj.scan_id='{$scan_id}'
  and dj.inconsistency ='2'
- 
-{$limit}
 ";
+
+
+		// count
+		$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+		$c[0]=$dbst->fetchColumn();
+		
+		$sql=str_replace(':fields',$fields,$sql)." order by dj.filename {$limit} ";
 		$dbst = $db->query($sql);
+		
+		
 		foreach($dbst as $row){
-			$c[0]++;
 			if(!empty($row['specimen_ID'])){
 				$specLink=" href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')\"";
 			}else{
@@ -500,21 +578,29 @@ EOF;
 </td><td width='20'>&nbsp;</td><td>
 EOF;
 		// Consistency: in Archive NOT in Djatoka
-		$sql="
-SELECT
+		$fields="
  dj.filename,
  sp.specimen_ID
+";
+		$sql="
+SELECT
+ :fields
 FROM
  herbar_pictures.djatoka_files dj
- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename2=dj.filename)
+ -- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename=dj.filename) -- too slow!!!
+ LEFT JOIN  herbarinput.tbl_specimens sp ON (sp.filename=dj.filename)
+ 
 WHERE
  dj.scan_id='{$scan_id}'
  and dj.inconsistency ='1'
-{$limit}
 ";
+		// count
+		$dbst = $db->query(str_replace(':fields',' COUNT(*)',$sql));
+		$c[1]=$dbst->fetchColumn();
+		
+		$sql=str_replace(':fields',$fields,$sql)." order by dj.filename {$limit} ";
 		$dbst = $db->query($sql);
 		foreach($dbst as $row){
-			$c[1]++;
 			if(!empty($row['specimen_ID'])){
 				$specLink=" href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')\"";
 			}else{
@@ -525,12 +611,13 @@ WHERE
 EOF;
 		}
 		
+		$maxc=max($c[0],$c[1]);
 		
 		$tab1=<<<EOF
-<table align='center'>
+<table>
 <tr>
-<th>{$c[0]} In Djatoka, not in Archive</th><th></th>
-<th>{$c[1]} In Archive, not in Djatoka</th><th></th>
+<th>{$c[0]} In Djatoka, but not in Archive</th><th></th>
+<th>{$c[1]} In Archive, but not in Djatoka</th><th></th>
 </tr>
 <tr>
  <td>
@@ -539,6 +626,11 @@ EOF;
 </tr>
 </table>
 EOF;
+		
+		
+		
+		return array('html'=>$tab1,'maxc'=>$maxc);
+		
 		return $tab1;
 	}
 	
@@ -546,18 +638,17 @@ EOF;
 		$db=$this->getdB();
 		$serverIPd=$db->quote($serverIP);
 		
-		$dbst2 = $db->query("SELECT scan_id FROM herbar_pictures.djatoka_scans WHERE finish IS NOT NULL AND errors is null and IP ={$serverIPd} LIMIT 1");
-		
+		$dbst2 = $db->query("SELECT max(scan_id) FROM herbar_pictures.djatoka_scans WHERE finish IS NOT NULL AND errors is null and IP ={$serverIPd}");
 		$scan_id=false;
 		if (($row=$dbst2->fetchColumn()) > 0) {
-			$scan_id= $row['scan_id'];
+			$scan_id= $row;
 		}
 		
 		// If there are any jobs within 600s => wait for it.
 		$dbst = $db->query("SELECT count(scan_id) FROM herbar_pictures.djatoka_scans WHERE TIME_TO_SEC(TIMEDIFF(NOW(), start)) < 600 AND finish IS NULL AND IP ={$serverIPd}");
 		
 		if ($dbst->fetchColumn() > 0) {
-			$this->info="A Scan is already running on '{$serverIP}'. refresh in a few seconds.";
+			$this->info="A Scan is already running on '{$serverIP}', please refresh after a while.";
 		}
 		
 		return $scan_id;
@@ -624,9 +715,28 @@ EOF;
 		}
 		
 		$db->query("UPDATE herbar_pictures.djatoka_scans SET finish = NOW() WHERE scan_id={$scanid}");
-		set_time_limit(ini_get('max_execution_time')); 
 		
-		return $scanid;
+		// view is much too slow for working...
+		$db->query("
+UPDATE
+ herbarinput.tbl_specimens sp
+ LEFT JOIN  herbarinput.tbl_management_collections mc ON mc.collectionID=sp.collectionID
+SET
+ sp.filename=(
+  CASE
+   WHEN sp.HerbNummer IS NULL THEN ''
+   WHEN (NOT ( REPLACE(sp.HerbNummer, '-', '') REGEXP '^[0-9]{0,}(a{0,1}|b{0,1}|c{0,1})$' ) OR ( LOCATE('-',sp.HerbNummer)<>0 AND SUBSTRING_INDEX(sp.HerbNummer, '-', 2)<>sp.HerbNummer ) ) THEN 'error_fomat'
+   WHEN LOCATE('-',sp.HerbNummer) THEN CONCAT(mc.coll_short_prj,'_',REPLACE(sp.HerbNummer,'-','')) 
+   WHEN sp.collectionID=89 THEN IF( CHAR_LENGTH(sp.HerbNummer)>8,'error_JE', CONCAT(mc.coll_short_prj,'_',RIGHT(CONCAT('00000000',sp.HerbNummer),8)))
+   WHEN mc.source_id=4 THEN IF( CHAR_LENGTH(sp.HerbNummer)>9,'error_W', CONCAT(mc.coll_short_prj,'_',RIGHT(CONCAT('000000000',sp.HerbNummer),9)))
+   ELSE IF( CHAR_LENGTH(sp.HerbNummer)>7,'error_7', CONCAT(mc.coll_short_prj,'_',RIGHT(CONCAT('00000000',sp.HerbNummer),7)))
+  END
+ )
+");
+ 
+		set_time_limit(ini_get('max_execution_time')); 
+
+		return "List fetched from Server {$serverIP} and dumped into local Database.<br> The ScanId was: {$scanid}";
 	}
 	
 

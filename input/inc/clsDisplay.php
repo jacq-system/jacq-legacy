@@ -192,6 +192,50 @@ public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = fa
     }
 }
 
+/**
+ * returns either a formatted hybrid-taxon-string (if taxon is a hybrid)
+ * or a normal taxon-string (if taxon is'nt a hybrid) when given a taxon-ID
+ *
+ * @param int $taxonID taxon-ID
+ * @param bool[optional] adds a seperator after genus and epithet (default no)
+ * @param bool[optional] adds the taxonID between brackets at the end (default no)
+ * @return string formatted taxon-string
+ */
+public function SynonymyReference($synonymID,$row=array()){
+	try {
+		/* @var $db clsDbAccess */
+		$db = clsDbAccess::Connect('INPUT');
+
+		if(count($row)==0){
+			/* @var $dbst PDOStatement */
+			$dbst = $db->prepare("SELECT source,source_citationID,source_person_ID ,source_serviceID FROM tbl_tax_synonymy WHERE tax_syn_ID =:synonymID");
+			$dbst->execute(array(":synonymID" => $synonymID));
+			$row = $dbst->fetch();
+		}
+
+		if(count($row) > 0){
+			if($row['source']=='literature'){
+				return $this->protolog($row['source_citationID'], true);
+			}else if($row['source']=='service'){
+				$dbst = $db->prepare("SELECT serviceID, name FROM tbl_nom_service WHERE serviceID=:serviceID  ");
+				$dbst->execute(array(":serviceID" => $row['source_serviceID']));
+				$row = $dbst->fetch();
+				
+				return "{$row['name']} <{$row['serviceID']}>";
+			}else if($row['source']=='person'){
+				$dbst = $db->prepare("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE person_ID =:person_ID");
+				$dbst->execute(array(":person_ID" => $row['source_person_ID']));
+				$row = $dbst->fetch();
+				return "{$row['p_familyname']}, {$row['p_firstname']} ({$row['p_birthdate']} - {$row['p_death']} <{$row['person_ID']}>";
+			}
+		} else {
+			return "";
+		}
+	}catch (Exception $e) {
+		exit($e->getMessage());
+	}		
+}
+
 /***********************\
 |                       |
 |  protected functions  |

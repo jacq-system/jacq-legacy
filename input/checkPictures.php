@@ -8,6 +8,7 @@
  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
  <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
  <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
+ <link rel="stylesheet" href="js/lib/jQuery/css/pagination.css" type="text/css" />
  <style type="text/css">
  th { font-weight: bold; font-size: medium }
  tr { vertical-align: top }
@@ -20,6 +21,7 @@
  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
  <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
+ <script type="text/javascript" src="js/lib/jQuery/jquery.pagination.js"></script>
  <script src="js/freudLib.js" type="text/javascript"></script>
  <script src="js/parameters.php" type="text/javascript"></script>
 </head>
@@ -103,16 +105,29 @@ function editSpecimensSimple(filename) {
 function getImageServerIP(){
 	return $('#serverIP').val()
 }
+
+
 // load..
-function checkConsisty(){
+function checkConsisty(page_index, jq, newsearch){
+	$('#ConsitencyLoading').css('visibility','visible');
 	PostIt(
 		'x_djatoka_consistency_check',
-		{'serverIP':getImageServerIP()},
+		{'serverIP':getImageServerIP(),'page_index':page_index,'limit':ITEMSPERPAGE},
 		function(data){
-			$('#res_tabs2').html(data);
+			$('#ConsitencyLoading').css('visibility','hidden');
+			if(newsearch!=undefined){
+				$("#PaginationConsitency").pagination(data.maxc, {
+					num_edge_entries: 2,
+					num_display_entries: 8,
+					callback: checkConsisty,
+					items_per_page:ITEMSPERPAGE
+				});
+			}
+			$('#res_tabs2').html(data.html);
 		}
 	);
 }
+var ITEMSPERPAGE=20;
 			
 var $tabs;
 var tab_counter = 4;
@@ -127,12 +142,12 @@ $(function() {
 		tabTemplate: "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
 		add: function( event, ui ) {
 			var tab_content = "Tab " +  + " content.";
-			$( ui.panel ).append( "<div id=\"tab_res"+tab_counter +"\"></div>" );
-			//alert('D');
+			$( ui.panel ).append( "<div id=\"loadingtabres"+tab_counter +"\" style=\"display: none;\">Loading... <img alt=\"loading...\" src=\"webimages/loader.gif\"></div><div id=\"tab_res"+tab_counter +"\"></div><div style=\"height:30px;margin-top:20px;\" id=\"PaginationTabres"+tab_counter +"\"></div>" );
+
 		},
 		select: function(event, ui) {
 			if(ui.index==1){
-				checkConsisty();
+				checkConsisty(0,0,1);
 			}
 		}
 	});
@@ -156,12 +171,12 @@ $(function() {
 		updateInstitutions( getImageServerIP(),0 );
 	});
 	$('#filterChecks').click(function() {
-		filterChecks(0);
+		filterChecks(0,0,1,0);
 	});
 
 
 	$('#filterChecksFaulty').click(function() {
-		filterChecks(1);
+		filterChecks(0,0,1,1);
 	});
 	
 	
@@ -182,10 +197,12 @@ $(function() {
 	});
 
 	$('#RescanServer').click(function() {
+		$('#RescanServerLoading').css('visibility','visible');
 		PostIt(
 			'x_importDjatokaListIntoDB',
 			{'serverIP':getImageServerIP()},
 			function(data){
+				$('#RescanServerLoading').css('visibility','hidden');
 				$("#dinformation").html(data);
 				$("#dialog-information").dialog({
 					resizable: false,
@@ -198,36 +215,92 @@ $(function() {
 	});
 
 	$('#ListThreads').click(function() {
-		PostIt(
-			'x_listImportThreads',
-			{'serverIP':getImageServerIP() , 'starttime':$('#datepicker').val()},
-			function(data){
-				$('#res_tabs3').html(data);
-			}
-		);
+		ListThreads(0, 0, 1)
 	});
+	
 	
 });
 
-function filterChecks(faulty){
+function ListThreads(page_index, jq, newsearch){
+		$('#ThreadsLoading').css('visibility','visible');
+		PostIt(
+			'x_listImportThreads',
+			{'serverIP':getImageServerIP() , 'starttime':$('#datepicker').val(), 'page_index':page_index,'limit':ITEMSPERPAGE},
+			function(data){
+				
+				$('#ThreadsLoading').css('visibility','hidden');
+				if(newsearch!=undefined){
+					$("#PaginationThreads").pagination(data.maxc, {
+						num_edge_entries: 2,
+						num_display_entries: 8,
+						callback: ListThreads,
+						items_per_page:ITEMSPERPAGE
+					});
+				}
+				$('#res_tabs3').html(data.html);
+			}
+		);
+}
+var faulty_pers=0;
+function filterChecks(page_index, jq, newsearch, faulty){
+	if(newsearch!=undefined){
+		faulty_pers=faulty;
+	}
+	$('#LastScanLoading').css('visibility','visible');
 	PostIt(
 		'x_pictures_check',
-		{'serverIP':getImageServerIP(), 'family':$('#ajax_family').val(), 'source_id':$('#source_id').val(),'faulty':faulty},
+		{'serverIP':getImageServerIP(), 'family':$('#ajax_family').val(), 'source_id':$('#source_id').val(),'faulty':faulty_pers,'page_index':page_index,'limit':ITEMSPERPAGE},
 		function(data){
-			$('#lastScan').html(data);
+			$('#LastScanLoading').css('visibility','hidden');
+			if(newsearch!=undefined){
+				$("#PaginationLastScan").pagination(data.maxc, {
+					num_edge_entries: 2,
+					num_display_entries: 8,
+					callback: filterChecks,
+					items_per_page:ITEMSPERPAGE
+				});
+			}
+			$('#lastScan').html(data.html);
 		}
 	);
 }
-
+var threadids={};
 function loadImportLog(threadid, times){
+	
+	$tabs.tabs( "add", "#tabs-" + tab_counter,"Log of "+times);
+	$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
+	
+	threadids[tab_counter]=threadid;
+	
+	loadImportLogIntoTab(0, 0, 1, tab_counter);
+	tab_counter++;
+}
+
+
+function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
+	
+	if(jq[0] != undefined){
+		tabres=1*(jq[0].id.replace(/PaginationTabres/,''));
+	}
+	threadid=threadids[tabres];
+	$('#loadingtabres'+tabres).css('visibility','visible');
+
 	PostIt(
 		'x_listImportLogs',
-		{'serverIP':getImageServerIP() , 'thread_id':threadid},
+		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE},
 		function(data){
-			$tabs.tabs( "add", "#tabs-" + tab_counter,"Log from "+times);
-			$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
-			$('#tab_res'+tab_counter).html(data);
-			tab_counter++;
+			$('#loadingtabres'+tabres).css('visibility','hidden');
+			
+			
+			if(newsearch!=undefined){
+				$("#PaginationTabres"+tabres).pagination(data.maxc, {
+					num_edge_entries: 2,
+					num_display_entries: 8,
+					callback: loadImportLogIntoTab,
+					items_per_page:ITEMSPERPAGE
+				});
+			}
+			$('#tab_res'+tabres).html(data.html);
 		}
 	);
 }
@@ -299,13 +372,13 @@ function PostIt(method, params, callback){
 		'json'
 	);
 }
-
 </script>
 
   Server:
  <select size="1" name="serverIP" id="serverIP">
 <?PHP echo $server; ?>
 </select> &nbsp;<input type="button" name="ImportPictures" id="ImportPictures" value="ImportPictures">&nbsp;<input type="button" name="RescanServer" id="RescanServer" value="Rescan Server"><p>
+<div id="RescanServerLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 
 <div id="tabs">
 <ul>
@@ -331,24 +404,25 @@ function PostIt(method, params, callback){
 </td>
 </tr></table>
 
+<div id="LastScanLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="lastScan2"></div>
 <div id="lastScan"></div>
-
-
+<div style="height:30px;margin-top:20px;" id="PaginationLastScan"></div>
 
 </form>
-<div id="loadingMsg" style="display: none;"><img alt="loading..." src="webimages/loader.gif"></div>
-<div id="checkResults"></div>
-
 </div>
 <div id="tabs-2">
-
+<div id="ConsitencyLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="res_tabs2"></div>
+<div style="height:30px;margin-top:20px;" id="PaginationConsitency"></div>
 
 </div>
 <div id="tabs-3">
 Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads above this time (empty for all)">
+<div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="res_tabs3"></div>
+<div style="height:30px;margin-top:20px;" id="PaginationThreads"></div>
+
 </div>
 </div>
 
@@ -368,6 +442,9 @@ Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<inp
 </div>
 
 </div>
+
+
+
 
 
 </body>

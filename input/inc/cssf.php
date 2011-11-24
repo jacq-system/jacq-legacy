@@ -196,20 +196,21 @@ class CSSF{
 	function buttonReset($x,$y,$text,$bgcol="") {
 	
 		$this->_divclass($x,$y,"cssfinput");
-		print "<input tabindex=\"{$this->tabindex}\" tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
+		print "<input tabindex=\"{$this->tabindex}\" class=\"cssfbutton\"";
 		if ($bgcol) print " style=\"background-color: $bgcol;\"";
 		print " type=\"reset\" value=\"$text\">";
 		print "</div>\n";
 		$this->tabindex++;
 	}
 	
-	function checkbox($x,$y,$name,$ischecked) {
-	
+	function checkbox($x,$y,$name,$ischecked, $ignoretab=false) {
+		$t= $ignoretab?'':" tabindex=\"{$this->tabindex}\"";
 		$this->_divclass($x-0.2,$y+0.1,"cssfinput");
-		print "<input class=\"cssfcheckbox\" type=\"checkbox\" name=\"$name\"";
+		print "<input{$t} class=\"cssfcheckbox\" type=\"checkbox\" name=\"$name\"";
 		if ($this->nameIsID) print " id=\"$name\"";
 		if ($ischecked) print " checked";
 		print "></div>\n";
+		$this->tabindex++;
 	}
 	
 	function checkboxJavaScript($x,$y,$name,$ischecked,$js) {
@@ -224,7 +225,7 @@ class CSSF{
 	function dropdown($x,$y,$name,$select,$value,$text,$bgcol="") {
 
 		$this->_divclass($x,$y,"cssfinput");
-		print "<select class=\"cssf\"";
+		print "<select tabindex=\"{$this->tabindex}\" class=\"cssf\"";
 		if ($bgcol) print " style=\"background-color: $bgcol;\"";
 		if ($this->nameIsID) print " id=\"$name\"";
 		print " name=\"$name\">\n";
@@ -235,6 +236,7 @@ class CSSF{
 				print ">".htmlspecialchars($text[$i])."</option>\n";
 		}
 		print "</select></div>\n";
+		$this->tabindex++;
 	}
 	
 	function editDropdown($x,$y,$w,$name,$value,$options,$maxsize=0,$jump=0,$bgcol="",$title="",$js="") {
@@ -242,7 +244,7 @@ class CSSF{
 		$yh = $y + 1.7;
 
 		$this->_divclass($x,$y,"cssfinput");
-		print "<input class=\"cssftext\" style=\"width: ".$w."em;";
+		print "<input tabindex=\"{$this->tabindex}\" class=\"cssftext\" style=\"width: ".$w."em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "\" type=\"text\" name=\"$name\" value=\"".htmlspecialchars($value)."\"";
 		if ($js) print " onchange=\"$js\"";
@@ -267,6 +269,7 @@ class CSSF{
 			print ">".htmlspecialchars($wert)."</option>\n";
 		}
 		print "</select></div>\n";
+		$this->tabindex++;
 	}
 	
 	/**
@@ -333,7 +336,7 @@ class CSSF{
 	
 	function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false, $zeroOnEmpty=false) {
 		$this->_divclass($x, $y, "cssfinput");
-		print "<input class='cssftextAutocomplete' style='width: {$w}em;";
+		print "<input  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "' type='text' name='{$name}' id='ajax_{$name}' value='" . htmlspecialchars($value, ENT_QUOTES) . "'";
 		if ($maxsize) print " maxlength='{$maxsize}'";
@@ -360,6 +363,7 @@ class CSSF{
 			. "		});\n";
 		if( $zeroOnEmpty ) print "$('#ajax_{$name}').change( function() { if( $('#ajax_{$name}').val() == '' ) $('#{$name}Index').val(''); } );\n";
 		print "</script>\n";
+		$this->tabindex++;
 	}
 	
 
@@ -418,7 +422,7 @@ class CSSF{
 		if($textarea>0){
 			$val=str_replace('&quot;','"',$val);
 			$ret=<<<EOF
-<textarea		tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$textarea}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$val}</textarea>
+<textarea tabindex="{$this->tabindex}" class='cssftextAutocomplete' style='width: {$w}em;{$bgcol}' rows="{$textarea}" name="ajax_{$name}" id="ajax_{$name}"{$maxsize}{$title}>{$val}</textarea>
 EOF;
 		
 		}else{
@@ -603,7 +607,7 @@ EOF;
 	function inputText($x,$y,$w,$name,$value,$maxsize=0,$bgcol="",$title="",$readonly='') {
 
 		$this->_divclass($x,$y,"cssfinput");
-		print "<input class=\"cssftext\" style=\"width: ".$w."em;";
+		print "<input  tabindex=\"{$this->tabindex}\" class=\"cssftext\" style=\"width: ".$w."em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "\" type=\"text\" name=\"$name\" value=\"".htmlspecialchars($value)."\"";
 		if ($this->nameIsID) print " id=\"$name\"";
@@ -611,18 +615,20 @@ EOF;
 		if ($title) print " title=\"$title\"";
 		if ($readonly) print " readonly";
 		print "></div>\n";
+		$this->tabindex++;
 	}
 	
 	function inputPassword($x,$y,$w,$name,$maxsize=0,$bgcol="",$title="") {
 
 		$this->_divclass($x,$y,"cssfinput");
-		print "<input class=\"cssftext\" style=\"width: ".$w."em;";
+		print "<input  tabindex=\"{$this->tabindex}\" class=\"cssftext\" style=\"width: ".$w."em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "\" type=\"password\" name=\"$name\"";
 		if ($this->nameIsID) print " id=\"$name\"";
 		if ($maxsize) print " maxlength=\"$maxsize\"";
 		if ($title) print " title=\"$title\"";
 		print "></div>\n";
+		$this->tabindex++;
 	}
 	
 	function text($x,$y,$text) {

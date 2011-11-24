@@ -166,7 +166,7 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 				$at.autocomplete( "close" );
 			}
 		},
-		delay:300,
+		delay:50,
 		minLength:minlength,
 		selectFirst: (mustMatch==1 || mustMatch==2)?true:false
 	}).data('autocomplete')._renderItem=function(ul, item){
