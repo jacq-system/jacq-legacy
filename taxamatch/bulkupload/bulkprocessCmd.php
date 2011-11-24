@@ -5,25 +5,27 @@ require_once('inc/variables.php');
 
 ini_set("max_execution_time", "7200");
 
-ob_start();
+//ob_start();
 mysql_connect($options['dbhost'], $options['dbuser'], $options['dbpass']) or die("Database not available!");
 mysql_select_db($options['dbname']) or die ("Access denied!");
 mysql_query("SET character set utf8");
 $error = '';
 
-$result = @mysql_query("SELECT jobID FROM tbljobs WHERE start IS NOT NULL AND finish IS NULL");
-if (mysql_num_rows($result) > 0) die();
+$result = mysql_query("SELECT jobID FROM tbljobs WHERE start IS NOT NULL AND finish IS NULL");
+
+if (mysql_num_rows($result) > 0) die("h1");
 
 $result = mysql_query("SELECT scheduleID, jobID FROM tblschedule ORDER BY timestamp LIMIT 1");
-if (mysql_num_rows($result) == 0) die();
+	echo mysql_error();
+if (mysql_num_rows($result) == 0) die("h2");
 
 $row = mysql_fetch_array($result);
 $scheduleID = $row['scheduleID'];
 $jobID      = $row['jobID'];
 
+
 mysql_query("UPDATE tbljobs SET start = NOW() WHERE jobID = '$jobID'");
 
-$service = new jsonRPCClient($options['serviceTaxamatch']);
 
 $result = mysql_query("SELECT db FROM tbljobs WHERE jobID = '$jobID'");
 $row = mysql_fetch_array($result);
@@ -40,13 +42,12 @@ if(substr($row['db'],0,2)=='s_'){
 
 
  	//db	char(3)
-// todo: new databases.
+
 $result = mysql_query("SELECT queryID, query FROM tblqueries WHERE jobID = '$jobID' AND result IS NULL ORDER BY lineNr");
 while ($row = mysql_fetch_array($result)) {
 	
 	
 
-	
 	$matches=getMatches($database, $row['query'], false, $withSynonyms,false);
 	
 	if($matches['failure']){
@@ -57,6 +58,7 @@ while ($row = mysql_fetch_array($result)) {
 
     @mysql_query("UPDATE tblqueries SET result = '" . mysql_real_escape_string($matches) . "' 
 	WHERE queryID = '" . $row['queryID'] . "' ");
+
 }
 
 
@@ -67,7 +69,7 @@ function getMatches($database, $searchtext, $useNearMatch=false,$showSynonyms=fa
 	 
 	// BP, 07.2010: get IP-address of JSON-service from 'variables.php'
 	//$service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
-	$url = $options['hostAddr'] . "json_rpc_taxamatchMdld.php";
+	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
 	$service = new jsonRPCClient($url,$debug);
 	$failure=false;
 	try {

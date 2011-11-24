@@ -59,6 +59,10 @@ if (!empty($_POST['username'])) {
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
     if (mysql_num_rows($result) == 0) {
 		
+		if($_POST['database']=='extern'){
+			$_POST['database']=$_POST['database_extern'];
+		}
+		
 		$database='';
 		if ($_POST['showSyn'] == 'synonyms') {
 			$database='s_';
@@ -204,7 +208,7 @@ foreach($services as $k=>$v){
         </td>
       </tr><tr>
         <td>
-                   <input type="checkbox" name="showSyn" id="showSyn"><label for="showSyn">show synonyms</label>
+                   <input type="checkbox" name="showSyn" id="showSyn" value="synonyms"><label for="showSyn">show synonyms</label>
         </td>
       </tr><tr>
         <td valign="top">
