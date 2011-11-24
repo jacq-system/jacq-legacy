@@ -6,15 +6,14 @@ session_start();
 
 include('inc/variables.php');
 include('inc/connect.php');
-/*
+
 if (empty($_SESSION['uid'])) die();
 
 $result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
 if (mysql_num_rows($result) == 0) die();
 $row = mysql_fetch_array($result);
 $jobID = $row['jobID'];
-*/
-$jobID=10;
+
 $result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($jobID) . "' ");
 if (mysql_num_rows($result) == 0) die();
 $row = mysql_fetch_array($result);
@@ -83,7 +82,6 @@ function showResults(page_index, jq, newsearch){
 			blocked=false;
 		}
 	}
-	
 	
 	$('#displayResultLoading').css('visibility','visible');
 	PostIt(

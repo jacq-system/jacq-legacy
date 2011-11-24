@@ -5,14 +5,8 @@ session_start();
 
 include('inc/variables.php');
 include('inc/connect.php');
-/*
+
 if (empty($_SESSION['uid'])) die();
-
-
-$row = mysql_fetch_array($result);
-$jobID = $row['jobID'];
-*/
-
 
 $showResults=new showResults();
 $methodName = (isset($_POST['method'])) ? $_POST['method'] : "";
