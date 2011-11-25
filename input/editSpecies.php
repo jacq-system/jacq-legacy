@@ -497,6 +497,21 @@ $comnames=substr($comnames,2);
       MeinFenster = window.open(target,"Specimens",options);
       MeinFenster.focus();
     }
+	function listSpecimens(sel) {
+      target  = "listSpecimens.php?taxonID=" + encodeURIComponent(sel);
+      options = "width=";
+      if (screen.availWidth<990)
+        options += (screen.availWidth - 10) + ",height=";
+      else
+        options += "990, height=";
+      if (screen.availHeight<710)
+        options += (screen.availHeight - 10);
+      else
+        options += "710";
+      options += ", top=10,left=10,scrollbars=yes,resizable=yes";
+      MeinFenster = window.open(target,"Specimens",options);
+      MeinFenster.focus();
+    }
 
     function reloadButtonPressed() {
       reload = true;
@@ -778,6 +793,7 @@ $cf->text(9+strlen($p_taxonID), 5, $comnames);
 $res = mysql_query("SELECT specimens_types_ID FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
 if (mysql_num_rows($res) > 0) {
     $cf->label(22.5, 5.5, 'type specimens', "javascript:listTypeSpecimens('$p_taxonID')");
+	$cf->label(29.5, 5.5, 'specimens', "javascript:listSpecimens('$p_taxonID')");
 }
 
 if ($p_external) {

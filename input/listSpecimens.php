@@ -34,28 +34,49 @@ if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
 
-if (isset($_POST['search'])) {
+if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 1;
+	if(isset($_GET['taxonID'])){
+		$_SESSION['taxonID'] = intval($_GET['taxonID']);
+		$_SESSION['wuCollection']='';// = $_POST['collection'];
+		$_SESSION['sNumber']='';//      = $_POST['number'];
+		$_SESSION['sSeries']='' ;//     = $_POST['series'];
+		$_SESSION['sFamily']='' ;//     = $_POST['family'];
+		$_SESSION['sTaxon'] ='' ;//     = $_POST['taxon'];
+		$_SESSION['sTaxonAlt'] ='';//   = $_POST['taxon_alt'];
+		$_SESSION['sCollector'] ='';//  = $_POST['collector'];
+		$_SESSION['sNumberC'] ='' ;//   = $_POST['numberC'];
+		$_SESSION['sDate']   =''  ;//   = $_POST['date'];
+		$_SESSION['sGeoGeneral']='';// = $_POST['geo_general'];
+		$_SESSION['sGeoRegion']=''  ;// = $_POST['geo_region'];
+		$_SESSION['sCountry']='' ;//    = $_POST['country'];
+		$_SESSION['sProvince']='' ;//   = $_POST['province'];
+		$_SESSION['sLoc']   =''   ;//   = $_POST['loc'];
+		$_SESSION['sBemerkungen'] ='';//= $_POST['annotations'];
+		$_SESSION['sTyp'] ='' ;//  = (($_POST['typ']=="only"='' ? true : false='';
+		$_SESSION['sImages']='';// = $_POST['images'];
+	}else{
+		unset($_SESSION['taxonID']);
+		$_SESSION['wuCollection'] = $_POST['collection'];
+		$_SESSION['sNumber']      = $_POST['number'];
+		$_SESSION['sSeries']      = $_POST['series'];
+		$_SESSION['sFamily']      = $_POST['family'];
+		$_SESSION['sTaxon']       = $_POST['taxon'];
+		$_SESSION['sTaxonAlt']    = $_POST['taxon_alt'];
+		$_SESSION['sCollector']   = $_POST['collector'];
+		$_SESSION['sNumberC']     = $_POST['numberC'];
+		$_SESSION['sDate']        = $_POST['date'];
+		$_SESSION['sGeoGeneral']  = $_POST['geo_general'];
+		$_SESSION['sGeoRegion']   = $_POST['geo_region'];
+		$_SESSION['sCountry']     = $_POST['country'];
+		$_SESSION['sProvince']    = $_POST['province'];
+		$_SESSION['sLoc']         = $_POST['loc'];
+		$_SESSION['sBemerkungen'] = $_POST['annotations'];
 
-    $_SESSION['wuCollection'] = $_POST['collection'];
-    $_SESSION['sNumber']      = $_POST['number'];
-    $_SESSION['sSeries']      = $_POST['series'];
-    $_SESSION['sFamily']      = $_POST['family'];
-    $_SESSION['sTaxon']       = $_POST['taxon'];
-    $_SESSION['sTaxonAlt']    = $_POST['taxon_alt'];
-    $_SESSION['sCollector']   = $_POST['collector'];
-    $_SESSION['sNumberC']     = $_POST['numberC'];
-    $_SESSION['sDate']        = $_POST['date'];
-    $_SESSION['sGeoGeneral']  = $_POST['geo_general'];
-    $_SESSION['sGeoRegion']   = $_POST['geo_region'];
-    $_SESSION['sCountry']     = $_POST['country'];
-    $_SESSION['sProvince']    = $_POST['province'];
-    $_SESSION['sLoc']         = $_POST['loc'];
-    $_SESSION['sBemerkungen'] = $_POST['annotations'];
-
-    $_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
-    $_SESSION['sImages'] = $_POST['images'];
-
+		$_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
+		$_SESSION['sImages'] = $_POST['images'];
+	}
+	
     $_SESSION['sOrder'] = "genus, te.epithet, ta.author, "
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
@@ -562,76 +583,79 @@ if ($_SESSION['sType'] == 1) {
              AND tf.familyID = tg.familyID
              AND mc.collectionID = s.collectionID";
     $sql2 = "";
-    if (trim($_SESSION['sTaxon'])) {
-        $pieces = explode(" ", trim($_SESSION['sTaxon']));
-        $part1 = array_shift($pieces);
-        $part2 = array_shift($pieces);
-        $sql2 .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
-        if ($part2) {
-            $sql2 .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
-        }
-    }
-    if (trim($_SESSION['sSeries'])) {
-        $sql2 .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['sSeries'])) . "%'";
-    }
-    if (trim($_SESSION['wuCollection'])) {
-        if (trim($_SESSION['wuCollection']) > 0) {
-            $sql2 .= " AND s.collectionID=" . quoteString(trim($_SESSION['wuCollection']));
-        } else {
-            $sql2 .= " AND mc.source_id=" . quoteString(abs(trim($_SESSION['wuCollection'])));
-        }
-    }
-    if (trim($_SESSION['sNumber'])) {
-        $sql2 .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumber'])) . "%'";
-    }
-    if (trim($_SESSION['sFamily'])) {
-        $sql2 .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['sFamily'])) . "%'";
-    }
-    if (trim($_SESSION['sCollector'])) {
-        $sql2 .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%' OR
-                       c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%')";
-    }
-    if (trim($_SESSION['sNumberC'])) {
-        $sql2 .= " AND (s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-                        s.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-                        s.series_number LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
-    }
-    if (trim($_SESSION['sDate'])) {
-        $sql2 .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['sDate'])) . "%'";
-    }
-    if (trim($_SESSION['sGeoGeneral'])) {
-        $sql2 .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";
-    }
-    if (trim($_SESSION['sGeoRegion'])) {
-        $sql2 .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['sGeoRegion'])) . "%'";
-    }
-    if (trim($_SESSION['sCountry'])) {
-        $sql2 .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['sCountry'])) . "%'";
-    }
-    if (trim($_SESSION['sProvince'])) {
-        $sql2 .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['sProvince'])) . "%'";
-    }
-    if (trim($_SESSION['sLoc'])) {
-        $sql2 .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['sLoc'])) . "%'";
-    }
-    if (trim($_SESSION['sBemerkungen'])) {
-        $sql2 .= " AND s.Bemerkungen LIKE '%" . mysql_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
-    }
-    if (trim($_SESSION['sTaxonAlt'])) {
-        $sql2 .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
-    }
-    if ($_SESSION['sTyp']) {
-        $sql2 .= " AND s.typusID != 0";
-    }
-    if ($_SESSION['sImages'] == 'only') {
-        $sql2 .= " AND s.digital_image != 0";
-    } else if ($_SESSION['sImages'] == 'no') {
-        $sql2 .= " AND s.digital_image = 0";
-    }
-
+	if (trim($_SESSION['taxonID'])) {
+		$sql2 .= " AND ts.taxonID='".intval($_SESSION['taxonID'])."'";
+	}else{
+		if (trim($_SESSION['sTaxon'])) {
+			$pieces = explode(" ", trim($_SESSION['sTaxon']));
+			$part1 = array_shift($pieces);
+			$part2 = array_shift($pieces);
+			$sql2 .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+			if ($part2) {
+				$sql2 .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
+						  "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
+						  "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
+						  "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+			}
+		}
+		if (trim($_SESSION['sSeries'])) {
+			$sql2 .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['sSeries'])) . "%'";
+		}
+		if (trim($_SESSION['wuCollection'])) {
+			if (trim($_SESSION['wuCollection']) > 0) {
+				$sql2 .= " AND s.collectionID=" . quoteString(trim($_SESSION['wuCollection']));
+			} else {
+				$sql2 .= " AND mc.source_id=" . quoteString(abs(trim($_SESSION['wuCollection'])));
+			}
+		}
+		if (trim($_SESSION['sNumber'])) {
+			$sql2 .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumber'])) . "%'";
+		}
+		if (trim($_SESSION['sFamily'])) {
+			$sql2 .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['sFamily'])) . "%'";
+		}
+		if (trim($_SESSION['sCollector'])) {
+			$sql2 .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%' OR
+						   c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%')";
+		}
+		if (trim($_SESSION['sNumberC'])) {
+			$sql2 .= " AND (s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.series_number LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
+		}
+		if (trim($_SESSION['sDate'])) {
+			$sql2 .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['sDate'])) . "%'";
+		}
+		if (trim($_SESSION['sGeoGeneral'])) {
+			$sql2 .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";
+		}
+		if (trim($_SESSION['sGeoRegion'])) {
+			$sql2 .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['sGeoRegion'])) . "%'";
+		}
+		if (trim($_SESSION['sCountry'])) {
+			$sql2 .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['sCountry'])) . "%'";
+		}
+		if (trim($_SESSION['sProvince'])) {
+			$sql2 .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['sProvince'])) . "%'";
+		}
+		if (trim($_SESSION['sLoc'])) {
+			$sql2 .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['sLoc'])) . "%'";
+		}
+		if (trim($_SESSION['sBemerkungen'])) {
+			$sql2 .= " AND s.Bemerkungen LIKE '%" . mysql_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+		}
+		if (trim($_SESSION['sTaxonAlt'])) {
+			$sql2 .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
+		}
+		if ($_SESSION['sTyp']) {
+			$sql2 .= " AND s.typusID != 0";
+		}
+		if ($_SESSION['sImages'] == 'only') {
+			$sql2 .= " AND s.digital_image != 0";
+		} else if ($_SESSION['sImages'] == 'no') {
+			$sql2 .= " AND s.digital_image = 0";
+		}
+	}
     $sql3 = " ORDER BY " . $_SESSION['sOrder'] . " LIMIT 1001";
 
     if (strlen($sql2) == 0) {

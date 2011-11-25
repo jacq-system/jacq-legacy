@@ -14,10 +14,14 @@ $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
 _logger("---- listTax.php (nrSel = " . $nrSel . " ---");
 
+$NOLITERATURE_SQL_STATEMENT="NOT EXISTS ( SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syncheck where syncheck.taxonID=ts.taxonID and (  ifnull( IF(syncheck.source='literature', syncheck.source_citationID, IF(syncheck.source='person', syncheck.source_person_ID, IF(syncheck.source='service', syncheck.source_serviceID, IF(syncheck.source='specimen', syncheck.source_specimenID,NULL)))),0)<>0))";
+
+
+
 if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
 	$_SESSION['taxon_list']=$_POST['taxon'];
 	if(strpos($_POST['taxon'],',')!==false){
-		$_POST['noLiterature'] = $_POST['commonname'];
+		$_POST['noLiterature'] = $_POST['noLiterature'];
 		$_POST['search']=1;
 		$_POST['species']=3;
 		$_POST['mdld']='';
@@ -54,9 +58,9 @@ if (isset($_POST['search'])) {
         
 	}
     if ($_SESSION['editFamily']) $_POST['family'] = $_SESSION['editFamily'];
-    if ($_POST['commonname']) {
+    if ($_POST['commonname']) { // commonName
 		$_SESSION['taxType']       = 5; // list ?
-		$_SESSION['noLiterature']     = false;
+		$_SESSION['noLiterature']     =  $_POST['noLiterature'];
 		$_SESSION['taxCommonname'] = $_POST['commonname'];
 		$_SESSION['taxFamily']     = "";
         $_SESSION['taxGenus']      = "";
@@ -320,7 +324,12 @@ function dumpMatchJsonRPC($searchtext)
 }
 
 function LiteratureExists($taxonID){
-	$sql = "SELECT tax_syn_ID FROM  tbl_tax_synonymy WHERE taxonID ='".mysql_escape_string($taxonID)."' LIMIT 1";
+	global $NOLITERATURE_SQL_STATEMENT;
+
+	
+	
+	$sql = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syncheck where syncheck.taxonID='".mysql_escape_string($taxonID)."' and (  ifnull( IF(syncheck.source='literature', syncheck.source_citationID, IF(syncheck.source='person', syncheck.source_person_ID, IF(syncheck.source='service', syncheck.source_serviceID, IF(syncheck.source='specimen', syncheck.source_specimenID,NULL)))),0)<>0) LIMIT 1";
+	echo $sql;
 	$result = db_query($sql);
 	if (mysql_num_rows($result) > 0){
 		return true;
@@ -986,10 +995,10 @@ if ($_SESSION['taxMDLD'] != "") {
 		// taxon for this genus....
 		if ($_SESSION['noLiterature']) {
 				$sql .= "
-				LEFT JOIN herbarinput.tbl_tax_species tso ON (
-	tso.genID = tg.genID AND tso.speciesID is NULL
-	AND tso.subspeciesID IS NULL AND tso.varietyID IS NULL
-	AND tso.subvarietyID IS NULL AND tso.formaID IS NULL AND tso.subformaID IS NULL
+				LEFT JOIN herbarinput.tbl_tax_species ts ON (
+	ts.genID = tg.genID AND ts.speciesID is NULL
+	AND ts.subspeciesID IS NULL AND ts.varietyID IS NULL
+	AND ts.subvarietyID IS NULL AND ts.formaID IS NULL AND ts.subformaID IS NULL
  )";
 		}	 
 		$sql .= "WHERE genus LIKE '".mysql_escape_string($_SESSION['taxGenus'])."%' "
@@ -999,7 +1008,7 @@ if ($_SESSION['taxMDLD'] != "") {
         }
         
 		if ($_SESSION['noLiterature']) {
-				$sql .= " AND tso.taxonID is not null AND ( NOT EXISTS (SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syn where syn.taxonID=tso.taxonID) ) ";
+				$sql .= " AND ( {$NOLITERATURE_SQL_STATEMENT}  ) ";
 		}
 		
 		if ($_SESSION['taxAnnotation']) {
@@ -1090,7 +1099,7 @@ if ($_SESSION['taxMDLD'] != "") {
 				$sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
 			}
 			if ($_SESSION['noLiterature']) {
-				$sql .= " AND ( NOT EXISTS (SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syn where syn.taxonID=ts.taxonID) ) ";
+				$sql .= " AND ( {$NOLITERATURE_SQL_STATEMENT}  ) ";
 			}
 		
 			if ($_SESSION['taxFamily']) {
@@ -1234,7 +1243,7 @@ if ($_SESSION['taxMDLD'] != "") {
             $sql .= "AND ts.annotation LIKE '%" . mysql_escape_string($_SESSION['taxAnnotation']) . "%' ";
         }
 		if ($_SESSION['noLiterature']) {
-			$sql .= " AND ( NOT EXISTS (SELECT tax_syn_ID FROM herbar_input.tbl_tax_synonymy syn where syn.taxonID=ts.taxonID) ) ";
+			$sql .= " AND ( {$NOLITERATURE_SQL_STATEMENT} ) ";
 		}
         $sql .= "ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
         $result = db_query($sql);
@@ -1317,7 +1326,12 @@ EOF;
 					$nr1 = 1;
 					while ($indexResult < $countResults) {
 						$row = $matches['result'][$indexMatch]['searchresult'][$indexResult]['species'][0];
-					
+						   
+						if(empty($row['taxonID']) ||(	$_SESSION['noLiterature'] && LiteratureExists($row['taxonID'])) ) {
+								$indexResult++;
+								continue;
+						}
+						
 						if(!isset($used[$row['taxonID']])){
 							$nr=$nr1;
 							$nr1++;
