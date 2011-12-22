@@ -17,7 +17,7 @@ $debuger=0;
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
-   <link rel="stylesheet" href="js/lib/jQueryjquery_autocompleter_freud.css" type="text/css" />
+   <link rel="stylesheet" href="js/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -50,8 +50,8 @@ table.tablesorter tbody td {border: 1px solid #CCC !important;}
   </style>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script type="text/javascript" src="js/lib/jQuery/jquery.tablesorter_nhm.js"></script>
-  <script type="text/javascript" src="js/lib/jQuery/jquery_autocompleter_freud.js"></script>
+  <script type="text/javascript" src="js/jquery.tablesorter_nhm.js"></script>
+  <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
 
   <script type="text/javascript" language="JavaScript">
   var geowin;
