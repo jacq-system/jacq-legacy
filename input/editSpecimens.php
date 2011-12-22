@@ -609,7 +609,7 @@ if (isset($_GET['sel'])) {
       MeinFenster.focus();
     }
     function editSeries() {
-      target = "editSeries.php?sel=" + document.f.series.options[document.f.series.selectedIndex].value;
+        target = "editSeries.php?sel=" + $( '#seriesIndex' ).val();
       MeinFenster = window.open(target,"editSeries","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
