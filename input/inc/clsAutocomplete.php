@@ -96,10 +96,9 @@ public function taxAuthor($value, $noExternals=false){
 			$sql.="(   author {$equ} '{$value['search']}'
 				OR Brummit_Powell_full {$equ} '{$value['search']}')";
 			if($noExternals) $sql .=" AND external=0";
-			$sql." ORDER BY  author, Brummit_Powell_full";
+			$sql.=" ORDER BY  author, Brummit_Powell_full";
 		}
 		$dbst=$db->query($sql);
-	
 		$rows=$dbst->fetchAll();
 		if(count($rows) > 0){
 		

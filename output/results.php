@@ -99,15 +99,56 @@ if ($_GET['order']==2)
 else
   $sql = $_SESSION['s_query']."ORDER BY genus, epithet, author";
 
-//echo $sql;
+
+  
+// PAGINATOR BEGIN
+$limits=array(10,30,50,100);
+if(!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE'])!=0 && in_array(intval($_GET['ITEMS_PER_PAGE']),$limits) ){
+	$_SESSION['ITEMS_PER_PAGE']=intval($_GET['ITEMS_PER_PAGE']);
+}
+$ITEMS_PER_PAGE=(!empty($_SESSION['ITEMS_PER_PAGE']))?intval($_SESSION['ITEMS_PER_PAGE']):10;
+if($ITEMS_PER_PAGE==0)$ITEMS_PER_PAGE=10;
+$PAGE=(!empty($_GET['page']))?intval($_GET['page']):1;
+if($PAGE==0)$PAGE=1;
+
+$sql.=" LIMIT ".( $ITEMS_PER_PAGE*($PAGE-1) ).", ".$ITEMS_PER_PAGE;
+
+	
+// PAGINATOR END
+
+
+
 $result = mysql_query($sql);
 if (!$result) {
   echo $sql."<br>\n";
   echo mysql_error()."<br>\n";
 }
+// PAGINATOR BEGIN
+$res_count = mysql_query("SELECT FOUND_ROWS()");
+if($res_count){
+	$res_count=mysql_fetch_row($res_count);
+	$res_count=$res_count[0];
+}
+$res_count=intval($res_count);
+
+$a=paginate_three($_SERVER['PHP_SELF'].'?s=s', $PAGE, ceil($res_count/$ITEMS_PER_PAGE), 2);
+$b="";
+foreach($limits as $f)$b.= "<option value=\"$f\" ".(($f==$ITEMS_PER_PAGE)?'selected':'').">$f</option>";
+$NAVIG=<<<EOF
+<form name="page"  action="{$_SERVER['REQUEST_URI']}" method="get">
+<HR SIZE="1"  width="800" NOSHADE>
+<select size="1" name="ITEMS_PER_PAGE" onchange="this.form.submit()" style="float:right;margin-top:-3px">
+{$b}
+</select>
+{$a}
+<HR SIZE="1"  width="800" NOSHADE>
+</form>
+EOF;
+// PAGINATOR END
+
 //echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
 echo "<div align=\"center\"><table width=\"100%\">\n";
-echo "<tr><td colspan=\"3\"><b>".mysql_num_rows($result)." records found</b></td>\n";
+echo "<tr><td colspan=\"3\"><b>".$res_count." records found</b></td>\n";
 
 // Values f�r "Generic Point Mapper" der "Canadian Biological Information Facility" erzeugen
 $xml_head = "%3C%3Fxml+version%3D%221.0%22+encoding%3D%22iso-8859-1%22%3F%3E";
@@ -156,7 +197,7 @@ $xml .= "  </records>".
   <input type="submit" value="Create map" style="width:100px;">
 </form>
 </td></tr>
-<tr><td colspan=\"3\"></td><td colspan="6" align="right">
+<tr><td colspan="3"></td><td colspan="6" align="right">
 <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
   <input type="submit" value="download KML" style="width:120px;">
 </form>
@@ -164,9 +205,13 @@ $xml .= "  </records>".
   <input type="submit" value="download CSV" style="width:120px;">
 </form>
 </td></tr>
+<tr><td colspan="9" align="center" valign="center">
 
-<?php
-echo "<tr><td colspan=\"9\">&nbsp;</td></tr>\n";
+
+	
+
+<?PHP
+echo $NAVIG."</td></tr>";
 echo "<tr bgcolor=\"#EEEEEE\">";
 echo "<th></th>".
      "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=1')\">Taxon</a></th>".
@@ -281,8 +326,11 @@ echo "</table></div>\n";
     </tr>
     <tr>
       <td valign="top" colspan="9" align="center">
-        <HR SIZE=1  width="800" NOSHADE>
-        <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
+       
+
+  <?PHP echo $NAVIG; ?>
+
+  <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
           Rainer<br></a><br>
           <b>php-programming</b> -- <a href="mailto:joschach@EUnet.at">Johannes
           Schachner</a></p>

@@ -27,7 +27,7 @@ function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $al
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
         $text .= " et al.";
-    } elseif ($Sammler_2) {
+    } else if ($Sammler_2) {
         $text .= " & " . $Sammler_2;
     }
     if ($series_number) {
@@ -109,4 +109,99 @@ function taxonWithHybrids ($row)
     } else {
         return taxon($row);
     }
+}
+
+/*************************************************************************
+php easy :: pagination scripts set - Version Three
+==========================================================================
+Author:      php easy code, www.phpeasycode.com
+Web Site:    http://www.phpeasycode.com
+Contact:     webmaster@phpeasycode.com
+*************************************************************************/
+function paginate_three($reload, $page, $tpages, $adjacents) {
+	
+	$prevlabel = "&lsaquo; Prev";
+	$nextlabel = "Next &rsaquo;";
+	
+	$out = "<div class=\"pagin\">\n";
+	
+	// previous
+	if($page==1) {
+		$out.= "<span>" . $prevlabel . "</span>\n";
+	}else if($page==2) {
+		$out.= "<a href=\"" . $reload . "\">" . $prevlabel . "</a>\n";
+	}else {
+		$out.= "<a href=\"" . $reload . "&amp;page=" . ($page-1) . "\">" . $prevlabel . "</a>\n";
+	}
+	
+	if($tpages<4+$adjacents*2+2){
+	
+		$pmin=1;
+		$pmax=$tpages;
+	}else{
+		
+		$prev=0;
+		$post=0;
+		// first
+		if($page>($adjacents+2)) {
+			$prev++;
+			$out.= "<a href=\"" . $reload . "\">1</a>\n";
+		}
+		
+
+		// interval
+		if($page>($adjacents+3)) {
+			$prev++;
+			$out.= "<span class=\"pot\">...</span>";
+		}
+		
+		// interval
+		if($page<($tpages-$adjacents-2))$post++;
+		
+		// last
+		if($page<($tpages-$adjacents-2))$post++;
+		$pmin=$page-$adjacents-(2-$prev);
+		if($pmin<1)$pmin=1;
+		$diff=$adjacents-($page-$pmin);
+		$pmax=$page+$adjacents+$diff+2-$prev+2-$post;
+		if($pmax>$tpages){
+			$pmax=$tpages;
+			$pmin=$pmax-2*$adjacents-2;
+			if($pmin<1)$pmin=1;
+		}
+	}
+
+	
+	for($i=$pmin; $i<=$pmax; $i++) {
+		if($i==$page) {
+			$out.= "<span class=\"current\">" . $i . "</span>\n";
+		}elseif($i==1) {
+			$out.= "<a href=\"" . $reload . "\">" . $i . "</a>\n";
+		}
+		else {
+			$out.= "<a href=\"" . $reload . "&amp;page=" . $i . "\">" . $i . "</a>\n";
+		}
+	}
+	if( !($tpages<4+$adjacents*2+2)){
+		// interval
+		if($page<($tpages-$adjacents-2)) {
+			$out.= "<span class=\"pot\">...</span>";
+		}
+		
+		// last
+		if($page<($tpages-$adjacents-2)) {
+			$out.= "<a href=\"" . $reload . "&amp;page=" . $tpages . "\">" . $tpages . "</a>\n";
+		}
+	}
+	
+	// next
+	if($page<$tpages) {
+		$out.= "<a class=\"nextlabel\" href=\"" . $reload . "&amp;page=" . ($page+1) . "\">" . $nextlabel . "</a>\n";
+	}else {
+		$out.= "<span class=\"nextlabel\">" . $nextlabel . "</span>\n";
+	}
+	
+	$out.= "</div>";
+	
+	return $out;
 }

@@ -9,3 +9,57 @@ h2 {  font-size: 14px; font-style: oblique}
 
 th.result { font-size: 80%; }
 td.result { font-size: 80%; }
+
+/* pagination style */
+.pagin {
+padding: 2px 0 2px;
+margin: 0;
+font-family: "Verdana", sans-serif;
+font-size: 7pt;
+font-weight: bold;
+
+}
+.pagin * {
+padding: 2px 6px;
+margin: 0;
+
+}
+
+.pagin a, .pagin a:visited  {
+
+border-right:1px solid #808080;
+color: #006633;
+text-decoration: none;
+text-align:center;
+}
+
+.pagin a:hover {
+color: red;
+}
+.pagin span {
+cursor: default;
+border-right:1px solid #808080;
+
+color: #006633;
+
+}
+
+
+.pagin span.current {
+background-color: #006633;
+color: #EFEFEF;
+
+margin:0px;
+margin-left:-3px;
+}
+
+.pagin span.pot{
+border: none;
+border-right:1px solid #808080;
+background-color: white;
+color: #006633;
+text-decoration: none;
+}
+.pagin span.nextlabel, .pagin a.nextlabel {
+border-right:none;
+}
