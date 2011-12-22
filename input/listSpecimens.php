@@ -449,7 +449,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <b>All</b>
   </td>
 </tr><tr>
-  <td colspan="2"><input class="button" type="submit" name="search" value=" search "></td>
+  <td colspan="2"><input class="button" type="submit" name="search" value=" search ">  <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php'" name="downloadCSV" value=" download CSV "></td>
   <td colspan="2" align="right">
   </td>
   <td colspan="2" align="right">

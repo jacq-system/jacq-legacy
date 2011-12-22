@@ -1,11 +1,8 @@
 <?php
+error_reporting(0);
 session_start();
-require("inc/functions.php");
-
-function replaceNewline($text) {
-
-  return strtr(str_replace("\r\n","\n",$text),"\r\n","  ");  //replaces \r\n with \n and then \r or \n with <space>
-}
+require("inc/connect.php");
+require("inc/herbardb_input_functions.php");
 
 function formatCell($value) {
 
@@ -17,19 +14,27 @@ function formatCell($value) {
   }
   return $value;
 }
+function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
+{
+    $text = $Sammler;
+    if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
+        $text .= " et al.";
+    } elseif ($Sammler_2) {
+        $text .= " & " . $Sammler_2;
+    }
+    if ($series_number) {
+        if ($Nummer) $text .= " " . $Nummer;
+        if ($alt_number && $alt_number != "s.n.") $text .= " " . $alt_number;
+        if ($series) $text .= " " . $series;
+        $text .= " " . $series_number;
+    } else {
+        if ($series) $text .= " " . $series;
+        if ($Nummer) $text .= " " . $Nummer;
+        if ($alt_number) $text .= " " . $alt_number;
+        if (strstr($alt_number, "s.n.")) $text .= " [" . $Datum . "]";
+    }
 
-function protolog($row) {
-
-  $text = "";
-  if ($row['suptitel']) $text .= "in ".$row['autor'].": ".$row['suptitel']." ";
-  if ($row['periodicalID']) $text .= $row['periodical'];
-  $text .= " ".$row['vol'];
-  if ($row['part']) $text .= " (".$row['part'].")";
-  $text .= ": ".$row['paginae'];
-  if ($row['figures']) $text .= "; ".$row['figures'];
-  $text .= " (".$row['jahr'].")";
-
-  return $text;
+    return $text;
 }
 
 function makeTypus($ID) {
@@ -109,19 +114,16 @@ function makeTypus($ID) {
 }
 
 
-$sql = $_SESSION['s_query']."ORDER BY genus, epithet, author";
-
-$result = mysql_query($sql);
-if (!$result) {
-  echo $sql."<br>\n";
-  echo mysql_error()."<br>\n";
-}
-
 $csvHeader = "<tr><td>Specimen ID</td><td>Collection</td><td>Type information</td>".
              "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Location</td><td>Latitude</td><td>Longitude</td>".
              "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
 $csvData = "";
-while ($row=mysql_fetch_array($result)) {
+$sLinkList=$_SESSION['sLinkList'];
+
+for($i=1;$i<=$sLinkList[0];$i++){
+
+  $specimen_ID=$sLinkList[$i];
+
   $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
@@ -157,7 +159,7 @@ while ($row=mysql_fetch_array($result)) {
            LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
            LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
            LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
-          WHERE specimen_ID='".intval($row['specimen_ID'])."'";
+          WHERE specimen_ID='".intval($specimen_ID)."'";
   $resultSpecimen = mysql_query($sql);
   if (!$resultSpecimen) {
     echo $sql."<br>\n";
@@ -170,8 +172,8 @@ while ($row=mysql_fetch_array($result)) {
 
   $location = $rowSpecimen['nation_engl'];
   if (strlen(trim($rowSpecimen['provinz']))>0) $location .= " / ".trim($rowSpecimen['provinz']);
-  
-  $lon ='';$lat ='';
+ 
+ $lon ='';$lat ='';
   if ($rowSpecimen['Coord_S']>0 || $rowSpecimen['S_Min']>0 || $rowSpecimen['S_Sec']>0)
     $lat = -($rowSpecimen['Coord_S'] + $rowSpecimen['S_Min'] / 60 + $rowSpecimen['S_Sec'] / 3600);
   else if ($rowSpecimen['Coord_N']>0 || $rowSpecimen['N_Min']>0 || $rowSpecimen['N_Sec']>0)

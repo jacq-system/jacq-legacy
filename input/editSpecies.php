@@ -790,11 +790,32 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
-$res = mysql_query("SELECT specimens_types_ID FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
-if (mysql_num_rows($res) > 0) {
-    $cf->label(22.5, 5.5, 'type specimens', "javascript:listTypeSpecimens('$p_taxonID')");
-	$cf->label(29.5, 5.5, 'specimens', "javascript:listSpecimens('$p_taxonID')");
+$res = mysql_query("SELECT COUNT(*)  FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
+$row1=mysql_fetch_row($res);
+
+if ($row1[0] > 0) {
+    $cf->label(22.5, 5.5, "type specimens ({$row1[0]})", "javascript:listTypeSpecimens('$p_taxonID')");	
 }
+
+
+$res = mysql_query("SELECT COUNT(*) FROM
+ tbl_specimens s,
+ tbl_tax_species ts,
+ tbl_tax_genera tg,
+ tbl_tax_families tf,
+ tbl_management_collections mc
+WHERE
+     ts.taxonID = s.taxonID
+ AND tg.genID = ts.genID
+ AND tf.familyID = tg.familyID
+ AND mc.collectionID = s.collectionID
+ AND ts.taxonID='$p_taxonID'");
+
+$row1=mysql_fetch_row($res);
+if ($row1[0] > 0) {
+	$cf->label(29.5, 5.5, "specimens ({$row1[0]})", "javascript:listSpecimens('$p_taxonID')");
+}
+
 
 if ($p_external) {
     $cf->label(59, 5.5, "external");
