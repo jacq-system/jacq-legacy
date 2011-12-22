@@ -6,5 +6,5 @@
  * and for XAJAX calls
  */
 
-sleep(2);
+
 require("ajax/autocomplete.php");
