@@ -57,14 +57,14 @@ $service = new jsonRPCClient($url);
 //$service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
 try {
     if ($database == 'col') {
-        $matches = $service->getMatchesCol($searchtext);
+        $matches = $service->getMatchesService('col2010ac',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
     } elseif ($database == 'fe') {
-        $matches = $service->getMatchesFaunaeuropea($searchtext);
+        $matches = $service->getMatchesService('fe',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
     } else {
         if ($showSyns) {
-            $matches = $service->getMatchesWithSynonyms($searchtext);
+            $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>true,'NearMatch'=>false));
         } else {
-            $matches = $service->getMatches($searchtext);
+            $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         }
     }
 

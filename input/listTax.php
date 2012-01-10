@@ -306,9 +306,9 @@ function dumpMatchJsonRPC($searchtext)
     _logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
 
     try {
-        $matches = $service->getMatches($searchtext);
+        $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if (!empty($formData['nearmatch'])) {
-            $matchesNearMatch = $service->getMatches($searchtext, true);
+            $matchesNearMatch = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
         } else {
             $matchesNearMatch = array();
         }
@@ -355,9 +355,9 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
     $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
     _logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
     try {
-        $matches = $service->getMatches($searchtext);
+        $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if ($useNearMatch) {
-            $matchesNearMatch = $service->getMatches($searchtext, true);
+            $matchesNearMatch = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
         } else {
             $matchesNearMatch = array();
         }

@@ -134,7 +134,7 @@ AND(
 			global $_OPTIONS;
 			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
-				$matches = $service->getMatches($params['mdldSearch']);
+				$matches = $service->getMatchesService('vienna',$params['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 
 				$m=$matches['result'][0]['searchresult'];
 				$ids=array();

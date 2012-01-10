@@ -388,7 +388,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                         .      $import[$i][4]);
             $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
-                $matches = $service->getMatches($searchtext);
+                $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
                 foreach ($matches['result'][0]['searchresult'] as $key => $val) {
                     for ($j = 0; $j < count($val['species']); $j++) {
                         $taxamatch[$i][] = $val['species'][$j];

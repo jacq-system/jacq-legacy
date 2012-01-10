@@ -456,7 +456,8 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $taxamatch[$i] = array();
             $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
-                $matches = $service->getMatches($taxonParts['genus'] . ' ' . $taxonParts['epithet'] . $ranks[$taxonParts['rank']] . $taxonParts['subepithet']);
+                //getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false))
+                $matches = $service->getMatchesService('vienna',$taxonParts['genus'] . ' ' . $taxonParts['epithet'] . $ranks[$taxonParts['rank']] . $taxonParts['subepithet'],array('showSyn'=>false,'NearMatch'=>false));
                 if (isset($matches['result'][0]['searchresult'])) {
                     foreach ($matches['result'][0]['searchresult'] as $key => $val) {
                         for ($j = 0; $j < count($val['species']); $j++) {
