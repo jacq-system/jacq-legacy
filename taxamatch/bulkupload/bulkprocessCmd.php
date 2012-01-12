@@ -67,8 +67,6 @@ function getMatches($database, $searchtext, $useNearMatch=false,$showSynonyms=fa
 	
 	$start = microtime(true);
 	 
-	// BP, 07.2010: get IP-address of JSON-service from 'variables.php'
-	//$service = new jsonRPCClient('http://131.130.131.9/taxamatch/json_rpc_taxamatchMdld.php');
 	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
 	$service = new jsonRPCClient($url,$debug);
 	$failure=false;

@@ -625,47 +625,70 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
          * fill Fundort
          */
         $data[$i]['Fundort'] = (!empty($import[$i][17])) ? $import[$i][17] : '';
+        $data[$i]['Fundort_engl'] = (!empty($import[$i][18])) ? $import[$i][18] : '';
+        
+        /**
+         * fill habitat & habitus
+         */
+        $data[$i]['Habitat'] = (!empty($import[$i][19])) ? $import[$i][19] : '';
+        $data[$i]['Habitus'] = (!empty($import[$i][20])) ? $import[$i][20] : '';
 
         /**
          * fill Bemerkungen
          */
-        $data[$i]['Bemerkungen'] = (!empty($import[$i][18])) ? $import[$i][18] : '';
+        $data[$i]['Bemerkungen'] = (!empty($import[$i][21])) ? $import[$i][21] : '';
 
         /**
          * fill geografical coordinates
          */
-        if (isset($import[$i][19]) && isset($import[$i][20]) && isset($import[$i][21]) && isset($import[$i][22])) {
-            $data[$i]['Coord_N'] = ($import[$i][19]=='N') ? $import[$i][20] : "";
-            $data[$i]['N_Min']   = ($import[$i][19]=='N') ? $import[$i][21] : "";
-            $data[$i]['N_Sec']   = ($import[$i][19]=='N') ? strtr($import[$i][22], ",", ".") : "";
-            $data[$i]['Coord_S'] = ($import[$i][19]=='S') ? $import[$i][20] : "";
-            $data[$i]['S_Min']   = ($import[$i][19]=='S') ? $import[$i][21] : "";
-            $data[$i]['S_Sec']   = ($import[$i][19]=='S') ? strtr($import[$i][22], ",", ".") : "";
+        if (isset($import[$i][22]) && isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25])) {
+            $data[$i]['Coord_N'] = ($import[$i][22]=='N') ? $import[$i][26] : "";
+            $data[$i]['N_Min']   = ($import[$i][22]=='N') ? $import[$i][24] : "";
+            $data[$i]['N_Sec']   = ($import[$i][22]=='N') ? strtr($import[$i][25], ",", ".") : "";
+            $data[$i]['Coord_S'] = ($import[$i][22]=='S') ? $import[$i][23] : "";
+            $data[$i]['S_Min']   = ($import[$i][22]=='S') ? $import[$i][24] : "";
+            $data[$i]['S_Sec']   = ($import[$i][22]=='S') ? strtr($import[$i][25], ",", ".") : "";
         } else {
             $data[$i]['Coord_N'] = $data[$i]['N_Min'] = $data[$i]['N_Sec'] = $data[$i]['Coord_S'] = $data[$i]['S_Min'] = $data[$i]['S_Sec'] = '';
         }
-        if (isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25]) && isset($import[$i][26])) {
-            $data[$i]['Coord_W'] = ($import[$i][23]=='W') ? $import[$i][24] : "";
-            $data[$i]['W_Min']   = ($import[$i][23]=='W') ? $import[$i][25] : "";
-            $data[$i]['W_Sec']   = ($import[$i][23]=='W') ? strtr($import[$i][26], ",", ".") : "";
-            $data[$i]['Coord_E'] = ($import[$i][23]=='E') ? $import[$i][24] : "";
-            $data[$i]['E_Min']   = ($import[$i][23]=='E') ? $import[$i][25] : "";
-            $data[$i]['E_Sec']   = ($import[$i][23]=='E') ? strtr($import[$i][26], ",", ".") : "";
+        if (isset($import[$i][26]) && isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29])) {
+            $data[$i]['Coord_W'] = ($import[$i][26]=='W') ? $import[$i][27] : "";
+            $data[$i]['W_Min']   = ($import[$i][26]=='W') ? $import[$i][28] : "";
+            $data[$i]['W_Sec']   = ($import[$i][26]=='W') ? strtr($import[$i][29], ",", ".") : "";
+            $data[$i]['Coord_E'] = ($import[$i][26]=='E') ? $import[$i][27] : "";
+            $data[$i]['E_Min']   = ($import[$i][26]=='E') ? $import[$i][28] : "";
+            $data[$i]['E_Sec']   = ($import[$i][26]=='E') ? strtr($import[$i][29], ",", ".") : "";
         } else {
             $data[$i]['Coord_W'] = $data[$i]['W_Min'] = $data[$i]['W_Sec'] = $data[$i]['Coord_E'] = $data[$i]['E_Min'] = $data[$i]['E_Sec'] = '';
         }
-        $data[$i]['exactness'] = (isset($import[$i][27])) ? strtr($import[$i][27], ",", ".") : '';
+        $data[$i]['exactness'] = (isset($import[$i][30])) ? strtr($import[$i][30], ",", ".") : '';
+        
+        /**
+         * Fill in quadrant info
+         */
+        $data[$i]['quadrant'] = (isset($import[$i][31])) ? $import[$i][31] : '';
+        $data[$i]['quadrant_sub'] = (isset($import[$i][32])) ? $import[$i][32] : '';
 
         /**
          * fill altitude
          */
-        $data[$i]['altitude_min'] = (!empty($import[$i][28])) ? $import[$i][28] : '';
-        $data[$i]['altitude_max'] = (!empty($import[$i][29])) ? $import[$i][29] : '';
+        $data[$i]['altitude_min'] = (!empty($import[$i][33])) ? $import[$i][33] : '';
+        $data[$i]['altitude_max'] = (!empty($import[$i][34])) ? $import[$i][34] : '';
 
         /**
          * fill switch: digital image
          */
-        $data[$i]['digital_image'] = (!empty($import[$i][30])) ? 1 : 0;
+        $data[$i]['digital_image'] = (!empty($import[$i][35])) ? 1 : 0;
+
+        /**
+         * fill switch: digital image obs
+         */
+        $data[$i]['digital_image_obs'] = (!empty($import[$i][36])) ? 1 : 0;
+
+        /**
+         * fill switch: observation
+         */
+        $data[$i]['observation'] = (!empty($import[$i][37])) ? 1 : 0;
 
         /**
          * finished -> log the file contents and processing errors (if any)
@@ -751,10 +774,16 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $data[intval($pieces[1])]['altitude_max'] = $v;
         } elseif ($pieces[0] == 'digitalimage') {
             $data[intval($pieces[1])]['digital_image'] = $v;
+        } elseif ($pieces[0] == 'digitalimageobs') {
+            $data[intval($pieces[1])]['digital_image_obs'] = $v;
+        } elseif ($pieces[0] == 'observation') {
+            $data[intval($pieces[1])]['observation'] = $v;
         } elseif (    $pieces[0] == 'HerbNummer'    || $pieces[0] == 'seriesID'   || $pieces[0] == 'taxonID' || $pieces[0] == 'SammlerID'
                    || $pieces[0] == 'collectionID'  || $pieces[0] == 'Nummer'     || $pieces[0] == 'Datum'   || $pieces[0] == 'Datum2'
                    || $pieces[0] == 'Bemerkungen'   || $pieces[0] == 'typified'   || $pieces[0] == 'typusID' || $pieces[0] == 'NationID'
-                   || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'det'     || $pieces[0] == 'exactness'
+                   || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'Fundortengl' || $pieces[0] == 'det'
+                   || $pieces[0] == 'exactness'     || $pieces[0] == 'Habitat'    || $pieces[0] == 'Habitus' || $pieces[0] == 'quadrant'
+                   || $pieces[0] == 'quadrantsub'
                    || $pieces[0] == 'identstatusID' || $pieces[0] == 'importTaxa' || $pieces[0] == 'contentid') {
             $data[intval($pieces[1])][$pieces[0]] = $v;
         }
@@ -864,6 +893,13 @@ if ($type == 1) {  // file uploaded
                 echo "<td>" . $import[$i][28] . "</td>";
                 echo "<td>" . $import[$i][29] . "</td>";
                 echo "<td>" . $import[$i][30] . "</td>";
+                echo "<td>" . $import[$i][31] . "</td>";
+                echo "<td>" . $import[$i][32] . "</td>";
+                echo "<td>" . $import[$i][33] . "</td>";
+                echo "<td>" . $import[$i][34] . "</td>";
+                echo "<td>" . $import[$i][35] . "</td>";
+                echo "<td>" . $import[$i][36] . "</td>";
+                echo "<td>" . $import[$i][37] . "</td>";
                 echo "</tr>\n";
 
                 if (strpos($status[$i], "similar_taxa") !== false) {
@@ -913,6 +949,9 @@ if ($type == 1) {  // file uploaded
                        . "<input type=\"hidden\" name=\"NationID_$ctr\" value=\""      . htmlspecialchars($data[$i]['NationID']) . "\">"
                        . "<input type=\"hidden\" name=\"provinceID_$ctr\" value=\""    . htmlspecialchars($data[$i]['provinceID']) . "\">"
                        . "<input type=\"hidden\" name=\"Fundort_$ctr\" value=\""       . htmlspecialchars($data[$i]['Fundort']) . "\">"
+                       . "<input type=\"hidden\" name=\"Fundortengl_$ctr\" value=\""   . htmlspecialchars($data[$i]['Fundort_engl']) . "\">"
+                       . "<input type=\"hidden\" name=\"Habitat_$ctr\" value=\""       . htmlspecialchars($data[$i]['Habitat']) . "\">"
+                       . "<input type=\"hidden\" name=\"Habitus_$ctr\" value=\""       . htmlspecialchars($data[$i]['Habitus']) . "\">"
                        . "<input type=\"hidden\" name=\"Bemerkungen_$ctr\" value=\""   . htmlspecialchars($data[$i]['Bemerkungen']) . "\">"
                        . "<input type=\"hidden\" name=\"CoordW_$ctr\" value=\""        . htmlspecialchars($data[$i]['Coord_W']) . "\">"
                        . "<input type=\"hidden\" name=\"WMin_$ctr\" value=\""          . htmlspecialchars($data[$i]['W_Min']) . "\">"
@@ -927,9 +966,13 @@ if ($type == 1) {  // file uploaded
                        . "<input type=\"hidden\" name=\"EMin_$ctr\" value=\""          . htmlspecialchars($data[$i]['E_Min']) . "\">"
                        . "<input type=\"hidden\" name=\"ESec_$ctr\" value=\""          . htmlspecialchars($data[$i]['E_Sec']) . "\">"
                        . "<input type=\"hidden\" name=\"exactness_$ctr\" value=\""     . htmlspecialchars($data[$i]['exactness']) . "\">"
+                       . "<input type=\"hidden\" name=\"quadrant_$ctr\" value=\""      . htmlspecialchars($data[$i]['quadrant']) . "\">"
+                       . "<input type=\"hidden\" name=\"quadrantsub_$ctr\" value=\""   . htmlspecialchars($data[$i]['quadrant_sub']) . "\">"
                        . "<input type=\"hidden\" name=\"altitudemin_$ctr\" value=\""   . htmlspecialchars($data[$i]['altitude_min']) . "\">"
                        . "<input type=\"hidden\" name=\"altitudemax_$ctr\" value=\""   . htmlspecialchars($data[$i]['altitude_max']) . "\">"
                        . "<input type=\"hidden\" name=\"digitalimage_$ctr\" value=\""  . htmlspecialchars($data[$i]['digital_image']) . "\">"
+                       . "<input type=\"hidden\" name=\"digitalimageobs_$ctr\" value=\""  . htmlspecialchars($data[$i]['digital_image_obs']) . "\">"
+                       . "<input type=\"hidden\" name=\"observation_$ctr\" value=\""   . htmlspecialchars($data[$i]['observation']) . "\">"
                        . "<input type=\"hidden\" name=\"contentid_$ctr\" value=\""     . htmlspecialchars($data[$i]['contentID']) . "\">"
                        . "<input type=\"hidden\" name=\"position_$ctr\" value=\""      . htmlspecialchars($position[$i]) . "\">\n";
 
@@ -991,6 +1034,9 @@ if ($type == 1) {  // file uploaded
                                NationID = "      . quoteString($data[$i]['NationID'])      . ",
                                provinceID = "    . quoteString($data[$i]['provinceID'])    . ",
                                Fundort = "       . quoteString($data[$i]['Fundort'])       . ",
+                               Fundort_engl = "  . quoteString($data[$i]['Fundort_engl'])  . ",
+                               Habitat = "       . quoteString($data[$i]['Habitat'])       . ",
+                               Habitus = "       . quoteString($data[$i]['Habitus'])       . ",
                                Bemerkungen = "   . quoteString($data[$i]['Bemerkungen'])   . ",
                                Coord_W = "       . quoteString($data[$i]['Coord_W'])       . ",
                                W_Min = "         . quoteString($data[$i]['W_Min'])         . ",
@@ -1005,9 +1051,13 @@ if ($type == 1) {  // file uploaded
                                E_Min = "         . quoteString($data[$i]['E_Min'])         . ",
                                E_Sec = "         . quoteString($data[$i]['E_Sec'])         . ",
                                exactness = "     . quoteString($data[$i]['exactness'])     . ",
+                               quadrant = "      . quoteString($data[$i]['quadrant'])      . ",
+                               quadrant_sub = "  . quoteString($data[$i]['quadrant_sub'])  . ",
                                altitude_min = "  . quoteString($data[$i]['altitude_min'])  . ",
                                altitude_max = "  . quoteString($data[$i]['altitude_max'])  . ",
                                digital_image = " . quoteString($data[$i]['digital_image']) . ",
+                               digital_image_obs = " . quoteString($data[$i]['digital_image_obs']) . ",
+                               observation = "   . quoteString($data[$i]['observation'])   . ",
                                userID = "        . quoteString($_SESSION['uid']);
                 db_query($sqlInsert);
                 $specimen_ID = mysql_insert_id();
