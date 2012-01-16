@@ -642,7 +642,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
          * fill geografical coordinates
          */
         if (isset($import[$i][22]) && isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25])) {
-            $data[$i]['Coord_N'] = ($import[$i][22]=='N') ? $import[$i][26] : "";
+            $data[$i]['Coord_N'] = ($import[$i][22]=='N') ? $import[$i][23] : "";
             $data[$i]['N_Min']   = ($import[$i][22]=='N') ? $import[$i][24] : "";
             $data[$i]['N_Sec']   = ($import[$i][22]=='N') ? strtr($import[$i][25], ",", ".") : "";
             $data[$i]['Coord_S'] = ($import[$i][22]=='S') ? $import[$i][23] : "";
