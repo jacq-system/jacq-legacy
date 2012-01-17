@@ -410,10 +410,12 @@ tbl_wu_generale
                             FROM `tbl_management_collections`
                             WHERE `collectionID`
                             IN ( 
-                              SELECT `collectionID`
+                              SELECT DISTINCT `collectionID`
                               FROM `tbl_specimens`
                             )
-                          )";
+                          )
+                          ORDER BY `source_name`
+                          ";
                       $result = mysql_query($sql);
                       while ($row=mysql_fetch_array($result)) {
                         echo "<option value=\"{$row['source_name']}\"";
@@ -439,9 +441,11 @@ tbl_wu_generale
                           FROM `tbl_management_collections`
                           WHERE `collectionID`
                           IN ( 
-                            SELECT `collectionID`
+                            SELECT DISTINCT `collectionID`
                             FROM `tbl_specimens`
-                          )";
+                          )
+                          ORDER BY `collection`
+                          ";
                       $result = mysql_query($sql);
                       while ($row=mysql_fetch_array($result)) {
                         echo "<option value=\"{$row['collection']}\"";

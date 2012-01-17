@@ -16,28 +16,35 @@ function connect() {
  * @return xajaxResponse
  */
 function getCollection($data) {
-  connect();
+    connect();
 
-  if (trim($data['source_name'])) {
-    $sql = "SELECT collection
+    if (trim($data['source_name'])) {
+        $sql = "SELECT collection
             FROM tbl_management_collections, meta
             WHERE tbl_management_collections.source_id=meta.source_id
-             AND source_name='".mysql_escape_string($data['source_name'])."'
+             AND source_name='" . mysql_escape_string($data['source_name']) . "'
             ORDER BY collection";
-  } else {
-    $sql = "SELECT collection FROM tbl_management_collections ORDER BY collection";
-  }
-  $result = mysql_query($sql);
-  $selectData = "<select size=\"1\" name=\"collection\">\n".
-                "<option value=\"\"></option>\n";
-  while ($row=mysql_fetch_array($result)) {
-    $selectData .= "<option value=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['collection'])."</option>\n";
-  }
-  $selectData .= "</select>\n";
+    } else {
+        $sql = "SELECT `collection`
+                FROM `tbl_management_collections`
+                WHERE `collectionID`
+                IN ( 
+                    SELECT DISTINCT `collectionID`
+                    FROM `tbl_specimens`
+                )
+                ORDER BY `collection`";
+    }
+    $result = mysql_query($sql);
+    $selectData = "<select size=\"1\" name=\"collection\">\n" .
+            "<option value=\"\"></option>\n";
+    while ($row = mysql_fetch_array($result)) {
+        $selectData .= "<option value=\"" . htmlspecialchars($row['collection']) . "\">" . htmlspecialchars($row['collection']) . "</option>\n";
+    }
+    $selectData .= "</select>\n";
 
-  $objResponse = new xajaxResponse();
-  $objResponse->addAssign("ajax_collection", "innerHTML", $selectData);
-  return $objResponse;
+    $objResponse = new xajaxResponse();
+    $objResponse->addAssign("ajax_collection", "innerHTML", $selectData);
+    return $objResponse;
 }
 
 /**
