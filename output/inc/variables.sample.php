@@ -7,3 +7,12 @@ $_CONFIG['DATABASES']['OUTPUT'] = array(
         "pass" => ""
     )
 );
+
+$_CONFIG['DATABASE']['PICTURES'] = array(
+    "host" => "localhost",
+    "db" => "pictures",
+    "readonly" => array(
+        "user" => "",
+        "pass" => ""
+    )
+);

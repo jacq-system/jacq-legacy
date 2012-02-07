@@ -197,7 +197,7 @@ function doRedirectDownloadPic($picdetails,$format,$thumb=0){
 
 // request: can be specimen ID or filename
 function getPicDetails($request){
-	global $debug;
+	global $debug, $_CONFIG;
 	
 	$requestFileName='';
 	$where='';
@@ -224,16 +224,12 @@ function getPicDetails($request){
 	
 	// filename
 	}else{
-		
-		$result=preg_match('/((?P<filename>.*)\.)/',$request,$matches);
-		if($result==1){
-			$request=$matches['filename'];
-		}else{
-			$request=$request;
-		}
-		print_r($matches);
-		$where=" s.filename = '".mysql_real_escape_string($request)."'";
-		$requestFileName=$request;
+            if( preg_match( '/([^\.]+)/', $request, $matches ) > 0 ) {
+                $request = $matches[1];
+            }
+            print_r($matches);
+            $where=" f.file = '".mysql_real_escape_string($request)."' AND f.specimen_ID = s.specimen_ID";
+            $requestFileName=$request;
 	}
 	
 	if($specimenID!=0){
@@ -249,14 +245,13 @@ SELECT
  s.filename
  
 FROM
- tbl_specimens s,
- tbl_management_collections m,
- tbl_img_definition i
+ `".$_CONFIG['DATABASE']['PICTURES']['db']."`.`files` f,
+ `".$_CONFIG['DATABASES']['OUTPUT']['db']."`.tbl_specimens s
+LEFT JOIN `".$_CONFIG['DATABASES']['OUTPUT']['db']."`.`tbl_management_collections` m ON m.collectionID = s.collectionID
+LEFT JOIN `".$_CONFIG['DATABASES']['OUTPUT']['db']."`.`tbl_img_definition` i ON i.source_id_fk = m.source_id
 
 WHERE
  {$where}
- AND m.collectionID = s.collectionID
- AND i.source_id_fk = m.source_id
 ";
 
 	if($debug){
