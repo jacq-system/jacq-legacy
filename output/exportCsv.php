@@ -117,13 +117,15 @@ if (!$result) {
   echo mysql_error()."<br>\n";
 }
 
-$csvHeader = "<tr><td>Specimen ID</td><td>Collection</td><td>Type information</td>".
-             "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Location</td><td>Latitude</td><td>Longitude</td>".
-             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
+$csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Type information</td>".
+             "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Country</td><td>Admin1</td><td>Latitude</td><td>Longitude</td>".
+             "<td>Altitude lower</td><td>Altitude higher</td>".
+             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td><td>Collection</td><td>Collection Number</td></tr>";
 $csvData = "";
 while ($row=mysql_fetch_array($result)) {
   $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+           s.CollNummer, s.altitude_min, s.altitude_max,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
            mc.collection, mc.collectionID, mc.coll_short, s.typified,
            s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
@@ -168,8 +170,8 @@ while ($row=mysql_fetch_array($result)) {
   $sammler = collection($rowSpecimen['Sammler'],$rowSpecimen['Sammler_2'],$rowSpecimen['series'],$rowSpecimen['series_number'],
                       $rowSpecimen['Nummer'],$rowSpecimen['alt_number'],$rowSpecimen['Datum']);
 
-  $location = $rowSpecimen['nation_engl'];
-  if (strlen(trim($rowSpecimen['provinz']))>0) $location .= " / ".trim($rowSpecimen['provinz']);
+  $country = $rowSpecimen['nation_engl'];
+  $province = $rowSpecimen['provinz'];
   
   $lon ='';$lat ='';
   if ($rowSpecimen['Coord_S']>0 || $rowSpecimen['S_Min']>0 || $rowSpecimen['S_Sec']>0)
@@ -202,13 +204,18 @@ while ($row=mysql_fetch_array($result)) {
               formatCell($rowSpecimen['family']).
               formatCell($sammler).
               formatCell("'".$rowSpecimen['Datum']).
-              formatCell($location).
+              formatCell($country).
+              formatCell($province).
               formatCell($lat).
               formatCell($lon).
+              formatCell($rowSpecimen['altitude_min']).
+              formatCell($rowSpecimen['altitude_max']).
               formatCell($rowSpecimen['Fundort']).
               formatCell($rowSpecimen['det']).
               formatCell($rowSpecimen['taxon_alt']).
               formatCell($rowSpecimen['Bemerkungen']).
+              formatCell($rowSpecimen['coll_short']).
+              formatCell($rowSpecimen['CollNummer']).
               "</tr>";
 }
 
