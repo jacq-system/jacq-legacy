@@ -117,17 +117,17 @@ if (!$result) {
   echo mysql_error()."<br>\n";
 }
 
-$csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Type information</td>".
+$csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Collection</td><td>Collection Number</td><td>Type information</td>".
              "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Country</td><td>Admin1</td><td>Latitude</td><td>Longitude</td>".
              "<td>Altitude lower</td><td>Altitude higher</td>".
-             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td><td>Collection</td><td>Collection Number</td></tr>";
+             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
 $csvData = "";
 while ($row=mysql_fetch_array($result)) {
   $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            s.CollNummer, s.altitude_min, s.altitude_max,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
-           mc.collection, mc.collectionID, mc.coll_short, s.typified,
+           mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
            s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
@@ -139,6 +139,7 @@ while ($row=mysql_fetch_array($result)) {
           FROM tbl_specimens s
            LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
            LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
+           LEFT JOIN meta m ON m.source_id = mc.source_id
            LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
            LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
            LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
@@ -197,7 +198,9 @@ while ($row=mysql_fetch_array($result)) {
   
   $csvData .= "<tr>".
               formatCell($rowSpecimen['specimen_ID']).
-              formatCell($rowSpecimen['collection']." ".$rowSpecimen['herbNummer']).
+              formatCell($rowSpecimen['source_code']." ".$rowSpecimen['herbNummer']).
+              formatCell($rowSpecimen['coll_short']).
+              formatCell($rowSpecimen['CollNummer']).
               formatCell(makeTypus(intval($rowSpecimen['specimen_ID']))).
               formatCell($rowSpecimen['typified']).
               formatCell(taxonWithHybrids($rowSpecimen)).
@@ -214,8 +217,6 @@ while ($row=mysql_fetch_array($result)) {
               formatCell($rowSpecimen['det']).
               formatCell($rowSpecimen['taxon_alt']).
               formatCell($rowSpecimen['Bemerkungen']).
-              formatCell($rowSpecimen['coll_short']).
-              formatCell($rowSpecimen['CollNummer']).
               "</tr>";
 }
 
