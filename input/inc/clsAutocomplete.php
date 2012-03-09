@@ -139,9 +139,9 @@ public function litAuthor($value, $noExternals=false){
 		if(!empty($value['id'])){
 			$sql.=" autorID='{$value['id']}'";	
 		}else if(!empty($value['exact'])){
-			$sql.=" autor='{$value['exact']}' LIMIT 2";	
+			$sql.=" autor='{$value['exact']}'";	
 		}else{
-			$sql.=" autor LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" autor LIKE '{$value['search']}%'";
 		}
 		
 		$dbst=$db->query($sql);
@@ -198,9 +198,9 @@ public function collector($value,$second=false){
 			if(!empty($value['id'])){
 				$sql.=" Sammler_2ID='{$value['id']}'";	
 			}else if(!empty($value['exact'])){
-				$sql.=" Sammler_2='{$value['exact']}' LIMIT 2";	
+				$sql.=" Sammler_2='{$value['exact']}'";	
 			}else{
-				$sql.=" Sammler_2 LIKE '{$value['search']}%' LIMIT 100";
+				$sql.=" Sammler_2 LIKE '{$value['search']}%'";
 			}
 		}else{
 			$sql="SELECT Sammler, SammlerID
@@ -210,9 +210,9 @@ public function collector($value,$second=false){
 			if(!empty($value['id'])){
 				$sql.=" SammlerID='{$value['id']}'";	
 			}else if(!empty($value['exact'])){
-				$sql.=" Sammler='{$value['exact']}' LIMIT 2";
+				$sql.=" Sammler='{$value['exact']}'";
 			}else{
-				$sql.=" Sammler LIKE '{$value['search']}%' LIMIT 100";
+				$sql.=" Sammler LIKE '{$value['search']}%'";
 			}
 		}
 		
@@ -301,10 +301,8 @@ public function person($value){
 			if($p_birthdate) $sql.=" AND p_birthdate {$equ} '{$p_birthdate}'";
 			if($p_death)	 $sql.=" AND p_death {$equ} '{$p_death}'";
 			
-			if(!empty($value['id'])){
-				$sql.=" LIMIT 2";
-			}else{
-				$sql.=" ORDER BY p_familyname, p_firstname, p_birthdate, p_death LIMIT 100";
+			if(empty($value['id'])){
+				$sql.=" ORDER BY p_familyname, p_firstname, p_birthdate, p_death";
 			}
 		}
 		//return array('id'	=> 's','label'=> $sql,'value'=> $sql,'color'=> '');
@@ -393,7 +391,6 @@ public function citation($value){
 						OR lp.periodical {$equ} '{$second}' )";
 			}
 			$sql.=" ORDER BY la.autor, jahr, lp.periodical, vol, part, pp";
-			$sql.=" LIMIT 100";
 			
 			$dbst=$db->query($sql);
 			$rows=$dbst->fetchAll();
@@ -436,7 +433,7 @@ public function periodical($value){
 		if(!empty($value['id'])){
 			$sql.=" periodicalID='{$value['id']}'";	
 		}else if(!empty($value['exact'])){
-			$sql.=" periodical ='{$value['exact']}' LIMIT 2";
+			$sql.=" periodical ='{$value['exact']}'";
 		}else{
 			$sql.="periodical LIKE '{$value['search']}%'
 				 OR periodical_full LIKE  '%{$value['search']}%'
@@ -476,11 +473,11 @@ public function bestand($value){
 		
 		
 		if(!empty($value['id'])){
-			$sql.=" bestand='{$value['id']}' LIMIT 2";
+			$sql.=" bestand='{$value['id']}'";
 		}else if(!empty($value['exact'])){
-			$sql.=" bestand='{$value['exact']}' LIMIT 2";
+			$sql.=" bestand='{$value['exact']}'";
 		}else{
-			$sql.=" bestand LIKE '{$value['search']}%' ORDER BY bestand LIMIT 100";
+			$sql.=" bestand LIKE '{$value['search']}%' ORDER BY bestand";
 		}
 		
 		$dbst=$db->query($sql);
@@ -516,11 +513,11 @@ public function categories($value){
 		$sql="SELECT DISTINCT category FROM tbl_lit WHERE ";
 		
 		if(!empty($value['id'])){
-			$sql.=" category='{$value['id']}' LIMIT 2";
+			$sql.=" category='{$value['id']}'";
 		}else if(!empty($value['exact'])){
-			$sql.=" category='{$value['exact']}' LIMIT 2";
+			$sql.=" category='{$value['exact']}'";
 		}else{
-			$sql.=" category LIKE '{$value['search']}%' ORDER BY category LIMIT 100";
+			$sql.=" category LIKE '{$value['search']}%' ORDER BY category";
 		}
 
 		$dbst=$db->query($sql);
@@ -560,11 +557,11 @@ public function publisher($value){
                 WHERE";
 		
 		if(!empty($value['id'])){
-			$sql.=" publisherID='{$value['id']}' LIMIT 2";
+			$sql.=" publisherID='{$value['id']}'";
 		}else if(!empty($value['exact'])){
-			$sql.=" publisher='{$value['exact']}' LIMIT 2";
+			$sql.=" publisher='{$value['exact']}'";
 		}else{
-			$sql.=" publisher LIKE '{$value['search']}%' ORDER BY publisher LIMIT 100";
+			$sql.=" publisher LIKE '{$value['search']}%' ORDER BY publisher";
 		}
 		
 		$dbst=$db->query($sql);
@@ -607,12 +604,12 @@ public function family($value){
 				WHERE ";
 				
 		if(!empty($value['id'])){
-			$sql.=" familyID='{$value['id']}' LIMIT 2";
+			$sql.=" familyID='{$value['id']}'";
 		}else if(!empty($value['exact'])){
 			// todo
-			$sql.=" family='{$value['exact']}' LIMIT 2";
+			$sql.=" family='{$value['exact']}'";
 		}else{
-			$sql.=" family LIKE '{$value['search']}%' ORDER BY family LIMIT 100";
+			$sql.=" family LIKE '{$value['search']}%' ORDER BY family";
 		}
 		
 		
@@ -654,12 +651,12 @@ public function genus($value){
 			WHERE ";
 		
 		if(!empty($value['id'])){
-			$sql.="  tg.genID='{$value['id']}' LIMIT 2";
+			$sql.="  tg.genID='{$value['id']}'";
 		}else if(!empty($value['exact'])){
 			//todo if needed.
-			$sql.=" tg.genus='{$value['exact']}' LIMIT 2";
+			$sql.=" tg.genus='{$value['exact']}'";
 		}else{
-			$sql.="tg.genus LIKE '{$value['search']}%'  ORDER BY tg.genus LIMIT 100";
+			$sql.="tg.genus LIKE '{$value['search']}%'  ORDER BY tg.genus";
 		}
 			
 		$dbst=$db->query($sql);
@@ -705,16 +702,15 @@ public function epithet($value,$noExternals=false)
 				WHERE ";
 		
 		if(!empty($value['id'])){
-			$sql.="  epithetID='{$value['id']}' LIMIT 2";
+			$sql.="  epithetID='{$value['id']}'";
 				
 		}else if(!empty($value['exact'])){
 			$sql.=" epithet='{$value['exact']}' ";
 			if($noExternals) $sql .=" AND external=0";
-			$sql." LIMIT 2";
 		}else{
 			$sql.=" epithet LIKE '{$value['search']}%' ";
 			if($noExternals) $sql .=" AND external=0";
-			$sql." ORDER BY epithet LIMIT 100";
+			$sql." ORDER BY epithet";
 		}
 		
 		$dbst=$db->query($sql);	
@@ -816,10 +812,8 @@ public function taxon($value, $noExternals=false, $withDT=false,$withID=true){
 				$sql.=" AND te0.epithet IS NULL";
 			}
 			
-			if(!empty($value['exact'])){
-				$sql.=" LIMIT 2";
-			}else{
-				$sql.=" ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet  LIMIT 100";
+			if(empty($value['exact'])){
+				$sql.=" ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
 			}
 		}
 		
@@ -926,9 +920,7 @@ public function taxonWithHybrids ($value, $noExternals = false){
 			} else {
 				$sql.=" AND te0.epithet IS NULL";
 			}
-			if(!empty($value['exact'])){
-				$sql.=" LIMIT 2";
-			}else{
+			if(empty($value['exact'])){
 				$sql.=" ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
 			}
 		}
@@ -948,7 +940,7 @@ public function taxonWithHybrids ($value, $noExternals = false){
 			}
 		}
 		// works up to here
-		// ab hier: muss geprüft werden.
+		// ab hier: muss geprï¿½ft werden.
 		if(!!empty($value['id'])){
 			
 			// how to test??
@@ -1039,9 +1031,9 @@ public function series($value){
 		if(!empty($value['id'])){
 			$sql.=" seriesID='{$value['id']}'";
 		}else if(!empty($value['exact'])){
-				$sql.="series='{$value['exact']}' LIMIT 2";
+				$sql.="series='{$value['exact']}'";
 		}else{
-			$sql.=" series LIKE '{$value['search']}%' ORDER BY series LIMIT 100";
+			$sql.=" series LIKE '{$value['search']}%' ORDER BY series";
 		}
 
 		$dbst=$db->query($sql);

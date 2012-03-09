@@ -102,9 +102,9 @@ WHERE
 		if(isset($value['id'])){
 			$sql.=" com.common_id ='{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" com.common_name='{$value['exact']}' LIMIT 2";	
+			$sql.=" com.common_name='{$value['exact']}'";	
 		}else{
-			$sql.=" com.common_name LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" com.common_name LIKE '{$value['search']}%'";
 		}
 		
 		$dbst=$db->query($sql);
@@ -155,9 +155,9 @@ WHERE
 		if(isset($value['id'])){
 			$sql.=" com.common_id ='{$value['id']}' or trans.transliteration_id ='{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}' LIMIT 2";	
+			$sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}'";	
 		}else{
-			$sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}'  LIMIT 100";
+			$sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}'";
 		}
 		
 		$dbst=$db->query($sql);
@@ -214,9 +214,9 @@ WHERE
 		if(isset($value['id'])){
 			$sql.=" nam.name_id ='{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}' LIMIT 2";	
+			$sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}'";	
 		}else{
-			$sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}%' ORDER BY  com.common_name,trans.name LIMIT 100";
+			$sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}%' ORDER BY  com.common_name,trans.name";
 		}
 		
 		$dbst=$db->query($sql);
@@ -272,15 +272,15 @@ FROM
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
 WHERE
- com.common_id ='{$id}' LIMIT 1";
+ com.common_id ='{$id}'";
 			
 			}else{
-				$sql.=" transliteration_id ='{$value['id']}' LIMIT 2";
+				$sql.=" transliteration_id ='{$value['id']}'";
 			}
 		}else if(isset($value['exact'])){
-			$sql.="  name ='{$value['exact']}' LIMIT 2";
+			$sql.="  name ='{$value['exact']}'";
 		}else{
-			$sql.=" name LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" name LIKE '{$value['search']}%'";
 		}
 			
 		
@@ -326,9 +326,9 @@ public function cname_tribe($value){
 		if(isset($value['id'])){
 			$sql.="  tribe_id='{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" tribe_name='{$value['exact']}' LIMIT 100";
+			$sql.=" tribe_name='{$value['exact']}'";
 		}else{
-			$sql.=" tribe_name LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" tribe_name LIKE '{$value['search']}%'";
 		}
 
 		$dbst=$db->query($sql);
@@ -374,9 +374,9 @@ public function cname_geoname ($value){
 		if(isset($value['id'])){
 			$sql.=" geonameId ='{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" name='{$value['exact']}' LIMIT 2";
+			$sql.=" name='{$value['exact']}'";
 		}else{
-			$sql.="name LIKE '{$value['search']}' LIMIT 100";
+			$sql.="name LIKE '{$value['search']}'";
 		}
 			
 		$dbst=$db->query($sql);
@@ -408,7 +408,7 @@ public function cname_geoname ($value){
 		$v=isset($value['id'])?$value['id']:(isset($value['exact'])?$value['exact']:$value['search']);
 		// Get TypeCache
 		$cacheoption=$this->getCacheOption();
-		$sql="SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='1' and search_val='{$v}' {$cacheoption} LIMIT 1";	
+		$sql="SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='1' and search_val='{$v}' {$cacheoption}";	
 		
 		$dbst=$db->query($sql);
 		$row=$dbst->fetch();
@@ -567,7 +567,6 @@ WHERE
 			}else{
 				$sql .=" l.language_id='{$value['id']}' ";
 			}
-			$sql.=" LIMIT 100";
 			
 			$dbst=$db->query($sql);
 			$row=$dbst->fetch();
@@ -607,7 +606,7 @@ WHERE
 			$v=$value['search'];
 		
 			$cacheoption=$this->getCacheOption();
-			$sql="SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val='{$v}' {$cacheoption} LIMIT 1";	
+			$sql="SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val='{$v}' {$cacheoption}";	
 			
 			$db=clsDbAccess::Connect('INPUT');
 			$dbst=$db->query($sql);
@@ -675,7 +674,6 @@ WHERE
  or l.`iso639-6` LIKE '%{$value['search']}%'
 ORDER BY
  sort desc,sort2, l.name
- LIMIT 100
  ";	
 				
 //p($sql);
@@ -883,9 +881,9 @@ WHERE
 		if(isset($value['id'])){
 			$sql.=" serviceID='{$value['id']}' ";
 		}else if(isset($value['exact'])){
-			$sql.="name='{$value['exact']}' or url_head ='{$value['exact']}'  LIMIT 2";
+			$sql.="name='{$value['exact']}' or url_head ='{$value['exact']}'";
 		}else{
-			$sql.=" name LIKE '{$value['search']}%' or url_head LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" name LIKE '{$value['search']}%' or url_head LIKE '{$value['search']}%'";
 		}
 		
 		$dbst=$db->query($sql);
@@ -934,11 +932,11 @@ FROM
 WHERE
 ";
 		if(isset($value['id'])){
-			$sql.=" period_id='{$value['id']}' LIMIT 2";
+			$sql.=" period_id='{$value['id']}'";
 		}else if(isset($value['exact'])){
 			$sql.=" period ='{$value['exact']}'";
 		}else{
-			$sql.=" period LIKE '{$value['search']}%' LIMIT 100";
+			$sql.=" period LIKE '{$value['search']}%'";
 		}
 		
 		$dbst=$db->query($sql);
@@ -986,11 +984,11 @@ FROM
 WHERE
 ";
 		if(isset($value['id'])){
-			$sql.=" geospecification = '{$value['id']}' LIMIT 2";
+			$sql.=" geospecification = '{$value['id']}'";
 		}else if(isset($value['exact'])){
-			$sql.=" geospecification = '{$value['exact']}' LIMIT 2";
+			$sql.=" geospecification = '{$value['exact']}'";
 		}else{
-			$sql.=" geospecification like '{$value['search']}%' LIMIT 100";
+			$sql.=" geospecification like '{$value['search']}%'";
 		}
 			
 		
