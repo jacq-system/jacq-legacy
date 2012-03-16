@@ -228,7 +228,7 @@ function getPicDetails($request) {
         }
         
         // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-        if( preg_match( '/(\s+)_(\s+)/', $file, $matches ) > 0 ) {
+        if( preg_match( '/(\S+)_(\S+)/', $file, $matches ) > 0 ) {
             // Find entry in specimens table and return specimen ID for it
             $sql = "
                 SELECT
