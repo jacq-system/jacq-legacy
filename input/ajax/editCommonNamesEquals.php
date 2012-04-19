@@ -129,7 +129,7 @@ AND(
 		}else if(isset($_POST['mdldSearch']) && strlen($_POST['mdldSearch'])>0){
 			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
-				$matches = $service->getMatchesgetMatchesService('vienna',$_POST['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
+				$matches = $service->getMatchesService('vienna',$_POST['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 
 				$m=$matches['result'][0]['searchresult'];
 				$ids=array();
