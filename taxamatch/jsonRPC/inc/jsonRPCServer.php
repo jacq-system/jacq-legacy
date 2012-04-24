@@ -79,9 +79,12 @@ class jsonRPCServer {
 		// output the response
 		if (!empty($request['id'])) { // notifications don't want response
 			header('content-type: text/javascript');
-                        if( !empty($callback) ) echo $callback . '(';
-			echo json_encode($response);
-                        echo ');\n';
+                        if( !empty($callback) ) {
+                            echo $callback . '(' . json_encode($response) . ");\n";
+                        }
+                        else {
+                            echo json_encode($response);
+                        }
 		}
 
 		// finish
