@@ -35,12 +35,15 @@ class jsonRPCServer {
 	 * @return boolean
 	 */
 	public static function handle($object) {
+                // Make sure we ignore any parameters (like charset)
+                $content_type = explode( ';', $_SERVER['CONTENT_TYPE'] );
+                $content_type = $content_type[0];
 
 		// checks if a JSON-RCP request has been received
 		if (
 			$_SERVER['REQUEST_METHOD'] != 'POST' ||
 			empty($_SERVER['CONTENT_TYPE']) ||
-			$_SERVER['CONTENT_TYPE'] != 'application/json'
+			$content_type != 'application/json'
 			) {
 			// This is not a JSON-RPC request
 			return false;
@@ -48,6 +51,7 @@ class jsonRPCServer {
 
 		// reads the input data
 		$request = json_decode(file_get_contents('php://input'),true);
+                $callback = $_REQUEST['callback'];
 
 		// executes the task on local object
 		try {
@@ -75,7 +79,9 @@ class jsonRPCServer {
 		// output the response
 		if (!empty($request['id'])) { // notifications don't want response
 			header('content-type: text/javascript');
+                        if( !empty($callback) ) echo $callback . '(';
 			echo json_encode($response);
+                        echo ');\n';
 		}
 
 		// finish
