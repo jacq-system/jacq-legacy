@@ -119,7 +119,7 @@ if (mysql_num_rows($result)>0) {
          "<a href=\"javascript:editSpecimensTypes('<".$row['specimens_types_ID'].">',0)\">edit</a>".
          "</td>";
     echo "<td class=\"out\"><font color=\"red\"><b>".$row['typus']."</b></font></td>";
-    echo "<td class=\"out\"><a href=\"javascript:editSpecies('<".$row['taxonID'].">')\">".taxon($row)."</a></td>";
+    echo "<td class=\"out\"><a href=\"javascript:editSpecies('<".$row['taxonID'].">')\">".getScientificName($row['taxonID'])."</a></td>";
     echo "<td class=\"out\">".$row['annotations']."</td>";
     echo "</tr>\n";
   }

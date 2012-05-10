@@ -15,36 +15,21 @@ function makeTaxon($search,$x,$y)
     if ($search && strlen($search) > 1) {
         $pieces = explode(chr(194) . chr(183), $search);
         $pieces = explode(" ", $pieces[0]);
-        $sql = "SELECT taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
+        $sql = "SELECT taxonID
                 FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE ts.external = 0
                  AND tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
         if ($pieces[1]) {
             $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
         }
-        $sql .= "ORDER BY tg.genus, te.epithet, epithet1, epithet2, epithet3, epithet4, epithet5";
+        $sql .= "ORDER BY tg.genus, te.epithet";
         if ($result = db_query($sql)) {
             $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " records found</b>");
             if (mysql_num_rows($result) > 0) {
                 while ($row = mysql_fetch_array($result)) {
-                    $results[] = taxon($row);
+                    $results[] = taxon($row['taxonID']);
                 }
             }
         }
@@ -137,35 +122,9 @@ if (isset($_GET['new'])) {
         $p_specimens_types_ID = $row['specimens_types_ID'];
         $p_typified_by = $row['typified_by_Person'];
         $p_typified_date = $row['typified_Date'];
-
-        $sql = "SELECT taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE taxonID = '" . $row['taxonID'] . "'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            $p_taxon = taxon(mysql_fetch_array($result));
-            $p_taxonIndex = $row['taxonID'];
-        } else {
-            $p_taxon = "";
-            $p_taxonIndex = 0;
-        }
+        
+        $p_taxonIndex = $row['taxonID'];
+        $p_taxon = getScientificName( $p_taxonIndex );
 
         $sql = "SELECT c.Sammler, c2.Sammler_2, ss.series, wg.series_number,
                  wg.Nummer, wg.alt_number, wg.Datum, wg.HerbNummer, wg.specimen_ID

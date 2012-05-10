@@ -610,65 +610,18 @@ function typusItem($row)
 }
 
 
-function makeTaxon($taxonID)
-{
-    $sql = "SELECT ts.taxonID, tg.genus,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
-            FROM tbl_tax_species ts
-             LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-             LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-             LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-            WHERE taxonID = '$taxonID'";
-    $row = mysql_fetch_array(db_query($sql));
-    $result = taxon($row);
-    $result = preg_replace("/ [\s]+/", " ", $result);
-
-    return $result;
-}
-
-
 function getHybrids($taxonID)
 {
     $text = "";
 
-    $sql = "SELECT parent_1_ID, parent_2_ID
+    $sql = "SELECT taxon_ID_fk
             FROM tbl_tax_hybrids
-            WHERE taxon_ID_fk = '$taxonID'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
-        $text .= makeTaxon($row['parent_1_ID']) . " x " . makeTaxon($row['parent_2_ID']) . "<br>\n";
-    }
+            WHERE taxon_ID_fk = '$taxonID' OR parent_1_ID = '$taxonID' OR parent_2_ID = '$taxonID'";
 
-    $sql = "SELECT parent_1_ID, parent_2_ID
-            FROM tbl_tax_hybrids
-            WHERE parent_1_ID = '$taxonID'";
     $result = db_query($sql);
     while ($row = mysql_fetch_array($result)) {
-        $text .= makeTaxon($row['parent_1_ID']) . " x " . makeTaxon($row['parent_2_ID']) . "<br>\n";
-    }
-
-    $sql = "SELECT parent_1_ID, parent_2_ID
-            FROM tbl_tax_hybrids
-            WHERE parent_2_ID = '$taxonID'";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
-        $text .= makeTaxon($row['parent_1_ID']) . " x " . makeTaxon($row['parent_2_ID']) . "<br>\n";
+        $taxon_ID_fk = $row['taxon_ID_fk'];
+        $text .= getScientificName($taxon_ID_fk) . "<br />\n";
     }
 
     return $text;

@@ -11,28 +11,11 @@ function makeParent($search) {
     if ($search && strlen($search) > 1) {
         $pieces = explode(chr(194) . chr(183), $search);
         $pieces = explode(" ", $pieces[0]);
-        $sql = "SELECT ts.taxonID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
+        $sql = "SELECT ts.taxonID
                 FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                 LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                 LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-                WHERE genus LIKE '" . mysql_escape_string($pieces[0]) . "%'\n";
+                WHERE tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'\n";
         if ($pieces[1]) {
             $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'\n";
         }
@@ -40,7 +23,7 @@ function makeParent($search) {
         if ($result = db_query($sql)) {
             if (mysql_num_rows($result) > 0) {
                 while ($row = mysql_fetch_array($result)) {
-                    $results[] = taxon($row);
+                    $results[] = getScientificName( $row['taxonID'] );
                 }
             }
         }
@@ -87,15 +70,13 @@ if (isset($_GET['ID'])) {
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID\n";
     if ($row['parent_1_ID']) {
-        $dummy = mysql_fetch_array(db_query($sql . "WHERE ts.taxonID = '" . mysql_escape_string($row['parent_1_ID']) . "'"));
-        $p_parent_1_ID = taxon($dummy);
+        $p_parent_1_ID = getScientificName( $row['parent_1_ID'] );
     } else {
         $p_parent_1_ID = "";
     }
 
     if ($row['parent_2_ID']) {
-        $dummy = mysql_fetch_array(db_query($sql . "WHERE ts.taxonID = '" . mysql_escape_string($row['parent_2_ID']) . "'"));
-        $p_parent_2_ID = taxon($dummy);
+        $p_parent_2_ID = getScientificName( $row['parent_2_ID'] );
     } else {
         $p_parent_2_ID = "";
     }

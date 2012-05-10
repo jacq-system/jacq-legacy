@@ -53,7 +53,7 @@ try {
 		
 	$row = $dbst->fetch();
 	
-	echo "<b>protolog:</b> " . taxon($row, true, false) . "\n<p>\n";
+	echo "<b>protolog:</b> " . getScientificName($row['taxonID'], true, false) . "\n<p>\n";
 
 	$dbst = $db->prepare("SELECT * FROM {$_CONFIG['DATABASE']['INPUT']['name']}.tbl_tax_synonymy tts
          LEFT JOIN {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon taxon ON taxon.taxonID = tts.acc_taxon_ID
@@ -109,7 +109,7 @@ EOF;
 if(count($rows)>0){
 	foreach($rows  as $row){
 		$radic=(($row['preferred_taxonomy']) ? "&radic;" : "") ;
-		$taxon=taxon($row);
+		$taxon=getScientificName($row['taxonID']);
 		
 		$display=clsDisplay::Load();		
 		$ref=$display->SynonymyReference(0,$row);

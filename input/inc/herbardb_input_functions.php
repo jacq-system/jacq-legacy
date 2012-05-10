@@ -1,5 +1,49 @@
 <?php
 require_once( 'tools.php' );
+
+/**
+ * Return scientific name for a given taxon_id
+ * @param int $taxon_id Taxon-id to search for
+ * @param boolean $withDT Include dallatorre-id
+ * @param boolean $withID Include taxon-id
+ * @return string 
+ */
+function getScientificName( $taxon_id, $withDT = false, $withID = true, $p_bAvoidHybridFormula = false ) {
+    // Translation between mysql boolean (tinyint) and php boolean
+    if( $p_bAvoidHybridFormula ) {
+        $p_bAvoidHybridFormula = 1;
+    }
+    else {
+        $p_bAvoidHybridFormula = 0;
+    }
+    
+    // Use stored procedure in order to fetch the scientific name
+    $sql = "SELECT `herbar_view`.GetScientificName( $taxon_id, $p_bAvoidHybridFormula ) AS 'ScientificName'";
+    $result = db_query($sql);
+    $row = mysql_fetch_assoc($result);
+    
+    // Extend scientific name with additional information
+    $scientificName = $row['ScientificName'];
+    if( $withDT ) {
+        $sql = "SELECT `tg`.`DallaTorreIDs`, `tg`.`DallaTorreZusatzIDs`
+                FROM `tbl_tax_species` `ts`
+                LEFT JOIN `tbl_tax_genera` `tg`
+                ON `tg`.`genID` = `ts`.`genID`
+                WHERE `ts`.`taxonID` = '$taxon_id'";
+        
+        $result = db_query($sql);
+        $row = mysql_fetch_assoc($result);
+        
+        $scientificName .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
+        
+    }
+    if( $withID ) {
+        $scientificName .= " <$taxon_id>";
+    }
+    
+    return $scientificName;
+}
+
 function taxon($row,$withDT=false,$withID=true) {
 
   $text = $row['genus'];
