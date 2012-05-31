@@ -13,7 +13,7 @@ class Picture {
   var $pic;
 
   function getPicturePaths() {
-    $filelist = shell_exec("find " . $this->path . " -name '" . basename($this->pic) . "*'");
+    $filelist = shell_exec("find " . $this->path . " -name '" . basename($this->pic) . ".*' -or -name '" . basename($this->pic) . "_*'");
     $files = explode("\n", $filelist);
     for ($i=0;$i<count($files);$i++)
       $files[$i] = trim($files[$i]);
