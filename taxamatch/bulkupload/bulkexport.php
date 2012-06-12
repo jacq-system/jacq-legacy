@@ -59,7 +59,8 @@ function prettyPrintSynonymEntry($synonym,$indent=1) {
 $header = "\"search for\"\t\"result\"\t\"Dist.\"\t\"Ratio\"";
 
 $result = db_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr");
-$displayOnlyParts = (!empty($_GET['short']) || mysql_num_rows($result) > 50) ? 1 : 0;
+//$displayOnlyParts = (!empty($_GET['short']) || mysql_num_rows($result) > 50) ? 1 : 0;
+$displayOnlyParts = (!empty($_GET['short'])) ? 1 : 0;
 
 $out = "";
 $correct = 0;
