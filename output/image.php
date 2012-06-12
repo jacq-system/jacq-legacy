@@ -74,33 +74,37 @@ function getPicInfo($picdetails) {
     global $q, $debug;
 
     if ($picdetails['is_djatoka'] == '1') {
-        // JSON RPC
-        $url = "{$picdetails['url']}/FReuD-Servlet/ImageScan?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}";
-
-        $request = json_encode(array(
-            'filename' => $picdetails['filename'],
-            'specimenID' => $picdetails['specimenID']
-                ));
-
-        // performs the HTTP POST
+        // Construct URL to servlet
+        $url = $picdetails['url'] . '/jacq-servlet/ImageServer';
+        
+        // Prepare json-rpc conform request structure
+        $jsonrpc_request = json_encode(array(
+            'id' => 1234,
+            'method' => 'listSpecimenImages',
+            'params' => array( $picdetails['specimenID'], $picdetails['filename'] )
+        ));
+        
+        // Prepare the context for the HTTP request
         $opts = array(
             'http' => array(
                 'method' => 'POST',
                 'header' => 'Content-type: application/json',
-                'content' => $request
+                'content' => $jsonrpc_request
             )
         );
-
         $context = stream_context_create($opts);
-        if ($fp = fopen($url, 'r', false, $context)) {
+        
+        // Finally try to reach the djatoka server and ask for details
+        if( ($fp = fopen($url, 'r', false, $context)) ) {
             $response = '';
             while ($row = fgets($fp)) {
                 $response.=trim($row) . "\n";
             }
+            
             $response = json_decode($response, true);
             $response = array(
-                $output => '',
-                $pics => $response
+                'output' => '',
+                'pics' => $response['result']
             );
         } else {
             return jsonError('Unable to connect to ' . $url);
@@ -126,7 +130,8 @@ function doRedirectShowPic($picdetails) {
     global $q, $debug;
 
     if ($picdetails['is_djatoka'] == '1') {
-        $url = "{$picdetails['url']}/viewer.html?requestfilename={$picdetails['requestFileName']}&specimenID={$picdetails['specimenID']}&herbarnumber={$picdetails['filename']}";
+        // Construct URL to viewer
+        $url = "{$picdetails['url']}/adore-djatoka-viewer/viewer.html?rft_id={$picdetails['filename']}";
     } else {
         $url = "{$picdetails['url']}/img/imgBrowser.php?name={$picdetails['requestFileName']}{$q}";
     }
@@ -135,11 +140,15 @@ function doRedirectShowPic($picdetails) {
         exit;
     }
     $url = cleanURL($url);
-    if (url_exists($url)) {
+    
+    // Redirect to new location
+    header("location: {$url}");
+    
+    /*if (url_exists($url)) {
         header("location: {$url}");
     } else {
         textError("couldn't find url: {$url}");
-    }
+    }*/
 }
 
 function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
@@ -147,28 +156,29 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
 
     if ($picdetails['is_djatoka'] == '1') {
         switch ($format) {
-            default:case'':case 'jpeg':
-                $format = 'image/jpeg';
-                break;
             case 'jpeg2000':
-                $format = 'image/jpeg';
+                $format = 'image/jp2';
                 break;
             case'tiff':
                 $format = 'image/tiff';
+                break;
+            default:
+                $format = 'image/jpeg';
                 break;
         }
         $scale = '1.0';
 
         if ($thumb != 0) {
-            if ($thumb == 1) {
-                $scale = '225'; //px??todo
+            if( $thumb == 2 ) {
+                $scale = '0,1300';
             }
-            if ($thumb == 1) {
-                $scale = '1300';
+            else {
+                $scale = '160,0';
             }
         }
 
-        $url = "{$picdetails['url']}/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.level=1&svc.rotate=0&svc.scale={$scale}";
+        // Passthrough directly
+        $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
     } else {
         switch ($format) {
             default:case'':case 'jpeg2000':
@@ -180,11 +190,11 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         }
         $fileurl = 'downPic.php';
         if ($thumb != 0) {
-            if ($thumb == 1) {
-                $fileurl = 'mktn.php';
-            }
             if ($thumb == 2) {
                 $fileurl = 'mktn_kp.php';
+            }
+            else {
+                $fileurl = 'mktn.php';
             }
         }
 
@@ -195,6 +205,8 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         p($url);
         exit;
     }
+    
+    // Redirect to image download
     header("location: {$url}");
 }
 
@@ -276,7 +288,8 @@ function getPicDetails($request) {
         if ($debug) {
             print_r($row);
         }
-        $url = "http://" . $row['imgserver_IP'] . "/" . $row['img_service_directory'] . "/";
+        $url = 'http://' . $row['imgserver_IP'];
+        $url .= ($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '';
 
         return array(
             'url' => $url,

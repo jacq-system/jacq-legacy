@@ -482,7 +482,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   require_once('image.php');
   $picdetails=getPicDetails($row['specimen_ID']);
   $transfer=getPicInfo($picdetails);
-
+  
   if ($transfer) {
     if (count($transfer['pics'])>0) {
       foreach ($transfer['pics'] as $v) {
