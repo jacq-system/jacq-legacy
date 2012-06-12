@@ -147,43 +147,64 @@ function doRedirectShowPic($picdetails) {
 
 function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
     global $q, $debug;
+    // Setup default mime-type & file-extension
+    $mime = 'image/jpeg';
+    $fileExt = 'jpg';
 
+    // Check if we are using djatoka
     if ($picdetails['is_djatoka'] == '1') {
+        // Check requested format
         switch ($format) {
             case 'jpeg2000':
                 $format = 'image/jp2';
+                $fileExt = 'jp2';
                 break;
             case'tiff':
                 $format = 'image/tiff';
+                $fileExt = 'tif';
                 break;
             default:
                 $format = 'image/jpeg';
+                $fileExt = 'jpg';
                 break;
         }
+        // Default scaling is 100%
         $scale = '1.0';
+        $mime = $format;
 
+        // Check if we need a thumbnail
         if ($thumb != 0) {
+            // Thumbnail for kulturpool
             if( $thumb == 2 ) {
                 $scale = '0,1300';
             }
+            // Default thumbnail
             else {
                 $scale = '160,0';
             }
         }
 
-        // Passthrough directly
+        // Construct URL to djatoka-resolver
         $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
-    } else {
+    }
+    // ... if not fall back to old system
+    else {
         switch ($format) {
             case'tiff':
                 $format = '&type=1';
+                $mime = 'image/tiff';
+                $fileExt = 'tif';
                 break;
             default:
+                $mime = 'image/jp2';
+                $fileExt = 'jp2';
                 $format = '';
                 break;
         }
         $fileurl = 'downPic.php';
         if ($thumb != 0) {
+            $mime = 'image/jpeg';
+            $fileExt = 'jpg';
             if ($thumb == 2) {
                 $fileurl = 'mktn_kp.php';
             }
@@ -200,8 +221,13 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         exit;
     }
     
+    // Send correct headers
+    header( 'Content-Type: ' . $mime );
+    header( 'Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"' );
+    readfile($url);
+    
     // Redirect to image download
-    header("location: {$url}");
+    //header("location: {$url}");
 }
 
 // request: can be specimen ID or filename
