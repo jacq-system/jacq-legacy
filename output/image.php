@@ -143,12 +143,6 @@ function doRedirectShowPic($picdetails) {
     
     // Redirect to new location
     header("location: {$url}");
-    
-    /*if (url_exists($url)) {
-        header("location: {$url}");
-    } else {
-        textError("couldn't find url: {$url}");
-    }*/
 }
 
 function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
@@ -181,11 +175,11 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
     } else {
         switch ($format) {
-            default:case'':case 'jpeg2000':
-                $format = '';
-                break;
             case'tiff':
                 $format = '&type=1';
+                break;
+            default:
+                $format = '';
                 break;
         }
         $fileurl = 'downPic.php';
@@ -320,23 +314,6 @@ function imgError($msg = '') {
     Header('Content-Length: ' . filesize($pic));
     @readfile($pic);
     exit;
-}
-
-function url_exists($url) {
-    $opts = array(
-        'http' => array(
-            'method' => 'POST',
-            'header' => 'Content-type: application/json',
-            'timeout' => 20,
-        )
-            //timeout..
-    );
-    $context = stream_context_create($opts);
-    if ($fp = @fopen($url, 'r', false, $context)) {
-        return true;
-    }
-
-    return false;
 }
 
 function cleanURL($url) {
