@@ -168,8 +168,8 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
                 $fileExt = 'jpg';
                 break;
         }
-        // Default scaling is 100%
-        $scale = '1.0';
+        // Default scaling is 50%
+        $scale = '0.5';
         $mime = $format;
 
         // Check if we need a thumbnail
