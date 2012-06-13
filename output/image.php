@@ -261,6 +261,10 @@ function getPicDetails($request) {
         
         // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
         if( preg_match( '/^([^_]+)_([^_]+)/', $file, $matches ) > 0 ) {
+            // Extract HerbNummer and construct alternative version
+            $HerbNummer = $matches[2];
+            $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+            
             // Find entry in specimens table and return specimen ID for it
             $sql = "
                 SELECT
@@ -269,7 +273,7 @@ function getPicDetails($request) {
                 `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
                 LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc
                 ON mc.`collectionID` = s.`collectionID`
-                WHERE s.`HerbNummer` = '" . mysql_real_escape_string($matches[2]) . "' AND mc.`coll_short_prj` = '" . mysql_real_escape_string($matches[1]) . "'
+                WHERE (s.`HerbNummer` = '" . mysql_real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . mysql_real_escape_string($HerbNummerAlternative) . "' ) AND mc.`coll_short_prj` = '" . mysql_real_escape_string($matches[1]) . "'
                 ";
 
             $result = mysql_query($sql);
@@ -310,11 +314,14 @@ function getPicDetails($request) {
         }
         $url = 'http://' . $row['imgserver_IP'];
         $url .= ($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '';
+        
+        // Remove hyphens
+        $HerbNummer = str_replace('-', '', $row['HerbNummer']);
 
         return array(
             'url' => $url,
             'requestFileName' => $request,
-            'filename' => sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . "d", $row['coll_short_prj'], $row['HerbNummer'] ),
+            'filename' => sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer ),
             'specimenID' => $specimenID,
             'is_djatoka' => $row['is_djatoka']
         );
