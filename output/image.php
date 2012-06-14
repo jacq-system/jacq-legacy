@@ -130,10 +130,14 @@ function doRedirectShowPic($picdetails) {
     global $q, $debug;
 
     if ($picdetails['is_djatoka'] == '1') {
+        // Get additional identifiers (if available)
+        $picinfo = getPicInfo($picdetails);
+        $identifiers = implode($picinfo['pics'], ',');
+        
         // Construct URL to viewer
-        $url = "{$picdetails['url']}/adore-djatoka-viewer/viewer.html?rft_id={$picdetails['filename']}";
+        $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
     } else {
-        $url = "{$picdetails['url']}/img/imgBrowser.php?name={$picdetails['requestFileName']}{$q}";
+        $url = $picdetails['url'] . '/img/imgBrowser.php?name=' . $picdetails['requestFileName'] . $q;
     }
     if ($debug) {
         p($url);
@@ -235,7 +239,7 @@ function getPicDetails($request) {
     global $debug, $_CONFIG;
 
     $specimenID = 0;
-    $filename = null;
+    $originalFilename = null;
 
     //specimenid
     if (is_numeric($request)) {
@@ -254,15 +258,15 @@ function getPicDetails($request) {
         }
         // filename
     } else {
-        $filename = $request;
+        $originalFilename = $request;
         $matches = array();
         // Remove file-extension
         if (preg_match('/([^\.]+)/', $request, $matches) > 0) {
-            $filename = $matches[1];
+            $originalFilename = $matches[1];
         }
         
         // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-        if( preg_match( '/^([^_]+)_([^_]+)/', $filename, $matches ) > 0 ) {
+        if( preg_match( '/^([^_]+)_([^_]+)/', $originalFilename, $matches ) > 0 ) {
             // Extract HerbNummer and construct alternative version
             $HerbNummer = $matches[2];
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
@@ -319,14 +323,18 @@ function getPicDetails($request) {
         
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
+
+        // Construct clean filename
+        $filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
         
-        // Only construct filename if we didn't already pass one
+        // Set original file-name if we didn't pass one (required for djatoka)
         // (required for pictures with suffixes)
-        if( $filename == null ) $filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
+        if( $originalFilename == null ) $originalFilename = $filename;
 
         return array(
             'url' => $url,
             'requestFileName' => $request,
+            'originalFilename' => $originalFilename,
             'filename' => $filename,
             'specimenID' => $specimenID,
             'is_djatoka' => $row['is_djatoka']
