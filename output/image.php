@@ -235,6 +235,7 @@ function getPicDetails($request) {
     global $debug, $_CONFIG;
 
     $specimenID = 0;
+    $filename = null;
 
     //specimenid
     if (is_numeric($request)) {
@@ -253,14 +254,15 @@ function getPicDetails($request) {
         }
         // filename
     } else {
-        $file = $request;
+        $filename = $request;
         $matches = array();
+        // Remove file-extension
         if (preg_match('/([^\.]+)/', $request, $matches) > 0) {
-            $file = $matches[1];
+            $filename = $matches[1];
         }
         
         // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-        if( preg_match( '/^([^_]+)_([^_]+)/', $file, $matches ) > 0 ) {
+        if( preg_match( '/^([^_]+)_([^_]+)/', $filename, $matches ) > 0 ) {
             // Extract HerbNummer and construct alternative version
             $HerbNummer = $matches[2];
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
@@ -317,11 +319,15 @@ function getPicDetails($request) {
         
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
+        
+        // Only construct filename if we didn't already pass one
+        // (required for pictures with suffixes)
+        if( $filename == null ) $filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
 
         return array(
             'url' => $url,
             'requestFileName' => $request,
-            'filename' => sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer ),
+            'filename' => $filename,
             'specimenID' => $specimenID,
             'is_djatoka' => $row['is_djatoka']
         );
