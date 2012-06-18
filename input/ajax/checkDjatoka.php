@@ -349,8 +349,6 @@ EOF;
                 $where .= " OR dj.`filename` LIKE '" . $row['coll_short_prj'] . "_%'";
             }
             $where .= ")";
-            
-            error_log( 'Where stmt: ' . $where );
         }
 
         $fields = "
