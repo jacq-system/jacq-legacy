@@ -156,7 +156,7 @@ $(function() {
 	$('#datepicker').datepicker({
 		showOn: "both",
 		//buttonImage: "images/calendar.gif",
-		constrainInput: true,
+		constrainInput: true
 		
 	});
 	$('#datepicker').datepicker( "setDate" , new Date() )

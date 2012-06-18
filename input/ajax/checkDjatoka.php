@@ -22,7 +22,7 @@ if (method_exists($checkDjatoka, $methodName)) {
         }
     } catch (Exception $e) {
         $ret = array(
-            'error' => $e->getMessage()
+            'error' => $e->getMessage() . '<br />' . var_export($e->getTrace(), true)
         );
     }
 }
@@ -42,6 +42,7 @@ class checkDjatoka {
 
     private $service = false;
     private $db = false;
+    private $db_pictures = false;
     private $sharedkey = false;
     private $wrong = false;
     private $info = false;
@@ -50,13 +51,7 @@ class checkDjatoka {
         return $this->info;
     }
 
-    public function is_validIP($ip) {
-        return preg_match("/^([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])" . "(\.([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])){3}$/",
-                        $ip);
-    }
-
     public function __construct() {
-        
     }
 
     private function getdB() {
@@ -65,22 +60,29 @@ class checkDjatoka {
         }
         return $this->db;
     }
+    
+    /**
+     * Return a handler for accessing the pictures database
+     * @return clsDbAccess 
+     */
+    private function getDbPictures() {
+        if( !$this->db_pictures ) {
+            $this->db_pictures = clsDbAccess::Connect('PICTURES');
+        }
+        
+        return $this->db_pictures;
+    }
 
     private function getService($serverIP) {
-        $this->getServerKey($serverIP);
-
         if (!$this->service) {
-            //$this->service=new jsonRPCClient("http://{$serverIP}/database/json_rpc_scanPictures.php");
-            $this->service = new jsonRPCClient("http://localhost/f/jsonservice/json_rpc_taxamatchMdld.php");
+            $this->service = new jsonRPCClient('http://' . $this->getServerUrl($serverIP) . '/jacq-servlet/ImageServer');
         }
         return $this->service;
     }
 
     public function getServerKey($serverIP) {
-        global $_CONFIG;
-
         $db = $this->getdB();
-        $dbst = $db->query("SELECT `key`, `is_djatoka` FROM `tbl_img_definition` WHERE `imgserver_IP` = " . $db->quote($serverIP) . " GROUP BY `imgserver_IP`");
+        $dbst = $db->query("SELECT `key`, `is_djatoka` FROM `tbl_img_definition` WHERE `imgserver_IP` = " . $db->quote($serverIP) );
         $row = $dbst->fetch();
 
         if (!$row) {
@@ -93,6 +95,25 @@ class checkDjatoka {
         if ($this->sharedkey == '') {
             throw new Exception("No shared KeyConfigured for  IP {$serverIP}");
         }
+    }
+    
+    /**
+     * Return the complete server URL for a given IP
+     * @param string $serverIP IP / Address of server
+     * @return string URL of server
+     * @throws Exception 
+     */
+    public function getServerUrl($serverIP) {
+        $db = $this->getdB();
+        $dbst = $db->query("SELECT `imgserver_IP`, `img_service_directory` FROM `tbl_img_definition` WHERE `imgserver_IP` = " . $db->quote($serverIP) );
+        $row = $dbst->fetch();
+        
+        if( !$row ) {
+            throw new Exception("No valid IP: {$serverIP}");
+        }
+        
+        // Return complete URL
+        return $row['imgserver_IP'] . $row['img_service_directory'];
     }
 
     /*
@@ -669,34 +690,35 @@ EOF;
     //scan_id 	thread_id 	IP 	start 	finish 	errors
     public function x_importDjatokaListIntoDB($params) {
         $serverIP = $params['serverIP'];
-
-        $db = $this->getdB();
-        $serverIPd = $db->quote($serverIP);
+        
+        // Fetch reference to picture db
+        $db_pictures = $this->getDbPictures();
+        $serverIPd = $db_pictures->quote($serverIP);
 
         // all jobs older than 600s will be marked as error
-        $dbst = $db->query("SELECT count(scan_id) FROM herbar_pictures.djatoka_scans WHERE TIME_TO_SEC(TIMEDIFF(NOW(), start)) > 600 AND finish IS NULL AND IP ={$serverIPd}");
+        $dbst = $db_pictures->query("SELECT count(scan_id) FROM djatoka_scans WHERE TIME_TO_SEC(TIMEDIFF(NOW(), start)) > 600 AND finish IS NULL AND IP = {$serverIPd}");
         if ($dbst->fetchColumn() > 0) {
-            $db->query("UPDATE herbar_pictures.djatoka_scans SET finish = NOW(), errors = 'script terminated, entry corrected' WHERE finish IS NULL AND IP = {$serverIPd}");
+            $db_pictures->query("UPDATE djatoka_scans SET finish = NOW(), errors = 'script terminated, entry corrected' WHERE finish IS NULL AND IP = {$serverIPd}");
         }
 
         // If there are any jobs within 600s => wait for it.
-        $dbst = $db->query("SELECT count(scan_id) FROM herbar_pictures.djatoka_scans WHERE TIME_TO_SEC(TIMEDIFF(NOW(), start)) < 600 AND finish IS NULL AND IP ={$serverIPd}");
+        $dbst = $db_pictures->query("SELECT count(scan_id) FROM djatoka_scans WHERE TIME_TO_SEC(TIMEDIFF(NOW(), start)) < 600 AND finish IS NULL AND IP = {$serverIPd}");
 
         if ($dbst->fetchColumn() > 0) {
             throw new Exception("A Scan is already running on '{$serverIP}'. refresh in a few seconds.");
         }
         // Begin
         // mark the beginning
-        $db->query("INSERT INTO herbar_pictures.djatoka_scans SET IP ={$serverIPd}, start = NOW()");
-        $scanid = $db->lastInsertId();
+        $db_pictures->query("INSERT INTO djatoka_scans SET IP ={$serverIPd}, start = NOW()");
+        $scanid = $db_pictures->lastInsertId();
 
         ignore_user_abort(true);
         set_time_limit(0);
 
         $service = &$this->getService($serverIP);
 
-        $filesArchive = $service->listArchiveImages($this->sharedkey);
-        $filesDjatoka = $service->listDjatokaImages($this->sharedkey);
+        $filesArchive = $service->listArchiveImages();
+        $filesDjatoka = $service->listDjatokaImages();
 
         if ($filesArchive == -1 || $filesDjatoka == -1) {
             throw new Exception("Key not accepted {$serverIP}");
@@ -708,27 +730,27 @@ EOF;
 
         $x = 0;
         // inconsistency: 0=> no errors, 1: not in djatoka, 2 not in archive
-        $sql = "INSERT INTO herbar_pictures.djatoka_files (scan_id,filename,inconsistency) VALUES ";
+        $sql = "INSERT INTO djatoka_files (scan_id,filename,inconsistency) VALUES ";
         foreach ($filesArchive as $filename) {
             $inconsistency = (isset($inArchive_notinDjatoka[$filename])) ? 1 : 0;
-            $sql.="\n('{$scanid}'," . $db->quote($filename) . ",'{$inconsistency}'),";
+            $sql.="\n('{$scanid}'," . $db_pictures->quote($filename) . ",'{$inconsistency}'),";
             $x++;
         }
 
         $inDjatoko_notinArchive = array_diff($filesDjatoka, $filesArchive);
         foreach ($inDjatoko_notinArchive as $filename) {
-            $sql.="\n('{$scanid}'," . $db->quote($filename) . ",'2'),";
+            $sql.="\n('{$scanid}'," . $db_pictures->quote($filename) . ",'2'),";
         }
 
         $sql = substr($sql, 0, -1);
         if ($x > 0) {
-            $db->query($sql);
+            $db_pictures->query($sql);
         }
 
-        $db->query("UPDATE herbar_pictures.djatoka_scans SET finish = NOW() WHERE scan_id={$scanid}");
+        $db_pictures->query("UPDATE djatoka_scans SET finish = NOW() WHERE scan_id={$scanid}");
 
         // view is much too slow for working...
-        $db->query("
+        /*$db->query("
 UPDATE
  herbarinput.tbl_specimens sp
  LEFT JOIN  herbarinput.tbl_management_collections mc ON mc.collectionID=sp.collectionID
@@ -745,7 +767,7 @@ SET
  )
 ");
 
-        set_time_limit(ini_get('max_execution_time'));
+        set_time_limit(ini_get('max_execution_time'));*/
 
         return "List fetched from Server {$serverIP} and dumped into local Database.<br> The ScanId was: {$scanid}";
     }

@@ -11,6 +11,16 @@ $_CONFIG['DATABASE'] = array(
         )
     ),
     
+    // Database for picture related information
+    'PICTURES' => array(
+        'host' => 'localhost',
+        'name' => 'pictures',
+        'readonly' => array(
+            'user' => '',
+            'pass' => ''
+        )
+    ),
+    
     // Names databases (doesn't need a own user actually, but instead it uses the login user)
     'NAME' => array(
         'name' => 'names',
@@ -61,6 +71,9 @@ $_OPTIONS['HERBARIMAGEURL'] = "http://website.com/output/";
  */
 $_OPTIONS['DB']['INPUT']['HOST'] = $_CONFIG['DATABASE']['INPUT']['host'];    // hostname of herbarinput
 $_OPTIONS['DB']['INPUT']['NAME'] = $_CONFIG['DATABASE']['INPUT']['name'];  // database of herbarinput
+
+$_OPTIONS['DB']['PICTURES']['HOST'] = $_CONFIG['DATABASE']['PICTURES']['host'];
+$_OPTIONS['DB']['PICTURES']['NAME'] = $_CONFIG['DATABASE']['PICTURES']['name'];
 
 $_OPTIONS['TYPINGCACHE']['SETTING'] = array(
     'type' => 'DAY', // Valid: MICROSECOND, SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, YEAR
