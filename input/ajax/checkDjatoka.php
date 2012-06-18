@@ -455,7 +455,7 @@ WHERE
                 }
             }
             if (!empty($row['specimen_ID'])) {
-                $specLink = " href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')>\"";
+                $specLink = " href=\"javascript:editSpecimens('<{$row['specimen_ID']}>')\"";
             }
             else {
                 $specLink = "";

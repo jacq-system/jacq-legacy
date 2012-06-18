@@ -2,7 +2,7 @@
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
- <title>herbardb - list Images</title>
+ <title>herbardb - check djatoka pictures</title>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
  <link rel="stylesheet" type="text/css" href="css/screen.css">
  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
@@ -44,20 +44,17 @@ if(isset($_SESSION['checkPictures'])){
 	$_dvar=array_merge($_dvar,$_SESSION['checkPictures']);
 }
 
-	
-	
-if(!$_dvar['serverIP']){
-	/*$dbst = $db->query("SELECT imgserver_IP FROM tbl_img_definition LIMIT 1");
-	$row = $dbst->fetch();
-	$_dvar['serverIP']=$row['imgserver_IP'];*/
-	$_dvar['serverIP']='131.130.131.9';
-}
-	
-	
 // get imageserver...
 $server="";
-$dbst = $db->query("SELECT imgserver_IP FROM tbl_img_definition GROUP BY imgserver_IP");
+$dbst = $db->query("SELECT `imgserver_IP` FROM `tbl_img_definition` WHERE `is_djatoka` = 1 GROUP BY `imgserver_IP`");
 foreach ($dbst as $row) {
+    if(!$_dvar['serverIP']){
+            /*$dbst = $db->query("SELECT imgserver_IP FROM tbl_img_definition LIMIT 1");
+            $row = $dbst->fetch();
+            $_dvar['serverIP']=$row['imgserver_IP'];*/
+            $_dvar['serverIP'] = $row['imgserver_IP'];
+    }
+
    $server.="<option value=\"{$row['imgserver_IP']}\"";
     if($_dvar['serverIP']==$row['imgserver_IP']){
 		$server.=" selected";
@@ -76,7 +73,7 @@ var dinit={'serverIP':'{$_dvar['serverIP']}','source_id':'{$_dvar['source_id']}'
 EOF;
 ?>
 <body>
-<h1>check Images</h1>
+<h1>check djatoka pictures</h1>
 
 <script>
 function makeOptions() {
