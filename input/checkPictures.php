@@ -371,6 +371,12 @@ function PostIt(method, params, callback){
 }
 </script>
 
+<?php
+// Output helper links to switch between different checkPictures versions
+echo $cf->label(6, 0, 'Djatoka' );
+echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
+?>
+
   Server:
  <select size="1" name="serverIP" id="serverIP">
 <?PHP echo $server; ?>
