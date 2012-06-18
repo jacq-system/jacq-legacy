@@ -338,13 +338,19 @@ EOF;
 </td><td width='20'>&nbsp;</td><td>
 EOF;
         // inArchive_butnotinDB
-        // filter with prefix (wu_) at institution
+        // filter with prefix (e.g. wu_) at institution
         $where = "";
         if ($source_id) {
-            $dbst = $db->query("SELECT coll_short_prj FROM herbarinput.tbl_management_collections WHERE source_id = 1");
-            if ($row = $dbst->fetchColumn()) {
-                $where = "and  dj.filename LIKE '{$row}_%'";
+            $dbst = $db->query( "SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `source_id` = " . $db->quote($source_id) . " GROUP BY `coll_short_prj`" );
+            $rows = $dbst->fetchAll();
+            
+            $where = " AND ( dj.`filename` IS NULL";
+            foreach( $rows as $row ) {
+                $where .= " OR dj.`filename` LIKE '" . $row['coll_short_prj'] . "_%'";
             }
+            $where .= ")";
+            
+            error_log( 'Where stmt: ' . $where );
         }
 
         $fields = "
