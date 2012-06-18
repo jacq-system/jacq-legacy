@@ -198,8 +198,8 @@ ORDER BY source_name
 
         $end = $start + $limit;
         $service = &$this->getService($serverIP);
-        $logs = $service->listImportLogs($this->sharedkey, $thread_id);
-
+        $logs = $service->listImportLogs($thread_id);
+        
         $maxc = count($logs);
         $result = "";
         $x = 0;
@@ -207,7 +207,7 @@ ORDER BY source_name
             $x++;
             if ($x <= $start)
                 continue;
-            $result.="<a href=\"javascript:processItem()\">{$logmsg}</a><br>";
+            $result.="<a href=\"javascript:processItem()\">[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "</a><br>";
             if ($x >= $end)
                 break;
         }
@@ -215,8 +215,6 @@ ORDER BY source_name
     }
 
     public function x_listImportThreads($params) {
-
-
         $serverIP = $params['serverIP'];
         $starttime = $params['starttime'];
         $start = isset($params['page_index']) ? intval($params['page_index']) : 0;
@@ -229,8 +227,7 @@ ORDER BY source_name
         $d = date('d.m.Y H:i', $timestamp);
 
         $service = &$this->getService($serverIP);
-        $ImportThreads = $service->listImportThreads($this->sharedkey,
-                $timestamp);
+        $ImportThreads = $service->listImportThreads($timestamp);
 
         $maxc = count($ImportThreads);
 

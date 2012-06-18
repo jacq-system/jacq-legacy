@@ -421,7 +421,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 
 </div>
 <div id="tabs-3">
-Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads above this time (empty for all)">
+Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads after this time (empty for all)">
 <div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="res_tabs3"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationThreads"></div>
