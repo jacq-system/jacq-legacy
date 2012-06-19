@@ -81,7 +81,7 @@ function getPicInfo($picdetails) {
         $jsonrpc_request = json_encode(array(
             'id' => 1234,
             'method' => 'listSpecimenImages',
-            'params' => array( $picdetails['specimenID'], $picdetails['filename'] )
+            'params' => array( $picdetails['key'], $picdetails['specimenID'], $picdetails['filename'] )
         ));
         
         // Prepare the context for the HTTP request
@@ -296,6 +296,7 @@ function getPicDetails($request) {
             id.`img_service_directory`,
             id.`is_djatoka`,
             id.`HerbNummerNrDigits`,
+            id.`key`,
             mc.`coll_short_prj`,
             s.`HerbNummer`
             FROM
@@ -337,7 +338,8 @@ function getPicDetails($request) {
             'originalFilename' => $originalFilename,
             'filename' => $filename,
             'specimenID' => $specimenID,
-            'is_djatoka' => $row['is_djatoka']
+            'is_djatoka' => $row['is_djatoka'],
+            'key' => $row['key']
         );
     }
     return false;
