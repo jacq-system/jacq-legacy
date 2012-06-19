@@ -318,8 +318,42 @@ function updateInstitutions(imgserverIP,source_id){
 	);
 }
 
-function processItem(itemname){
-	//alert('dosomething');
+/**
+ * Called when the user clicks on an entry which had a conflict
+ */
+function processItem(identifier){
+    $('#dinformation').html('Do you really want to force the import of this item?');
+    $('#dialog-information').dialog( {
+        resizable: false,
+        modal: true,
+        buttons: {
+            'Yes': function() {
+                $(this).dialog( 'close' );
+                PostIt(
+                    'x_forceImport',
+                    {
+                        'serverIP': getImageServerIP(),
+                        'identifier': identifier
+                    },
+                    function(data) {
+                        $('#dinformation').html(data);
+                        $('#dialog-information').dialog( {
+                            resizable: false,
+                            modal: true,
+                            buttons: {
+                                'Ok': function() {
+                                    $(this).dialog( 'close' );
+                                }
+                            }
+                        } );
+                    }
+                );
+            },
+            'No': function() {
+                $(this).dialog( 'close' );
+            }
+        }
+    } );
 }
 
 function PostIt(method, params, callback){

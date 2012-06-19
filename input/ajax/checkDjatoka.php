@@ -170,7 +170,12 @@ ORDER BY source_name
             $x++;
             if ($x <= $start)
                 continue;
-            $result.="<a href=\"javascript:processItem()\">[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "</a><br>";
+            if( !empty($logms['identifier']) ) {
+                $result.="<a href=\"javascript:processItem('" . $logmsg['identifier'] . "')\">[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "</a><br>";
+            }
+            else {
+                $result.="[". $logmsg['logtime'] . "] " . $logmsg['message'] . "<br>";
+            }
             if ($x >= $end)
                 break;
         }
@@ -734,6 +739,23 @@ SET
         set_time_limit(ini_get('max_execution_time'));*/
 
         return "List fetched from Server {$serverIP} and dumped into local Database.<br> The ScanId was: {$scanid}";
+    }
+    
+    /**
+     * Force import of an entry
+     * @param array $params
+     * @return string 
+     */
+    function x_forceImport($params) {
+        $serverIP = $params['serverIP'];
+        $identifier = $params['identifier'];
+        
+        // Fetch reference to service
+        $service = &$this->getService($serverIP);
+        $retVal = $service->forceImport($identifier);
+        
+        // Just return the service response
+        return $retVal;
     }
 
 }
