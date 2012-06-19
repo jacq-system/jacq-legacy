@@ -4,7 +4,7 @@
 ob_start();  // intercept all output
 
 
-require_once('../inc/jsonRPCClient.php');
+require_once('../inc/jacqServletJsonRPCClient.php');
 require_once("../inc/init.php");
 
 $checkDjatoka = new checkDjatoka();
@@ -75,45 +75,9 @@ class checkDjatoka {
 
     private function getService($serverIP) {
         if (!$this->service) {
-            $this->service = new jsonRPCClient('http://' . $this->getServerUrl($serverIP) . '/jacq-servlet/ImageServer');
+            $this->service = new jacqServletJsonRPCClient($serverIP);
         }
         return $this->service;
-    }
-
-    public function getServerKey($serverIP) {
-        $db = $this->getdB();
-        $dbst = $db->query("SELECT `key`, `is_djatoka` FROM `tbl_img_definition` WHERE `imgserver_IP` = " . $db->quote($serverIP) );
-        $row = $dbst->fetch();
-
-        if (!$row) {
-            throw new Exception("No valid IP: {$serverIP}");
-        }
-        if ($row['is_djatoka'] == 0) {
-            throw new Exception("No Djatoka Server Configured for  IP: {$serverIP}");
-        }
-        $this->sharedkey = $row['key'];
-        if ($this->sharedkey == '') {
-            throw new Exception("No shared KeyConfigured for  IP {$serverIP}");
-        }
-    }
-    
-    /**
-     * Return the complete server URL for a given IP
-     * @param string $serverIP IP / Address of server
-     * @return string URL of server
-     * @throws Exception 
-     */
-    public function getServerUrl($serverIP) {
-        $db = $this->getdB();
-        $dbst = $db->query("SELECT `imgserver_IP`, `img_service_directory` FROM `tbl_img_definition` WHERE `imgserver_IP` = " . $db->quote($serverIP) );
-        $row = $dbst->fetch();
-        
-        if( !$row ) {
-            throw new Exception("No valid IP: {$serverIP}");
-        }
-        
-        // Return complete URL
-        return $row['imgserver_IP'] . $row['img_service_directory'];
     }
 
     /*
@@ -174,10 +138,9 @@ ORDER BY source_name
     // triggers an image import process
     public function x_ImportImages($params) {
         $serverIP = $params['serverIP'];
-
+        
         $service = &$this->getService($serverIP);
-
-        $result = $service->importImages($serverIP, $this->sharedkey);
+        $result = $service->importImages();
 
         if ($result == 1) {
             $message = "Import was successfully triggered";
@@ -728,7 +691,7 @@ EOF;
         $inArchive_notinDjatoka = array_diff($filesArchive, $filesDjatoka);
 
         $inArchive_notinDjatoka = array_flip($inArchive_notinDjatoka);
-
+        
         $x = 0;
         // inconsistency: 0=> no errors, 1: not in djatoka, 2 not in archive
         $sql = "INSERT INTO djatoka_files (scan_id,filename,inconsistency) VALUES ";
