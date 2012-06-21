@@ -120,7 +120,7 @@ ORDER BY source_name
         $res = str_replace("<option value=\"{$source_id}\"",
                 "<option value=\"{$source_id}\" selected", $res);
 
-        $dbst2 = $db->query("SELECT  finish FROM herbar_pictures.djatoka_scans WHERE finish IS NOT NULL AND errors is null and IP ={$serverIPd} LIMIT 1");
+        $dbst2 = $db->query("SELECT finish FROM herbar_pictures.djatoka_scans WHERE finish IS NOT NULL AND errors is null and IP ={$serverIPd} ORDER BY `finish` DESC LIMIT 1");
         $finish = '';
         $scan_id = false;
         if (($row = $dbst2->fetch()) > 0) {
@@ -142,7 +142,7 @@ ORDER BY source_name
         $service = &$this->getService($serverIP);
         $result = $service->importImages();
 
-        if ($result == 1) {
+        if ($result > 0) {
             $message = "Import was successfully triggered";
         }
         else {
@@ -170,7 +170,7 @@ ORDER BY source_name
             $x++;
             if ($x <= $start)
                 continue;
-            if( !empty($logms['identifier']) ) {
+            if( !empty($logmsg['identifier']) ) {
                 $result.="<a href=\"javascript:processItem('" . $logmsg['identifier'] . "')\">[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "</a><br>";
             }
             else {
