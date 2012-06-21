@@ -156,6 +156,7 @@ ORDER BY source_name
         $thread_id = $params['thread_id'];
         $start = isset($params['page_index']) ? intval($params['page_index']) : 0;
         $limit = isset($params['limit']) ? intval($params['limit']) : 20;
+        $type = $params['type'];
 
         $start = $start * $limit;
 
@@ -170,8 +171,14 @@ ORDER BY source_name
             $x++;
             if ($x <= $start)
                 continue;
-            if( !empty($logmsg['identifier']) ) {
+            
+            $logmsg['logtime'] = date( 'Y-m-d H:i', $logmsg['logtime'] );
+            
+            if( $type == 1 && !empty($logmsg['identifier']) ) {
                 $result.="<a href=\"javascript:processItem('" . $logmsg['identifier'] . "')\">[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "</a><br>";
+            }
+            else if( !empty($logmsg['identifier']) ) {
+                $result.="[". $logmsg['logtime'] . "] [" . $logmsg['identifier'] . "] " . $logmsg['message'] . "<br>";
             }
             else {
                 $result.="[". $logmsg['logtime'] . "] " . $logmsg['message'] . "<br>";
@@ -195,18 +202,21 @@ ORDER BY source_name
         $d = date('d.m.Y H:i', $timestamp);
 
         $service = &$this->getService($serverIP);
-        $ImportThreads = $service->listImportThreads($timestamp);
+        $ImportThreads = $service->listThreads($timestamp);
 
         $maxc = count($ImportThreads);
 
         $result = "";
         $x = 0;
-        foreach ($ImportThreads as $threadid => $timestamp) {
+        foreach ($ImportThreads as $threadid => $threadInfo) {
             $x++;
             if ($x <= $start)
                 continue;
-            $d = date('d.m.Y H:i', $timestamp);
-            $result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}')\">{$threadid},{$d}</a><br>";
+            $d = date('d.m.Y H:i', $threadInfo['starttime']);
+            $de = date('d.m.Y H:i', $threadInfo['endtime']);
+            $type = ( $threadInfo['type'] == 1 ) ? 'Import' : 'Export';
+
+            $result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}', {$threadInfo['type']})\">[${type}] [{$threadid}] {$d} - {$de}</a><br>";
             if ($x >= $end)
                 break;
         }

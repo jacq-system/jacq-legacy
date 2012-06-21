@@ -149,7 +149,6 @@ $(function() {
 		}
 	});
 	
-		
 	$('#datepicker').datepicker({
 		showOn: "both",
 		//buttonImage: "images/calendar.gif",
@@ -157,10 +156,7 @@ $(function() {
 		
 	});
 	$('#datepicker').datepicker( "setDate" , new Date() )
-	$('#format').change(function() {
-		$('#datepicker').datepicker('option','dateFormat','yy-mm-dd' );
-	});
-	
+
 	updateInstitutions(dinit['serverIP'],dinit['source_id']);
 	ACFreudInit();
 	
@@ -214,8 +210,6 @@ $(function() {
 	$('#ListThreads').click(function() {
 		ListThreads(0, 0, 1)
 	});
-	
-	
 });
 
 function ListThreads(page_index, jq, newsearch){
@@ -262,19 +256,19 @@ function filterChecks(page_index, jq, newsearch, faulty){
 	);
 }
 var threadids={};
-function loadImportLog(threadid, times){
+function loadImportLog(threadid, times, type){
 	
 	$tabs.tabs( "add", "#tabs-" + tab_counter,"Log of "+times);
 	$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
 	
 	threadids[tab_counter]=threadid;
 	
-	loadImportLogIntoTab(0, 0, 1, tab_counter);
+	loadImportLogIntoTab(0, 0, 1, tab_counter, type);
 	tab_counter++;
 }
 
 
-function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
+function loadImportLogIntoTab(page_index, jq, newsearch, tabres, type){
 	
 	if(jq[0] != undefined){
 		tabres=1*(jq[0].id.replace(/PaginationTabres/,''));
@@ -284,7 +278,7 @@ function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
 
 	PostIt(
 		'x_listImportLogs',
-		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE},
+		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE,'type':type},
 		function(data){
 			$('#loadingtabres'+tabres).css('visibility','hidden');
 			
@@ -413,7 +407,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 
   Server:
  <select size="1" name="serverIP" id="serverIP">
-<?PHP echo $server; ?>
+<?php echo $server; ?>
 </select> &nbsp;<input type="button" name="ImportPictures" id="ImportPictures" value="ImportPictures">&nbsp;<input type="button" name="RescanServer" id="RescanServer" value="Rescan Server"><p>
 <div id="RescanServerLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 
@@ -421,7 +415,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 <ul>
  <li><a href="#tabs-1">Check Images against Server</a></li>
  <li><a href="#tabs-2">Check Consistency at Server</a></li>
- <li><a href="#tabs-3">Image Logs</a></li>
+ <li><a href="#tabs-3">Thread Logs</a></li>
 </ul>
 
   <div id="tabs-1">
@@ -433,7 +427,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 </td><td width="10">
   &nbsp;
 </td><td>
-  <div style="float:left">Family:&nbsp;</div> <?PHP echo $family; ?>
+  <div style="float:left">Family:&nbsp;</div> <?php echo $family; ?>
 </td><td width="10">
  
 </td><td>
@@ -455,12 +449,12 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 
 </div>
 <div id="tabs-3">
-Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads after this time (empty for all)">
+Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads">
 <div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="res_tabs3"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationThreads"></div>
-
 </div>
+
 </div>
 
 </div>
