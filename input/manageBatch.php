@@ -3,6 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/api_functions.php");
+require("inc/clsDbAccess.php");
+require("inc/jacqServletJsonRPCClient.php");
+
 no_magic();
 
 //---------- check every input ----------
@@ -191,6 +194,69 @@ showList("http://131.130.131.9/api/copyImagesWithXML.php?ID=", true);
 <h3>Make Webimage-Links for unsent Batches:</h3>
 <?php
 showList("http://131.130.131.9/api/copyWebImages.php?ID=", true);
+?>
+
+<h3>Djatoka export for unsent Batch:</h3>
+<?php
+showList( $_SERVER['PHP_SELF'] . "?type=5&ID=", true );
+
+if( $type == 5 && $batchID ) {
+    $db = clsDbAccess::Connect('INPUT');
+    
+    // Fetch image server information
+    $dbstmt = $db->query( '
+        SELECT id.*
+        FROM `api`.`tbl_api_batches` ab 
+        LEFT JOIN `herbarinput`.`tbl_img_definition` id ON ab.`sourceID_fk` = id.`source_id_fk`
+        WHERE ab.`batchID` = ' . $batchID );
+    
+    $serverInfo = $dbstmt->fetch();
+    
+    // Check if we found an entry & if it is a djatoka server
+    if( $serverInfo && $serverInfo['is_djatoka'] == 1 ) {
+        // Fetch all specimens to export
+        $dbstmt = $db->query('
+            SELECT `herbarinput`.GetPictureName(aas.`specimen_ID`) AS \'filename\', aas.`specimen_ID`
+            FROM `api`.`tbl_api_specimens` aas
+            WHERE aas.`batchID_fk` = ' . $batchID . '
+            ');
+        
+        // Create a service instance and send requests to jacq-servlet
+        try {
+            $service = new jacqServletJsonRPCClient( $serverInfo['imgserver_IP'] );
+            
+            // Create a list of objects which hold all the specimens to look for
+            $exportSpecimens = array();
+            while( ($row = $dbstmt->fetch()) != false ) {
+                // Ask image server for fitting entries
+                $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'] );
+                
+                if( count($entries) > 0 ) {
+                    // Store fitting entries in internal list
+                    array_merge($exportSpecimens, $entries);
+                }
+                else {
+                    $exportSpecimens[] = $row['filename'];
+                }
+            }
+        
+            $thread_id = $service->exportImages( $exportSpecimens );
+            
+            if( $thread_id > 0 ) {
+                echo "Batch export successfully started";
+            }
+            else {
+                echo "Error starting export thread: " . $thread_id;
+            }
+        }
+        catch( Exception $e ) {
+            echo "Error when trying to reach service: " . $e->getMessage();
+        }
+    }
+    else {
+        echo "No suitable image server definition";
+    }
+}
 ?>
 
 </body>
