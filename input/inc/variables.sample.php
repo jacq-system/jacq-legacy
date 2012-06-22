@@ -62,6 +62,7 @@ $_OPTIONS['GEONAMES'] = array(
 
 // Url to herbarium
 $_OPTIONS['HERBARIMAGEURL'] = "http://website.com/output/";
+$_CONFIG['URL']['ACCESS'] = 'http://website.com/access/';
 
 
 

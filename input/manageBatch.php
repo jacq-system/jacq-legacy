@@ -188,12 +188,12 @@ if ($type == 1 && $batchID) {  // update database
 
 <h3>Make XML-Files for unsent Batches:</h3>
 <?php
-showList("http://131.130.131.9/api/copyImagesWithXML.php?ID=", true);
+showList($_CONFIG['URL']['ACCESS'] . "api/copyImagesWithXML.php?ID=", true);
 ?>
 
 <h3>Make Webimage-Links for unsent Batches:</h3>
 <?php
-showList("http://131.130.131.9/api/copyWebImages.php?ID=", true);
+showList($_CONFIG['URL']['ACCESS'] . "api/copyWebImages.php?ID=", true);
 ?>
 
 <h3>Djatoka export for unsent Batch:</h3>

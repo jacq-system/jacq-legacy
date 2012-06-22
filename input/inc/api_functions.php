@@ -21,11 +21,13 @@ function update_tbl_api_units($id, $showError=true) {
            s.Fundort, altitude_min, altitude_max,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-           s.Bemerkungen
+           s.Bemerkungen,
+           gp.provinz
           FROM (tbl_specimens s, tbl_collector c, tbl_management_collections mc, herbarinput.meta)
            LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
            LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
            LEFT JOIN tbl_geo_nation gn ON gn.nationID = s.NationID
+           LEFT JOIN tbl_geo_province gp ON gp.provinceID = s.provinceID
           WHERE s.SammlerID = c.SammlerID
            AND s.collectionID = mc.collectionID
            AND mc.source_id = herbarinput.meta.source_id
@@ -103,7 +105,8 @@ function update_tbl_api_units($id, $showError=true) {
            LatitudeDecimal=".quoteString($LatitudeDecimal).",
            LongitudeDecimal=".quoteString($LongitudeDecimal).",
            Notes=".quoteString($row['Bemerkungen']).",
-           source_id_fk=".quoteString($row['source_id']).
+           source_id_fk=".quoteString($row['source_id']).",
+           ProvinceName=".quoteString($row['provinz']).
           $sql_tail;
 
   if ($showError)

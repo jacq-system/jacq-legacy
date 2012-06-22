@@ -1,0 +1,1 @@
+ALTER TABLE `tbl_api_units`  ADD `ProvinceName` VARCHAR(100) NULL DEFAULT NULL

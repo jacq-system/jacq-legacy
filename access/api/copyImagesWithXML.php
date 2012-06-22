@@ -1,34 +1,18 @@
 <?php
 require_once( "../inc/connect.php" );
 
-$basedir = "/api-batches/export";
+$basedir = "/tmp";
 $dirprefix = "batch";
 $fileprefix = "API";
 $extension = "xml";
 
 $batchID = intval($_GET['ID']);
 
-function db_query($sql)
-{
-    $result = @mysql_query($sql);
-    if (!$result) {
-        echo $sql."\n";
-        echo mysql_error() . "\n";
-    }
-    return $result;
-}
-
-function quoteString($text)
-{
-    if (strlen($text)>0) {
-        return "'".mysql_escape_string($text)."'";
-    } else {
-        return "NULL";
-    }
-}
-
 function getPicturePaths($path, $pic)
 {
+    
+    return array();
+    
     $filelist = trim(shell_exec("find '$path' -name '$pic*.tif'"));
     $ret = array();
     if (trim($filelist)) {
@@ -300,6 +284,9 @@ if ($batchID) {
                 $xml->addSingle("Locality", $row2['Locality'], true);
                 $xml->addSingle("Altitude", $row2['Altitude_min'], true);
                 $xml->addSingle("Notes", $row2['Notes'], true);
+                if( !empty($row2['ProvinceName']) ) {
+                    $xml->addSingle("ProvinceName", $row2['ProvinceName'], true);
+                }
 
                 $xml->addMultiEnd("Unit");
 
