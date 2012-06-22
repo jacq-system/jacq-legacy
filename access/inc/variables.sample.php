@@ -21,4 +21,6 @@ $_CONFIG['DATABASE']['PICTURES'] = array(
     )
 );
 
+$_CONFIG['FILESYSTEM']['BATCHEXPORT'] = '/api-batches/export';
+
 $_OPTIONS['internMDLDService']['password']='geheim';

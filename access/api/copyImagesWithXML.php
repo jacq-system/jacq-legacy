@@ -1,7 +1,7 @@
 <?php
 require_once( "../inc/connect.php" );
 
-$basedir = "/tmp";
+$basedir = $_CONFIG['FILESYSTEM']['BATCHEXPORT'];
 $dirprefix = "batch";
 $fileprefix = "API";
 $extension = "xml";
