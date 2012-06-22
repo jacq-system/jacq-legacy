@@ -14,13 +14,14 @@ function makeDropdownUsers($tid)
     $ret = "<select name=\"tid\" id=\"tid\" onchange=\"xajax_changetid(xajax.getFormValues('chatform'))\">"
          . "<option value=\"-1\">received (last hour, unseen)</option>\n";
 
-    $sql = "SELECT userID, firstname, surname, login
-            FROM herbarinput_log.tbl_herbardb_users
-            WHERE active=1
-             AND login IS NOT NULL
-             AND login >= subtime(now(), '24:00:00')
-             AND userID != {$_SESSION['uid']}
-            ORDER BY surname, firstname";
+    $sql = "SELECT hu.userID, hu.firstname, hu.surname, hu.login, m.`source_code`
+            FROM herbarinput_log.tbl_herbardb_users hu
+            LEFT JOIN `herbarinput`.`meta` m ON m.`source_id` = hu.`source_id`
+            WHERE hu.active=1
+             AND hu.login IS NOT NULL
+             AND hu.login >= subtime(now(), '24:00:00')
+             AND hu.userID != {$_SESSION['uid']}
+            ORDER BY m.`source_code`, hu.surname, hu.firstname";
     $result = db_query($sql);
     while ($row = mysql_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
@@ -34,17 +35,18 @@ function makeDropdownUsers($tid)
                   . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
-                  . "{$row['firstname']} {$row['surname']} ({$row['login']})"
+                  . "[{$row['source_code']}] {$row['firstname']} {$row['surname']} ({$row['login']})"
                   . "</option>\n";
         }
     }
 
-    $sql = "SELECT userID, firstname, surname, login
-            FROM herbarinput_log.tbl_herbardb_users
-            WHERE active=1
-             AND (login IS NULL OR login < subtime(now(), '24:00:00'))
-             AND userID != {$_SESSION['uid']}
-            ORDER BY surname, firstname";
+    $sql = "SELECT hu.userID, hu.firstname, hu.surname, hu.login, m.`source_code`
+            FROM herbarinput_log.tbl_herbardb_users hu
+            LEFT JOIN `herbarinput`.`meta` m ON m.`source_id` = hu.`source_id`
+            WHERE hu.active=1
+             AND (hu.login IS NULL OR hu.login < subtime(now(), '24:00:00'))
+             AND hu.userID != {$_SESSION['uid']}
+            ORDER BY m.`source_code`, hu.surname, hu.firstname";
     $result = db_query($sql);
     while ($row=mysql_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
@@ -58,7 +60,7 @@ function makeDropdownUsers($tid)
                   . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
-                  . "{$row['firstname']} {$row['surname']} (" . (($row['login']) ? $row['login'] : "offline") . ")"
+                  . "[{$row['source_code']}] {$row['firstname']} {$row['surname']} (" . (($row['login']) ? $row['login'] : "offline") . ")"
                   . "</option>\n";
         }
     }
