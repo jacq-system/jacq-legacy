@@ -233,7 +233,7 @@ if( $type == 5 && $batchID ) {
                 
                 if( count($entries) > 0 ) {
                     // Store fitting entries in internal list
-                    array_merge($exportSpecimens, $entries);
+                    $exportSpecimens = array_merge($exportSpecimens, $entries);
                 }
                 else {
                     $exportSpecimens[] = $row['filename'];
