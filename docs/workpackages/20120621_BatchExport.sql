@@ -24,7 +24,12 @@ BEGIN
         s.`specimen_ID` = p_specimen_ID;
         
         SET v_HerbNummer = REPLACE(v_HerbNummer, '-', '');
-        SET v_filename = CONCAT(v_coll_short_prj, '_', LPAD( v_HerbNummer, v_HerbNummerNrDigits, '0' ));
+        IF CHAR_LENGTH(v_HerbNummer) < v_HerbNummerNrDigits THEN
+        	SET v_HerbNummer = LPAD( v_HerbNummer, v_HerbNummerNrDigits, '0' );
+        END IF;
+        SET v_filename = CONCAT(v_coll_short_prj, '_', v_HerbNummer );
         
         RETURN v_filename;
 END
+
+ALTER TABLE `tbl_api_batches`  ADD `exclude_tab_obs` TINYINT(1) NOT NULL DEFAULT '0' COMMENT 'Exclude tab & obs images for export'

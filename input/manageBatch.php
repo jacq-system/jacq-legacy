@@ -51,7 +51,7 @@ function showList($link, $withID=true)
     echo "</ul>\n";
 }
 
-function showEditFields($date_supplied, $remarks = "", $batchID = 0)
+function showEditFields($date_supplied, $remarks = "", $batchID = 0,$exclude_tab_obs)
 {
     if (!$batchID) {
         $pre = "new_";
@@ -90,6 +90,9 @@ function showEditFields($date_supplied, $remarks = "", $batchID = 0)
        . "  </tr><tr>\n"
        . "    <td class=\"label\">Remarks:</td>\n"
        . "    <td class=\"input\"><input type=\"text\" class=\"text\" style=\"width: 50em;\" name=\"{$pre}remarks\" value=\"$remarks\"></td>\n"
+       . "  </tr><tr>\n"
+       . "    <td class=\"label\">Exclude Tab & Obs:</td>\n"
+       . "    <td class=\"input\"><input type=\"checkbox\" name=\"{$pre}exclude_tab_obs\"". (($exclude_tab_obs) ? "checked" : "" ). "></td>\n"
        . "  </tr><tr>\n"
        . "    <td align=\"right\"><input type=\"submit\" name=\"$pre$btn\" class=\"button\" style=\"margin-top: 2px;\" value=\"$btn\"></td>\n"
        . "    <td></td>\n"
@@ -138,7 +141,8 @@ if ($type == 2 && isset($_POST['new_insert']) && $_POST['new_insert']) {
     $sql = "UPDATE api.tbl_api_batches SET
              sourceID_fk = '$institutionID',
              date_supplied = " . quoteString($_POST['new_date_supplied']) . ",
-             remarks = " . quoteString($_POST['new_remarks']) . "
+             remarks = " . quoteString($_POST['new_remarks']) . ",
+             `exclude_tab_obs` = " . (($_POST['new_exclude_tab_obs']) ? "1" : "0" ) . "
             WHERE batchID = $id";
     db_query($sql);
 }
@@ -150,7 +154,8 @@ if ($type == 4 && $batchID) { // update an unsent batch
     $sql = "UPDATE api.tbl_api_batches SET ";
     //if (checkRight('batchAdmin')) $sql .= "sourceID_fk = '" . intval($_POST['sourceID_fk']) . "', ";
     $sql .= " date_supplied = " . quoteString($_POST['date_supplied']) . ",
-              remarks = ".quoteString($_POST['remarks']) . "
+              remarks = ".quoteString($_POST['remarks']) . ",
+              `exclude_tab_obs` = " . (($_POST['exclude_tab_obs']) ? "1" : "0" ) . "
              WHERE batchID = $batchID";
     db_query($sql);
 }
@@ -158,7 +163,7 @@ if ($type == 3 && $batchID) { // edit the unsent batch
     echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "?type=4&ID=$batchID\" Method=\"POST\" name=\"f2\">\n";
     $result = db_query("SELECT * FROM api.tbl_api_batches WHERE batchID = $batchID");
     $row = mysql_fetch_array($result);
-    showEditFields($row['date_supplied'], $row['remarks'], $batchID);
+    showEditFields($row['date_supplied'], $row['remarks'], $batchID, $row['exclude_tab_obs']);
     echo "</form>\n";
 } else {
     showList($_SERVER['PHP_SELF'] . "?type=3&ID=", true);
@@ -229,13 +234,14 @@ if( $type == 5 && $batchID ) {
             $exportSpecimens = array();
             while( ($row = $dbstmt->fetch()) != false ) {
                 // Ask image server for fitting entries
-                $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'] );
+                $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'], ($row['exclude_tab_obs']) ? true : false );
                 
                 if( count($entries) > 0 ) {
                     // Store fitting entries in internal list
                     $exportSpecimens = array_merge($exportSpecimens, $entries);
                 }
                 else {
+                    // If we didn't find any entries, add the original filename anyway (to trigger a log message)
                     $exportSpecimens[] = $row['filename'];
                 }
             }
