@@ -767,5 +767,51 @@ SET
         // Just return the service response
         return $retVal;
     }
-
+    
+    /**
+     * List all images stored on a djatoka server
+     * @param array $params
+     * @return string HTML of filelist
+     */
+    function x_listImages($params) {
+        $serverIP = $params['serverIP'];
+        $start = isset($params['page_index']) ? intval($params['page_index']) : 0;
+        $limit = isset($params['limit']) ? intval($params['limit']) : 20;
+        
+        // Fetch latest scan
+        $db_picture = $this->getDbPictures();
+        $sth = $db_picture->prepare("SELECT SQL_CALC_FOUND_ROWS `filename` FROM `djatoka_files` WHERE `scan_id` = (SELECT `scan_id` FROM `djatoka_scans` WHERE `IP` = :IP ORDER BY `finish` DESC LIMIT 1) LIMIT $start, $limit");
+        $sth->execute(array( ':IP' => $serverIP ));
+        $rows = $sth->fetchAll();
+        
+        // Prepare HTML header
+        $retVal = "
+            <table>
+                <tr>
+                    <th>Identifier</th>
+                </tr>
+            ";
+        
+        // add entry for each found filename
+        foreach( $rows as $row ) {
+            $retVal .= "
+                <tr>
+                    <td>" . $row['filename'] . "</td>
+                </tr>
+                ";
+        }
+        
+        // html footer
+        $retVal .= "
+            </table>
+            ";
+        
+        // Fetch found rows
+        $sth = $db_picture->query("SELECT FOUND_ROWS() AS 'file_count'");
+        $row = $sth->fetch();
+        $file_count = $row['file_count'];
+        
+        // Return results to callee
+        return array( 'html' => $retVal, 'maxc' => $file_count );
+    }
 }

@@ -146,6 +146,9 @@ $(function() {
 			if(ui.index==1){
 				checkConsisty(0,0,1);
 			}
+                        else if( ui.index==3) {
+                            ListImages(0,0,1);
+                        }
 		}
 	});
 	
@@ -232,6 +235,27 @@ function ListThreads(page_index, jq, newsearch){
 			}
 		);
 }
+
+function ListImages(page_index, jq, newsearch){
+		$('#ImagesLoading').css('visibility','visible');
+		PostIt(
+			'x_listImages',
+			{'serverIP':getImageServerIP() , 'page_index':page_index,'limit':ITEMSPERPAGE},
+			function(data){
+				$('#ImagesLoading').css('visibility','hidden');
+				if(newsearch!=undefined){
+					$("#PaginationImages").pagination(data.maxc, {
+						num_edge_entries: 2,
+						num_display_entries: 8,
+						callback: ListImages,
+						items_per_page:ITEMSPERPAGE
+					});
+				}
+				$('#res_tabs4').html(data.html);
+			}
+		);
+}
+
 var faulty_pers=0;
 function filterChecks(page_index, jq, newsearch, faulty){
 	if(newsearch!=undefined){
@@ -413,9 +437,10 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 
 <div id="tabs">
 <ul>
- <li><a href="#tabs-1">Check Images against Server</a></li>
- <li><a href="#tabs-2">Check Consistency at Server</a></li>
- <li><a href="#tabs-3">Thread Logs</a></li>
+ <li><a href="#tabs-1">image & data check</a></li>
+ <li><a href="#tabs-2">server consistency</a></li>
+ <li><a href="#tabs-3">thread logs</a></li>
+ <li><a href="#tabs-4">image list</a></li>
 </ul>
 
   <div id="tabs-1">
@@ -448,11 +473,18 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 <div style="height:30px;margin-top:20px;" id="PaginationConsitency"></div>
 
 </div>
+    
 <div id="tabs-3">
 Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads">
 <div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
 <div id="res_tabs3"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationThreads"></div>
+</div>
+
+<div id="tabs-4">
+<div id="ImagesLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="res_tabs4"></div>
+<div style="height:30px;margin-top:20px;" id="PaginationImages"></div>
 </div>
 
 </div>
