@@ -780,7 +780,7 @@ SET
         
         // Fetch latest scan
         $db_picture = $this->getDbPictures();
-        $sth = $db_picture->prepare("SELECT SQL_CALC_FOUND_ROWS `filename` FROM `djatoka_files` WHERE `scan_id` = (SELECT `scan_id` FROM `djatoka_scans` WHERE `IP` = :IP ORDER BY `finish` DESC LIMIT 1) LIMIT $start, $limit");
+        $sth = $db_picture->prepare("SELECT SQL_CALC_FOUND_ROWS `filename` FROM `djatoka_files` WHERE `scan_id` = (SELECT `scan_id` FROM `djatoka_scans` WHERE `IP` = :IP ORDER BY `finish` DESC LIMIT 1) ORDER BY `filename` ASC LIMIT $start, $limit");
         $sth->execute(array( ':IP' => $serverIP ));
         $rows = $sth->fetchAll();
         

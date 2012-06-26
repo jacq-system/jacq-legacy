@@ -146,7 +146,7 @@ $(function() {
 			if(ui.index==1){
 				checkConsisty(0,0,1);
 			}
-                        else if( ui.index==3) {
+                        else if( ui.index==2) {
                             ListImages(0,0,1);
                         }
 		}
@@ -439,8 +439,8 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 <ul>
  <li><a href="#tabs-1">image & data check</a></li>
  <li><a href="#tabs-2">server consistency</a></li>
- <li><a href="#tabs-3">thread logs</a></li>
  <li><a href="#tabs-4">image list</a></li>
+ <li><a href="#tabs-3">thread logs</a></li>
 </ul>
 
   <div id="tabs-1">
