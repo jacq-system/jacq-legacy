@@ -45,7 +45,7 @@ no_magic();
 if (isset($_GET['new'])) {
     if (intval($_GET['t']) == 1) {
         $p_type = 1;  // taxonID ist die Führungs-ID
-        $p_taxonIndex = intval(extractID($_GET['ID']));
+        $p_taxonIndex = intval(extractID($_GET['ID'], true));
         $p_taxon = getScientificName($p_taxonIndex);
         $p_citation = "";
         $p_citationIndex = 0;

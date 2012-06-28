@@ -31,15 +31,21 @@ function AjaxParseValue($value){
  * extracts an ID from a string. ID must be enclosed in "<>" brackets and be positioned at the end
  *
  * @param string $text string to extract ID from
+ * @param boolean $bNoQuotes return plain ID without quotes
  * @return string ID enclosed in single quotes or the string "NULL" (without quotes)
  */
 
-	function extractID ($text){
+	function extractID ($text, $bNoQuotes = false){
 		$pos1 = strrpos($text, "<");
 		$pos2 = strpos($text, ">", $pos1);
 		if ($pos1 !== false && $pos2 !== false) {
 			if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
+                            if( $bNoQuotes ) {
+                                return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
+                            }
+                            else {
 				return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+                            }
 			} else {
 				return "NULL"; // no ID found
 			}
