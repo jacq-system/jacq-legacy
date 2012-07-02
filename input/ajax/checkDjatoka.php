@@ -54,6 +54,10 @@ class checkDjatoka {
     public function __construct() {
     }
 
+    /**
+     * Handler for input database
+     * @return clsDbAccess
+     */
     private function getdB() {
         if (!$this->db) {
             $this->db = clsDbAccess::Connect('INPUT');
@@ -248,6 +252,63 @@ ORDER BY source_name
 
         $c = array(0, 0, 0, 0);
         $tab1 = '';
+        
+        // Analyze entries in file table & update them
+        $dbPictures = $this->getDbPictures();
+        $dbsth = $dbPictures->query("SELECT `ID`, `filename` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `faulty` = 0 AND `scan_id` = $scan_id");
+        foreach( $dbsth as $row ) {
+            $filename = $row['filename'];
+            $ID = $row['ID'];
+            
+            // Extract herbar-number from filename
+            $filename_parts = explode('_', $filename);
+            if( count($filename_parts) < 2 || count($filename_parts) > 3 ) {
+                // Invalid file naming
+                $dfuSth = $dbPictures->prepare("UPDATE `djatoka_files` SET `faulty` = 1 WHERE `ID` = :ID");
+                $dfuSth->execute(array(
+                    ':ID' => $ID
+                ));
+                continue;
+            }
+            
+            // use parts of filename
+            $coll_short_prj = $filename_parts[0];
+            $HerbNummer = $filename_parts[1];
+            $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+            
+            // Find specimen entry for this file
+            $sidSth = $db->prepare("
+                SELECT s.`specimen_ID`
+                FROM `tbl_specimens` s
+                LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                WHERE
+                ( s.`HerbNummer` = :HerbNummer OR s.`HerbNummer` = :HerbNummerAlternative )
+                AND
+                mc.`coll_short_prj` = :coll_short_prj
+                ");
+            
+            $sidSth->execute(array(
+                ':HerbNummer' => $HerbNummer,
+                ':HerbNummerAlternative' => $HerbNummerAlternative,
+                ':coll_short_prj' => $coll_short_prj
+            ));
+            
+            // Fetch the results
+            $rows = $sidSth->fetchAll();
+            
+            // If we found a fitting specimen ID, update database
+            if( count($rows) > 0 ) {
+                $specimen_ID = $rows[0]['specimen_ID'];
+                
+                $dfuSth = $dbPictures->prepare("UPDATE `djatoka_files` SET `specimen_ID` = :specimen_ID WHERE `ID` = :ID");
+                $dfuSth->execute(array(
+                    ':specimen_ID' => $specimen_ID,
+                    ':ID' => $ID
+                ));
+            }
+        }
+        
+
 
         // inDBchecked_butnotinArchive
         $fields = "
@@ -314,43 +375,10 @@ EOF;
 EOF;
         // inArchive_butnotinDB
         // filter with prefix (e.g. wu_) at institution
-        $where = "";
-        if ($source_id) {
-            $dbst = $db->query( "SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `source_id` = " . $db->quote($source_id) . " GROUP BY `coll_short_prj`" );
-            $rows = $dbst->fetchAll();
-            
-            $where = " AND ( dj.`filename` IS NULL";
-            foreach( $rows as $row ) {
-                $where .= " OR dj.`filename` LIKE '" . $row['coll_short_prj'] . "_%'";
-            }
-            $where .= ")";
-        }
-
-        $fields = "
- dj.filename,
- dj.inconsistency,
- sp.specimen_ID		
-		";
-
-        $sql = "
-SELECT
- :fields
-FROM
- herbar_pictures.djatoka_files dj
-  -- LEFT JOIN  herbar_view.view_tbl_specimens sp ON (sp.filename=dj.filename)-- too slow!!!
- LEFT JOIN herbarinput.tbl_specimens sp ON (sp.filename=dj.filename)
-WHERE
- dj.scan_id='{$scan_id}'
- and sp.specimen_ID is null
-{$where}
-";
-        // count
-        $dbst = $db->query(str_replace(':fields', ' COUNT(*)', $sql));
-        $c[1] = $dbst->fetchColumn();
-
-        $sql = str_replace(':fields', $fields, $sql) . "  order by dj.filename  {$limit}";
-        $dbst = $db->query($sql);
-        foreach ($dbst as $row) {
+        $dbsth = $dbPictures->query("SELECT count(*) FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id");
+        $c[1] = $dbsth->fetchColumn();
+        $dbsth = $dbPictures->query("SELECT `filename`, `inconsistency`, `faulty` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id");
+        foreach ($dbsth as $row) {
             $val = htmlspecialchars($row['filename']);
             $inc = '';
             if ($row['inconsistency'] != 0) {
@@ -360,6 +388,9 @@ WHERE
                 else if ($row['inconsistency'] == 2) {
                     $inc = " (pic not in archive!!!)";
                 }
+            }
+            if( $row['faulty'] != 0 ) {
+                $inc .= " (faulty)";
             }
             $specLink = " href=\"javascript:editSpecimensSimple('{$row['filename']}')\"";
 

@@ -280,29 +280,32 @@ function filterChecks(page_index, jq, newsearch, faulty){
 	);
 }
 var threadids={};
+var threadtypes = {};
 function loadImportLog(threadid, times, type){
 	
 	$tabs.tabs( "add", "#tabs-" + tab_counter,"Log of "+times);
 	$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
 	
 	threadids[tab_counter]=threadid;
+        threadtypes[tab_counter] = type;
 	
-	loadImportLogIntoTab(0, 0, 1, tab_counter, type);
+	loadImportLogIntoTab(0, 0, 1, tab_counter);
 	tab_counter++;
 }
 
 
-function loadImportLogIntoTab(page_index, jq, newsearch, tabres, type){
+function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
 	
 	if(jq[0] != undefined){
 		tabres=1*(jq[0].id.replace(/PaginationTabres/,''));
 	}
 	threadid=threadids[tabres];
+        threadtype = threadtypes[tabres];
 	$('#loadingtabres'+tabres).css('visibility','visible');
 
 	PostIt(
 		'x_listImportLogs',
-		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE,'type':type},
+		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE,'type':threadtype},
 		function(data){
 			$('#loadingtabres'+tabres).css('visibility','hidden');
 			
