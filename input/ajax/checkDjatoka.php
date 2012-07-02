@@ -259,6 +259,7 @@ ORDER BY source_name
         foreach( $dbsth as $row ) {
             $filename = $row['filename'];
             $ID = $row['ID'];
+            $specimen_ID  = null;
             
             // Extract herbar-number from filename
             $filename_parts = explode('_', $filename);
@@ -271,35 +272,55 @@ ORDER BY source_name
                 continue;
             }
             
-            // use parts of filename
-            $coll_short_prj = $filename_parts[0];
-            $HerbNummer = $filename_parts[1];
-            $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
-            
-            // Find specimen entry for this file
-            $sidSth = $db->prepare("
-                SELECT s.`specimen_ID`
-                FROM `tbl_specimens` s
-                LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-                WHERE
-                ( s.`HerbNummer` = :HerbNummer OR s.`HerbNummer` = :HerbNummerAlternative )
-                AND
-                mc.`coll_short_prj` = :coll_short_prj
-                ");
-            
-            $sidSth->execute(array(
-                ':HerbNummer' => $HerbNummer,
-                ':HerbNummerAlternative' => $HerbNummerAlternative,
-                ':coll_short_prj' => $coll_short_prj
-            ));
-            
-            // Fetch the results
-            $rows = $sidSth->fetchAll();
-            
-            // If we found a fitting specimen ID, update database
-            if( count($rows) > 0 ) {
-                $specimen_ID = $rows[0]['specimen_ID'];
+            // Check if we have a tab or obs entry
+            $matches = array();
+            if( preg_match('/^(tab|obs)_(\d+)/i', $filename, $matches) > 0 ) {
+                $file_specimen_ID = $matches[2];
                 
+                // Check if specimen_ID exists
+                $sidSth = $db->prepare( "SELECT `specimen_ID` FROM `tbl_specimens` WHERE `specimen_ID` = :specimen_ID" );
+                $sidSth->execute(array(
+                    ':specimen_ID' => $file_specimen_ID
+                ));
+                
+                // If we found an entry, set the specimen_ID
+                $rows = $sidSth->fetchAll();
+                if( count($rows) > 0 ) {
+                    $specimen_ID = $file_specimen_ID;
+                }
+            }
+            else {
+                // use parts of filename
+                $coll_short_prj = $filename_parts[0];
+                $HerbNummer = $filename_parts[1];
+                $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+
+                // Find specimen entry for this file
+                $sidSth = $db->prepare("
+                    SELECT s.`specimen_ID`
+                    FROM `tbl_specimens` s
+                    LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                    WHERE
+                    ( s.`HerbNummer` = :HerbNummer OR s.`HerbNummer` = :HerbNummerAlternative )
+                    AND
+                    mc.`coll_short_prj` = :coll_short_prj
+                    ");
+
+                $sidSth->execute(array(
+                    ':HerbNummer' => $HerbNummer,
+                    ':HerbNummerAlternative' => $HerbNummerAlternative,
+                    ':coll_short_prj' => $coll_short_prj
+                ));
+
+                // Fetch the results
+                $rows = $sidSth->fetchAll();
+                if( count($rows) > 0 ) {
+                    $specimen_ID = $rows[0]['specimen_ID'];
+                }
+            }
+
+            // If we found a fitting specimen ID, update database
+            if( $specimen_ID != null ) {
                 $dfuSth = $dbPictures->prepare("UPDATE `djatoka_files` SET `specimen_ID` = :specimen_ID WHERE `ID` = :ID");
                 $dfuSth->execute(array(
                     ':specimen_ID' => $specimen_ID,
@@ -307,8 +328,6 @@ ORDER BY source_name
                 ));
             }
         }
-        
-
 
         // inDBchecked_butnotinArchive
         $fields = "
@@ -377,7 +396,7 @@ EOF;
         // filter with prefix (e.g. wu_) at institution
         $dbsth = $dbPictures->query("SELECT count(*) FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id");
         $c[1] = $dbsth->fetchColumn();
-        $dbsth = $dbPictures->query("SELECT `filename`, `inconsistency`, `faulty` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id");
+        $dbsth = $dbPictures->query("SELECT `filename`, `inconsistency`, `faulty` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id ORDER BY `filename` ${limit}");
         foreach ($dbsth as $row) {
             $val = htmlspecialchars($row['filename']);
             $inc = '';
