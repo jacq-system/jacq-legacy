@@ -46,7 +46,7 @@ if(isset($_SESSION['checkPictures'])){
 
 // get imageserver...
 $server="";
-$dbst = $db->query("SELECT `imgserver_IP` FROM `tbl_img_definition` WHERE `is_djatoka` = 1 GROUP BY `imgserver_IP`");
+$dbst = $db->query("SELECT `imgserver_IP`, `img_service_directory` FROM `tbl_img_definition` WHERE `is_djatoka` = 1 GROUP BY `imgserver_IP`");
 foreach ($dbst as $row) {
     if(!$_dvar['serverIP']){
             /*$dbst = $db->query("SELECT imgserver_IP FROM tbl_img_definition LIMIT 1");
@@ -55,11 +55,11 @@ foreach ($dbst as $row) {
             $_dvar['serverIP'] = $row['imgserver_IP'];
     }
 
-   $server.="<option value=\"{$row['imgserver_IP']}\"";
+   $server.="<option value=\"{$row['imgserver_IP']}{$row['img_service_directory']}\"";
     if($_dvar['serverIP']==$row['imgserver_IP']){
 		$server.=" selected";
     }
-   $server.=">{$row['imgserver_IP']}</option>\n";
+   $server.=">{$row['imgserver_IP']}{$row['img_service_directory']}</option>\n";
 }
 
 $cf = new CSSF();
@@ -97,6 +97,10 @@ function editSpecimens(sel) {
 function editSpecimensSimple(filename) {
 	target = "editSpecimensSimple.php?filename="+encodeURIComponent(filename);
 	MeinFenster = window.open(target,"editSpecimensSimple",makeOptions());
+	MeinFenster.focus();
+
+        target = 'http://' + getImageServerIP() + "/jacq-viewer/viewer.html?rft_id=" + filename;
+	MeinFenster = window.open(target,"imageBrowser");
 	MeinFenster.focus();
 }
 function getImageServerIP(){
