@@ -281,12 +281,12 @@ if ($batchID) {
                     $xml->addSingle("CountryName", 'ZZ', true);
                     $xml->addSingle("ISO2Letter", 'ZZ', true);
                 }
+                if( !empty($row2['ProvinceName']) ) {
+                    $row2['Locality'] = $row2['ProvinceName'] . ': ' . $row2['Locality'];
+                }
                 $xml->addSingle("Locality", $row2['Locality'], true);
                 $xml->addSingle("Altitude", $row2['Altitude_min'], true);
                 $xml->addSingle("Notes", $row2['Notes'], true);
-                if( !empty($row2['ProvinceName']) ) {
-                    $xml->addSingle("ProvinceName", $row2['ProvinceName'], true);
-                }
 
                 $xml->addMultiEnd("Unit");
 
