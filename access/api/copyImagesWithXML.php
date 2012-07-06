@@ -205,6 +205,12 @@ while ($row=mysql_fetch_array($result)) {
 if ($batchID) {
     $dir_base = $basedir . "/" . $dirprefix . sprintf("%03d", $batchID);
     @mkdir($dir_base);
+    
+    // Fetch date_supplied
+    $sql = "SELECT ab.`date_supplied` FROM `api`.`tbl_api_batches` ab WHERE ab.`batchID` = " . quoteString($batchID);
+    $result = db_query($sql);
+    $row = mysql_fetch_array($result);
+    $date_supplied = $row['date_supplied'];
 
     // set `source_update` to the current date only for the used institutions
     $sql = "SELECT source_id_fk
@@ -235,7 +241,7 @@ if ($batchID) {
 
             $xml->addSingle("InstitutionCode", $row['source_code']);
             $xml->addSingle("InstitutionName", $row['source_name']);
-            $xml->addSingle("DateSupplied", substr($row['source_update'], 0, 10));
+            $xml->addSingle("DateSupplied", $date_supplied);
             $xml->addSingle("PersonName", $row['supplier_person']);
 
             while ($row2=mysql_fetch_array($result2)) {
