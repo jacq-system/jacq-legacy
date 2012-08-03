@@ -62,7 +62,7 @@ var ACFreudConfig=[];
 function ACFreudInit(){
 	
 	$.each(ACFreudConfig,function(index, conf) { 
-		ACFreudPrepare(conf[0],conf[1],conf[2],conf[3],conf[4],conf[5]);
+		ACFreudPrepare(conf[0],conf[1],conf[2],conf[3],conf[4],conf[5],conf[6]);
 	});
 }
 
@@ -166,7 +166,7 @@ function ACFreudPrepare(serverScript1,nam,startval,mustMatch,acdone,fullfocus,mi
 				$at.autocomplete( "close" );
 			}
 		},
-		delay:50,
+		delay:300,
 		minLength:minlength,
 		selectFirst: (mustMatch==1 || mustMatch==2)?true:false
 	}).data('autocomplete')._renderItem=function(ul, item){

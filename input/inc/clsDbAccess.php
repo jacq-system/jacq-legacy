@@ -40,7 +40,7 @@ private static $instances = array();
  * instances the class clsDbAccess with a given database keyword
  *
  * @param string $db connect to that DB
- * @return intDbAccess new instance of that class
+ * @return PDO new instance of that class
  */
 public static function Connect($db)
 {

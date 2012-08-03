@@ -631,9 +631,8 @@ EOF;
 		$this->tabindex++;
 	}
 	
-	function text($x,$y,$text) {
-	
-		$this->_divclass($x,$y+0.2,"cssftext");
+	function text($x,$y,$text,$id="") {
+		$this->_divclass($x,$y+0.2,"cssftext", $id);
 		print $text;
 		print "</div>\n";
 	}
@@ -660,11 +659,13 @@ EOF;
 	*	Private methods															*
 	*																			*
 	****************************************************************************/
-	function _divclass($x,$y,$class) {
+	function _divclass($x,$y,$class,$id = "") {
+            $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
+            
 		if($this->yrelative){
 			$y+=$this->yrel;
 		}
 		$this->yrel=$y;
-		print "<div class=\"$class\" style=\"position: absolute; left: ".$x."em; top: ".$y."em;\">";
+		print "<div $idtext class=\"$class\" style=\"position: absolute; left: ".$x."em; top: ".$y."em;\">";
 	}
 }

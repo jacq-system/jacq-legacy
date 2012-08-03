@@ -4,6 +4,7 @@ error_reporting(0);
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require_once ("../inc/xajax/xajax_core/xajax.inc.php");
+require("../inc/cssf.php");
 
 $xajax = new xajax();
 
@@ -336,6 +337,164 @@ function deleteContainer($containerID, $citationID)
 }
 
 /**
+ * Add a classification for a given citation ID
+ * @param int $citationID citation for which the classification should be added
+ * @param int $child_taxonID child taxon name
+ * @param int $parent_taxonID parent taxon name
+ */
+function addClassification($citationID, $child_taxonID, $parent_taxonID) {
+    global $objResponse;
+    
+    // make sure passed arguments are clean
+    $citationID = intval($citationID);
+    $child_taxonID = intval($child_taxonID);
+    $parent_taxonID = intval($parent_taxonID);
+    
+    if( $citationID > 0 && $child_taxonID > 0 && $parent_taxonID > 0 ) {
+        // Find the fitting tax_synonymy entry
+        $db = clsDbAccess::Connect('INPUT');
+        $dbst = $db->query("
+            SELECT `tax_syn_ID`
+            FROM `tbl_tax_synonymy`
+            WHERE `source_citationID` = $citationID AND `taxonID` = $child_taxonID
+            ");
+        $rows = $dbst->fetchAll();
+
+        // Check if we found something
+        if( count($rows) > 0 ) {
+            $row = $rows[0];
+            $tax_syn_ID = $row['tax_syn_ID'];
+
+            // Add new entry to classification
+            $db->query("
+                INSERT INTO `tbl_tax_classification`
+                ( `tax_syn_ID`, `parent_taxonID` )
+                values
+                ( $tax_syn_ID, $parent_taxonID )
+                ");
+
+            $objResponse->alert('Success');
+        }
+        else {
+            $objResponse->alert('No synonymy entry found');
+        }
+    }
+    else {
+        $objResponse->alert('Invalid arguments passed');
+    }
+    
+    return listClassifications($citationID, 0, 1);
+}
+
+/**
+ * Delete a given classification
+ * @global xajaxResponse $objResponse
+ * @param int $classification_id id of classification to delete
+ * @return \xajaxResponse 
+ */
+function deleteClassification( $p_classification_id ) {
+    global $objResponse;
+    
+    // Check if we have a valid classification id
+    $p_classification_id = intval($p_classification_id);
+    if( $p_classification_id > 0 ) {
+        // Find citationID for this entry
+        $db = clsDbAccess::Connect('INPUT');
+        $dbst = $db->query("
+            SELECT ts.`source_citationID`
+            FROM `tbl_tax_synonymy` ts
+            LEFT JOIN `tbl_tax_classification` tc ON tc.`tax_syn_ID` = ts.`tax_syn_ID`
+            WHERE tc.`classification_id` = $p_classification_id
+            ");
+        $rows = $dbst->fetch();
+        $citation_id = $rows['source_citationID'];
+        
+        // Delete entry from classification table
+        $dbst = $db->query("
+            DELETE FROM `tbl_tax_classification`
+            WHERE `classification_id` = $p_classification_id
+            ");
+
+        // Successfully done
+        $objResponse->alert('Deleted');
+        listClassifications($citation_id, 0, 1);
+    }
+    else {
+        $objResponse->alert('Invalid classification_id');
+    }
+    
+    return $objResponse;
+}
+
+/**
+ * List all classification entries for a given citation
+ * @global xajaxResponse $objResponse
+ * @param int $p_citationID citation to list the classifications for
+ * @param int $page page the user is corrently on (for pagination)
+ * @param int $bInitialize initialize the pagination (0 = no, else = yes)
+ * @return \xajaxResponse 
+ */
+function listClassifications( $p_citationID, $page, $bInitialize ) {
+    global $objResponse;
+
+    // Clean & prepare bassed parameters
+    $p_citationID = intval($p_citationID);
+    $start = intval($page) * 10;
+    
+    /**
+     * Fetch all existing entries and show them 
+     */
+    $db = clsDbAccess::Connect('INPUT');
+    $dbst = $db->query("
+        SELECT
+        SQL_CALC_FOUND_ROWS
+        tc.`classification_id`,
+        `herbar_view`.GetScientificName( tc.`parent_taxonID`, 0 ) AS `parent_taxon`,
+        `herbar_view`.GetScientificName( ts.`taxonID`, 0 ) AS `child_taxon`
+        FROM `tbl_tax_classification` tc
+        LEFT JOIN `tbl_tax_synonymy` ts ON ts.`tax_syn_ID` = tc.`tax_syn_ID`
+        WHERE
+        ts.`source_citationID` = $p_citationID
+        ORDER BY `child_taxon`
+        LIMIT " . $start . ", 10
+        ");
+    $rows = $dbst->fetchAll();
+    
+    $dbst = $db->query("SELECT FOUND_ROWS() AS `found_rows`");
+    $found_rows = $dbst->fetch();
+    $found_rows = $found_rows['found_rows'];
+    
+    // Check if we should initialize the pagination
+    if( $bInitialize ) {
+        $objResponse->script("
+            $('#classification_pagination').pagination( " . $found_rows . ", {
+                items_per_page: 10,
+                num_edge_entries: 1,
+                callback: function(page, container) {
+                    xajax_listClassifications( " . $p_citationID . ", page, 0 );
+                        
+                    return false;
+                }
+            } );");
+    }
+
+    // Create output and send it back
+    ob_start();
+    $cf = new CSSF();
+    foreach( $rows as $index => $row ) {
+        $cf->inputText(1, 4.5 + $index * 2.0, 24, "child_taxon_" . $index, $row['child_taxon'], 0, "", "", true);
+        $cf->inputText(27, 4.5 + $index * 2.0, 24, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);
+        $cf->buttonLink(52.5, 4.5 + $index * 2.0, "Del", '#" onclick="xajax_deleteClassification( ' . $row['classification_id'] . ' ); return false;', 0);
+    }
+    $output = ob_get_clean();
+    
+    // Assign output to list
+    $objResponse->assign('classification_entries', 'innerHTML', $output);
+    
+    return $objResponse;
+}
+
+/**
  * register all xajax-functions in this file
  */
 $xajax->registerFunction("listLib");
@@ -343,4 +502,7 @@ $xajax->registerFunction("listContainer");
 $xajax->registerFunction("editContainer");
 $xajax->registerFunction("updateContainer");
 $xajax->registerFunction("deleteContainer");
+$xajax->registerFunction("addClassification");
+$xajax->registerFunction("deleteClassification");
+$xajax->registerFunction("listClassifications");
 $xajax->processRequest();

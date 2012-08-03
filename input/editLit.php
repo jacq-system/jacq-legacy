@@ -16,6 +16,9 @@ $xajax->registerFunction("listContainer");
 $xajax->registerFunction("editContainer");
 $xajax->registerFunction("updateContainer");
 $xajax->registerFunction("deleteContainer");
+$xajax->registerFunction("addClassification");
+$xajax->registerFunction("deleteClassification");
+$xajax->registerFunction("listClassifications");
 
 if (!isset($_SESSION['liLinkList'])) $_SESSION['liLinkList'] = '';
 
@@ -267,7 +270,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 	 */
 	* html .ui-autocomplete {
 		height: 200px;
-		}++
+		}
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
@@ -367,10 +370,18 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
           width: 750,
           height: 600
         } );
+        
+        $('#edit_tax_classification').dialog( {
+            autoOpen: false,
+            modal: true,
+            width: 750,
+            height: 400,
+            resizable: false
+        } );
+        
+        // Fetch classifications list
+        xajax_listClassifications( <?php echo $p_citationID; ?> , 0, 1);
     });
-	
-	
-	
   </script>
 </head>
 
@@ -415,7 +426,7 @@ ACFreudConfig.push(['index_jq_autocomplete.php?field=taxon2','genusSearch','','0
 </script>
 EOF;
 
-$cf->inputMapLines(47,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
+$cf->inputMapLines(48,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
 'index_jq_autocomplete.php?field=taxon2','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml,2);
 
 
@@ -467,6 +478,9 @@ $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
 
 $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
 $cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
+
+// Label for editing the classification
+$cf->label(62, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
 
 //$cf->label(38, 7, "edit Container", "#\" onclick=\"editMapping();");
 
@@ -561,6 +575,18 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
 
 
 <div id="xajax_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
+
+<div id="edit_tax_classification" style="display: none;" title="taxon classification">
+    <?php
+    $cf->inputJqAutocomplete2(1, 0.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','');
+    $cf->inputJqAutocomplete2(27, 0.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','');
+    $cf->buttonLink(52.5, 0.5, "Add", '#" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
+    ?>
+    <div id="classification_entries"></div>
+    <?php
+    $cf->text( 1, 24.5, "Pagination", "classification_pagination" );
+    ?>
+</div>
 
 </body>
 </html>

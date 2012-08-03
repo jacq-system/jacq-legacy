@@ -1108,6 +1108,56 @@ class clsAutocomplete {
 
         return $results;
     }
+    
+    /**
+     * Auto-completer for taxon but limited to a certain citation
+     * @param type $term 
+     */
+    public function taxonCitation($value) {
+        $citationID = intval($_GET['citationID']);
+        $final_results = array();
+        $citationIDs = (isset($_GET['includeParents'])) ? $this->findParents($citationID) : array($citationID);
+
+        // Check if a valid citation was passed
+        if ($citationID > 0) {
+            $db = clsDbAccess::Connect('INPUT');
+            
+            // Find all taxon name IDs for the current citation
+            $sql = "
+                SELECT `taxonID`
+                FROM `tbl_tax_synonymy`
+                WHERE
+                `acc_taxon_ID` IS NULL
+                AND
+                `source_citationID` IN ( " . implode(', ', $citationIDs) . " )
+            ";
+            $dbst = $db->query($sql);
+            $rows = $dbst->fetchAll();
+
+            // Fetch all taxon IDs
+            $taxonIDs = array();
+            if (count($rows) > 0) {
+                foreach( $rows as $row ) {
+                    $taxonIDs[] = intval($row['taxonID']);
+                }
+            }
+            
+            // Do the actual taxon name matching
+            $results = $this->taxon($value);
+            
+            // Filter results by found taxon IDs
+            foreach( $results as $result ) {
+                $curr_taxonID = $result['id'];
+                
+                if( in_array($curr_taxonID, $taxonIDs) ) {
+                    $final_results[] = $result;
+                }
+            }
+        }
+
+        // Return all matching entries
+        return $final_results;
+    }
 
     /*     * *********************\
       |			|
@@ -1125,4 +1175,34 @@ class clsAutocomplete {
         
     }
 
+
+    /**
+     * Find all parent citations for a given citationID
+     * @param int $p_citationID ID of citation to look for
+     * @return array list of citation IDs (including the passed one) 
+     */
+    private function findParents( $p_citationID ) {
+        $p_citationID = intval($p_citationID);
+        $results = array($p_citationID);
+        
+        $db = clsDbAccess::Connect('INPUT');
+
+        // Find the parent(s) for a citation
+        $sql = "
+            SELECT `citation_parent_ID`
+            FROM `tbl_lit_container`
+            WHERE `citation_child_ID` = '$p_citationID'
+            ";
+        $dbst = $db->query($sql);
+        $rows = $dbst->fetchAll();
+
+        // Check if we found something and fetch the results
+        if( count($rows) > 0 ) {
+            foreach( $rows as $row ) {
+                $results = array_merge($results,findParents( $row['citation_parent_ID'] ));
+            }
+        }
+
+        return $results;
+    }
 }
