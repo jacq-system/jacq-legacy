@@ -372,8 +372,10 @@ function addClassification($citationID, $child_taxonID, $parent_taxonID) {
                 values
                 ( $tax_syn_ID, $parent_taxonID )
                 ");
+            
+            $objResponse->script( '$("#ajax_classification_child").val(\'\'); $("#ajax_classification_child").focus();' );
 
-            $objResponse->alert('Success');
+            //$objResponse->alert('Success');
         }
         else {
             $objResponse->alert('No synonymy entry found');
@@ -481,6 +483,7 @@ function listClassifications( $p_citationID, $page, $bInitialize ) {
     // Create output and send it back
     ob_start();
     $cf = new CSSF();
+    $cf->tabindex = 1000;
     foreach( $rows as $index => $row ) {
         $cf->inputText(1, 4.5 + $index * 2.0, 24, "child_taxon_" . $index, $row['child_taxon'], 0, "", "", true);
         $cf->inputText(27, 4.5 + $index * 2.0, 24, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);

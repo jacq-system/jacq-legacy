@@ -806,9 +806,10 @@ class clsAutocomplete {
      * @param string $value text to search for
      * @param bool[optional] $noExternals only results for "external=0"(default no)
      * @param bool[optional] $withDT adds the DallaTorre information(default no)
+     * @param string[optional] $extraCondition extra condition to be used with the sql statement (SQL where condition)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function taxon($value, $noExternals = false, $withDT = false, $withID = true) {
+    public function taxon($value, $noExternals = false, $withDT = false, $withID = true, $extraCondition = "") {
 
         $results = array();
         // Escape search string
@@ -859,6 +860,11 @@ class clsAutocomplete {
                     $sql.=" AND te0.epithet {$equ} '{$v[1]}'";
                 } else {
                     $sql.=" AND te0.epithet IS NULL";
+                }
+                
+                // Check if we filter the resulting taxons using some extra condition(s)
+                if(!empty($extraCondition)) {
+                    $sql .= $extraCondition;
                 }
 
                 if (empty($value['exact'])) {
@@ -1111,11 +1117,11 @@ class clsAutocomplete {
     
     /**
      * Auto-completer for taxon but limited to a certain citation
-     * @param type $term 
+     * @param string $value taxon name to search for
      */
     public function taxonCitation($value) {
         $citationID = intval($_GET['citationID']);
-        $final_results = array();
+        $results = array();
         $citationIDs = (isset($_GET['includeParents'])) ? $this->findParents($citationID) : array($citationID);
 
         // Check if a valid citation was passed
@@ -1123,40 +1129,23 @@ class clsAutocomplete {
             $db = clsDbAccess::Connect('INPUT');
             
             // Find all taxon name IDs for the current citation
-            $sql = "
-                SELECT `taxonID`
-                FROM `tbl_tax_synonymy`
+            $extraCondition = "
+                AND `taxonID` IN (
+                SELECT ts.`taxonID`
+                FROM `tbl_tax_synonymy` ts
                 WHERE
-                `acc_taxon_ID` IS NULL
+                ts.`acc_taxon_ID` IS NULL
                 AND
-                `source_citationID` IN ( " . implode(', ', $citationIDs) . " )
+                ts.`source_citationID` IN ( " . implode(', ', $citationIDs) . " )
+                )
             ";
-            $dbst = $db->query($sql);
-            $rows = $dbst->fetchAll();
-
-            // Fetch all taxon IDs
-            $taxonIDs = array();
-            if (count($rows) > 0) {
-                foreach( $rows as $row ) {
-                    $taxonIDs[] = intval($row['taxonID']);
-                }
-            }
             
             // Do the actual taxon name matching
-            $results = $this->taxon($value);
-            
-            // Filter results by found taxon IDs
-            foreach( $results as $result ) {
-                $curr_taxonID = $result['id'];
-                
-                if( in_array($curr_taxonID, $taxonIDs) ) {
-                    $final_results[] = $result;
-                }
-            }
+            $results = $this->taxon($value,false,false,true,$extraCondition);
         }
 
         // Return all matching entries
-        return $final_results;
+        return $results;
     }
 
     /*     * *********************\
