@@ -19,6 +19,7 @@ $xajax->registerFunction("deleteContainer");
 $xajax->registerFunction("addClassification");
 $xajax->registerFunction("deleteClassification");
 $xajax->registerFunction("listClassifications");
+$xajax->registerFunction("searchClassifications");
 
 if (!isset($_SESSION['liLinkList'])) $_SESSION['liLinkList'] = '';
 
@@ -375,7 +376,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             autoOpen: false,
             modal: true,
             width: 750,
-            height: 400,
+            height: 450,
             resizable: false
         } );
         
@@ -578,13 +579,18 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
 
 <div id="edit_tax_classification" style="display: none;" title="taxon classification">
     <?php
-    $cf->inputJqAutocomplete2(1, 0.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->inputJqAutocomplete2(27, 0.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->buttonLink(52.5, 0.5, "Add", '#" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
+    $cf->label(4, 0.5, "child");
+    $cf->inputJqAutocomplete2(1, 2.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->label(31, 0.5, "parent");
+    $cf->inputJqAutocomplete2(27, 2.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->buttonLink(52.5, 2.5, "Add", '#" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
+
+    $cf->inputJqAutocomplete2(1, 6.5, 24, "classification_search",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->buttonLink(27, 6.5, "Search", '#" onclick="xajax_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);
     ?>
     <div id="classification_entries"></div>
     <?php
-    $cf->text( 1, 24.5, "Pagination", "classification_pagination" );
+    $cf->text( 1, 28.5, "Pagination", "classification_pagination" );
     ?>
 </div>
 

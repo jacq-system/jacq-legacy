@@ -22,7 +22,7 @@ if (method_exists($checkDjatoka, $methodName)) {
         }
     } catch (Exception $e) {
         $ret = array(
-            'error' => $e->getMessage() . '<br />' . var_export($e->getTrace(), true)
+            'error' => $e->getMessage() // . '<br />' . var_export($e->getTrace(), true)
         );
     }
 }

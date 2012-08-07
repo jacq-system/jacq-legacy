@@ -436,7 +436,7 @@ function deleteClassification( $p_classification_id ) {
  * @param int $bInitialize initialize the pagination (0 = no, else = yes)
  * @return \xajaxResponse 
  */
-function listClassifications( $p_citationID, $page, $bInitialize ) {
+function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxonID = 0 ) {
     global $objResponse;
 
     // Clean & prepare bassed parameters
@@ -456,8 +456,9 @@ function listClassifications( $p_citationID, $page, $bInitialize ) {
         FROM `tbl_tax_classification` tc
         LEFT JOIN `tbl_tax_synonymy` ts ON ts.`tax_syn_ID` = tc.`tax_syn_ID`
         WHERE
-        ts.`source_citationID` = $p_citationID
-        ORDER BY `child_taxon`
+        ts.`source_citationID` = $p_citationID "
+        . (($p_search_taxonID > 0) ? "AND (ts.`taxonID` = $p_search_taxonID OR tc.`parent_taxonID` = $p_search_taxonID) " : "") .
+        "ORDER BY `child_taxon`, `parent_taxon`
         LIMIT " . $start . ", 10
         ");
     $rows = $dbst->fetchAll();
@@ -473,7 +474,7 @@ function listClassifications( $p_citationID, $page, $bInitialize ) {
                 items_per_page: 10,
                 num_edge_entries: 1,
                 callback: function(page, container) {
-                    xajax_listClassifications( " . $p_citationID . ", page, 0 );
+                    xajax_listClassifications( " . $p_citationID . ", page, 0, " . $p_search_taxonID . " );
                         
                     return false;
                 }
@@ -485,9 +486,9 @@ function listClassifications( $p_citationID, $page, $bInitialize ) {
     $cf = new CSSF();
     $cf->tabindex = 1000;
     foreach( $rows as $index => $row ) {
-        $cf->inputText(1, 4.5 + $index * 2.0, 24, "child_taxon_" . $index, $row['child_taxon'], 0, "", "", true);
-        $cf->inputText(27, 4.5 + $index * 2.0, 24, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);
-        $cf->buttonLink(52.5, 4.5 + $index * 2.0, "Del", '#" onclick="xajax_deleteClassification( ' . $row['classification_id'] . ' ); return false;', 0);
+        $cf->inputText(1, 8.5 + $index * 2.0, 24, "child_taxon_" . $index, $row['child_taxon'], 0, "", "", true);
+        $cf->inputText(27, 8.5 + $index * 2.0, 24, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);
+        $cf->buttonLink(52.5, 8.5 + $index * 2.0, "Del", '#" onclick="xajax_deleteClassification( ' . $row['classification_id'] . ' ); return false;', 0);
     }
     $output = ob_get_clean();
     
@@ -495,6 +496,16 @@ function listClassifications( $p_citationID, $page, $bInitialize ) {
     $objResponse->assign('classification_entries', 'innerHTML', $output);
     
     return $objResponse;
+}
+
+/**
+ * Simple wrapper for new search listing
+ * @param int $p_citationID citation to search for
+ * @param int $p_search_taxonID taxonID to search for
+ * @return \xajaxResponse 
+ */
+function searchClassifications( $p_citationID, $p_search_taxonID ) {
+    return listClassifications($p_citationID, 0, true, intval($p_search_taxonID));
 }
 
 /**
@@ -508,4 +519,5 @@ $xajax->registerFunction("deleteContainer");
 $xajax->registerFunction("addClassification");
 $xajax->registerFunction("deleteClassification");
 $xajax->registerFunction("listClassifications");
+$xajax->registerFunction("searchClassifications");
 $xajax->processRequest();
