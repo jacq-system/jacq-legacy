@@ -84,8 +84,8 @@ class clsAutocompleteCommonName {
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
 
@@ -141,8 +141,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
 
@@ -203,8 +203,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
 
@@ -262,8 +262,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -329,8 +329,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -381,8 +381,8 @@ WHERE
         $results_intern = array();
         $fetched = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -425,7 +425,7 @@ WHERE
             $v = isset($value['id']) ? $value['id'] : (isset($value['exact']) ? $value['exact'] : $value['search']);
             // Get TypeCache
             $cacheoption = $this->getCacheOption();
-            $sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='1' and search_val='{$v}' {$cacheoption}";
+            $sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache WHERE search_group='1' and search_val='{$v}' {$cacheoption}";
 
             $dbst = $db->query($sql);
             $row = $dbst->fetch();
@@ -510,7 +510,7 @@ WHERE
                     }
 
                     // Insert Geonames Search Cache
-                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache (search_group,search_val,result) VALUES ('1','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
+                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('1','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
                     $dbst = $db->query($sql);
                 }
             }
@@ -542,8 +542,8 @@ WHERE
         $fetched = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -881,8 +881,8 @@ ORDER BY
     public function cname_service($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -940,8 +940,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -996,8 +996,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
