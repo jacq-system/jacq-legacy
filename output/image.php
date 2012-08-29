@@ -44,6 +44,9 @@ function getResult($filename, $method, $format) {
             case 'resized':
                 doRedirectDownloadPic($picdetails, $format, 2);
                 break;
+            case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
+                doRedirectDownloadPic($picdetails, $format, 3);
+                break;
             case 'thumbs':
                 header('Content-type: text/json');
                 header('Content-type: application/json');
@@ -154,6 +157,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
     // Setup default mime-type & file-extension
     $mime = 'image/jpeg';
     $fileExt = 'jpg';
+    $url = '';
 
     // Check if we are using djatoka
     if ($picdetails['is_djatoka'] == '1') {
@@ -181,6 +185,10 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
             // Thumbnail for kulturpool
             if( $thumb == 2 ) {
                 $scale = '0,1300';
+            }
+            // thumbnail for europeana
+            else if( $thumb == 3 ) {
+                $scale = '200,0';
             }
             // Default thumbnail
             else {
@@ -216,7 +224,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
                 $fileurl = 'mktn.php';
             }
         }
-
+        
         $url = "{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$format}{$q}";
     }
     $url = cleanURL($url);
