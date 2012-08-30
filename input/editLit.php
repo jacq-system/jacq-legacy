@@ -380,8 +380,14 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             resizable: false
         } );
         
+        <?php
+        if( $p_citationID ) {
+        ?>
         // Fetch classifications list
-        xajax_listClassifications( <?php echo $p_citationID; ?> , 0, 1);
+        xajax_listClassifications( <?php echo intval($p_citationID); ?> , 0, 1);
+        <?php
+        }
+        ?>
     });
   </script>
 </head>
@@ -427,8 +433,11 @@ ACFreudConfig.push(['index_jq_autocomplete.php?field=taxon2','genusSearch','','0
 </script>
 EOF;
 
+// only show edit link if we have a valid citation
+if( $p_citationID ) {
 $cf->inputMapLines(48,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
 'index_jq_autocomplete.php?field=taxon2','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml,2);
+}
 
 
 
@@ -464,29 +473,28 @@ if ($p_citationID) {
     if ($edit) {
         echo "<input type=\"hidden\" name=\"edit\" value=\"$edit\">\n";
         $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>$p_citationID</b>&nbsp;</span>";
-    } else
+    }
+    else {
         $text = $p_citationID;
-} else {
+    }
+
+    // only display edit buttons if we have a valid citation
+    $cf->label(7, 2.5, "edit Index", "javascript:taxIndex('$p_citationID')");
+
+    $cf->label(13.5, 2.5, "cited taxa ", "javascript:taxa('$p_citationID')");
+    $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
+
+    $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
+    $cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
+
+    // label for editing the classification
+    $cf->label(62, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
+}
+else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";
 }
 $cf->label(7, 0.5, "citationID");
 $cf->text(7, 0.5, "&nbsp;" . $text);
-
-$cf->label(7, 2.5, "edit Index", "javascript:taxIndex('$p_citationID')");
-
-$cf->label(13.5, 2.5, "cited taxa ", "javascript:taxa('$p_citationID')");
-$cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
-
-$cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
-$cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
-
-// Label for editing the classification
-$cf->label(62, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
-
-//$cf->label(38, 7, "edit Container", "#\" onclick=\"editMapping();");
-
-
-		
 		
 $cf->labelMandatory(19, 0.5, 3, "date");
 $cf->inputText(19, 0.5, 5, "jahr", $p_jahr, 50);
@@ -498,7 +506,8 @@ $cf->inputJqAutocomplete2(40, 0.5, 25, "category",$p_category,"index_jq_autocomp
 
 if ($p_url) {
     $cf->label(7, 4.5, "url", "http://" . $p_url . "\" target=\"_blank");
-} else {
+}
+else {
     $cf->label(7, 4.5, "url");
 }
 $cf->inputText(7, 4.5, 25, "url", $p_url, 255);
