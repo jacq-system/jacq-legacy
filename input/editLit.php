@@ -364,6 +364,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
       });
     }
     $(function() {
+        ACFreudInit();
+        
         $('#iBox_content').dialog( {
           autoOpen: false,
           modal: true,
