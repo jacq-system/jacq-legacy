@@ -16,3 +16,6 @@ $_CONFIG['DATABASE']['PICTURES'] = array(
         "pass" => ""
     )
 );
+
+// URL to yii-based JACQ implementation (for JSON webservices)
+$_CONFIG['JACQ_URL'] = "../../jacq-yii/";
