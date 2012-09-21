@@ -24,12 +24,26 @@ require( 'inc/variables.php' );
                         "ajax": {
                             "url": jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
                             "data": function(n) {
+                                // extract citation & taxon information from selected node
                                 var link = (n.children) ? n.children('a').first() : n;
                                 var taxon_id = (link.attr) ? link.attr("data-taxon-id") : 0;
+                                var reference_id = (link.attr) ? link.attr("data-reference-id") : 0;
+                                var reference_type = (link.attr) ? link.attr("data-reference-type") : 0;
 
+                                // check if we have a valid reference-type, if not use the default one
+                                if( !reference_type ) {
+                                    reference_type = $('#classificationBrowser_referenceType').val();
+                                }
+                                
+                                // check for a set reference, if not use default one
+                                if( !reference_id ) {
+                                    reference_id = $('#classificationBrowser_referenceID').val();
+                                }
+
+                                // return information
                                 return {
-                                    "referenceType": "citation",
-                                    "referenceID": $('#classificationBrowser_referenceID').val(),
+                                    "referenceType": reference_type,
+                                    "referenceID": reference_id,
                                     "taxonID": taxon_id
                                 };
                             }
@@ -121,7 +135,7 @@ require( 'inc/variables.php' );
                                 <!--<option value="person">person</option>
                                 <option value="service">service</option>
                                 <option value="specimen">specimen</option>-->
-                                <option value="citation">citation</option>
+                                <option value="periodical">citation</option>
                             </select>
                             <br />
                             <select id="classificationBrowser_referenceID">
