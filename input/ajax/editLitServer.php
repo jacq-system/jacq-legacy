@@ -385,7 +385,7 @@ function addClassification($citationID, $child_taxonID, $parent_taxonID) {
         $objResponse->alert('Invalid arguments passed');
     }
     
-    return listClassifications($citationID, 0, 1);
+    return listClassifications($citationID, 0, 1, $parent_taxonID);
 }
 
 /**
@@ -442,6 +442,8 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
     // Clean & prepare bassed parameters
     $p_citationID = intval($p_citationID);
     $start = intval($page) * 10;
+    $bInitialize = ($bInitialize > 0) ? true : false;
+    $p_search_taxonID = intval($p_search_taxonID);
     
     /**
      * Fetch all existing entries and show them 
@@ -478,7 +480,8 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
                         
                     return false;
                 }
-            } );");
+            } );
+        ");
     }
 
     // Create output and send it back
