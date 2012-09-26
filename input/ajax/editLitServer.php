@@ -389,6 +389,38 @@ function addClassification($citationID, $child_taxonID, $parent_taxonID) {
 }
 
 /**
+ * Update the parent of a given classification entry
+ * @global xajaxResponse $objResponse
+ * @param int $p_classification_id classification entry to edit
+ * @param int $p_parent_taxonID new parent taxon id
+ * @return \xajaxResponse 
+ */
+function updateClassification( $p_classification_id, $p_parent_taxonID ) {
+    global $objResponse;
+    
+    // escape & make parameters save
+    $p_classification_id = intval($p_classification_id);
+    $p_parent_taxonID = intval($p_parent_taxonID);
+    
+    // check if we have a valid entry to edit
+    if( $p_classification_id > 0 && $p_parent_taxonID > 0 ) {
+        $db = clsDbAccess::Connect('INPUT');
+        $dbst = $db->query("
+            UPDATE `tbl_tax_classification`
+            SET `parent_taxonID` = $p_parent_taxonID
+            WHERE `classification_id` = $p_classification_id
+            ");
+        $dbst->execute();
+        $objResponse->alert('Update successfull');
+    }
+    else {
+        $objResponse->alert('Invalid arguments passed');
+    }
+    
+    return $objResponse;
+}
+
+/**
  * Delete a given classification
  * @global xajaxResponse $objResponse
  * @param int $classification_id id of classification to delete
@@ -454,7 +486,9 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
         SQL_CALC_FOUND_ROWS
         tc.`classification_id`,
         `herbar_view`.GetScientificName( tc.`parent_taxonID`, 0 ) AS `parent_taxon`,
-        `herbar_view`.GetScientificName( ts.`taxonID`, 0 ) AS `child_taxon`
+        tc.`parent_taxonID`,
+        `herbar_view`.GetScientificName( ts.`taxonID`, 0 ) AS `child_taxon`,
+        ts.`taxonID` AS `child_taxonID`
         FROM `tbl_tax_classification` tc
         LEFT JOIN `tbl_tax_synonymy` ts ON ts.`tax_syn_ID` = tc.`tax_syn_ID`
         WHERE
@@ -490,8 +524,9 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
     $cf->tabindex = 1000;
     foreach( $rows as $index => $row ) {
         $cf->inputText(1, 8.5 + $index * 2.0, 24, "child_taxon_" . $index, $row['child_taxon'], 0, "", "", true);
-        $cf->inputText(27, 8.5 + $index * 2.0, 24, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);
-        $cf->buttonLink(52.5, 8.5 + $index * 2.0, "Del", '#" onclick="xajax_deleteClassification( ' . $row['classification_id'] . ' ); return false;', 0);
+        $cf->inputText(27, 8.5 + $index * 2.0, 20, "parent_taxon_" . $index, $row['parent_taxon'], 0, "", "", true);
+        $cf->buttonLink(48.5, 8.5 + $index * 2.0, "Del", '#" onclick="xajax_deleteClassification( ' . $row['classification_id'] . ' ); return false;', 0);
+        $cf->buttonLink(52.5, 8.5 + $index * 2.0, "Edit", '#" onclick="$(\'#classification_editId\').val(' . $row['classification_id'] . '); $(\'#classification_parentIndex\').val(' . $row['parent_taxonID'] . '); $(\'#classification_childIndex\').val(' . $row['child_taxonID'] . '); $(\'#ajax_classification_child\').val( $(\'*[name=child_taxon_' . $index . ']\').val() ); $(\'#ajax_classification_parent\').val( $(\'*[name=parent_taxon_' . $index . ']\').val() ); $(\'#classification_add\').hide(); $(\'#classification_update\').show(); return false;', 0);
     }
     $output = ob_get_clean();
     
@@ -523,4 +558,5 @@ $xajax->registerFunction("addClassification");
 $xajax->registerFunction("deleteClassification");
 $xajax->registerFunction("listClassifications");
 $xajax->registerFunction("searchClassifications");
+$xajax->registerFunction("updateClassification");
 $xajax->processRequest();

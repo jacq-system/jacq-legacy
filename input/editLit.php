@@ -20,6 +20,7 @@ $xajax->registerFunction("addClassification");
 $xajax->registerFunction("deleteClassification");
 $xajax->registerFunction("listClassifications");
 $xajax->registerFunction("searchClassifications");
+$xajax->registerFunction("updateClassification");
 
 if (!isset($_SESSION['liLinkList'])) $_SESSION['liLinkList'] = '';
 
@@ -589,12 +590,14 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
 <div id="xajax_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
 
 <div id="edit_tax_classification" style="display: none;" title="taxon classification">
+    <input type="hidden" id="classification_editId" value="0" />
     <?php
     $cf->label(4, 0.5, "child");
-    $cf->inputJqAutocomplete2(1, 2.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->inputJqAutocomplete2(1, 2.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&child=true&citationID=" . $p_citationID,50,2,'','',2,true);
     $cf->label(31, 0.5, "parent");
     $cf->inputJqAutocomplete2(27, 2.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->buttonLink(52.5, 2.5, "Add", '#" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
+    $cf->buttonLink(52.5, 2.5, "Add", '#" id="classification_add" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
+    $cf->buttonLink(52.5, 2.5, "Upd", '#" id="classification_update" style="display: none;" onclick="xajax_updateClassification( $(\'#classification_editId\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
 
     $cf->inputJqAutocomplete2(1, 6.5, 24, "classification_search",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
     $cf->buttonLink(27, 6.5, "Search", '#" onclick="xajax_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);

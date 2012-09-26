@@ -1123,19 +1123,23 @@ class clsAutocomplete {
         $citationID = intval($_GET['citationID']);
         $results = array();
         $citationIDs = (isset($_GET['includeParents'])) ? $this->findParents($citationID) : array($citationID);
+        $bChild = (isset($_GET['child'])) ? true : false;
 
         // Check if a valid citation was passed
         if ($citationID > 0) {
             $db = clsDbAccess::Connect('INPUT');
             
             // Find all taxon name IDs for the current citation
+            // but do not use already assigned ones
             $extraCondition = "
-                AND `taxonID` IN (
+                AND ts.`taxonID` IN (
                 SELECT ts.`taxonID`
-                FROM `tbl_tax_synonymy` ts
-                WHERE
-                ts.`acc_taxon_ID` IS NULL
-                AND
+                FROM `tbl_tax_synonymy` ts"
+                .(($bChild) ? " LEFT JOIN `tbl_tax_classification` tc ON tc.`tax_syn_ID` = ts.`tax_syn_ID`" : "").
+                " WHERE
+                ts.`acc_taxon_ID` IS NULL"
+                .(($bChild) ? " AND tc.`classification_id` IS NULL" : "").
+                " AND
                 ts.`source_citationID` IN ( " . implode(', ', $citationIDs) . " )
                 )
             ";
