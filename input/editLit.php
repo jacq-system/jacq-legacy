@@ -281,6 +281,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
  
   <script type="text/javascript" language="JavaScript">
     var reload = false;
+    var classification_page = 0;
 
     function editAuthor(sel,typ) {
       target = "editLitAuthor.php?sel=" + encodeURIComponent(sel) + "&typ=" + typ;
@@ -364,6 +365,98 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         minLength: 2
       });
     }
+    
+    // called when the user clicks the edit button of a classification
+    function editClassification( p_classification_id ) {
+        // transfer all entered content to edit form
+        // hidden IDs of scientific names
+        $('#classification_childIndex').val( $('*[name=classification_' + p_classification_id + '_child_taxonID]').val() );
+        $('#classification_parentIndex').val( $('*[name=classification_' + p_classification_id + '_parent_taxonID]').val() );
+        // numbering & ordering
+        $('*[name=classification_number]').val( $('*[name=classification_' + p_classification_id + '_number]').val() );
+        $('*[name=classification_order]').val( $('*[name=classification_' + p_classification_id + '_order]').val() );
+        // visible scientific names fields
+        $('#ajax_classification_child').val( $('*[name=classification_' + p_classification_id + '_child_name]').val() );
+        $('#ajax_classification_parent').val( $('*[name=classification_' + p_classification_id + '_parent_name]').val() );
+        // remember classification id
+        $('#classification_editId').val( p_classification_id );
+        
+        // hide add button & show update button
+        $('#classification_add').hide();
+        $('#classification_update').show();
+    }
+    
+    // called when the user clicks on update classification
+    function updateClassification() {
+        xajax_updateClassification(
+            $('#classification_editId').val(),
+            $('*[name=classification_number]').val(),
+            $('*[name=classification_order]').val(),
+            $('#classification_childIndex').val(),
+            $('#classification_parentIndex').val()
+        );
+    }
+    
+    // callback for the server side to indicate a successfull update
+    // does the cleanup
+    function updateClassificationDone() {
+        // reset all fields to empty
+        $('#classification_editId').val('');
+        $('*[name=classification_number]').val('');
+        $('*[name=classification_order]').val(0);
+        $('#classification_childIndex').val('');
+        $('#classification_parentIndex').val('');
+        $('#ajax_classification_child').val('');
+        $('#ajax_classification_parent').val('');
+
+        // hide add button & show update button
+        $('#classification_update').hide();
+        $('#classification_add').show();
+
+        refreshClassification();
+    }
+    
+    /**
+     * called when the user clicks on the "Add" button in the classification form
+     */
+    function addClassification( p_citation ) {
+        xajax_addClassification(
+            p_citation,
+            $('*[name=classification_number]').val(),
+            $('*[name=classification_order]').val(),
+            $('#classification_childIndex').val(),
+            $('#classification_parentIndex').val()
+        );
+    }
+    
+    /**
+     * callback of server side when classification was successfully added
+     */
+    function addClassificationDone() {
+        // reset all fields to empty
+        $('*[name=classification_number]').val('');
+        $('*[name=classification_order]').val(0);
+        $('#classification_childIndex').val('');
+        $('#classification_parentIndex').val('');
+        $('#ajax_classification_child').val('');
+        $('#ajax_classification_parent').val('');
+        
+        refreshClassification();
+    }
+    
+    /**
+     * refresh current view of classification
+     */
+    function refreshClassification() {
+        xajax_listClassifications(
+            <?php echo $p_citationID; ?>,
+            classification_page,
+            0,
+            $('#classification_searchIndex').val()
+        );
+    }
+    
+    // init javascript
     $(function() {
         ACFreudInit();
         
@@ -378,7 +471,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $('#edit_tax_classification').dialog( {
             autoOpen: false,
             modal: true,
-            width: 750,
+            width: 820,
             height: 450,
             resizable: false
         } );
@@ -592,19 +685,24 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
 <div id="edit_tax_classification" style="display: none;" title="taxon classification">
     <input type="hidden" id="classification_editId" value="0" />
     <?php
-    $cf->label(4, 0.5, "child");
-    $cf->inputJqAutocomplete2(1, 2.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&child=true&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->label(31, 0.5, "parent");
-    $cf->inputJqAutocomplete2(27, 2.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->buttonLink(52.5, 2.5, "Add", '#" id="classification_add" onclick="xajax_addClassification( ' . $p_citationID . ', $(\'#classification_childIndex\').val(), $(\'#classification_parentIndex\').val() ); return false;', 0);
-    $cf->buttonLink(52.5, 2.5, "Upd", '#" id="classification_update" style="display: none;" onclick="xajax_updateClassification( $(\'#classification_editId\').val(), $(\'#classification_parentIndex\').val() ); $(\'#classification_update\').hide(); $(\'#classification_add\').show(); return false;', 0);
+    $cf->label(3, 0.5, "L");
+    $cf->label(6, 0.5, "#");
+    $cf->label(10, 0.5, "child");
+    $cf->inputText(1, 2.5, 2, "classification_number", "");
+    $cf->inputText(4, 2.5, 2, "classification_order", "0");
+    $cf->inputJqAutocomplete2(7, 2.5, 24, "classification_child",0,"index_jq_autocomplete.php?field=taxonCitation&child=true&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->label(36, 0.5, "parent");
+    $cf->inputJqAutocomplete2(32, 2.5, 24, "classification_parent",0,"index_jq_autocomplete.php?field=taxonCitation&includeParents=true&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->buttonLink(57.5, 2.5, "Add", '#" id="classification_add" onclick="addClassification( ' . $p_citationID . ' ); return false;', 0);
+    $cf->buttonLink(57.5, 2.5, "Upd", '#" id="classification_update" style="display: none;" onclick="updateClassification(); return false;', 0);
 
-    $cf->inputJqAutocomplete2(1, 6.5, 24, "classification_search",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->buttonLink(27, 6.5, "Search", '#" onclick="xajax_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);
+    $cf->inputJqAutocomplete2(7, 6.5, 24, "classification_search",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
+    $cf->buttonLink(32, 6.5, "Search", '#" onclick="xajax_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);
+    $cf->buttonLink(38, 6.5, "Reset", '#" onclick="$(\'#ajax_classification_search\').val(\'\'); $(\'#classification_searchIndex\').val(\'\'); xajax_listClassifications( ' . $p_citationID . ', 0, 1); return false;', 0);
     ?>
     <div id="classification_entries"></div>
     <?php
-    $cf->text( 1, 28.5, "Pagination", "classification_pagination" );
+    $cf->text( 1, 28.7, "Pagination", "classification_pagination" );
     ?>
 </div>
 
