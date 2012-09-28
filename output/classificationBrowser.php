@@ -144,7 +144,7 @@ require( 'inc/variables.php' );
                             <br />
                             <br />
                             
-                            <div id="jstree_classificationBrowser" style="height: 400px;"></div>
+                            <div id="jstree_classificationBrowser" style="padding-top: 10px; padding-bottom: 10px;"></div>
                         </form>
                     </td>
                 </tr>
