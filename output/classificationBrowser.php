@@ -49,7 +49,8 @@ require( 'inc/variables.php' );
                             }
                         }
                     },
-                    "plugins": ["json_data", "themes"]
+                    "plugins": ["json_data", "themes"],
+                    "core": {"html_titles": true}
                 });
                 
                 // update references when new type is chosen
