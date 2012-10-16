@@ -1192,7 +1192,7 @@ class clsAutocomplete {
         // Check if we found something and fetch the results
         if( count($rows) > 0 ) {
             foreach( $rows as $row ) {
-                $results = array_merge($results,findParents( $row['citation_parent_ID'] ));
+                $results = array_merge($results,$this->findParents( $row['citation_parent_ID'] ));
             }
         }
 

@@ -449,7 +449,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
      */
     function refreshClassification() {
         xajax_listClassifications(
-            <?php echo $p_citationID; ?>,
+            <?php echo intval($p_citationID); ?>,
             classification_page,
             0,
             $('#classification_searchIndex').val()
