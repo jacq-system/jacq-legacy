@@ -392,6 +392,7 @@ tbl_wu_generale
             <tr>
               <td align="center">
                 <p></p>
+                <p class="normal" style="border: 1px solid #FF0000; font-weight: bold; font-color: #FF0000; margin-top: 5px; margin-bottom: 5px; padding: 5px;">We are currently updating to a new image server infrastructure. We apologize for any inconvenience this may cause for you.</p>
                 <p>
                 <table border="0" cellspacing="0" cellpadding="0" align="center">
                   <tr>
