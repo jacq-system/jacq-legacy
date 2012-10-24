@@ -86,7 +86,90 @@ require( 'inc/variables.php' );
                 
                 // add click handlers for jsTree nodes (since they should do nothing)
                 $('#jstree_classificationBrowser a').live('click', function() {return false;});
+                
+                // add hover handler for all info links
+                $('#jstree_classificationBrowser .infoBox').live({
+                    mouseover: function() {
+                        var position = $(this).position();
+                        var taxonID = $(this).parent().attr('data-taxon-id');
+                        var referenceId = $(this).parent().attr('data-reference-id');
+                        var liElement = $(this).parent().parent();
+                        
+                        // keep reference to li-Element
+                        $('#infoBox').data('liElement', liElement);
+                        
+                        // re-position the infobox
+                        $('#infoBox').css("top", position.top);
+                        $('#infoBox').css("left", position.left + $(this).width() + 10);
+                        
+                        // display loading & show the infobox
+                        $('#infoBox').html( "loading..." );
+                        $('#infoBox').show();
+                        
+                        // query the JSON-services for detail information
+                        $.ajax({
+                            url: jacq_url + "index.php?r=jSONClassification/japi&action=nameReferences",
+                            data: {
+                                taxonID: taxonID,
+                                excludeReferenceId: referenceId
+                            },
+                            success: function(data) {
+                                // check if we found additional references
+                                if( data && data.length && data.length > 0 ) {
+                                    $('#infoBox').html('<b>also used in:</b>');
+                                    
+                                    // remember return reference-data
+                                    $('#infoBox').data('referenceData', data);
+                                    
+                                    // add all found references to infobox
+                                    for( var i = 0; i < data.length; i++ ) {
+                                        var referenceInfo = data[i].referenceName +
+                                            '&nbsp;<span onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
+                                            '&nbsp;<span><img src="images/world_link.png"></span>';
+                                        $('#infoBox').html($('#infoBox').html() + '<br/>' + referenceInfo);
+                                    }
+                                }
+                                // if not display notification
+                                else {
+                                    $('#infoBox').html('no other references');
+                                }
+                            }
+                        });
+                        
+                        return false;
+                    }
+                });
+                
+                // Add hover-behaviour for infoBox
+                //$('#infoBox').live('mouseover', function() {$(this).data('mouseEntered', true);});
+                /*$('#infoBox').live('mouseout', function() {
+                    $(this).hide();
+                });*/
             });
+            
+            function arrow_down( p_i ) {
+                var index = p_i;
+                var referenceData = $('#infoBox').data('referenceData');
+                referenceData = referenceData[index];
+                
+                var nodeData = {
+                    data: {
+                        title: referenceData.referenceName,
+                        attr: {
+                            "data-taxon-id": referenceData.taxonID,
+                            "data-reference-id": referenceData.referenceId,
+                            "data-reference-type": referenceData.referenceType
+                        },
+                        icon: "images/book_open.png"
+                    }
+                };
+                
+                if( referenceData.hasChildren ) {
+                    nodeData.state = 'closed';
+                }
+
+                $('#jstree_classificationBrowser').jstree( 'create_node', $('#infoBox').data('liElement'), "after", nodeData );
+            }
         </script>
     </head>
 
@@ -151,5 +234,6 @@ require( 'inc/variables.php' );
                 </tr>
             </table>
         </div>
+        <div id="infoBox" style="display: none; padding: 5px; background: #FFFFFF; border: 1px solid #000000; position: absolute; top: 0px; left: 0px;">Info</div>
     </body>
 </html>
