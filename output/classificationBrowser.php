@@ -1,6 +1,16 @@
 <?php
 // require configuration
 require( 'inc/variables.php' );
+
+// get all parameters
+$taxonID = intval($_REQUEST['taxonID']);
+$referenceType = $_REQUEST['referenceType'];
+$referenceId = intval($_REQUEST['referenceId']);
+
+// check if a valid request was made
+if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
+    $data = file_get_contents($_CONFIG['JACQ_FULL_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowserAll&referenceType=citation&referenceId=" . $referenceId . "&taxonID=" . $taxonID);
+}
 ?>
 <html>
     <head>
@@ -21,6 +31,7 @@ require( 'inc/variables.php' );
                 // initialize jsTree for organisation
                 $('#jstree_classificationBrowser').jstree({
                     "json_data": {
+                        <?php if(!empty($data)) echo '"data": ' . $data . ',' ; ?>
                         "ajax": {
                             "url": jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
                             "data": function(n) {
@@ -125,7 +136,7 @@ require( 'inc/variables.php' );
                                     for( var i = 0; i < data.length; i++ ) {
                                         var referenceInfo = data[i].referenceName +
                                             '&nbsp;<span onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
-                                            '&nbsp;<span><img src="images/world_link.png"></span>';
+                                            '&nbsp;<span onclick="world_link(' + i + '); return false;"><img src="images/world_link.png"></span>';
                                         $('#infoBox').html($('#infoBox').html() + '<br/>' + referenceInfo);
                                     }
                                 }
@@ -146,6 +157,17 @@ require( 'inc/variables.php' );
                     $(this).hide();
                 });*/
             });
+            
+            function world_link( p_i ) {
+                var index = p_i;
+                var referenceData = $('#infoBox').data('referenceData');
+                referenceData = referenceData[index];
+
+                var url = 'classificationBrowser.php?referenceType=' + referenceData.referenceType +
+                    '&referenceId=' + referenceData.referenceId + "&taxonID=" + referenceData.taxonID;
+                
+                window.open(url);
+            }
             
             function arrow_down( p_i ) {
                 var index = p_i;
