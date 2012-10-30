@@ -352,6 +352,7 @@ function clearAll() {
   return $objResponse;
 }
 
+require("listSpecimensServer.php");
 
 /**
  * register all xajax-functions in this file
@@ -370,4 +371,7 @@ $xajax->registerFunction("updtStandardLabel");
 $xajax->registerFunction("checkStandardLabelPdfButton");
 $xajax->registerFunction("setAll");
 $xajax->registerFunction("clearAll");
+
+$xajax->registerFunction("listSpecimens");
+
 $xajax->processRequest();

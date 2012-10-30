@@ -23,6 +23,7 @@ $xajax->registerFunction("updtStandardLabel");
 $xajax->registerFunction("checkStandardLabelPdfButton");
 $xajax->registerFunction("setAll");
 $xajax->registerFunction("clearAll");
+$xajax->registerFunction("listSpecimens");
 
 if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';
 if (!isset($_SESSION['sTyp'])) $_SESSION['sTyp'] = '';
@@ -310,6 +311,14 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-1.4.2.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.pagination.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/pagination.css">
+  <style>
+      .pagination a {
+        color: #FFFF00;
+      }
+  </style>
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
 
@@ -547,210 +556,16 @@ if ($_SESSION['sType'] == 1) {
            . "<input class=\"button\" type=\"button\" value=\" check all \" onclick=\"check_all()\">\n"
            . "</td></tr></table>\n<p>\n";
     }
-
-    $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image,
-             c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-             s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-             n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
-             s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-             s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
-            FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc)
-             LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
-             LEFT JOIN tbl_typi t ON t.typusID = s.typusID
-             LEFT JOIN tbl_geo_province p ON p.provinceID = s.provinceID
-             LEFT JOIN tbl_geo_nation n ON n.NationID = s.NationID
-             LEFT JOIN tbl_geo_region r ON r.regionID = n.regionID_fk
-             LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
-             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-             LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-            WHERE ts.taxonID = s.taxonID
-             AND tg.genID = ts.genID
-             AND tf.familyID = tg.familyID
-             AND mc.collectionID = s.collectionID";
-    $sql2 = "";
-	if (trim($_SESSION['taxonID'])) {
-		$sql2 .= " AND ts.taxonID='".intval($_SESSION['taxonID'])."'";
-	}else{
-		if (trim($_SESSION['sTaxon'])) {
-			$pieces = explode(" ", trim($_SESSION['sTaxon']));
-			$part1 = array_shift($pieces);
-			$part2 = array_shift($pieces);
-			$sql2 .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
-			if ($part2) {
-				$sql2 .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-						  "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-						  "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-						  "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
-			}
-		}
-		if (trim($_SESSION['sSeries'])) {
-			$sql2 .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['sSeries'])) . "%'";
-		}
-		if (trim($_SESSION['wuCollection'])) {
-			if (trim($_SESSION['wuCollection']) > 0) {
-				$sql2 .= " AND s.collectionID=" . quoteString(trim($_SESSION['wuCollection']));
-			} else {
-				$sql2 .= " AND mc.source_id=" . quoteString(abs(trim($_SESSION['wuCollection'])));
-			}
-		}
-		if (trim($_SESSION['sNumber'])) {
-			$sql2 .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumber'])) . "%'";
-		}
-		if (trim($_SESSION['sFamily'])) {
-			$sql2 .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['sFamily'])) . "%'";
-		}
-		if (trim($_SESSION['sCollector'])) {
-			$sql2 .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%' OR
-						   c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%')";
-		}
-		if (trim($_SESSION['sNumberC'])) {
-			$sql2 .= " AND (s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.series_number LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
-		}
-		if (trim($_SESSION['sDate'])) {
-			$sql2 .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['sDate'])) . "%'";
-		}
-		if (trim($_SESSION['sGeoGeneral'])) {
-			$sql2 .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";
-		}
-		if (trim($_SESSION['sGeoRegion'])) {
-			$sql2 .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['sGeoRegion'])) . "%'";
-		}
-		if (trim($_SESSION['sCountry'])) {
-			$sql2 .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['sCountry'])) . "%'";
-		}
-		if (trim($_SESSION['sProvince'])) {
-			$sql2 .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['sProvince'])) . "%'";
-		}
-		if (trim($_SESSION['sLoc'])) {
-			$sql2 .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['sLoc'])) . "%'";
-		}
-		if (trim($_SESSION['sBemerkungen'])) {
-			$sql2 .= " AND s.Bemerkungen LIKE '%" . mysql_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
-		}
-		if (trim($_SESSION['sTaxonAlt'])) {
-			$sql2 .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
-		}
-		if ($_SESSION['sTyp']) {
-			$sql2 .= " AND s.typusID != 0";
-		}
-		if ($_SESSION['sImages'] == 'only') {
-			$sql2 .= " AND s.digital_image != 0";
-		} else if ($_SESSION['sImages'] == 'no') {
-			$sql2 .= " AND s.digital_image = 0";
-		}
-	}
-    $sql3 = " ORDER BY " . $_SESSION['sOrder'] . " LIMIT 1001";
-
-    if (strlen($sql2) == 0) {
-        echo "<b>empty search criteria are not allowed</b>\n";
-    } else {
-        $result = db_query($sql . $sql2 . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT 1001");
-        if (mysql_num_rows($result) > 1000) {
-            echo "<b>no more than 1000 results allowed</b>\n";
-        } elseif (mysql_num_rows($result) > 0) {
-            echo "<table class=\"out\" cellspacing=\"0\">\n";
-            echo "<tr class=\"out\">";
-            echo "<th class=\"out\"></th>";
-            echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
-            echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
-            echo "<th class=\"out\">Date</th>";
-            echo "<th class=\"out\">X/Y</th>";
-            echo "<th class=\"out\">Location</th>";
-            echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>";
-            echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
-            if ($swBatch) echo "<th class=\"out\">Batch</th>";
-            echo "</tr>\n";
-            $nr = 1;
-            while ($row = mysql_fetch_array($result)) {
-                $linkList[$nr] = $row['specimen_ID'];
-
-                if ($row['digital_image']) {
-                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
-                                  .  "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
-                                  . "</a>";
-                } else {
-                    $digitalImage = "";
-                }
-
-                if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
-                    $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-                } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
-                    $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
-                } else {
-                    $lat = 0;
-                }
-                if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
-                    $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-                } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
-                    $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
-                } else {
-                    $lon = 0;
-                }
-                if ($lat != 0 && $lon != 0) {
-                    $textLatLon = "<td class=\"out\" style=\"text-align: center\" title=\"" . round($lat, 2) . "&deg; / " . round($lon, 2) . "&deg;\">"
-                                .  "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
-                                .   "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"webimages/mapquest.png\" width=\"15\">"
-                                .  "</a>"
-                                . "</td>";
-                } else {
-                    $textLatLon = "<td class=\"out\"></td>";
-                }
-
-                echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
-                   . "<td class=\"out\">$digitalImage</td>"
-                   . "<td class=\"out\">"
-                   .  "<a href=\"editSpecimens.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=0\">"
-                   .  htmlspecialchars(taxonItem($row))."</a></td>"
-                   . "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>"
-                   . "<td class=\"outNobreak\">".htmlspecialchars($row['Datum'])."</td>"
-                   . $textLatLon
-                   . "<td class=\"out\">".locationItem($row)."</td>"
-                   . "<td class=\"out\">".htmlspecialchars($row['typus_lat'])."</td>"
-                   . "<td class=\"outCenter\" title=\"".htmlspecialchars($row['collection'])."\">"
-                   .  htmlspecialchars($row['coll_short'])." ".htmlspecialchars($row['HerbNummer'])."</td>";
-                if ($swBatch) {
-                    echo "<td class=\"out\" style=\"text-align: center\">";
-                    $resultDummy = db_query("SELECT t1.remarks FROM api.tbl_api_batches AS t1, api.tbl_api_specimens AS t2 WHERE t2.specimen_ID = '" . $row['specimen_ID'] . "' AND t1.batchID = t2.batchID_fk");
-                    if (mysql_num_rows($resultDummy) > 0) {
-                        //echo "&radic;";
-                        $rowDummy = mysql_fetch_array($resultDummy);
-                        echo $rowDummy['remarks'];
-                    } else {
-                        echo "<input type=\"checkbox\" name=\"batch_spec_" . $row['specimen_ID'] . "\">";
-                    }
-                    echo "</td>";
-                }
-                echo "</tr>\n";
-                $nr++;
-            }
-            $linkList[0] = $nr - 1;
-            $_SESSION['sLinkList'] = $linkList;
-            echo "</table>\n";
-        } else {
-            echo "<b>nothing found!</b>\n";
-        }
-    }
+    ?>
+    <div id='specimen_entries' style='padding-bottom: 15px;'></div>
+    <div id='specimen_pagination'></div>
+    <script type="text/javascript">
+    // init pagination
+    $(function() {
+        xajax_listSpecimens( 0, true );
+    });
+    </script>
+    <?php
 } else if ($_SESSION['sType'] == 2) {
     if (intval($_SESSION['sUserID']) || strlen(trim($_SESSION['sUserDate'])) > 0) {
         $sql = "SELECT ls.specimenID, ls.updated, ls.timestamp, hu.firstname, hu.surname

@@ -119,57 +119,51 @@ $csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Colle
              "<td>Altitude lower</td><td>Altitude higher</td>".
              "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
 $csvData = "";
-$sLinkList=$_SESSION['sLinkList'];
 
-for($i=1;$i<=$sLinkList[0];$i++){
+$sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+        s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+        s.CollNummer, s.altitude_min, s.altitude_max,
+        n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
+        mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
+        s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
+        s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+        s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+        ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+        ta4.author author4, ta5.author author5,
+        te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+        te4.epithet epithet4, te5.epithet epithet5,
+        ts.synID, ts.taxonID, ts.statusID
+        FROM tbl_specimens s
+        LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
+        LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
+        LEFT JOIN meta m ON m.source_id = mc.source_id
+        LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
+        LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
+        LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
+        LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
+        LEFT JOIN tbl_tax_species ts ON ts.taxonID=s.taxonID
+        LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+        LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+        LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+        LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+        LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+        LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+        LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+        LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+        LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+        LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+        LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+        LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+        LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+        LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
+        LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
+        WHERE 1
+        ";
 
-  $specimen_ID=$sLinkList[$i];
+$sql_condition = $_SESSION['sSQLCondition'];
+$resultSpecimens = mysql_query($sql . $sql_condition);
 
-  $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-           s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-           s.CollNummer, s.altitude_min, s.altitude_max,
-           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
-           mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
-           s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
-           s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-           s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-           ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-           ta4.author author4, ta5.author author5,
-           te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-           te4.epithet epithet4, te5.epithet epithet5,
-           ts.synID, ts.taxonID, ts.statusID
-          FROM tbl_specimens s
-           LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
-           LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
-           LEFT JOIN meta m ON m.source_id = mc.source_id
-           LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
-           LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
-           LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
-           LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
-           LEFT JOIN tbl_tax_species ts ON ts.taxonID=s.taxonID
-           LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-           LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-           LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-           LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-           LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-           LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-           LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-           LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-           LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-           LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-           LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-           LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-           LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-           LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
-           LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
-          WHERE specimen_ID='".intval($specimen_ID)."'";
-  $resultSpecimen = mysql_query($sql);
-  if (!$resultSpecimen) {
-    echo $sql."<br>\n";
-    echo mysql_error()."<br>\n";
-  }
-  $rowSpecimen = mysql_fetch_array($resultSpecimen);
-
+while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
   $sammler = collection($rowSpecimen['Sammler'],$rowSpecimen['Sammler_2'],$rowSpecimen['series'],$rowSpecimen['series_number'],
                       $rowSpecimen['Nummer'],$rowSpecimen['alt_number'],$rowSpecimen['Datum']);
 
@@ -200,7 +194,7 @@ for($i=1;$i<=$sLinkList[0];$i++){
   
   $csvData .= "<tr>".
               formatCell($rowSpecimen['specimen_ID']).
-              formatCell($rowSpecimen['source_code']." ".$rowSpecimen['herbNummer']).
+              formatCell($rowSpecimen['source_code']." ".$rowSpecimen['HerbNummer']).
               formatCell($rowSpecimen['coll_short']).
               formatCell($rowSpecimen['CollNummer']).
               formatCell(makeTypus(intval($rowSpecimen['specimen_ID']))).
