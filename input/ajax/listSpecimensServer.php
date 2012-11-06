@@ -137,16 +137,16 @@ function listSpecimens( $page, $bInitialize = false ) {
             echo "<tr class=\"out\">";
             echo "<th class=\"out\"></th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
+               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
+               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
             echo "<th class=\"out\">Date</th>";
             echo "<th class=\"out\">X/Y</th>";
             echo "<th class=\"out\">Location</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>";
+               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
             if ($swBatch) echo "<th class=\"out\">Batch</th>";
             echo "</tr>\n";
             $nr = 1;
@@ -228,7 +228,7 @@ function listSpecimens( $page, $bInitialize = false ) {
     
     if( $bInitialize ) {
         $objResponse->script("
-            $('#specimen_pagination').pagination( " . $found_rows . ", {
+            $('.specimen_pagination').pagination( " . $found_rows . ", {
                 items_per_page: 10,
                 num_edge_entries: 1,
                 callback: function(page, container) {

@@ -317,6 +317,12 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <style>
       .pagination a {
         color: #FFFF00;
+        border: 1px solid #000000;
+      }
+      
+      .pagination .current {
+          background: none repeat scroll 0 0 #AA0000;
+          color: #FFFF00;
       }
   </style>
   <script type="text/javascript" language="JavaScript">
@@ -557,8 +563,9 @@ if ($_SESSION['sType'] == 1) {
            . "</td></tr></table>\n<p>\n";
     }
     ?>
-    <div id='specimen_entries' style='padding-bottom: 15px;'></div>
-    <div id='specimen_pagination'></div>
+    <div class='specimen_pagination'></div>
+    <div id='specimen_entries' style='padding-top: 15px; padding-bottom: 15px;'><div style="text-align: center;"><img src="webimages/loader.gif"></div></div>
+    <div class='specimen_pagination'></div>
     <script type="text/javascript">
     // init pagination
     $(function() {
