@@ -135,8 +135,8 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                                     // add all found references to infobox
                                     for( var i = 0; i < data.length; i++ ) {
                                         var referenceInfo = data[i].referenceName +
-                                            '&nbsp;<span onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
-                                            '&nbsp;<span onclick="world_link(' + i + '); return false;"><img src="images/world_link.png"></span>';
+                                            '&nbsp;<span style="cursor: pointer;" onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
+                                            '&nbsp;<span style="cursor: pointer;" onclick="world_link(' + i + '); return false;"><img src="images/world_link.png"></span>';
                                         $('#infoBox').html($('#infoBox').html() + '<br/>' + referenceInfo);
                                     }
                                 }
