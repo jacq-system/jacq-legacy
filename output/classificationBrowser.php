@@ -135,8 +135,8 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                                     // add all found references to infobox
                                     for( var i = 0; i < data.length; i++ ) {
                                         var referenceInfo = data[i].referenceName +
-                                            '&nbsp;<span style="cursor: pointer;" onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
-                                            '&nbsp;<span style="cursor: pointer;" onclick="world_link(' + i + '); return false;"><img src="images/world_link.png"></span>';
+                                            '&nbsp;<span id="arrow_down_' + i + '" style="cursor: pointer;" onclick="arrow_down(' + i + '); return false;"><img src="images/arrow_down.png"></span>' +
+                                            '&nbsp;<span id="world_link_' + i + '" style="cursor: pointer;" onclick="world_link(' + i + '); return false;"><img src="images/world_link.png"></span>';
                                         $('#infoBox').html($('#infoBox').html() + '<br/>' + referenceInfo);
                                     }
                                 }
@@ -144,6 +144,8 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                                 else {
                                     $('#infoBox').html('no other references');
                                 }
+                                
+                                $('#infoBox').show();
                             }
                         });
                         
@@ -152,12 +154,16 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 });
                 
                 // Add hover-behaviour for infoBox
-                //$('#infoBox').live('mouseover', function() {$(this).data('mouseEntered', true);});
-                /*$('#infoBox').live('mouseout', function() {
-                    $(this).hide();
-                });*/
+                $('#infoBox').mouseleave( function(evt) {
+                    if( $(evt.target).attr('id') != 'infoBox' ) return;
+                
+                    $(this).fadeOut(500);
+                } );
             });
             
+            /**
+             * open link to other classification
+             */
             function world_link( p_i ) {
                 var index = p_i;
                 var referenceData = $('#infoBox').data('referenceData');
@@ -169,6 +175,9 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 window.open(url);
             }
             
+            /**
+             * add other reference to tree
+             */
             function arrow_down( p_i ) {
                 var index = p_i;
                 var referenceData = $('#infoBox').data('referenceData');
@@ -191,6 +200,9 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 }
 
                 $('#jstree_classificationBrowser').jstree( 'create_node', $('#infoBox').data('liElement'), "after", nodeData );
+                
+                // remove onclick handler
+                $('#arrow_down_' + p_i).attr('onclick', '');
             }
         </script>
     </head>
