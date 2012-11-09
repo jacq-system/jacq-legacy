@@ -9,7 +9,7 @@ $referenceId = intval($_REQUEST['referenceId']);
 
 // check if a valid request was made
 if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
-    $data = file_get_contents($_CONFIG['JACQ_FULL_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowserAll&referenceType=citation&referenceId=" . $referenceId . "&taxonID=" . $taxonID);
+    $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowserAll&referenceType=citation&referenceId=" . $referenceId . "&taxonID=" . $taxonID);
 }
 ?>
 <html>
