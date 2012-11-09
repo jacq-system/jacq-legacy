@@ -115,7 +115,7 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                         
                         // display loading & show the infobox
                         $('#infoBox').html( "loading..." );
-                        $('#infoBox').show();
+                        $('#infoBox').fadeIn(100);
                         
                         // query the JSON-services for detail information
                         $.ajax({
@@ -157,7 +157,7 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 $('#infoBox').mouseleave( function(evt) {
                     if( $(evt.target).attr('id') != 'infoBox' ) return;
                 
-                    $(this).fadeOut(500);
+                    $(this).fadeOut(100);
                 } );
             });
             
@@ -182,7 +182,18 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 var index = p_i;
                 var referenceData = $('#infoBox').data('referenceData');
                 referenceData = referenceData[index];
+                var liElement = $('#infoBox').data('liElement');
+                var addedReferences = liElement.data(referenceData.referenceType);
                 
+                // check if there are references stored already
+                if( addedReferences == null ) {
+                    addedReferences = {};
+                }
+                
+                // ignore if references was already added
+                if( typeof addedReferences[referenceData.referenceId] !== "undefined" ) return;
+                
+                // setup node data
                 var nodeData = {
                     data: {
                         title: referenceData.referenceName,
@@ -195,14 +206,17 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                     }
                 };
                 
+                // check if node has children
                 if( referenceData.hasChildren ) {
                     nodeData.state = 'closed';
                 }
-
-                $('#jstree_classificationBrowser').jstree( 'create_node', $('#infoBox').data('liElement'), "after", nodeData );
                 
-                // remove onclick handler
-                $('#arrow_down_' + p_i).attr('onclick', '');
+                // finally add the node to the classification-browser
+                $('#jstree_classificationBrowser').jstree( 'create_node', liElement, "after", nodeData );
+
+                // remember added reference
+                addedReferences[referenceData.referenceId] = true;
+                liElement.data(referenceData.referenceType, addedReferences);
             }
         </script>
     </head>
