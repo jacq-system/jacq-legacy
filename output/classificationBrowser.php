@@ -3,13 +3,23 @@
 require( 'inc/variables.php' );
 
 // get all parameters
-$taxonID = intval($_REQUEST['taxonID']);
+$filterId = intval($_REQUEST['filterId']);
 $referenceType = $_REQUEST['referenceType'];
 $referenceId = intval($_REQUEST['referenceId']);
 
+// initialize variables
+$data = null;
+
 // check if a valid request was made
-if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
-    $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowserAll&referenceType=citation&referenceId=" . $referenceId . "&taxonID=" . $taxonID);
+if( $referenceType == 'citation' && $referenceId > 0 ) {
+    // check if we are looking for a specific name
+    if( $taxonID > 0 ) {
+        $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowser&referenceType=citation&referenceId=" . $referenceId . "&filterId=" . $taxonID);
+    }
+    // .. if not, fetch the "normal" tree for this reference
+    else {
+        $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowser&referenceType=citation&referenceId=" . $referenceId);
+    }
 }
 ?>
 <html>
@@ -19,50 +29,67 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
         <link rel="stylesheet" href="css/herbarium.css" type="text/css">
 
         <!-- jQuery -->
-        <script type="text/javascript" src="js/jquery-1.8.1.min.js" ></script>
+        <script type="text/javascript" src="js/jquery-1.8.2.js" ></script>
+        <!-- jQuery-ui -->
+        <script type="text/javascript" src="js/jquery-ui-1.9.1.min.js" ></script>
+        <link rel="stylesheet" href="css/ui-lightness/jquery-ui-1.9.1.min.css" type="text/css">
         <!-- jsTree -->
         <script type="text/javascript" src="js/jquery.jstree/jquery.jstree.js" ></script>
 
         <!-- initialize jstree for classification browser -->
         <script type="text/javascript">
             var jacq_url = '<?php echo $_CONFIG['JACQ_URL']; ?>';
+            var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
             
-            $(document).ready(function(){
+            // handler function for jstree ajax data
+            var jstree_data = function(n) {
+                // extract citation & taxon information from selected node
+                var link = (n.children) ? n.children('a').first() : n;
+                var taxon_id = (link.attr) ? link.attr("data-taxon-id") : 0;
+                var reference_id = (link.attr) ? link.attr("data-reference-id") : 0;
+                var reference_type = (link.attr) ? link.attr("data-reference-type") : 0;
+
+                // check if we have a valid reference-type, if not use the default one
+                if( !reference_type ) {
+                    reference_type = $('#classificationBrowser_referenceType').val();
+                }
+
+                // check for a set reference, if not use default one
+                if( !reference_id ) {
+                    reference_id = $('#classificationBrowser_referenceID').val();
+                }
+
+                // return information
+                return {
+                    "referenceType": reference_type,
+                    "referenceId": reference_id,
+                    "taxonID": taxon_id
+                };
+            }
+            
+            // init function for jstree
+            function init_jstree() {
+                // delete any old instance
+                $('#jstree_classificationBrowser').jstree( 'destroy' );
+                
                 // initialize jsTree for organisation
                 $('#jstree_classificationBrowser').jstree({
-                    "json_data": {
-                        <?php if(!empty($data)) echo '"data": ' . $data . ',' ; ?>
-                        "ajax": {
-                            "url": jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
-                            "data": function(n) {
-                                // extract citation & taxon information from selected node
-                                var link = (n.children) ? n.children('a').first() : n;
-                                var taxon_id = (link.attr) ? link.attr("data-taxon-id") : 0;
-                                var reference_id = (link.attr) ? link.attr("data-reference-id") : 0;
-                                var reference_type = (link.attr) ? link.attr("data-reference-type") : 0;
-
-                                // check if we have a valid reference-type, if not use the default one
-                                if( !reference_type ) {
-                                    reference_type = $('#classificationBrowser_referenceType').val();
-                                }
-                                
-                                // check for a set reference, if not use default one
-                                if( !reference_id ) {
-                                    reference_id = $('#classificationBrowser_referenceID').val();
-                                }
-
-                                // return information
-                                return {
-                                    "referenceType": reference_type,
-                                    "referenceID": reference_id,
-                                    "taxonID": taxon_id
-                                };
+                    "json_data" : {
+                            "data" : initital_data,
+                            "ajax" : {
+                                "url" : jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
+                                "data": jstree_data
                             }
-                        }
                     },
-                    "plugins": ["json_data", "themes"],
+                    "plugins" : [ "themes", "json_data" ],
                     "core": {"html_titles": true}
                 });
+            }
+            
+            // called once jquery is ready
+            $(document).ready(function(){
+                // initialize the jsTree
+                init_jstree();
                 
                 // update references when new type is chosen
                 $('#classificationBrowser_referenceType').bind('change', function() {
@@ -92,7 +119,8 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
 
                 // update tree when a new reference is chosen
                 $('#classificationBrowser_referenceID').bind('change', function() {
-                    $('#jstree_classificationBrowser').jstree( 'refresh' );
+                    initital_data = null;
+                    init_jstree();
                 });
                 
                 // add click handlers for jsTree nodes (since they should do nothing)
@@ -159,6 +187,50 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 
                     $(this).fadeOut(100);
                 } );
+                
+                // initialize auto-complete
+                $('#scientificName').autocomplete({
+                    source: jacq_url + 'index.php?r=autoComplete/taxon',
+                    minLength: 2,
+                    select: function( event, ui ) {
+                        if( typeof ui.item !== "undefined" ) {
+                            $( "#filter_taxonID" ).val( ui.item.id );
+                        }
+                    },
+                    change: function( event, ui ) {
+                        if( ui.item == null ) {
+                            $( "#filter_taxonID" ).val( 0 );
+                        }
+                    }
+                });
+                
+                // bind to click handler for filter
+                $('#filter_button').bind('click', function() {
+                    var filter_id = $('#filter_taxonID').val();
+                    var reference_type = $('#classificationBrowser_referenceType').val();
+                    var reference_id = $('#classificationBrowser_referenceID').val();
+                    
+                    if( filter_id > 0 && reference_type != "" && reference_id > 0 ) {
+                        $('#jstree_classificationBrowser').jstree('destroy');
+                        $('#jstree_classificationBrowser').html('');
+                        
+                        $.ajax({
+                            url: jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
+                            data: {
+                                referenceType: reference_type,
+                                referenceId: reference_id,
+                                filterId: filter_id
+                            },
+                            success: function(data) {
+                                // remember initital data
+                                initital_data = data;
+                                
+                                // re-inititalize jstree
+                                init_jstree();
+                            }
+                        });
+                    }
+                });
             });
             
             /**
@@ -261,7 +333,7 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                 </tr>
                 <tr>
                     <td valign="top" colspan="9">
-                        <form action=''>
+                        <form action='#' onsubmit="return false;" style="<?php if($referenceType == 'citation' && $referenceId > 0) echo "display: none;"; ?>">
                             <select id="classificationBrowser_referenceType">
                                 <option value="">select reference type</option>
                                 <!--<option value="person">person</option>
@@ -274,10 +346,13 @@ if( $taxonID > 0 && $referenceType == 'citation' && $referenceId > 0 ) {
                                 <option value="">select classification reference</option>
                             </select>
                             <br />
+                            <input id="filter_taxonID" type="hidden" />
                             <br />
-                            
-                            <div id="jstree_classificationBrowser" style="padding-top: 10px; padding-bottom: 10px;"></div>
+                            Filter: <input id="scientificName" type="text" />
+                            <input id="filter_button" type="image" src="images/magnifier.png" />
+                            <br />
                         </form>
+                        <div id="jstree_classificationBrowser" style="padding-top: 10px; padding-bottom: 10px;"></div>
                     </td>
                 </tr>
             </table>

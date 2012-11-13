@@ -63,3 +63,8 @@ text-decoration: none;
 .pagin span.nextlabel, .pagin a.nextlabel {
 border-right:none;
 }
+
+/* autocompleter style */
+.ui-autocomplete-loading{
+    background:url('../images/find.png') no-repeat right center;
+}
