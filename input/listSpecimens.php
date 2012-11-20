@@ -33,6 +33,7 @@ if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
+$_SESSION['sNr'] = $nrSel;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
 
 if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
