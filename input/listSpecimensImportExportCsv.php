@@ -37,6 +37,24 @@ function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $al
     return $text;
 }
 
+function makeTaxon($taxonID) {
+    // prepare variables
+    $taxonID = intval($taxonID);
+    $scientificName = null;
+    
+    // prepare query
+    $sql = "SELECT `herbar_view`.GetScientificName( $taxonID, 0 ) AS `scientificName`";
+    $result = mysql_query($sql);
+    
+    // check if we found a result
+    if(mysql_num_rows($result) > 0) {
+        $row = mysql_fetch_array($result);
+        $scientificName = $row['scientificName'];
+    }
+    
+    return $scientificName;
+}
+
 function makeTypus($ID) {
 
   $sql = "SELECT typus_lat, tg.genus,
@@ -117,7 +135,7 @@ function makeTypus($ID) {
 $csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Collection</td><td>Collection Number</td><td>Type information</td>".
              "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Country</td><td>Admin1</td><td>Latitude</td><td>Longitude</td>".
              "<td>Altitude lower</td><td>Altitude higher</td>".
-             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
+             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td><td>habitat</td><td>habitus</td></tr>";
 $csvData = "";
 
 $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
@@ -128,6 +146,7 @@ $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.se
         s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
         s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
         s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+        s.habitat, s.habitus,
         ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
         ta4.author author4, ta5.author author5,
         te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -194,12 +213,12 @@ while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
   
   $csvData .= "<tr>".
               formatCell($rowSpecimen['specimen_ID']).
-              formatCell($rowSpecimen['source_code']." ".$rowSpecimen['HerbNummer']).
+              formatCell($rowSpecimen['HerbNummer']).
               formatCell($rowSpecimen['coll_short']).
               formatCell($rowSpecimen['CollNummer']).
               formatCell(makeTypus(intval($rowSpecimen['specimen_ID']))).
               formatCell($rowSpecimen['typified']).
-              formatCell(taxonWithHybrids($rowSpecimen)).
+              formatCell(makeTaxon($rowSpecimen['taxonID'])).
               formatCell($rowSpecimen['family']).
               formatCell($sammler).
               formatCell("'".$rowSpecimen['Datum']).
@@ -213,6 +232,8 @@ while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
               formatCell($rowSpecimen['det']).
               formatCell($rowSpecimen['taxon_alt']).
               formatCell($rowSpecimen['Bemerkungen']).
+              formatCell($rowSpecimen['habitat']).
+              formatCell($rowSpecimen['habitus']).
               "</tr>";
 }
 
