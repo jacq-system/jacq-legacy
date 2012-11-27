@@ -254,7 +254,7 @@ tbl_wu_generale
         }
     } else {
         if (!empty($str_sub_taxonID) || !empty($str_sub_basID) || !empty($str_sub_synID)) {
-            $_SESSION['s_query'] = "( SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . trim($sql_restrict_specimen . $sql_restrict_species) . ")
+            $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (( SELECT " . $sql_names . $sql_tables . trim($sql_restrict_specimen . $sql_restrict_species) . ")
                                     UNION
                                     ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
                                        AND (0";
@@ -292,7 +292,7 @@ tbl_wu_generale
                                           OR ts2.basID IN ($str_sub_synID)
                                           OR ts2.synID IN ($str_sub_synID)";
             }
-            $_SESSION['s_query'] .= ")) ";
+            $_SESSION['s_query'] .= "))) AS `union_tbl` GROUP BY `specimen_ID` ";
         } else {
             $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . "
                                     GROUP BY specimen_ID ";
