@@ -13,8 +13,8 @@ $data = null;
 // check if a valid request was made
 if( $referenceType == 'citation' && $referenceId > 0 ) {
     // check if we are looking for a specific name
-    if( $taxonID > 0 ) {
-        $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowser&referenceType=citation&referenceId=" . $referenceId . "&filterId=" . $taxonID);
+    if( $filterId > 0 ) {
+        $data = file_get_contents($_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowser&referenceType=citation&referenceId=" . $referenceId . "&filterId=" . $filterId);
     }
     // .. if not, fetch the "normal" tree for this reference
     else {
@@ -242,7 +242,7 @@ if( $referenceType == 'citation' && $referenceId > 0 ) {
                 referenceData = referenceData[index];
 
                 var url = 'classificationBrowser.php?referenceType=' + referenceData.referenceType +
-                    '&referenceId=' + referenceData.referenceId + "&taxonID=" + referenceData.taxonID;
+                    '&referenceId=' + referenceData.referenceId + "&filterId=" + referenceData.taxonID;
                 
                 window.open(url);
             }
