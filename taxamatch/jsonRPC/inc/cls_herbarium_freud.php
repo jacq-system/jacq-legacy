@@ -36,9 +36,10 @@ private $counterSyns20 = 0;    // counter20 for temporary list
  *
  * @param String $searchtext taxon string(s) to search for
  * @param bool[optional] $withNearMatch use near_match if true
+ * @param bool[optional] $includeCommonNames include the common names in the response
  * @return array result of all searches
  */
-public function getMatches ($searchtext, $withNearMatch = false)
+public function getMatches ($searchtext, $withNearMatch = false, $includeCommonNames = false)
 {
     global $options;
 
@@ -342,15 +343,43 @@ public function getMatches ($searchtext, $withNearMatch = false)
                         if ($row['epithet3']) $taxon .= " subvar. "  . $row['epithet3'] . " " . $row['author3'];
                         if ($row['epithet4']) $taxon .= " forma "    . $row['epithet4'] . " " . $row['author4'];
                         if ($row['epithet5']) $taxon .= " subforma " . $row['epithet5'] . " " . $row['author5'];
+                        
+                        $taxonID = $row['taxonID'];
+                        $commonNames = array();
+                        if( $includeCommonNames ) {
+                            $sql_cn = "
+                                SELECT nc.`common_id`, nc.`common_name`, nl.`iso639-6`, gc.`name`, np.`period`
+                                FROM `herbar_names`.`tbl_name_taxa` nt
+                                LEFT JOIN `herbar_names`.`tbl_name_applies_to` nat ON nat.`entity_id` = nt.`taxon_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_commons` nc ON nc.`common_id` = nat.`name_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_languages` nl ON nl.`language_id` = nat.`language_id`
+                                LEFT JOIN `herbar_names`.`tbl_geonames_cache` gc ON gc.`geonameId` = nat.`geonameId`
+                                LEFT JOIN `herbar_names`.`tbl_name_periods` np ON np.`period_id` = nat.`period_id`
+                                WHERE
+                                nt.`taxonID` = '$taxonID' AND nc.`common_name` IS NOT NULL
+                            ";
+                            $result_cn = mysql_query($sql_cn);
+                            while( $row_cn = mysql_fetch_array($result_cn) ) {
+                                $commonNames[] = array(
+                                    'id' => $row_cn['common_id'],
+                                    'name' => $row_cn['common_name'],
+                                    'language' => $row_cn['iso639-6'],
+                                    'geography' => $row_cn['name'],
+                                    'period' => $row_cn['period']
+                                );
+                            }
+                        }
 
                         // put everything into the output-array
-                        $lev2[] = array('name'     => $name,
-                                        'distance' => $distance + $val['distance'],
-                                        'ratio'    => $ratio * $val['ratio'],
-                                        'taxon'    => $taxon,
-                                        'taxonID'  => $row['taxonID'],
-                                        'syn'      => $syn,
-                                        'synID'    => $synID);
+                        $lev2[] = array('name'          => $name,
+                                        'distance'      => $distance + $val['distance'],
+                                        'ratio'         => $ratio * $val['ratio'],
+                                        'taxon'         => $taxon,
+                                        'taxonID'       => $taxonID,
+                                        'syn'           => $syn,
+                                        'synID'         => $synID,
+                                        'commonNames'   => $commonNames
+                         );
 //                        if ($distance == 0 && $val['distance'] == 0) $fullHit = true;  // we've hit everything direct
                     }
                     $ctr++;
@@ -394,6 +423,7 @@ public function getMatches ($searchtext, $withNearMatch = false)
                                      'rowsChecked'         => $ctr,
                                      'type'                => $type,
                                      'database'            => 'freud',
+                                     'includeCommonNames'  => $includeCommonNames,
                                      'searchresult'        => $searchresult);
     }
     $matches['error'] = ob_get_clean();

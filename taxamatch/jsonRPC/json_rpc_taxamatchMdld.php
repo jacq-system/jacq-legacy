@@ -169,6 +169,7 @@ public function getMatchesService($database='', $searchitem='', $params=array())
 	if(!isset($params['showSy'])){
 		$params['showSy']=false;
 	}
+        $params['includeCommonNames'] = (isset($params['includeCommonNames']) && $params['includeCommonNames']) ? true : false;
 	
 	if($database=='vienna'){
 		
@@ -177,7 +178,7 @@ public function getMatchesService($database='', $searchitem='', $params=array())
 			return $this->getMatchesWithSynonyms($searchitem, $params['NearMatch']);
 
 		}else{
-			return $this->getMatchesFreud($searchitem, $params['NearMatch']);
+			return $this->getMatchesFreud($searchitem, $params['NearMatch'], $params['includeCommonNames']);
 		}
 		
 	}else if($database=='vienna_common'){
@@ -249,12 +250,13 @@ public function getMatchesMulti($searchtext, $withNearMatch = false, $herbarium 
  *
  * @param String $searchtext taxon string(s) to search for
  * @param bool[optional] $withNearMatch use near_match if true
+ * @param bool $includeCommonNames include common names in response
  * @return array result of all searches
  */
-public function getMatchesFreud ($searchtext, $withNearMatch = false)
+public function getMatchesFreud ($searchtext, $withNearMatch = false, $includeCommonNames = false)
 {
 	$herbarium = new cls_herbarium_freud();
-	return $herbarium->getMatches($searchtext, $withNearMatch);
+	return $herbarium->getMatches($searchtext, $withNearMatch, $includeCommonNames);
 }
 
 
