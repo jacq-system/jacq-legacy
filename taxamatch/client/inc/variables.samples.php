@@ -1,10 +1,10 @@
 <?php
 /**
- * IP-addresses of services
- * Choose correct address here!!
+ * IP-addresses of taxmatch JSON-RPC service
  */
-//$options['hostAddr'] = 'http://localhost/taxamatch/trunk/jsonRPC/';       // BP
-$options['hostAddr'] = 'http://131.130.131.9/taxamatch/'; // NHM
+$options['hostAddr'] = 'http://example.com/taxamatch/jsonRPC/';
 
-$options['debug'] = 1;
-?>
+/**
+ * enable debugging information
+ */
+$options['debug'] = 0;
