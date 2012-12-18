@@ -10,14 +10,15 @@ require_once("../inc/herbardb_input_functions.php");
  * Specimens list/searching function
  * @param int $page Pagination parameter
  * @param bool $bInitialize init pagination
+ * @param int $itemsPerPage Items per page
  * @return \xajaxResponse 
  */
-function listSpecimens($page, $bInitialize = false) {
+function listSpecimens($page, $bInitialize = false, $itemsPerPage = 10) {
     ob_start();
 
     $objResponse = new xajaxResponse();
 
-    $start = intval($page) * 10;
+    $start = intval($page) * $itemsPerPage;
     $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
     $nrSel = (isset($_SESSION['sNr'])) ? intval($_SESSION['sNr']) : 0;
 
@@ -140,7 +141,7 @@ function listSpecimens($page, $bInitialize = false) {
     else {
         $_SESSION['sSQLCondition'] = $sql2;
 
-        $result = db_query($sql . $sql2 . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, 10");
+        $result = db_query($sql . $sql2 . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
         $fr_result = db_query("SELECT FOUND_ROWS() AS `found_rows`");
         $fr_row = mysql_fetch_array($fr_result);
         $found_rows = $fr_row['found_rows'];
@@ -247,10 +248,10 @@ function listSpecimens($page, $bInitialize = false) {
     if ($bInitialize) {
         $objResponse->script("
             $('.specimen_pagination').pagination( " . $found_rows . ", {
-                items_per_page: 10,
+                items_per_page: $itemsPerPage,
                 num_edge_entries: 1,
                 callback: function(page, container) {
-                    xajax_listSpecimens( page, 0 );
+                    xajax_listSpecimens( page, 0, $itemsPerPage );
 
                     return false;
                 }

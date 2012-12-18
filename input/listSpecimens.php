@@ -465,7 +465,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <b>All</b>
   </td>
 </tr><tr>
-  <td colspan="2"><input class="button" type="submit" name="search" value=" search ">  <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php'" name="downloadCSV" value=" download CSV "></td>
+  <td colspan="2">
+      <input class="button" type="submit" name="search" value=" search ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php'" name="downloadCSV" value=" download CSV ">
+  </td>
   <td colspan="2" align="right">
   </td>
   <td colspan="2" align="right">
@@ -564,13 +567,27 @@ if ($_SESSION['sType'] == 1) {
            . "</td></tr></table>\n<p>\n";
     }
     ?>
-    <div class='specimen_pagination'></div>
-    <div id='specimen_entries' style='padding-top: 15px; padding-bottom: 15px;'><div style="text-align: center;"><img src="webimages/loader.gif"></div></div>
-    <div class='specimen_pagination'></div>
+    <div style="width: 100%;">
+        <div style="float: right;">
+            <select id="items_per_page" onchange="listSpecimens();">
+                <option value="10">10</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class='specimen_pagination'></div>
+        <div id='specimen_entries' style='padding-top: 15px; padding-bottom: 15px;'><div style="text-align: center;"><img src="webimages/loader.gif"></div></div>
+        <div class='specimen_pagination'></div>
+    </div>
     <script type="text/javascript">
+        function listSpecimens() {
+            xajax_listSpecimens( 0, true, $('#items_per_page').val() );
+        }
+                        
     // init pagination
     $(function() {
-        xajax_listSpecimens( 0, true );
+        listSpecimens();
     });
     </script>
     <?php
