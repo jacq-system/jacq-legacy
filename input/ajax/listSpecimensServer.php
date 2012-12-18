@@ -13,9 +13,14 @@ require_once("../inc/herbardb_input_functions.php");
  * @param int $itemsPerPage Items per page
  * @return \xajaxResponse 
  */
-function listSpecimens($page, $bInitialize = false, $itemsPerPage = 10) {
+function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     ob_start();
-
+    
+    // check value of items per page
+    $itemsPerPage = intval($itemsPerPage);
+    $itemsPerPage = ( $itemsPerPage > 0 ) ? $itemsPerPage : (($_SESSION['sItemsPerPage'] > 0) ? $_SESSION['sItemsPerPage'] : 10);
+    $_SESSION['sItemsPerPage'] = $itemsPerPage;
+    
     $objResponse = new xajaxResponse();
 
     $start = intval($page) * $itemsPerPage;

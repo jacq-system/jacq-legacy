@@ -570,10 +570,10 @@ if ($_SESSION['sType'] == 1) {
     <div style="width: 100%;">
         <div style="float: right;">
             <select id="items_per_page" onchange="listSpecimens();">
-                <option value="10">10</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
+                <option value="10" <?php echo ($_SESSION['sItemsPerPage'] == 10) ? 'selected' : ''; ?>>10</option>
+                <option value="30" <?php echo ($_SESSION['sItemsPerPage'] == 30) ? 'selected' : ''; ?>>30</option>
+                <option value="50" <?php echo ($_SESSION['sItemsPerPage'] == 50) ? 'selected' : ''; ?>>50</option>
+                <option value="100" <?php echo ($_SESSION['sItemsPerPage'] == 100) ? 'selected' : ''; ?>>100</option>
             </select>
         </div>
         <div class='specimen_pagination'></div>
