@@ -210,7 +210,7 @@ if( $type == 5 && $batchID ) {
     
     // Fetch image server information
     $dbstmt = $db->query( '
-        SELECT id.*
+        SELECT id.*, ab.`exclude_tab_obs`
         FROM `api`.`tbl_api_batches` ab 
         LEFT JOIN `herbarinput`.`tbl_img_definition` id ON ab.`sourceID_fk` = id.`source_id_fk`
         WHERE ab.`batchID` = ' . $batchID );
@@ -234,7 +234,7 @@ if( $type == 5 && $batchID ) {
             $exportSpecimens = array();
             while( ($row = $dbstmt->fetch()) != false ) {
                 // Ask image server for fitting entries
-                $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'], ($row['exclude_tab_obs']) ? true : false );
+                $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'], ($serverInfo['exclude_tab_obs']) ? true : false );
                 
                 if( count($entries) > 0 ) {
                     // Store fitting entries in internal list
