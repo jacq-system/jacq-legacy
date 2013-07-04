@@ -4,9 +4,9 @@
 DBUSER=script
 DBPASS=
 # directory for creating the backups
-BACKUP_DIR=/programms/db_backup
+BACKUP_PATH=/programms/db_backup
 # directory which the archive will be created in
-ARCHIVE_DIR=/programms/db_backup
+ARCHIVE_PATH=/programms/db_backup
 
 #
 # Function Section
@@ -25,7 +25,8 @@ DATE_PREFIX=`/bin/date +%Y%m%d`
 
 # create backup dir
 dEcho "Creating backup directory"
-BACKUP_DIR=${BACKUP_DIR}/${DATE_PREFIX}_dbBackup/
+BACKUP_DIR_NAME=${DATE_PREFIX}_dbBackup
+BACKUP_DIR=${BACKUP_PATH}/${BACKUP_DIR_NAME}/
 /bin/mkdir ${BACKUP_DIR}
 
 # Fetch list of databases
@@ -35,6 +36,7 @@ DATABASES=`/usr/bin/mysql -u ${DBUSER} -e "show databases" --skip-column-names -
 # cycle through databases and create a own dump file
 for DB in $DATABASES
 do
+	# skip MySQL related "databases"
 	if [ $DB = "information_schema" -o $DB = "performance_schema" ]; then
 		continue;
 	fi
@@ -47,7 +49,8 @@ done
 
 # create archive of database files
 dEcho "Creating archive"
-/bin/tar -cvjf ${ARCHIVE_DIR}/${DATE_PREFIX}_dbBackup.tar.bz2 ${BACKUP_DIR}
+ARCHIVE_FILE_NAME=${DATE_PREFIX}_dbBackup.tar.bz2
+/bin/tar -C ${BACKUP_PATH} -cvjf ${ARCHIVE_PATH}/${ARCHIVE_FILE_NAME} ${BACKUP_DIR_NAME}
 
 # cleanup
 dEcho "Removing backup directory"
