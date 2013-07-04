@@ -35,10 +35,14 @@ DATABASES=`/usr/bin/mysql -u ${DBUSER} -e "show databases" --skip-column-names -
 # cycle through databases and create a own dump file
 for DB in $DATABASES
 do
+	if [ $DB = "information_schema" -o $DB = "performance_schema" ]; then
+		continue;
+	fi
+
 	# create backup for this database
 	BACKUP_FILE=${BACKUP_DIR}/${DB}.sql
 	dEcho "Backuping ${DB}"
-	/usr/bin/mysqldump -R -u ${DBUSER} --password=${DBPASS} ${DB} > ${BACKUP_FILE}
+	/usr/bin/mysqldump -R -u ${DBUSER} --password=${DBPASS} --databases ${DB} > ${BACKUP_FILE}
 done
 
 # create archive of database files
