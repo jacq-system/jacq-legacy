@@ -143,6 +143,9 @@ function deleteSearchedLine2(oid){
 				removeInputLine(oid);
 				alert('deleted');
 			}
+                        else if( msg.text != "" ) {
+                            alert(msg.text);
+                        }
 		}
 	});
 			
