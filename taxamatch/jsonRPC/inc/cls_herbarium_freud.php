@@ -97,11 +97,14 @@ public function getMatches ($searchtext, $withNearMatch = false, $includeCommonN
                 // no full hit, so do just the normal search
 
                 // first compare with the genera
-                $res = mysql_query("SELECT g.genus, f.family, genID, a.author,
+                $res = mysql_query("SELECT g.genus, f.family, g.genID, a.author, s.taxonID,
                                      mdld('" . mysql_real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
-                                    FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
+                                    FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
                                     WHERE g.familyID = f.familyID
-                                     AND g.authorID = a.authorID");
+                                     AND g.authorID = a.authorID
+                                     AND g.`genID` = s.`genID`
+                                     AND s.`tax_rankID` = 7
+                                     ");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
@@ -113,16 +116,20 @@ public function getMatches ($searchtext, $withNearMatch = false, $includeCommonN
                                                 'distance' => $row['mdld'],
                                                 'ratio'    => 1 - $row['mdld'] / max(mb_strlen($row['genus'], "UTF-8"), $lenUninomial),
                                                 'taxon'    => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
-                                                'ID'       => $row['genID'],
+                                                'ID'       => $row['taxonID'],
                                                 'species'  => array());
                     }
                     $ctr++;
                 }
 
                 // then with the families
-                $res = mysql_query("SELECT family,  familyID,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', family, 2, 4) AS mdld
-                                    FROM tbl_tax_families");
+                $res = mysql_query("SELECT f.`family`,  f.`familyID`, s.`taxonID`,
+                                     mdld('" . mysql_real_escape_string($uninomial) . "', f.`family`, 2, 4) AS mdld
+                                    FROM tbl_tax_families f, tbl_tax_genera g, tbl_tax_species s
+                                    WHERE
+                                    f.`familyID` = g.`familyID` AND f.`family` = g.`genus` AND
+                                    s.`genID` = g.`genID` AND s.`tax_rankID` = 9
+                                    ");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
@@ -134,7 +141,7 @@ public function getMatches ($searchtext, $withNearMatch = false, $includeCommonN
                                                 'distance' => $row['mdld'],
                                                 'ratio'    => 1 - $row['mdld'] / max(mb_strlen($row['family'], "UTF-8"), $lenUninomial),
                                                 'taxon'    => $row['family'],
-                                                'ID'       => $row['familyID'],
+                                                'ID'       => $row['taxonID'],
                                                 'species'  => array());
                     }
                     $ctr++;
