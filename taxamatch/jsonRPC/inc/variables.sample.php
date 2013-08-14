@@ -36,6 +36,7 @@ $options['log']['dbpass'] = '';
 
 /**
  * GNA nameParser config
+ * Use the following options for GNA service: "-r -o json"
  */
 $options['nameParser']['address'] = '127.0.0.1';
 $options['nameParser']['port'] = '4334';
