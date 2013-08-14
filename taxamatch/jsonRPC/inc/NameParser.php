@@ -1,10 +1,10 @@
 <?php
 /**
- * Wrapper controller for the GBIF name parser
+ * Wrapper class for the GNA name parser
  * See https://github.com/GlobalNamesArchitecture/biodiversity or
  * https://rubygems.org/gems/biodiversity19 for details
  *
- * @author wkoller
+ * @author Wolfgang Koller <wolfgang.koller@nhm-wien.ac.at>
  */
 class NameParser {
     /**

@@ -255,7 +255,7 @@ public function getMatchesMulti($searchtext, $withNearMatch = false, $herbarium 
  */
 public function getMatchesFreud ($searchtext, $withNearMatch = false, $includeCommonNames = false)
 {
-	$herbarium = new cls_herbarium_freud();
+	$herbarium = new cls_herbarium_jacq();
 	return $herbarium->getMatches($searchtext, $withNearMatch, $includeCommonNames);
 }
 
@@ -324,21 +324,21 @@ public function getMatchesFaunaEuropaeav2 ($searchtext, $withNearMatch = false)
  */
 public function getMatchesWithSynonyms ($searchtext, $withNearMatch = false)
 {
-	$herbarium = new cls_herbarium_freud();
+	$herbarium = new cls_herbarium_jacq();
 	return $herbarium->getMatchesWithSynonyms($searchtext, $withNearMatch);
 }
 
 
 public function getMatchesCommonNames ($searchtext, $withNearMatch = false)
 {
-	$herbarium = new cls_herbarium_freud();
+	$herbarium = new cls_herbarium_jacq();
 	return $herbarium->getMatchesCommonNames($searchtext, $withNearMatch);
 }
 
 
 public function getMatchesCommonNamesWithSynonyms ($searchtext, $withNearMatch = false)
 {
-	$herbarium = new cls_herbarium_freud();
+	$herbarium = new cls_herbarium_jacq();
 	return $herbarium->getMatchesCommonNamesWithSynonyms($searchtext, $withNearMatch);
 }
 

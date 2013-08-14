@@ -14,11 +14,12 @@
  * The data-structure used here is the one of the virtual herbaria
  *
  * @author Johannes Schachner <joschach@ap4net.at>
+ * @author Wolfgang Koller <wolfgang.koller@nhm-wien.ac.at>
  * @since 23.03.2011
  */
 require_once('inc/variables.php');
 
-class cls_herbarium_freud extends cls_herbarium_base {
+class cls_herbarium_jacq extends cls_herbarium_base {
     private $matches = array();    // result of getMatches() are stored here
     private $currSynonyms20;       // holds temporary list of synonyms20 for current species
     private $counterSyns20 = 0;    // counter20 for temporary list
@@ -61,9 +62,11 @@ class cls_herbarium_freud extends cls_herbarium_base {
         foreach ($searchItems as $searchItem) {
             $searchresult = array();
             $sort1 = $sort2 = $sort3 = array();
-//        $fullHit = false;
             $lev = array();
             $ctr = 0;  // how many checks did we do
+            
+            // create a clean taxon name
+            $searchItem = $this->nameParser->parse($searchItem);
 
             if (strpos(trim($searchItem), ' ') === false) {
                 $type = 'uni';                                // we're asked for a uninomial
@@ -78,22 +81,6 @@ class cls_herbarium_freud extends cls_herbarium_base {
                     $lenUninomial = mb_strlen(trim($searchItem), "UTF-8");
                 }
 
-//            $res = mysql_query("SELECT g.genus, f.family, genID, a.author
-//                                FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
-//                                WHERE g.genus = '" . mysql_real_escape_string($uninomial) . "'
-//                                 AND g.familyID = f.familyID
-//                                 AND g.authorID = a.authorID");
-//            if (mysql_num_rows($res) > 0) {
-//                $row = mysql_fetch_array($res);
-//                $searchresult[] = array('genus'    => $row['genus'],
-//                                        'distance' => 0,
-//                                        'ratio'    => 1,
-//                                        'taxon'    => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
-//                                        'ID'       => $row['genID'],
-//                                        'species'  => array());
-//                $ctr++;
-//            } else {
-                // no full hit, so do just the normal search
                 // first compare with the genera
                 $res = mysql_query("SELECT g.genus, f.family, g.genID, a.author, s.taxonID,
                                      mdld('" . mysql_real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
@@ -145,7 +132,6 @@ class cls_herbarium_freud extends cls_herbarium_base {
                     $ctr++;
                 }
 
-//            }
                 // if there's more than one hit, sort them (faster here than within the db)
                 if (count($searchresult) > 1) {
                     foreach ($searchresult as $key => $row) {

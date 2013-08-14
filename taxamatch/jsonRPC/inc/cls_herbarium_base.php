@@ -4,6 +4,7 @@
  * single elements which are used for comparison against the reference list.
  *
  * @author Johannes Schachner <joschach@ap4net.at>
+ * @author Wolfgang Koller <wolfgang.koller@nhm-wien.ac.at>
  * @since 23.03.2011
  */
 class cls_herbarium_base {
