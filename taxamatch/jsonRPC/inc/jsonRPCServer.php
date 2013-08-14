@@ -51,7 +51,7 @@ class jsonRPCServer {
 
 		// reads the input data
 		$request = json_decode(file_get_contents('php://input'),true);
-                $callback = $_REQUEST['callback'];
+                $callback = (isset($_REQUEST['callback'])) ? $_REQUEST['callback'] : '';
 
 		// executes the task on local object
 		try {
