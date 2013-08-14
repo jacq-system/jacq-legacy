@@ -26,11 +26,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
     var $block_limit = 2;
     var $limit = 4;
 
-    /*     * *****************\
-      |                   |
-      |  public functions |
-      |                   |
-      \****************** */
+    /*******************\
+    |                   |
+    |  public functions |
+    |                   |
+    \*******************/
 
     /**
      * get all possible matches against the virtual herbarium vienna
@@ -175,22 +175,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                  * (it may not be very likely but the penalty is quite low)
                  */
                 for ($i = 0; $i < 2; $i++) {
-                    // first let's see if there is a full hit of the searched genus or subgenus
-//                $res = mysql_query("SELECT g.genus, f.family, genID, a.author
-//                                    FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
-//                                    WHERE g.genus = '" . mysql_real_escape_string($genus[$i]) . "'
-//                                     AND g.familyID = f.familyID
-//                                     AND g.authorID = a.authorID");
-//                if (mysql_num_rows($res) > 0) {
-//                    $row = mysql_fetch_array($res);
-//                    $lev[] = array('genus'    => $row['genus'],
-//                                   'distance' => 0,
-//                                   'ratio'    => 1,
-//                                   'taxon'    => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
-//                                   'ID'       => $row['genID']);
-//                    $ctr++;
-//                } else {
-                    // no full hit, so do just the normal search
+                    // do the normal search
                     $res = mysql_query("SELECT g.genus, f.family, genID, a.author,
                                          mdld('" . mysql_real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
                                         FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
@@ -212,7 +197,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                         }
                         $ctr++;
                     }
-//                }
                     if (empty($genus[1]))
                         break;    // no subgenus, we're finished here
                 }
@@ -226,7 +210,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                     }
                     array_multisort($sort1, SORT_NUMERIC, $sort2, SORT_DESC, SORT_NUMERIC, $sort3, $lev);
                 }
-
 
                 /**
                  * second do the search for the species and supspecies (if any)
@@ -405,18 +388,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                         $searchresult[] = $lev[$key];
                     }
                 }
-
-//            if ($fullHit) {
-//                // remove any entries with ratio < 100% if we have a full hit (ratio = 100%) anywhere
-//                foreach ($searchresult as $srKey => $srVal) {
-//                    foreach ($srVal['species'] as $spKey => $spVal) {
-//                        if ($spVal['distance'] > 0) unset($searchresult[$srKey]['species'][$spKey]);
-//                    }
-//                }
-//                foreach ($searchresult as $srKey => $srVal) {
-//                    if (count($srVal['species']) == 0) unset($searchresult[$srKey]);
-//                }
-//            }
             }
 
             $matches['result'][] = array('searchtext' => $searchItem,
@@ -626,11 +597,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         return $this->matches;
     }
 
-    /*     * ******************\
-      |                    |
-      |  private functions |
-      |                    |
-      \******************* */
+    /********************\
+    |                    |
+    |  private functions |
+    |                    |
+    \********************/
 
     /**
      * returns an array with the various parts of a taxon
@@ -710,7 +681,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         }
     }
 
-// BP, 07.2010: private functions for synonyms
     /**
      * get all possible synonyms
      *
