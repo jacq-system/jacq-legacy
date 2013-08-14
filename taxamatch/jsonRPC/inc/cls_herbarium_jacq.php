@@ -364,7 +364,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 'synID' => $synID,
                                 'commonNames' => $commonNames
                             );
-//                        if ($distance == 0 && $val['distance'] == 0) $fullHit = true;  // we've hit everything direct
                         }
                         $ctr++;
                     }
