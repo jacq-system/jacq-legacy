@@ -176,7 +176,7 @@ function prettyPrintMatches($matches,$start,$stop,
 				if ($matches['result'][$indexMatch]['type'] == 'uni') {
 					if ($indexResult < $countResults) {
 						$row = $matches['result'][$indexMatch]['searchresult'][$indexResult];
-						$out2Left = '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['ID'] . '></b></td>'
+						$out2Left = '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['taxonID'] . '></b></td>'
 								  . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
 								  . '<td align="right">&nbsp;' . number_format($row['ratio'] * 100, 1) . "%</td>";
 						$found++;
@@ -186,7 +186,7 @@ function prettyPrintMatches($matches,$start,$stop,
 					if ($useNearMatch) {
 						if ($indexResult < $countResultsNearMatch) {
 							$row = $matchesNearMatch['result'][$indexMatch]['searchresult'][$indexResult];
-							$out2Right = '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['ID'] . '></b></td>'
+							$out2Right = '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['taxonID'] . '></b></td>'
 									   . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
 									   . '<td align="right">&nbsp;' . number_format($row['ratio'] * 100, 1) . "%</td>";
 							$foundNearMatch++;

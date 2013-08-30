@@ -101,7 +101,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                             'distance' => $row['mdld'],
                             'ratio' => 1 - $row['mdld'] / max(mb_strlen($row['genus'], "UTF-8"), $lenUninomial),
                             'taxon' => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
-                            'ID' => $row['taxonID'],
+                            'ID' => $row['genID'],
+                            'taxonID' => $row['taxonID'],
                             'species' => array());
                     }
                     $ctr++;
@@ -126,7 +127,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                             'distance' => $row['mdld'],
                             'ratio' => 1 - $row['mdld'] / max(mb_strlen($row['family'], "UTF-8"), $lenUninomial),
                             'taxon' => $row['family'],
-                            'ID' => $row['taxonID'],
+                            'ID' => $row['familyID'],
+                            'taxonID' => $row['taxonID'],
                             'species' => array());
                     }
                     $ctr++;

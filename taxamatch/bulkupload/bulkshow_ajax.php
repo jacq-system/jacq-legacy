@@ -88,7 +88,7 @@ class showResults{
 							if ($found > 0) {
 								$out2 .= "<tr valign='baseline'>";
 							}
-							$out2 .= '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['ID'] . '></b></td>'
+							$out2 .= '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['taxonID'] . '></b></td>'
 								   . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
 								   . '<td align="right">&nbsp;' . number_format($row['ratio'] * 100, 1) . "%</td></tr>\n";
 							$found++;
