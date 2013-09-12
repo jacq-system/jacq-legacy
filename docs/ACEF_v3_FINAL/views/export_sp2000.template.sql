@@ -1,16 +1,16 @@
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_CommonNames`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_Distribution`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_References`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase`;
-DROP TABLE IF EXISTS `herbar_view`.`exp2000_IFAMILYNAME_Synonyms`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_CommonNames`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_Distribution`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_References`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_SourceDatabase`;
+DROP TABLE IF EXISTS `acs_col`.`exp2000_IFAMILYNAME_Synonyms`;
 
 #----------------------------
 # Table structure for AcceptedInfraSpecificTaxa
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` (
 `AcceptedTaxonID` varchar(50) PRIMARY KEY,
 `ParentSpeciesID` varchar(50) default NULL,
 `InfraSpeciesEpithet` varchar(50) default NULL,
@@ -31,7 +31,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` (
 #----------------------------
 # Table structure for AcceptedSpecies
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_AcceptedSpecies` (
 `AcceptedTaxonID` varchar(50) PRIMARY KEY,
 `Kingdom` varchar(50) default NULL,
 `Phylum` varchar(50) default NULL,
@@ -58,7 +58,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` (
 #----------------------------
 # Table structure for CommonNames
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_CommonNames` (
 `AcceptedTaxonID` varchar(50) NOT NULL,
 `CommonName` varchar(255) NOT NULL,
 `Transliteration` varchar(255) default NULL,
@@ -71,7 +71,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` (
 #----------------------------
 # Table structure for Distribution
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Distribution` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_Distribution` (
 `AcceptedTaxonID` varchar(50) NOT NULL,
 `Distribution` text NOT NULL,
 `StandardInUse` varchar(50) default NULL,
@@ -82,7 +82,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Distribution` (
 #----------------------------
 # Table structure for References
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_References` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_References` (
 `ReferenceID` varchar(50) PRIMARY KEY,
 `Authors` varchar(255) default NULL,
 `Year` varchar(255) default NULL,
@@ -93,7 +93,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_References` (
 #----------------------------
 # Table structure for NameReferencesLinks
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_NameReferencesLinks` (
 `ID` varchar(50) PRIMARY KEY,
 /*`ID` integer(10) PRIMARY KEY,*/
 `ReferenceType` varchar(50) default NULL,
@@ -103,7 +103,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` (
 #----------------------------
 # Table structure for SourceDatabase
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_SourceDatabase` (
 `DatabaseFullName` varchar(255) NOT NULL,
 `DatabaseShortName` varchar(50) NOT NULL,
 `DatabaseVersion` varchar(5) NOT NULL,
@@ -124,7 +124,7 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` (
 #----------------------------
 # Table structure for Synonyms
 #----------------------------
-CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` (
+CREATE TABLE `acs_col`.`exp2000_IFAMILYNAME_Synonyms` (
 `ID` varchar(50) PRIMARY KEY,
 /*`ID` integer(10) PRIMARY KEY,*/
 `AcceptedTaxaID` varchar(50) NOT NULL,
@@ -140,27 +140,14 @@ CREATE TABLE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` (
 `GSDNameGUI` varchar(255) default NULL 
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
-/*
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_CommonNames`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_Distribution`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_References`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase`;
-TRUNCATE `herbar_view`.`exp2000_IFAMILYNAME_Synonyms`;
-*/
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `acs_col`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `acs_col`.`view_sp2000_acceptedspecies` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `acs_col`.`view_sp2000_commonnames` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `acs_col`.`view_sp2000_distribution` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `acs_col`.`view_sp2000_namereferenceslinks` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `acs_col`.`view_sp2000_references` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `acs_col`.`view_sp2000_sourcedatabase` WHERE familyPre LIKE '%IFAMILYNAME%';
+INSERT INTO `acs_col`.`exp2000_IFAMILYNAME_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `acs_col`.`view_sp2000_synonyms` WHERE familyPre LIKE '%IFAMILYNAME%';
 
-
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SELECT `AcceptedTaxonID`,`ParentSpeciesID`,`InfraSpeciesEpithet`,`InfraSpecificAuthorString`,`InfraSpecificMarker`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`InfraSpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedinfraspecifictaxa` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SELECT `AcceptedTaxonID`,`Kingdom`,`Phylum`,`Class`,`Order`,`Superfamily`,`Family`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`IsFossil`,`LifeZone`,`AdditionalData`,`LTSSpecialist`,`LTSDate`,`SpeciesURL`,`GSDTaxonGUI`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_acceptedspecies` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_CommonNames` SELECT `AcceptedTaxonID`,`CommonName`,`Transliteration`,`Language`,`Country`,`Area`,`ReferenceID` FROM  `herbar_view`.`view_sp2000_commonnames` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Distribution` SELECT `AcceptedTaxonID`,`DistributionElement`,`StandardInUse`,`DistributionStatus` FROM  `herbar_view`.`view_sp2000_distribution` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_NameReferencesLinks` SELECT `ID`,`Reference Type`,`ReferenceID` FROM `herbar_view`.`view_sp2000_namereferenceslinks` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_References` SELECT `ReferenceID`,`Authors`,`Year`,`Title`,`Details` FROM `herbar_view`.`view_sp2000_references` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_SourceDatabase` SELECT `DatabaseFullName`,`DatabaseShortName`,`DatabaseVersion`,`ReleaseDate`,`AuthorsEditors`,`TaxonomicCoverage`,`GroupNameInEnglish`,`Abstract`,`Organisation`,`HomeURL`,`Coverage`,`Completeness`,`Confidence`,`LogoFileName`,`ContactPerson` FROM  `herbar_view`.`view_sp2000_sourcedatabase` WHERE familyPre='IFAMILYNAME';
-INSERT INTO `herbar_view`.`exp2000_IFAMILYNAME_Synonyms` SELECT `ID`,`AcceptedTaxonID`,`Genus`,`SubGenusName`,`Species`,`AuthorString`,`InfraSpecies`,`InfraSpecificMarker`,`InfraSpecificAuthorString`,`GSDNameStatus`,`Sp2000NameStatus`,`GSDNameGUI` FROM  `herbar_view`.`view_sp2000_synonyms` WHERE familyPre='IFAMILYNAME';
-
-UPDATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
-UPDATE `herbar_view`.`exp2000_IFAMILYNAME_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
-
+UPDATE `acs_col`.`exp2000_IFAMILYNAME_AcceptedInfraSpecificTaxa` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
+UPDATE `acs_col`.`exp2000_IFAMILYNAME_AcceptedSpecies` SET  `LTSDate`=DATE_FORMAT(NOW(),'%Y-%m-%d') WHERE  `LTSDate`='in prep.';
