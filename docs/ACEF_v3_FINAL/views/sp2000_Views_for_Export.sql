@@ -5,16 +5,11 @@
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_sourcedatabase
+ VIEW `acs_col`.view_sp2000_sourcedatabase
  AS
  
 SELECT
- CASE
-  WHEN m.source_id=7  THEN 'Annonaceae'
-  WHEN m.source_id=25 THEN 'Chenopodiaceae'
-  WHEN m.source_id=26 THEN 'Ebenaceae'
-  ELSE ''
- END AS 'familyPre',
+ 'Amaranthaceae, Annonaceae, Chenopodiaceae, Degeneriaceae, Ebenaceae, Eupomatiaceae, Himantandraceae, Myristicaceae, Portulacaceae' AS `familyPre`,
  
  m.source_name AS 'DatabaseFullName',
  m.source_code AS 'DatabaseShortName',
@@ -36,7 +31,7 @@ FROM
  herbarinput.meta m
  LEFT JOIN  herbarinput.metadb mdb ON mdb.source_id_fk=m.source_id
 WHERE
-  m.source_id in('7','25','26')
+  m.source_id = 7
 ;
  
 -- ===========================================
@@ -46,7 +41,7 @@ WHERE
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_acceptedspecies
+ VIEW `acs_col`.view_sp2000_acceptedspecies
  AS
 
 SELECT
@@ -123,7 +118,7 @@ FROM
  
 WHERE
      ( ts.tax_rankID='1' OR ( ts.tax_rankID='7'  AND ts.speciesID IS NULL ) ) -- ttr.rank='species' or ( rank=genus and species = Null)
- AND ( tg.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ AND ( tg.familyID IN ('23', '30','115', '161', '182', '205', '249', '351', '421') )
  -- where accepted
  AND ( syn.acc_taxon_ID IS NULL OR syn.acc_taxon_ID=syn.taxonID)
  AND ts.statusID<>2
@@ -138,7 +133,7 @@ GROUP BY
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_acceptedinfraspecifictaxa
+ VIEW `acs_col`.view_sp2000_acceptedinfraspecifictaxa
  AS
 
 SELECT 
@@ -235,7 +230,7 @@ FROM
 WHERE
  -- next higher taxon is what we want
      ( tso.tax_rankID='1' OR ( tso.tax_rankID='7'  AND tso.speciesID IS NULL ) ) -- ttro.rank='species' or ( ttro.rank=genus and tso.speciesID = Null)
- AND ( tgo.familyID IN ('30','115','182') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ AND ( tgo.familyID IN ('23', '30','115', '161', '182', '205', '249', '351', '421') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
  -- and wanted infraspecies rank...
  AND ts.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
  -- and accepteds
@@ -254,12 +249,12 @@ GROUP BY
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_tmp_AcceptedTaxonID
+ VIEW `acs_col`.view_sp2000_tmp_AcceptedTaxonID
  AS
 
-SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedspecies acc 
+SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM `acs_col`.view_sp2000_acceptedspecies acc 
 UNION ALL
-SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM herbar_view.view_sp2000_acceptedinfraspecifictaxa acc 
+SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FROM `acs_col`.view_sp2000_acceptedinfraspecifictaxa acc 
 ;
 
 
@@ -270,7 +265,7 @@ SELECT acc.familyPre AS "familyPre", acc.AcceptedTaxonID AS 'AcceptedTaxonID' FR
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_synonyms
+ VIEW `acs_col`.view_sp2000_synonyms
  AS
 --  synonym for species
 SELECT
@@ -360,7 +355,7 @@ FROM
 WHERE
    
      ( tss.tax_rankID='1' OR ( tss.tax_rankID='7'  AND tss.speciesID IS NULL ) ) -- ttrs.rank='species' or ( rank=genus and species = Null)
- AND ( tgs.familyID IN ('30','115','182') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ AND ( tgs.familyID IN ('23', '30','115', '161', '182', '205', '249', '351', '421') ) --  tf.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
  AND ( syn.acc_taxon_ID IS NOT NULL AND syn.acc_taxon_ID<>0 AND syn.acc_taxon_ID<>syn.taxonID  )
  AND tss.statusID<>2
 -- synonym infraspecies  
@@ -461,7 +456,7 @@ FROM
 WHERE
  -- next higher taxon is what we want
      ( tsso.tax_rankID='1' OR ( tsso.tax_rankID='7'  AND tsso.speciesID IS NULL ) ) -- ttro.rank='species' or ( ttro.rank=genus and tso.speciesID = Null)
- AND ( tgso.familyID IN ('30','115','182') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
+ AND ( tgso.familyID IN ('23', '30','115', '161', '182', '205', '249', '351', '421') ) --  tfo.family IN('Annonaceae','Chenopodiaceae','Ebenaceae')
  -- and wanted infraspecies rank...
  AND tss.tax_rankID IN (2,3,4,5,6) -- ttr.rank IN ('subspecies','variety','subvariety','forma','subforma')
  -- synonym
@@ -478,7 +473,7 @@ WHERE
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_commonnames
+ VIEW `acs_col`.view_sp2000_commonnames
  AS
 SELECT
  taxonids.familyPre AS 'familyPre',
@@ -502,7 +497,7 @@ SELECT
  ap.reference_id AS 'ReferenceID'
  
 FROM
- herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ `acs_col`.view_sp2000_tmp_AcceptedTaxonID taxonids
  LEFT JOIN herbar_names.tbl_name_taxa tax ON tax.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
  LEFT JOIN herbar_names.tbl_name_entities en ON en.entity_id=tax.taxon_id
  CROSS JOIN herbar_names.tbl_name_applies_to ap ON ap.entity_id=en.entity_id
@@ -519,7 +514,7 @@ FROM
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_distribution
+ VIEW `acs_col`.view_sp2000_distribution
  AS
 
 SELECT
@@ -529,7 +524,7 @@ SELECT
  'ISO2Alpha' AS 'StandardInUse',
  'native' AS 'DistributionStatus'
 FROM
- herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ `acs_col`.view_sp2000_tmp_AcceptedTaxonID taxonids
  LEFT JOIN herbarinput.tbl_specimens sp ON sp.taxonID=SUBSTR(taxonids.AcceptedTaxonID,2)
  LEFT JOIN herbarinput.tbl_geo_nation gn ON gn.NationID = sp.NationID
 WHERE
@@ -543,7 +538,7 @@ WHERE
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_tmp_references
+ VIEW `acs_col`.view_sp2000_tmp_references
  AS
 -- accepted TAXA (no shared references)
 SELECT
@@ -557,7 +552,7 @@ SELECT
  lit.annotation AS 'Details'
  
 FROM
- herbar_view.view_sp2000_tmp_AcceptedTaxonID taxonids
+ `acs_col`.view_sp2000_tmp_AcceptedTaxonID taxonids
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(taxonids.AcceptedTaxonID,2) 
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
@@ -576,7 +571,7 @@ SELECT
  lit.annotation AS 'Details'
  
 FROM
- herbar_view.view_sp2000_synonyms synonymids
+ `acs_col`.view_sp2000_synonyms synonymids
  LEFT JOIN herbarinput.tbl_tax_index tbli ON tbli.taxonID = SUBSTR(synonymids.ID,2)  
  LEFT JOIN herbarinput.tbl_lit lit  ON lit.citationID = tbli.citationID 
  LEFT JOIN herbarinput.tbl_lit_authors ta ON ta.autorID = lit.autorID 
@@ -618,7 +613,7 @@ SELECT
  END AS 'Details'
  
 FROM
- herbar_view.view_sp2000_commonnames cmnames
+ `acs_col`.view_sp2000_commonnames cmnames
  LEFT JOIN herbar_names.tbl_name_references ref ON ref.reference_id=cmnames.ReferenceID
  LEFT JOIN herbar_names.tbl_name_literature nlit ON nlit.literature_id=ref.reference_id
  LEFT JOIN herbar_names.tbl_name_persons per ON per.person_id=ref.reference_id
@@ -640,7 +635,7 @@ GROUP BY cmnames.familyPre, cmnames.ReferenceID -- is needed, because we are int
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_references
+ VIEW `acs_col`.view_sp2000_references
  AS
 SELECT
  ref.familyPre AS 'familyPre',
@@ -651,7 +646,7 @@ SELECT
  IFNULL(ref.Details,'') as 'Details'
  
 FROM
- herbar_view.view_sp2000_tmp_references ref
+ `acs_col`.view_sp2000_tmp_references ref
 ;
  
  -- ===========================================
@@ -661,7 +656,7 @@ FROM
 -- ===========================================
 CREATE OR REPLACE
  ALGORITHM = UNDEFINED
- VIEW herbar_view.view_sp2000_namereferenceslinks
+ VIEW `acs_col`.view_sp2000_namereferenceslinks
  AS
 
 SELECT
@@ -670,7 +665,7 @@ SELECT
  ref.tmp_type AS 'Reference Type',
  ref.ReferenceID AS 'ReferenceID'
 FROM
- herbar_view.view_sp2000_tmp_references ref
+ `acs_col`.view_sp2000_tmp_references ref
 WHERE
  tmp_type in ('TaxAccRef','Nomenclatural reference')
 ;
