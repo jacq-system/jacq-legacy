@@ -35,7 +35,7 @@ function makeDropdownUsers($tid)
                   . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
-                  . "[{$row['source_code']}] {$row['firstname']} {$row['surname']} ({$row['login']})"
+                  . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] ({$row['login']})"
                   . "</option>\n";
         }
     }
@@ -60,7 +60,7 @@ function makeDropdownUsers($tid)
                   . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
-                  . "[{$row['source_code']}] {$row['firstname']} {$row['surname']} (" . (($row['login']) ? $row['login'] : "offline") . ")"
+                  . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] (" . (($row['login']) ? $row['login'] : "offline") . ")"
                   . "</option>\n";
         }
     }
@@ -93,7 +93,7 @@ function displaychat($tid)
                  AND (tid='" . intval($tid) . "' AND uid='" . $_SESSION['uid'] . "'
                    OR uid='" . intval($tid) . "' AND tid='" . $_SESSION['uid'] . "')
                 ORDER BY tbl_chat_priv.timestamp DESC
-                LIMIT 10";
+                LIMIT 100";
     } else {
         $sql = "SELECT ID, userID, firstname, surname, chat, tbl_chat_priv.timestamp, seen, tid
                 FROM tbl_chat_priv, herbarinput_log.tbl_herbardb_users
@@ -101,7 +101,7 @@ function displaychat($tid)
                  AND tid='" . $_SESSION['uid'] . "'
                  AND (tbl_chat_priv.timestamp>subtime(now(), '1:00:00') OR tbl_chat_priv.seen = 0)
                 ORDER BY tbl_chat_priv.timestamp DESC
-                LIMIT 10";
+                LIMIT 100";
     }
     $r = db_query($sql);
     $chat = '<table width="500" dir=\"ltr\" summary=\"Shoutbox formating\" cellpadding=2 cellspacing=0 border=0>';
