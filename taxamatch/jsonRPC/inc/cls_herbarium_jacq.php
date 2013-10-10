@@ -334,24 +334,53 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                             $commonNames = array();
                             if ($includeCommonNames) {
                                 $sql_cn = "
-                                SELECT nc.`common_id`, nc.`common_name`, nl.`iso639-6`, gc.`name`, np.`period`
+                                SELECT nc.`common_id`, nc.`common_name`, nl.`iso639-6`, gc.`name`, np.`period`, `nat`.`reference_id`,
+                                CASE
+                                 WHEN npe.`personID` THEN 'person'
+                                 WHEN nwe.`serviceID` THEN 'service'
+                                 ELSE 'literature'
+                                END as 'source_type',
+                                CASE
+                                 WHEN npe.`personID` THEN npe.`personID`
+                                 WHEN nwe.`serviceID` THEN nwe.`serviceID`
+                                 ELSE nli.`citationID`
+                                END as 'source_id'
                                 FROM `herbar_names`.`tbl_name_taxa` nt
                                 LEFT JOIN `herbar_names`.`tbl_name_applies_to` nat ON nat.`entity_id` = nt.`taxon_id`
                                 LEFT JOIN `herbar_names`.`tbl_name_commons` nc ON nc.`common_id` = nat.`name_id`
                                 LEFT JOIN `herbar_names`.`tbl_name_languages` nl ON nl.`language_id` = nat.`language_id`
                                 LEFT JOIN `herbar_names`.`tbl_geonames_cache` gc ON gc.`geonameId` = nat.`geonameId`
                                 LEFT JOIN `herbar_names`.`tbl_name_periods` np ON np.`period_id` = nat.`period_id`
-                                WHERE
-                                nt.`taxonID` = '$taxonID' AND nc.`common_name` IS NOT NULL
+                                LEFT JOIN `herbar_names`.`tbl_name_references` nr ON nr.`reference_id` = nat.`reference_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_persons` npe ON npe.`person_id` = nr.`reference_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_literature` nli ON nli.`literature_id` = nr.`reference_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_webservices` nwe ON nwe.`webservice_id` = nr.`reference_id`
+                                WHERE nt.`taxonID` = '$taxonID' AND nc.`common_name` IS NOT NULL
                             ";
                                 $result_cn = mysql_query($sql_cn);
                                 while ($row_cn = mysql_fetch_array($result_cn)) {
+                                    // get the reference name for the given common name entry
+                                    $reference = 'jacq';
+                                    switch($row_cn['source_type']) {
+                                        case 'person':
+                                            $reference = $this->_getPersonString($row_cn['source_id']);
+                                            break;
+                                        case 'service':
+                                            $reference = $this->_getServiceString($row_cn['source_id']);
+                                            break;
+                                        case 'literature':
+                                            $reference = $this->_getLiteratureString($row_cn['source_id']);
+                                            break;
+                                    }
+                                    
+                                    // add all relevant information to the response
                                     $commonNames[] = array(
                                         'id' => $row_cn['common_id'],
                                         'name' => $row_cn['common_name'],
                                         'language' => $row_cn['iso639-6'],
                                         'geography' => $row_cn['name'],
-                                        'period' => $row_cn['period']
+                                        'period' => $row_cn['period'],
+                                        'reference' => $reference
                                     );
                                 }
                             }
@@ -899,5 +928,63 @@ class cls_herbarium_jacq extends cls_herbarium_base {
             $text .= " subforma " . $row['epithet5'] . " " . $row['author5'];
 
         return $text;
+    }
+
+    /**
+     * Helper function for constructing a string-reference for a given service
+     * @param int $serviceID ID of service
+     * @return string|null
+     */
+    private function _getServiceString($serviceID) {
+        $serviceID = intval($serviceID);
+        if ($serviceID <= 0)
+            return NULL;
+
+        $sql = "
+                SELECT `serviceID`, `name`, `url_head`
+                FROM `tbl_nom_service`
+                WHERE `serviceID` = '{$serviceID}'
+            ";
+
+        $result = mysql_query($sql);
+        $row = mysql_fetch_assoc($result);
+
+        return "{$row['name']} ({$row['serviceID']}, {$row['url_head']})";
+    }
+
+    /**
+     * Helper function for return the name of a person for a given person_ID
+     * @param int $person_ID ID of person
+     * @return string|null
+     */
+    private function _getPersonString($person_ID) {
+        $person_ID = intval($person_ID);
+        if( $person_ID <= 0 ) return NULL;
+
+        $sql = "
+            SELECT `person_ID`, `p_familyname`, `p_firstname`, `p_birthdate`, `p_death`
+            FROM `tbl_person`
+            WHERE `person_ID` = '{$person_ID}'
+            ";
+
+        $result = mysql_query($sql);
+        $row = mysql_fetch_assoc($result);
+        return $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
+    }
+
+    /**
+     * Helper function for returning the citation of a given citationID
+     * @param int $citationID ID of citation
+     * @return string|null
+     */
+    private function _getLiteratureString($citationID) {
+        $citationID = intval($citationID);
+        if( $citationID <= 0 ) return NULL;
+        
+        $sql = "SELECT `herbar_view`.GetProtolog({$citationID}) AS 'citation'";
+
+        $result = mysql_query($sql);
+        $row = mysql_fetch_assoc($result);
+        return $row['citation'];
     }
 }
