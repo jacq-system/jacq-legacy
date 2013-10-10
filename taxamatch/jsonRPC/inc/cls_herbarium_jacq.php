@@ -342,9 +342,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 END as 'source_type',
                                 CASE
                                  WHEN npe.`personID` THEN npe.`personID`
-                                 WHEN new.`serviceID` THEN new.`serviceID`
+                                 WHEN nwe.`serviceID` THEN nwe.`serviceID`
                                  ELSE nli.`citationID`
-                                END as 'source_id',
+                                END as 'source_id'
                                 FROM `herbar_names`.`tbl_name_taxa` nt
                                 LEFT JOIN `herbar_names`.`tbl_name_applies_to` nat ON nat.`entity_id` = nt.`taxon_id`
                                 LEFT JOIN `herbar_names`.`tbl_name_commons` nc ON nc.`common_id` = nat.`name_id`
@@ -354,7 +354,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 LEFT JOIN `herbar_names`.`tbl_name_references` nr ON nr.`reference_id` = nat.`reference_id`
                                 LEFT JOIN `herbar_names`.`tbl_name_persons` npe ON npe.`person_id` = nr.`reference_id`
                                 LEFT JOIN `herbar_names`.`tbl_name_literature` nli ON nli.`literature_id` = nr.`reference_id`
-                                LEFT JOIN `herbar_names`.`tbl_name_webservices` nwe ON new.`webservice_id` = nr.`reference_id`
+                                LEFT JOIN `herbar_names`.`tbl_name_webservices` nwe ON nwe.`webservice_id` = nr.`reference_id`
                                 WHERE nt.`taxonID` = '$taxonID' AND nc.`common_name` IS NOT NULL
                             ";
                                 $result_cn = mysql_query($sql_cn);
