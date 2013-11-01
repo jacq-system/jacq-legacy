@@ -30,29 +30,53 @@ class MapLines_editLit extends MapLines{
 		return $ret;
 	}
 	
-	function RemoveMapLine($params){
+    function RemoveMapLine($params) {
+        // make parameters save
+        $citid = intval($params['citationID']);
+        $taxonID = intval($params['leftID']);
+        $acc_taxon_ID = intval($params['rightID']);
+        $res = 0;
+        $msg = "";
 
-		$citid=$params['citationID'];
-		$taxonID=$params['leftID'];
-		$acc_taxon_ID=$params['rightID'];
-		$res=0;
-		
-		$sql2 = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acc_taxon_ID}' LIMIT 1";
-		$result2 = db_query($sql2);
-		if($result2 && $row2 = mysql_fetch_array($result2)){
-			logTbl_tax_synonymy($row2['tax_syn_ID'],2);
-			$sql3 = "DELETE FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID='{$row2['tax_syn_ID']}' LIMIT 1";
-			$res3 = db_query($sql3);
-			if($res3){
-				$res=1;			
-			}
-		}
-		
-		$res=array('success'=>$res);
-		return $res;
-	}
-	
-	function LoadMapLines($params){
+        $sql2 = "SELECT `tax_syn_ID` FROM `herbarinput`.`tbl_tax_synonymy` WHERE `source_citationID` = {$citid} AND `source` = 'literature' AND `taxonID` = {$taxonID}";
+        // if no accepted taxon ID is given, we have to check for NULL value
+        if ($acc_taxon_ID == 0) {
+            $sql2 .= " and `acc_taxon_ID` IS NULL";
+        }
+        // otherwise search for the accepted taxon
+        else {
+            $sql2 .= " and `acc_taxon_ID` = {$acc_taxon_ID}";
+        }
+
+        // check if we find a fitting entry
+        $result2 = db_query($sql2);
+        if ($result2 && $row2 = mysql_fetch_array($result2)) {
+            $tax_syn_ID = $row2['tax_syn_ID'];
+            
+            // check if synonymy entry is still used in classification
+            $classification_sql = "SELECT `classification_id` FROM `herbarinput`.`tbl_tax_classification` WHERE `tax_syn_ID` = {$tax_syn_ID}";
+            $classification_res = db_query($classification_sql);
+            if( $classification_res && mysql_num_rows($classification_res) > 0 ) {
+                $res = 2;
+                $msg = "Delete from Classification first!";
+            }
+            // if not, delete entry
+            else {
+                logTbl_tax_synonymy($tax_syn_ID, 2);
+                $sql3 = "DELETE FROM `herbarinput`.`tbl_tax_synonymy` WHERE `tax_syn_ID` = {$tax_syn_ID}";
+                $res3 = db_query($sql3);
+                if ($res3) {
+                    $res = 1;
+                }
+            }
+        }
+
+        // Return success status
+        $res = array('success' => $res, 'text' => $msg);
+        return $res;
+    }
+
+    function LoadMapLines($params){
 		$citid=$params['citationID'];
 
 		

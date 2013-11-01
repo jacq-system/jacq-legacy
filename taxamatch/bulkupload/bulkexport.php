@@ -76,7 +76,7 @@ while ($row = mysql_fetch_array($result)) {
                     if ($found > 0) {
                         $out2 .= formatCell('');
                     }
-                    $out2 .= formatCell($row['taxon'] . ' <' . $row['ID'] . '>')
+                    $out2 .= formatCell($row['taxon'] . ' <' . $row['taxonID'] . '>')
                            . formatCell($row['distance'])
                            . formatCell(number_format($row['ratio'] * 100, 1) . "%")
                            . "\n";

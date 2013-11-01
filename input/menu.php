@@ -84,7 +84,7 @@ $userdata = mysql_fetch_array(mysql_query($sql));
 </div>
 
 <div align="center">
-  <h1>Menu</h1>
+    <h1>Menu <a href="http://jacq.nhm-wien.ac.at/dokuwiki/doku.php?id=export_documentation" target="_blank"><img src="webimages/help.png" border="0" width="16" height="16" /></a></h1>
   <form Action="menu.php" Method="POST">
     <table>
       <tr align="left"><td >

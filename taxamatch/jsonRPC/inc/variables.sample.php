@@ -2,75 +2,45 @@
 /**
  * database access
  */
-$options['hrdb']['dbhost'] = "host";        // hostname for heimo reiners database
-$options['hrdb']['dbname'] = "dbname";      // database name for heimo reiners database
-$options['hrdb']['dbnameCommonNames'] = "dbname"; // database name for heimo reiners database
-$options['hrdb']['dbuser'] = "username";    // username for heimo reiners database
-$options['hrdb']['dbpass'] = "password";    // password for heimo reiners database
-$options['col']['dbhost']  = "dbhost";      // hostname for catalogue of life
-$options['col']['dbname']  = "dbname";      // database name for catalogue of life
-$options['col']['dbuser']  = "dbuser";      // username for catalogue of life
-$options['col']['dbpass']  = "dbpass";      // password for catalogue of life
-$options['col2011']['dbhost']  = "dbhost";  // hostname for catalogue of life
-$options['col2011']['dbname']  = "dbname";  // database name for catalogue of life
-$options['col2011']['dbuser']  = "dbuser";  // username for catalogue of life
-$options['col2011']['dbpass']  = "dbpass";  // password for catalogue of life
-$options['fe']['dbhost']  = "host";         // hostname for fauna europea
-$options['fe']['dbname']  = "dbname";       // database name for fauna europea
-$options['fe']['dbuser']  = "username";     // username for fauna europea
-$options['fe']['dbpass']  = "password";     // password for fauna europea
+// JACQ database
+$options['hrdb']['dbhost']            = 'localhost';
+$options['hrdb']['dbname']            = 'input';
+$options['hrdb']['dbnameCommonNames'] = 'names';
+$options['hrdb']['dbuser']            = '';
+$options['hrdb']['dbpass']            = '';
+// Catalogue of Life 2010
+$options['col']['dbhost'] = 'localhost';
+$options['col']['dbname'] = 'ref_col2010ac';
+$options['col']['dbuser'] = '';
+$options['col']['dbpass'] = '';
+// Catalogue of Life 2011
+$options['col2011']['dbhost'] = 'localhost';
+$options['col2011']['dbname'] = 'ref_col2011ac';
+$options['col2011']['dbuser'] = '';
+$options['col2011']['dbpass'] = '';
+// Fauna Europea
+$options['fe']['dbhost'] = 'localhost';
+$options['fe']['dbname'] = 'ref_faunaeuropaea';
+$options['fe']['dbuser'] = '';
+$options['fe']['dbpass'] = '';
+// Fauna Europea v2
+$options['fev2']['dbhost'] = 'localhost';
+$options['fev2']['dbname'] = 'ref_faunaeuropaea_v2';
+$options['fev2']['dbuser'] = '';
+$options['fev2']['dbpass'] = '';
+// JACQ logging database
+$options['log']['dbhost'] = 'localhost';
+$options['log']['dbname'] = 'input_log';
+$options['log']['dbuser'] = '';
+$options['log']['dbpass'] = '';
 
-$options['fev2']['dbhost']  = "host";       // hostname for fauna europeaV2
-$options['fev2']['dbname']  = "dbname";     // database name for fauna europeaV2
-$options['fev2']['dbuser']  = "username";   // username for fauna europeaV2
-$options['fev2']['dbpass']  = "password";   // password for fauna europeaV2
-
-$options['log']['dbhost'] = 'host';         // hostname for logging
-$options['log']['dbname'] = "dbname";       // database for logging
-$options['log']['dbuser'] = "username";     // username for logging
-$options['log']['dbpass'] = "password";     // password for logging
-
-/*
-$options=array(
-	'hrdb'=>array(
-		'dbhost'	=>	'localhost',        		// hostname for heimo reiners database
-		'dbname'	=>	'',     			// database name for heimo reiners database
-		'dbnameCommonNames'	=>	'',     // database name for heimo reiners database
-		'dbuser'	=>	'',    					// username for heimo reiners database
-		'dbpass'	=>	'',    					// password for heimo reiners database
-	),
-	'col'=>array(
-		'dbhost'	=>	'localhost',       			// hostname for catalogue of life
-		'dbname'	=>	'',     		// database name for catalogue of life
-		'dbuser'	=>	'',   					// username for catalogue of life
-		'dbpass'	=>	'',   					// password for catalogue of life
-	),
-	'col2011'=>array(
-		'dbhost'	=>	'localhost',       			// hostname for catalogue of life
-		'dbname'	=>	'',    			// database name for catalogue of life
-		'dbuser'	=>	'',    					// username for catalogue of life
-		'dbpass'	=>	'',    					// password for catalogue of life
-	),
-	'fev2'=>array(
-		'dbhost'	=>	'localhost',    			// hostname for catalogue of life
-		'dbname'	=>	'',     				// database name for catalogue of life
-		'dbuser'	=>	'',   					// username for catalogue of life
-		'dbpass'	=>	'',    					// password for catalogue of life
-	),
-	'fe'=>array(
-		'dbhost'	=>	'localhost',       			// hostname for fauna europea
-		'dbname'	=>	'',    	// database name for fauna europea
-		'dbuser'	=>	'',    					// username for fauna europea
-		'dbpass'	=>	'',   					// password for fauna europea
-	),
-	'log'=>array(
-		'dbhost'	=>	'localhost',				// hostname for logging
-		'dbname'	=>	'',						// database for logging
-		'dbuser'	=>	'',						// username for logging
-		'dbpass'	=>	'',						// password for logging
-	),
-);
-*/
+/**
+ * GNA nameParser config
+ * Use the following options for GNA service: "-r -o json"
+ */
+$options['nameParser']['address'] = '127.0.0.1';
+$options['nameParser']['port'] = '4334';
+$options['nameParser']['timeout'] = 1;  // timeout in seconds
 
 /**
  * strings that should be ignored by parsing/atomizing functions
