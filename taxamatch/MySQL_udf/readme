@@ -33,6 +33,10 @@ How to add UDF-function to MySQL:
 =================================
 prerequisite: libmysqlclient-devel
 
+openSUSE 12.3:
+  g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp -fPIC
+  cp libmysqlmdldutf8.so /usr/lib/mysql/plugin
+
 OpenSuse 11.3 (mysql-community-server-5.1.46-2.18.i586):
   g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp
   cp libmysqlmdldutf8.so /usr/lib/mysql/plugin
