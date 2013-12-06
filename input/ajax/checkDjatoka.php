@@ -718,6 +718,7 @@ EOF;
 
     //scan_id 	thread_id 	IP 	start 	finish 	errors
     public function x_importDjatokaListIntoDB($params) {
+        $warningText = "";
         $serverIP = $params['serverIP'];
         
         // Fetch reference to picture db
@@ -752,6 +753,12 @@ EOF;
         if ($filesArchive == -1 || $filesDjatoka == -1) {
             throw new Exception("Key not accepted {$serverIP}");
         }
+        
+        // check if the server has no archive
+        if( count($filesArchive) == 0 && count($filesDjatoka) > 0 ) {
+            $filesArchive = $filesDjatoka;
+            $warningText = "<br />WARNING: No files in Archive, assuming non Archive installation!";
+        }
 
         $inArchive_notinDjatoka = array_diff($filesArchive, $filesDjatoka);
 
@@ -769,6 +776,7 @@ EOF;
         $inDjatoko_notinArchive = array_diff($filesDjatoka, $filesArchive);
         foreach ($inDjatoko_notinArchive as $filename) {
             $sql.="\n('{$scanid}'," . $db_pictures->quote($filename) . ",'2'),";
+            $x++;
         }
 
         $sql = substr($sql, 0, -1);
@@ -798,7 +806,7 @@ SET
 
         set_time_limit(ini_get('max_execution_time'));*/
 
-        return "List fetched from Server {$serverIP} and dumped into local Database.<br> The ScanId was: {$scanid}";
+        return "List fetched from Server {$serverIP} and dumped into local Database.<br> The ScanId was: {$scanid}!" . $warningText;
     }
     
     /**
