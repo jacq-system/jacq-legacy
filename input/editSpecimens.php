@@ -432,13 +432,14 @@ if (isset($_GET['sel'])) {
         $rowCheck = mysql_fetch_array(mysql_query($sqlCheck));
         // allow write access to database if user is editor or is granted for both old and new collection
         if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
-            $sqlDummy = "SELECT specimen_ID
-                         FROM tbl_specimens, tbl_management_collections
-                         WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
-                          AND HerbNummer = " . quoteString($p_HerbNummer) . "
-                          AND (source_id = '1' OR source_id = '6' OR source_id = '4')
-                          AND source_id = '" . $rowCheck['source_id'] . "'
-                          AND specimen_ID != '" . intval($_POST['specimen_ID']) . "'";
+            // TODO: add configuration switch for duplicate check
+            $sqlDummy = "SELECT s.`specimen_ID`
+                         FROM `tbl_specimens` s, `tbl_management_collections` mc
+                         WHERE s.`collectionID` = mc.`collectionID`
+                          AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
+                          AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4')
+                          AND mc.`coll_short_prj` = (SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `collectionID` = " . intval($p_collection) .")
+                          AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'";
             $dummy = db_query($sqlDummy);
             if (mysql_num_rows($dummy) > 0) {
                 $updateBlocked = true;
