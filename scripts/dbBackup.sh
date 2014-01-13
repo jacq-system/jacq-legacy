@@ -52,8 +52,8 @@ dEcho "Creating archive"
 ARCHIVE_FILE_NAME=${DATE_PREFIX}_dbBackup.tar.bz2
 /bin/tar -C ${BACKUP_PATH} -cvjf ${ARCHIVE_PATH}/${ARCHIVE_FILE_NAME} ${BACKUP_DIR_NAME}
 
-# show list info for archive files
-/bin/ls -al ${ARCHIVE_FILE_NAME}
+# show list info for archive file
+/bin/ls -al ${ARCHIVE_PATH}/${ARCHIVE_FILE_NAME}
 
 # cleanup
 dEcho "Removing temporary backup directory"
