@@ -124,7 +124,7 @@ function cleanData ($post, $withStrip = false)
  *
  * @param string $class_name name of class and of file
  */
-function __autoload($class_name)
+function jacq_autoload($class_name)
 {
     if (preg_match('|^\w+$|', $class_name)) {
         $class_name = basename($class_name);
@@ -139,7 +139,9 @@ function __autoload($class_name)
         } elseif (file_exists('../' . $path)) {
             include('../' . $path);
         } else {
-            die("The requested library $class_name could not be found.");
+            return false;
         }
     }
 }
+
+spl_autoload_register('jacq_autoload');
