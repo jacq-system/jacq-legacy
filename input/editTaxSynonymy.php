@@ -23,7 +23,7 @@ function dateconvert($date,$tomysql=false){
 	return $date;
 }
 
-		
+
 if (isset($_GET['new'])) {
     $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
          author, author1, author2, author3, author4, author5,
@@ -62,7 +62,7 @@ if (isset($_GET['new'])) {
         $p_timestamp   = $row['timestamp'];
         $p_user        = $row['firstname'] . " " . $row['surname'];
         $p_ref_date=dateconvert($row['ref_date']);
-		
+
         $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
          author, author1, author2, author3, author4, author5,
          epithet,epithet1,epithet2,epithet3,epithet4,epithet5
@@ -79,7 +79,7 @@ if (isset($_GET['new'])) {
         $result = db_query($sql);
         $p_taxonAcc = taxon(mysql_fetch_array($result));
         $p_taxonAccIndex = $row['acc_taxon_ID'];
-       
+
  	   $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
          author, author1, author2, author3, author4, author5,
          epithet,epithet1,epithet2,epithet3,epithet4,epithet5
@@ -88,7 +88,7 @@ if (isset($_GET['new'])) {
         $result = db_query($sql);
         $p_source_specimen=taxon(mysql_fetch_array($result));
         $p_source_specimenIndex=$row['source_specimenID'];
-		
+
         $p_source = $row['source'];
         if ($p_source == "literature") {
             $sql = "SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -114,7 +114,7 @@ if (isset($_GET['new'])) {
             $p_sourcePersIndex = $row['source_person_ID'];
             $p_sourceLit = $p_sourceLitIndex = $p_sourceService = "";
         }
-        
+
     }
     else {
         $p_taxon = $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
@@ -133,7 +133,7 @@ if (isset($_GET['new'])) {
     }
     $annotations = $_POST['annotations'];
     $sqldata = "taxonID = " . extractID($_POST['taxon']) . ",
-                acc_taxon_ID = " . ( ( intval($_POST['taxonAccIndex'])==0 || strlen($_POST['taxonAcc'])==0 || $_POST['taxonAcc']=='0' || $_POST['taxonAcc']=='· <>')?'null':"'".intval($_POST['taxonAccIndex'])."'" ). ",
+                acc_taxon_ID = " . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'" ) . ",
                 preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                 annotations = " . quoteString($annotations) . ",
                 ref_date = '" . dateconvert($_POST['ref_date'],true) . "',
@@ -167,7 +167,7 @@ if (isset($_GET['new'])) {
     }//echo $sql;exit;
     $result = db_query($sql);
     $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : mysql_insert_id();
-    //logTaxSynonymy($p_tax_syn_ID, $updated);
+    logTbl_tax_synonymy($p_tax_syn_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
            . "<script language=\"JavaScript\">\n"
@@ -244,7 +244,7 @@ if (isset($_GET['new'])) {
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="inc/jQuery/jquery.inputmask.js" type="text/javascript"></script>
-  
+
   <script type="text/javascript" language="JavaScript">
 
 	$(document).ready(function() {
@@ -271,7 +271,7 @@ if (isset($_GET['new'])) {
 	function hideParts() {
 
     }
-	
+
 
 
 
