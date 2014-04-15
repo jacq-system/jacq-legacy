@@ -71,67 +71,33 @@ function getMatches($database, $searchtext, $useNearMatch=false,$showSynonyms=fa
 	$service = new jsonRPCClient($url,$debug);
 	$failure=false;
 	try {
-		$matchesNearMatch = array();
-		$matches=array();
-		
-		if ($database == 'vienna') {
-			$matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-			
-		}else if ($database == 'vienna_common') {
-			
-			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-			
-		} else if ($database == 'col2010ac') {
-			
-			$matches = $service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('col2010ac',$searchtext,array('NearMatch'=>true));
-			}
+            $matchesNearMatch = array();
+            $matches=array();
 
-		} else if ($database == 'col2011ac') {
-			
-			$matches = $service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('col2011ac',$searchtext,array('NearMatch'=>true));
-			}
-			
+            $databases = $service->getDatabases();
 
-		} else if ($database == 'fe') {
-			
-			$matches = $service->getMatchesService('fe',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('fe',$searchtext,array('NearMatch'=>true));
-			}
-		
-		} else if ($database == 'fev2') {
-			
-			$matches = $service->getMatchesService('fev2',$searchtext,array('NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService('fev2',$searchtext,array('NearMatch'=>true));
-			}
+            if( isset($databases[$database]) ) {
+                $matches = $service->getMatchesService(
+                        $database,
+                        $searchtext,
+                        array(
+                            'showSyn' => $showSynonyms,
+                            'NearMatch' => false
+                        )
+                );
 
-		} else{
-			
-			$matches = $service->getMatchesService($database,$searchtext,array('showSyn'=>false,'NearMatch'=>false));
-			
-			if ($useNearMatch) {
-				$matchesNearMatch=$service->getMatchesService($database,$searchtext,array('showSyn'=>false,'NearMatch'=>true));
-			}
-		}
-		
-	}catch (Exception $e) {
+                if( $useNearMatch ) {
+                    $matchesNearMatch = $service->getMatchesService(
+                            $database,
+                            $searchtext,
+                            array(
+                                'showSyn' => false,
+                                'NearMatch' => true
+                            )
+                    );
+                }
+            }
+	} catch (Exception $e) {
 		$failure =  "Fehler " . nl2br($e);
 	}
 	$stop = microtime(true);
