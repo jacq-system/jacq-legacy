@@ -235,11 +235,7 @@ EOF;
        . "<th class='out'>errors</th></tr>";
 
     if ($row) {
-        switch ($row['db']) {
-            case 'col': $database = "Catalogue of Life"; break;
-            case 'fe': $database = "Fauna Europea"; break;
-            default: $database = "Virtual Herbarium Vienna";
-        }
+        $database = $services[$row['db']]['name'];
         echo "<tr class='out'>"
            . "<td class='outCenter'><a href='bulkshow.php?id=" . $row['jobID'] . "' target='_blank'>" . htmlspecialchars($row['filename']) . "</a></td>"
            . "<td class='outCenter'>" . htmlspecialchars($database) . "</td>"
@@ -253,11 +249,7 @@ EOF;
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NOT NULL AND uid = '" . $_SESSION['uid'] . "' ORDER by start DESC");
     if (mysql_num_rows($result) > 0) {
         while ($row = mysql_fetch_array($result)) {
-            switch ($row['db']) {
-                case 'col': $database = "Catalogue of Life"; break;
-                case 'fe': $database = "Fauna Europea"; break;
-                default: $database = "Virtual Herbarium Vienna";
-            }
+            $database = $services[$row['db']]['name'];
             echo "<tr class='out'>"
                . "<td class='outCenter'><a href='bulkshow.php?id=" . $row['jobID'] . "' target='_blank'>" . htmlspecialchars($row['filename']) . "</a></td>"
                . "<td class='outCenter'>" . htmlspecialchars($database) . "</td>"
