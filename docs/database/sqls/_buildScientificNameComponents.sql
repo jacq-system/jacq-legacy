@@ -3,21 +3,21 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `_buildScientificNameComponents`(IN 
 BEGIN
   DECLARE v_genus varchar(100);
   DECLARE v_DallaTorreIDs int(11);
-  DECLARE v_family varchar(50);
+  DECLARE v_family varchar(100);
   DECLARE v_category varchar(2);
   DECLARE v_author_g varchar(255);
-  DECLARE v_epithet varchar(50);
-  DECLARE v_author varchar(50);
-  DECLARE v_epithet1 varchar(50);
-  DECLARE v_author1 varchar(50);
-  DECLARE v_epithet2 varchar(50);
-  DECLARE v_author2 varchar(50);
-  DECLARE v_epithet3 varchar(50);
-  DECLARE v_author3 varchar(50);
-  DECLARE v_epithet4 varchar(50);
-  DECLARE v_author4 varchar(50);
-  DECLARE v_epithet5 varchar(50);
-  DECLARE v_author5 varchar(50);
+  DECLARE v_epithet varchar(100);
+  DECLARE v_author varchar(100);
+  DECLARE v_epithet1 varchar(100);
+  DECLARE v_author1 varchar(100);
+  DECLARE v_epithet2 varchar(100);
+  DECLARE v_author2 varchar(100);
+  DECLARE v_epithet3 varchar(100);
+  DECLARE v_author3 varchar(100);
+  DECLARE v_epithet4 varchar(100);
+  DECLARE v_author4 varchar(100);
+  DECLARE v_epithet5 varchar(100);
+  DECLARE v_author5 varchar(100);
   DECLARE v_rank_abbr varchar(255);
   
   SELECT
