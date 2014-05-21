@@ -335,7 +335,7 @@ else {
 
 <body>
 
-<form Action="<?=$_SERVER['PHP_SELF'];?>" Method="POST" name="f">
+<form Action="<?php echo $_SERVER['PHP_SELF'];?>" Method="POST" name="f">
 
 <?php
 

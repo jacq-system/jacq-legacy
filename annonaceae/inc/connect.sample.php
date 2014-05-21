@@ -1,4 +1,4 @@
-<?
+<?php
 $host = "localhost";    // hostname
 $db   = "herbarinput";  // database
 $user = "";             // username
