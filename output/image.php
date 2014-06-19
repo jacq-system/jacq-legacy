@@ -332,6 +332,9 @@ function getPicDetails($request) {
         
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
+        
+        // Remove spaces from HerbNummer in B
+        $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
 
         // Construct clean filename
         $filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
