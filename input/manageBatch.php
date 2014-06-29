@@ -33,6 +33,8 @@ $batchID = (isset($_GET['ID'])) ? intval($_GET['ID']) : 0;
 //---------- local functions ----------
 function showList($link, $withID=true)
 {
+    global $batchID;
+    
     echo "<ul>\n";
     $sql = "SELECT remarks, date_supplied, batchID, batchnumber, source_code
             FROM api.tbl_api_batches
