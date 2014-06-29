@@ -257,9 +257,9 @@ function formatUnitID($specimenID)
 
         if ($replace) {
             $parts = explode($replace, $rowSpecimen['HerbNummer'], 2);
-            $unitID .= $parts[0] . sprintf("%0{$digits}d", $parts[1]);
+            $unitID .= $parts[0] . sprintf("%s", $parts[1]);
         } else {
-            $unitID .= sprintf("%0{$digits}d", $rowSpecimen['HerbNummer']);
+            $unitID .= sprintf("%s", $rowSpecimen['HerbNummer']);
         }
     } else {
         $unitID .= intval($specimenID);
