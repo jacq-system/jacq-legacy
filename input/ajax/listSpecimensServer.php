@@ -210,7 +210,16 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 else {
                     $textLatLon = "<td class=\"out\"></td>";
                 }
-
+				 
+				 if ($row['coll_short'] == 'B' ||$row['coll_short'] == 'B-Willd.' ) {
+					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+                 				. htmlspecialchars($row['HerbNummer']) . "</td>";
+					} 
+				else {
+					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+                 				. htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+					};
+				
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                 . "<td class=\"out\">$digitalImage</td>"
                 . "<td class=\"out\">"
@@ -221,8 +230,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 . $textLatLon
                 . "<td class=\"out\">" . locationItem($row) . "</td>"
                 . "<td class=\"out\">" . htmlspecialchars($row['typus_lat']) . "</td>"
-                . "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
-                . htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+               	. $textColl;
                 if ($swBatch) {
                     echo "<td class=\"out\" style=\"text-align: center\">";
                     $resultDummy = db_query("SELECT t1.remarks FROM api.tbl_api_batches AS t1, api.tbl_api_specimens AS t2 WHERE t2.specimen_ID = '" . $row['specimen_ID'] . "' AND t1.batchID = t2.batchID_fk");

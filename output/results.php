@@ -191,7 +191,7 @@ $xml .= "  </records>".
 ?>
 <td colspan="6" align="right">
 <form style="display:inline;" action="http://linuxgurrl.agr.gc.ca/mapdata/itis/itisrosa.php" method="post" target="showlinuxgurrl">
-  <input type="button" value="Create google-map" onclick="googleMap()">
+  <input type="button" value="Create google-map" onClick="googleMap()">
   <input type="hidden" value="<?php echo $xml_head.urlencode($xml) ?>" name="xml">
   <input type="hidden" value="L" name="msize">
   <input type="submit" value="Create map" style="width:100px;">
@@ -283,8 +283,16 @@ while ($row=mysql_fetch_array($result)) {
   echo "<td class=\"result\" style=\"text-align: center\">".
        (($row['typusID']) ? "<font color=\"red\"><b>".$row['typus']."</b></font>" : "")."</td>\n";
 
-  echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".
-            htmlspecialchars(collectionItem($row['collection']))." ".htmlspecialchars($row['HerbNummer'])."</td>";
+  
+	if ($row['collection'] == 'B' || $row['collection'] == 'B-Willdenow') {
+    	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['HerbNummer'])."</td>";
+	
+	}
+	else {
+    	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".
+        htmlspecialchars(collectionItem($row['collection']))." ".htmlspecialchars($row['HerbNummer'])."</td>";
+	}
+	
 
   if ($row['Coord_S']>0 || $row['S_Min']>0 || $row['S_Sec']>0)
     $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
