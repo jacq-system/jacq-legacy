@@ -98,7 +98,7 @@ function parsePp ($pp)
 if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $sql = "SELECT tl.citationID, tl.jahr, tl.code, tl.titel, tl.suptitel, tl.vol,
              tl.part, tl.pp, tl.verlagsort, tl.keywords, tl.annotation, tl.additions,
-             tl.bestand, tl.signature, tl.publ, tl.category, tl.lit_url,
+             tl.bestand, tl.signature, tl.publ, tl.category, tl.lit_url, tl.hideScientificNameAuthors,
              ta.autor, ta.autorID ,te.autor editor, te.autorID editorID,
              tpe.periodical, tpe.periodicalID, tpu.publisher, tpu.publisherID
             FROM tbl_lit tl
@@ -131,17 +131,17 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $p_editor     = ($row['editor']) ? $row['editor'] . " <" . $row['editorID'] . ">" : "";
         $p_periodical = ($row['periodical']) ? $row['periodical'] . " <" . $row['periodicalID'] . ">" : "";
         $p_publisher  = ($row['publisher']) ? $row['publisher'] . " <" . $row['publisherID'] . ">" : "";
-		
-		$p_autorIndex      =  $row['autorID'];
-		$p_editorIndex     = $row['editorID'];
+        $p_autorIndex      =  $row['autorID'];
+        $p_editorIndex     = $row['editorID'];
         $p_periodicalIndex = $row['periodicalID'];
         $p_publisherIndex  = $row['publisherID'];
+        $p_hideScientificNameAuthors = $row['hideScientificNameAuthors'];
     } else {
         $p_citationID = $p_jahr = $p_code = $p_titel = $p_suptitel = $p_vol = $p_part = "";
         $p_pp = $p_verlagsort = $p_keywords = $p_annotation = $p_additions = $p_bestand = "";
-        $p_signature = $p_publ = $p_category = $p_autor = $p_editor = $p_periodical = "";
+        $p_hideScientificNameAuthors = $p_signature = $p_publ = $p_category = $p_autor = $p_editor = $p_periodical = "";
         $p_publisher = $p_url = "";
-		$p_autorIndex =  $p_editorIndex =  $p_periodicalIndex = $p_publisherIndex  = 0;
+        $p_autorIndex =  $p_editorIndex =  $p_periodicalIndex = $p_publisherIndex  = 0;
     }
     if (isset($_GET['new']) && $_GET['new'] == 1) $p_citationID = "";
     $edit = (!empty($_GET['edit'])) ? true : false;
@@ -160,6 +160,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_bestand    = $_POST['bestandIndex'];
     $p_signature  = $_POST['signature'];
     $p_publ       = (!empty($_POST['publ'])) ? 1 : 0;
+    $p_hideScientificNameAuthors = (!empty($_POST['hideScientificNameAuthors'])) ? 1 : 0;
     $p_category   = $_POST['categoryIndex'];
     $p_url        = $_POST['url'];
     $p_autor      = $_POST['autor'];
@@ -167,10 +168,10 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_periodical = $_POST['periodical'];
     $p_publisher  = $_POST['publisher'];
 	
-	$p_autorIndex      = $_POST['autorIndex'];
-	$p_editorIndex     = $_POST['editorIndex'];
-	$p_periodicalIndex = $_POST['periodicalIndex'];
-	$p_publisherIndex  = $_POST['publisherIndex'];
+    $p_autorIndex      = $_POST['autorIndex'];
+    $p_editorIndex     = $_POST['editorIndex'];
+    $p_periodicalIndex = $_POST['periodicalIndex'];
+    $p_publisherIndex  = $_POST['publisherIndex'];
 		
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
         if (intval($_POST['citationID'])) {
@@ -195,6 +196,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                      bestand = " . quoteString($p_bestand) . ",
                      signature = " . quoteString($p_signature) . ",
                      publ = " . (($p_publ) ? "'X'" : "NULL") . ",
+                     hideScientificNameAuthors = " . $p_hideScientificNameAuthors . ",
                      category = " . quoteString($p_category) . "
                     WHERE citationID = '" . intval($_POST['citationID']) . "'";
             $updated = 1;
@@ -220,6 +222,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                      bestand = " . quoteString($p_bestand) . ",
                      signature = " . quoteString($p_signature) . ",
                      publ = " . (($p_publ) ? "'X'" : "NULL") . ",
+                     hideScientificNameAuthors = " . $p_hideScientificNameAuthors . ",
                      category = " . quoteString($p_category);
             $updated = 0;
         }
@@ -651,6 +654,9 @@ $cf->inputText(40, 28.5, 25, "additions", $p_additions, 500);
 $cf->label(7, 31, "listing");
 //$cf->editDropdown(7, 39.5, 25, "bestand", $p_bestand, $bestand, 50);
 $cf->inputJqAutocomplete2(7, 31, 25, "bestand",$p_bestand,"index_jq_autocomplete.php?field=bestand",520,2,'','',1,1);
+
+$cf->label(44, 26, "show author(s)");
+$cf->checkbox(44, 26, "hideScientificNameAuthors", $p_hideScientificNameAuthors);
 
 $cf->label(44, 31, "recent publication");
 $cf->checkbox(44, 31, "publ", $p_publ);
