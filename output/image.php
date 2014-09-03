@@ -103,21 +103,41 @@ function getPicInfo($picdetails) {
             while ($row = fgets($fp)) {
                 $response.=trim($row) . "\n";
             }
+           $response = json_decode($response, true);
             
-            $response = json_decode($response, true);
-            $response = array(
+			$response = array(
                 'output' => '',
                 'pics' => $response['result']
+				
             );
+			
         } else {
             return jsonError('Unable to connect to ' . $url);
         }
-    } else {
+    } 
+	else if ($picdetails['is_djatoka'] == '2') {
+        // Construct URL to servlet
+       $url = 'http://ww2.bgbm.org/rest/herb/'.$picdetails['filename'];
+		
+		$fp = fopen($url, "r");
+         while ($row = fgets($fp)) {
+                $response.=trim($row) . "\n";
+            }
+		 $response = json_decode($response, true);
+		$response = array(
+                'output' => '',
+                'pics' => $response
+				
+            );
+    } 
+	
+	else {
         global $_OPTIONS;
         $url = "{$picdetails['url']}/detail_server.php?key={$_OPTIONS['key']}&ID={$picdetails['specimenID']}{$q}";
 
         $response = @file_get_contents($url, "r");
         $response = @unserialize($response);
+		
     }
     if ($debug) {
         p($response);
@@ -139,10 +159,20 @@ function doRedirectShowPic($picdetails) {
         
         // Construct URL to viewer
         $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
-    } else {
+    } 
+	else if ($picdetails['is_djatoka'] == '2') {
+		// Get additional identifiers (if available)
+        $picinfo = getPicInfo($picdetails);
+        $identifiers = implode($picinfo['pics'], ',');
+		// Construct URL to viewer
+                $url = $picdetails['url'] . '/specimen.cfm?Barcode=' . $picdetails['originalFilename'];
+				p($url);
+		}
+	else {
         $url = $picdetails['url'] . '/img/imgBrowser.php?name=' . $picdetails['requestFileName'] . $q;
     }
-    if ($debug) {
+    
+	if ($debug) {
         p($url);
         exit;
     }
@@ -199,7 +229,56 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         // Construct URL to djatoka-resolver
         $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
     }
-    // ... if not fall back to old system
+    //... Check if we are using djatoka = 2 (Berlin image server)
+	else if ($picdetails['is_djatoka'] == '2') {
+        // Check requested format
+        switch ($format) {
+            case 'jpeg2000':
+                $format = 'image/jp2';
+                $fileExt = 'jp2';
+                break;
+            case'tiff':
+                $format = 'image/tiff';
+                $fileExt = 'tif';
+                break;
+            default:
+                $format = 'image/jpeg';
+                $fileExt = 'jpg';
+                break;
+        }
+        // Default scaling is 50%
+        $scale = '0.5';
+        $mime = $format;
+
+        // Check if we need a thumbnail
+        if ($thumb != 0) {
+            // Thumbnail for kulturpool
+            if( $thumb == 2 ) {
+                $scale = '0,1300';
+            }
+            // thumbnail for europeana
+            else if( $thumb == 3 ) {
+                $scale = '200,0';
+            }
+            // Default thumbnail
+            else {
+                $scale = '160,0';
+            }
+        }
+
+        // Construct URL to Berlin Server
+        $url2 = 'http://ww2.bgbm.org/rest/herb/image/'.$picdetails['filename'];
+		$fp = fopen($url2, "r");
+         while ($row = fgets($fp)) {
+                $response.=trim($row) . "\n";
+            }
+		 $response = json_decode($response, true);
+		 $response = $response['value'];
+		//$url = $picdetails['url'].'images'.$response;
+		$url = 'http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source='.$response;
+    }
+	
+	// ... if not fall back to old system
     else {
         switch ($format) {
             case'tiff':
@@ -239,7 +318,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
     readfile($url);
     
     // Redirect to image download
-    //header("location: {$url}");
+    header("location: {$url}");
 }
 
 // request: can be specimen ID or filename
@@ -248,7 +327,7 @@ function getPicDetails($request) {
 
     $specimenID = 0;
     $originalFilename = null;
-
+	//$debug = 1;
     //specimenid
     if (is_numeric($request)) {
         $specimenID = $request;
@@ -332,10 +411,18 @@ function getPicDetails($request) {
         
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
-
-        // Construct clean filename
-        $filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
         
+        // Remove spaces for B HerbNumber
+        $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
+        
+        // Construct clean filename
+        if ($row['is_djatoka'] == '2') {
+			$filename = sprintf($HerbNummer);
+		}
+		else{
+			$filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
+			}
+
         // Set original file-name if we didn't pass one (required for djatoka)
         // (required for pictures with suffixes)
         if( $originalFilename == null ) $originalFilename = $filename;

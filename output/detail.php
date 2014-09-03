@@ -313,8 +313,9 @@ if ($row['ncbi_accession'])
             <tr>
               <td align="right">Collection</td>
               <td><b>
-                <?php makeCell($row['collection']." ".$row['herbNummer']); ?>
-                </b></td>
+                <?php makeCell(collectionID($row)); ?>
+                 </b>
+                </td>
             </tr>
 <?php
 $typusText = makeTypus($ID);
@@ -481,12 +482,21 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   $image_isIncluded=true;
   require_once('image.php');
   $picdetails=getPicDetails($row['specimen_ID']);
+  
   $transfer=getPicInfo($picdetails);
+   if ($picdetails['is_djatoka'] == '2'){
+		$file=rawurlencode(basename($picdetails['specimenID']));
+		echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
+
+	}
+	else
   
   if ($transfer) {
     if (count($transfer['pics'])>0) {
-      foreach ($transfer['pics'] as $v) {
+	 foreach ($transfer['pics'] as $v) {
+			
 			$file=rawurlencode(basename($v));//?='+sel+"&method=show
+			
 			echo<<<EOF
 <td valign='top' align='center'><a href="image.php?filename={$file}&method=show" target="imgBrowser">
 <img src="image.php?filename={$file}&method=thumb" border="2"></a> 
@@ -494,7 +504,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 EOF;
  	 }
     }
-    else
+    else 
       echo "no pictures found\n";
     if (trim($transfer['output']))
       echo nl2br("\n" . $transfer['output'] . "\n");

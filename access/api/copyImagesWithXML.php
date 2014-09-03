@@ -161,15 +161,19 @@ class XML_api     // special Class for API
             $this->addSingle("OtherText", "Not on sheet");
         } else {
             $pieces = explode("-", $startDate);
-            $this->addSingle("StartDay", $pieces[2], true);
-            $this->addSingle("StartMonth", $pieces[1], true);
-            $this->addSingle("StartYear", $pieces[0], true);
+            if( count($pieces) >= 3 ) {
+                $this->addSingle("StartDay", $pieces[2], true);
+                $this->addSingle("StartMonth", $pieces[1], true);
+                $this->addSingle("StartYear", $pieces[0], true);
+            }
         }
 
         $pieces = explode("-", $endDate);
-        $this->addSingle("EndDay", $pieces[2], true);
-        $this->addSingle("EndMonth", $pieces[1], true);
-        $this->addSingle("EndYear", $pieces[0], true);
+        if( count($pieces) >= 3 ) {
+            $this->addSingle("EndDay", $pieces[2], true);
+            $this->addSingle("EndMonth", $pieces[1], true);
+            $this->addSingle("EndYear", $pieces[0], true);
+        }
 
         $this->addMultiEnd($tag);
     }
@@ -234,7 +238,7 @@ if ($batchID) {
         $result2 = db_query($sql);
         if (mysql_num_rows($result2) > 0) {
             $dir = $dir_base . "/" . $row['source_code'];
-            @mkdir($dir);
+            mkdir($dir);
 
             $xml = new XML_api("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!-- edited with php -->\n<!--" . date('j F Y') . "-->\n");
             $xml->addMultiBegin("DataSet","xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"http://plants.jstor.org/XSD/AfricanTypesv2.xsd\"");

@@ -45,6 +45,19 @@ function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $al
     return $text;
 }
 
+function collectionID ($row)
+{
+	if ($row['collection'] == 'B') {
+	$text = $row['herbNummer'];
+	}
+	else {
+	$text = $row['collection']." ".$row['herbNummer'];
+	}
+
+return $text;
+
+}
+
 function taxon ($row)
 {
     $text = $row['genus'];
