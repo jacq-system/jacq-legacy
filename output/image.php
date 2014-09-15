@@ -165,7 +165,7 @@ function doRedirectShowPic($picdetails) {
         $picinfo = getPicInfo($picdetails);
         $identifiers = implode($picinfo['pics'], ',');
 		// Construct URL to viewer
-                $url = $picdetails['url'] . '/specimen.cfm?Barcode=' . $picdetails['originalFilename'];
+                $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
 				p($url);
 		}
 	else {
