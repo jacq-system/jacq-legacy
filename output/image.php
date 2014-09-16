@@ -412,11 +412,12 @@ function getPicDetails($request) {
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
         
-        // Remove spaces for B HerbNumber
-        $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
+        
         
         // Construct clean filename
         if ($row['is_djatoka'] == '2') {
+			// Remove spaces for B HerbNumber
+            $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
 			$filename = sprintf($HerbNummer);
 		}
 		else{
