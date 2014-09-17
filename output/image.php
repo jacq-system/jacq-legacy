@@ -165,7 +165,7 @@ function doRedirectShowPic($picdetails) {
         $picinfo = getPicInfo($picdetails);
         $identifiers = implode($picinfo['pics'], ',');
 		// Construct URL to viewer
-                $url = $picdetails['url'] . '/specimen.cfm?Barcode=' . $picdetails['originalFilename'];
+                $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
 				p($url);
 		}
 	else {
@@ -412,11 +412,12 @@ function getPicDetails($request) {
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
         
-        // Remove spaces for B HerbNumber
-        $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
+        
         
         // Construct clean filename
         if ($row['is_djatoka'] == '2') {
+			// Remove spaces for B HerbNumber
+            $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
 			$filename = sprintf($HerbNummer);
 		}
 		else{
