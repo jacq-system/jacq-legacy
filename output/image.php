@@ -117,7 +117,7 @@ function getPicInfo($picdetails) {
     } 
 	else if ($picdetails['is_djatoka'] == '2') {
         // Construct URL to servlet
-       $url = 'http://ww2.bgbm.org/rest/herb/'.$picdetails['filename'];
+       $url = 'http://ww2.bgbm.org/rest/herb/thumb/'.$picdetails['filename'];
 		
 		$fp = fopen($url, "r");
          while ($row = fgets($fp)) {
