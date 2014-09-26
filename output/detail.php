@@ -214,7 +214,7 @@ else
 $query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
-           mc.collection, mc.collectionID, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, s.typified,
+           mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, s.typified,
            s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
@@ -432,7 +432,7 @@ if (strlen($typusText)>0):
                 </b></td>
             </tr>
 			<?php 
-				if ($row['collectionID'] == '127'){
+				if ($row['source_id'] == '29'){
 				echo "<tr>";
 
 					// create new id object

@@ -30,7 +30,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $sql = "SELECT SQL_CALC_FOUND_ROWS s.specimen_ID, tg.genus, s.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-             n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
+             n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.source_id, mc.coll_short, t.typus_lat,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -211,7 +211,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                     $textLatLon = "<td class=\"out\"></td>";
                 }
 				 
-				 if ($row['coll_short'] == 'B' ||$row['coll_short'] == 'B-Willd.' ) {
+				 if ($row['source_id'] == '29') {
 					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                  				. htmlspecialchars($row['HerbNummer']) . "</td>";
 					} 
