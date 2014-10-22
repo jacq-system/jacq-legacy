@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# Script um die Datenbank Herbardb über Nacht mit den neuesten Daten zu versorgen
+#
+# Zum Anpassen sind die diversen Variablen mit sinnvollen Werten zu füllen
+#
+# Version 1.0
+# 17.4.2002
+# J. Schachner
+# für herbardb adaptiert, 18.11.2002, US, 13.7.2004 JS, 2004-11-10 HR
+
+# $sysop enthält die E-Mail-Adresse des Sysops der Datenbank. Er wird bei jeder Änderung verständigt
+sysop='heimo.rainer@univie.ac.at'
+
+target='/programms/db_backup'
+
+mysqldump -u webuser -l --opt herbarinput > $target/herbarinput.dump
+mysqldump -u webuser -l --opt herbarinput_log > $target/herbarinput_log.dump
+mysqldump -u webuser -l --opt mysql > $target/mysql.dump
+mysqldump -u webuser -l --opt phpmyadmin > $target/phpmyadmin.dump
+mysqldump -u webuser -l --opt ibc2005 > $target/ibc2005.dump
+mysqldump -u webuser -l --opt api > $target/api.dump
+
+# die dumpfiles in das archiv herbardb.tar.gz zippen
+# tar --gzip -vcf $target/herbardb.tar.gz $target/*.dump
+
+# das archive herbardb.tar.gz wird per ftp auf den server am naturhistorischen museum gespielt
+# ncftpput -u hrainer -p acacia 193.170.196.64 / $target/herbardb.tar.gz
+
+

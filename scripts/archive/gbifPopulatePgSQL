@@ -1,0 +1,37 @@
+
+
+# script for populating the Postgres db for the usage of data through the gbif network
+
+# dump data from mysql 'gbif_pilot' database
+
+cd /programms/DB_Updates/psql/
+
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot meta > meta.dump
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot metadb > metadb.dump
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot tbl_prj_gbif_pilot_gjo > tbl_prj_gbif_pilot_gjo.dump
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot tbl_prj_gbif_pilot_gzu > tbl_prj_gbif_pilot_gzu.dump
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot tbl_prj_gbif_pilot_w > tbl_prj_gbif_pilot_w.dump
+mysqldump --skip-opt --skip-quote -t -u webuser gbif_pilot tbl_prj_gbif_pilot_wu > tbl_prj_gbif_pilot_wu.dump
+
+
+
+# empty tabels in postgres 'gbif' database 
+# still to be worked out 20051127
+
+# psql -U root gbif DELETE gbif.meta
+# psql -U root gbif < metadb.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_gjo.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_gzu.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_w.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_wu.dump
+
+
+# populate tables in postgres 'gbif' database
+
+# psql -U root gbif < meta.dump
+# psql -U root gbif < metadb.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_gjo.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_gzu.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_w.dump
+# psql -U root gbif < tbl_prj_gbif_pilot_wu.dump
+

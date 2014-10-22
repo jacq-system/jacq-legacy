@@ -1,0 +1,86 @@
+#! /bin/sh
+
+# Script um die Datenbank Herbardbinput über Nacht mit den neuesten Daten zu versorgen
+#
+# Zum Anpassen sind die diversen Variablen mit sinnvollen Werten zu füllen
+#
+# Version 1.0
+# 17.4.2002
+# J. Schachner
+# für herbarinput adaptiert, 13.7.2004, JS
+
+# die Variablen $user und $password enthalten den Benutzer und dessen Passwort, der die
+# Berechtigung zum Schreiben und löschen von Daten der Datenbank Taxon besitzt
+# Falls das der Benutzer root ist, sollte dieses Script KEINESFALLS world-readable sein !!!
+user='herbardbscript'
+passwort='wudbscr'
+
+# $sysop enthält die E-Mail-Adresse des Sysops der Datenbank. Er wird bei jeder Änderung verständigt
+sysop='heimo.rainer@univie.ac.at'
+
+# $source enthält die Position der neuen Files esql_del, esql_create und esql_add
+# die die neuen Daten enthalten bzw. diese wieder löschen können
+source='/programms/DB_Updates/herbarinput'
+
+# $target ist die Position für die Dump-Datei der Datenbank und für Fehlermeldungen
+target=$source
+
+# dieses File enthält das Datum der jeweils letzten Datenbankänderung
+# html_file='/web/herbarium/database/search.php'
+
+# das Script wird über crontab aufgerufen, daher wird geprüft ob überhaupt etwas zu tun ist
+if [ -e $source/esql_add ]
+then
+  date
+  echo Script läuft
+  mysqldump -l --opt -u webuser herbarinput > $target/herbarinput.dump      # zur Sicherheit
+
+  # als erstes wird die alte Datenbank gelöscht
+  mysql -u$user --password=$passwort herbarinput < $source/mysql-scripts-aktuell/esql_del > $target/mysql.err
+  if [ -s $target/mysql.err ]
+  then
+
+    # wenn's nicht geklappt hat, dann wird eine Fehlermeldung abgeschickt und die alten Daten
+    # wieder restauriert
+    echo "Fehler beim Löschen von herbarinput." | mail -s update_db_herbarinput $sysop
+    mysql -u$user --password=$passwort herbarinput < $target/herbarinput.dump
+
+  else
+
+    # jetzt werden die Tabellen erstellt
+    mysql -u$user --password=$passwort herbarinput < $source/esql_create > $target/mysql.err
+    if [ -s $target/mysql.err ]
+    then
+
+      # wenn's nicht geklappt hat, dann wird eine Fehlermeldung abgeschickt und die alten Daten
+      # wieder restauriert
+      echo "Fehler beim Erstellen der Tabellen von herbarinput." | mail -s update_db_herbarinput $sysop
+      mysql -u$user --password=$passwort herbarinput < $target/herbarinput.dump
+
+    else
+      # jetzt werden die eigentlichen Daten eingespielt
+      mysql -u$user --password=$passwort herbarinput < $source/esql_add > $target/mysql.err
+      if [ -s $target/mysql.err ]
+      then
+
+        # wenn's nicht geklappt hat, dann wird eine Fehlermeldung abgeschickt und die alten Daten
+        # wieder restauriert
+        echo "Fehler beim Update von herbarinput." | mail -s update_db_herbarinput $sysop
+        mysql -u$user --password=$passwort herbarinput < $target/herbarinput.dump
+
+      else
+
+        # jetzt werden die Datenfiles an die Stelle der alten befördert, das Fehlerfile (das an
+        # dieser Stelle nicht mehr gebraucht wird) gelöscht und eine Erfolgsmeldung abgeschickt
+        mv $source/esql_* $source/mysql-scripts-aktuell
+        rm $target/mysql.err
+        echo "Update von herbarinput erfolgreich." | mail -s update_db_herbarinput $sysop
+
+        # zum Schluß wird das aktuelle Datum noch in der Homepage verewigt
+        #sed "/database update/s/update: ..-..-..../update: `date +%d-%m-%Y`/" $html_file > $target/dummy.$$
+        #mv $target/dummy.$$ $html_file
+      fi
+    fi
+  fi
+fi
+
