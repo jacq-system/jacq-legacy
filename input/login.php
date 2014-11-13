@@ -6,6 +6,17 @@ $secure = $_CONFIG['CONNECTION']['secure'];  // set to false if no secure server
 session_set_cookie_params(0, "/", "", $secure);
 session_start();
 
+if (isset($_SESSION['username']) && isset($_SESSION['password'])) {
+    if (@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
+        if (@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
+            $location="Location: menu.php";
+            if (SID) $location = $location . "?" . SID;
+            header($location);
+        }
+    }
+}
+
+
 function getUnamePw($username, $password)
 {
     global $_CONFIG;
@@ -126,7 +137,7 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                                            $row['specimensTypes'] * 0x8000+
 										   $row['commonnameUpdate'] * 0x10000+
                                            $row['commonnameInsert'] * 0x20000;
-										   
+
                 $_SESSION['linkControl'] = $row['linkTaxon'];
                 $_SESSION['editorControl'] = $row['editor'];
                 $location="Location: menu.php";
