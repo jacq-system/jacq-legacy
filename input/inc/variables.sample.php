@@ -10,7 +10,7 @@ $_CONFIG['DATABASE'] = array(
             'pass' => ''
         )
     ),
-    
+
     // Database for picture related information
     'PICTURES' => array(
         'host' => 'localhost',
@@ -20,12 +20,12 @@ $_CONFIG['DATABASE'] = array(
             'pass' => ''
         )
     ),
-    
+
     // Names databases (doesn't need a own user actually, but instead it uses the login user)
     'NAME' => array(
         'name' => 'names',
     ),
-    
+
     // Log database containing journal + user data
     'LOG' => array(
         'host' => 'localhost',
@@ -35,7 +35,7 @@ $_CONFIG['DATABASE'] = array(
             'pass' => ''
         )
     ),
-    
+
     // Database containing the views
     'VIEWS' => array(
         'name' => 'view',
@@ -86,7 +86,3 @@ $_OPTIONS['debug'] = 0;
 
 //  Use TCPDF 4.5 or 5.8
 $_OPTIONS['tcpdf_5_8'] = false;
-
-// Define our base locations
-define('FREUDDIR', str_replace('\\', '/', dirname(__FILE__)) . '/../');
-define('FREUDABSDIR', '/' . str_replace(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']) . '', '', FREUDDIR));
