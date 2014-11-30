@@ -1,6 +1,6 @@
 <?php
 require_once( 'variables.php' );
-
+require_once( 'AnnotationQuery.inc.php' );
 function db_connect( $dbConfig, $dbAccess = "readonly" ) {
     $host = $dbConfig['host'];
     $db = $dbConfig['db'];
@@ -44,6 +44,45 @@ function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $al
 
     return $text;
 }
+
+
+// new triple id class
+class MyTripleID extends TripleID
+{
+	public function __construct($id) {
+		// do some conversion stuff
+		// ex.: database query for institution, source, object ...
+		//      sql = "SELECT * FROM table WHERE id=" . $id
+		
+		// fill variables with data from database
+		$this->institutionID = "BGBM";
+		$this->sourceID = "Herbarium Berolinense";
+		$this->objectID = $id;
+	}
+} // class MyTripleID
+
+function generateAnnoTable($metadata) {
+	// table header
+	$str = '<table width="190px"><tr><td align="left">'
+	     . '<strong>' . count($metadata) . ' annotation(s)</strong></td></tr>';
+	// add annotations
+	foreach($metadata as $anno) {
+		$str .= '<tr><td align="left">';
+		$str .= "<strong>Annotator:</strong> " . $anno['annotator'] . "<br/>";
+		$str .= "<strong>Type of annotation:</strong> " . $anno['motivation'] . "<br/>";
+		$str .= "<strong>Date:</strong> " . date("d M Y", $anno['time']/1000) . "<br/>";
+		$str .= "<a href=\"" . $anno['viewURI'] . '" target="_blank" class="leftnavi">View annotation</a><br/>';
+		$str .= "<hr /></td></tr>";
+	}
+	// close table
+	$str .= "</table>";
+	
+	return $str;
+}
+
+
+
+
 
 function collectionID ($row)
 {

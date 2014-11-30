@@ -1,0 +1,31 @@
+#! /bin/sh
+
+# Script um die Datenbank Herbardb über Nacht mit den neuesten Daten zu versorgen
+#
+# Zum Anpassen sind die diversen Variablen mit sinnvollen Werten zu füllen
+#
+# Version 1.0
+# 17.4.2002
+# J. Schachner
+# für herbardb adaptiert, 18.11.2002, US, 13.7.2004 JS, 2004-11-10 HR
+
+# $sysop enthält die E-Mail-Adresse des Sysops der Datenbank. Er wird bei jeder Änderung verständigt
+sysop='heimo.rainer@univie.ac.at'
+
+target_backup='/programms/db_backup'
+target_scripts='/programms/scripts'
+
+# das script zum backup der db ausloesen
+$target_scripts/hdb_backup > $target_scripts/log/dbupdate.log
+
+# die herbardb mit dem neuen inhalt aus herbarinput.dump versorgen
+mysql -u gbif -pgbif herbardb < $target_backup/herbarinput.dump >> $target_scripts/log/dbupdate.log
+
+# die gbif db befüllen
+$target_scripts/gbifCreateBaseCmd.php >> $target_scripts/log/dbupdate.log
+
+# die sp2000 db befüllen
+$target_scripts/sp2000CreateBaseCmd.php >> $target_scripts/log/dbupdate.log
+
+mail -s "updatelog vom db update" $sysop < $target_scripts/log/dbupdate.log
+

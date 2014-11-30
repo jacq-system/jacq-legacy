@@ -284,7 +284,7 @@ while ($row=mysql_fetch_array($result)) {
        (($row['typusID']) ? "<font color=\"red\"><b>".$row['typus']."</b></font>" : "")."</td>\n";
 
   
-	if ($row['collection'] == 'B' || $row['collection'] == 'B-Willdenow') {
+	if ($row['source_id'] == '29') {
     	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['HerbNummer'])."</td>";
 	
 	}

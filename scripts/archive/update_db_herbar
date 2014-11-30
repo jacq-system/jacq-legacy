@@ -1,0 +1,81 @@
+#! /bin/sh
+
+# Script um die Datenbank Herbardb über Nacht mit den neuesten Daten zu versorgen
+#
+# Zum Anpassen sind die diversen Variablen mit sinnvollen Werten zu füllen
+#
+# Version 1.0
+# 17.4.2002
+# J. Schachner
+# für herbardb adaptiert, 18.11.2002, US, 13.7.2004 JS, 2004-11-10 HR
+
+# die Variablen $user und $password enthalten den Benutzer und dessen Passwort, der die
+# Berechtigung zum Schreiben und löschen von Daten der Datenbank Taxon besitzt
+# Falls das der Benutzer root ist, sollte dieses Script KEINESFALLS world-readable sein !!!
+user='gbif'
+passwort='gbif'
+
+# $sysop enthält die E-Mail-Adresse des Sysops der Datenbank. Er wird bei jeder Änderung verständigt
+sysop='heimo.rainer@univie.ac.at'
+
+# $source enthält die Position der neuen Files esql_del, esql_create und esql_add
+# die die neuen Daten enthalten bzw. diese wieder löschen können
+source_herbarium_rawdata='/programms/DB_Updates/herbarinput'
+source_psql_rawdata='/programms/DB_Updates/pgsql'
+
+# $target_herbarium_rawdata ist die Position für die Dump-Dateien aus der herbarinput db
+target_gbifraw=$source_herbarium_rawdata
+
+# dieses File enthält das Datum der jeweils letzten Datenbankänderung
+html_file='/srv/www/htdocs/database/search.php'
+
+# das Script wird über crontab aufgerufen, daher wird geprüft ob überhaupt etwas zu tun ist
+if [ -e $source/esql_add ]
+then
+  date
+  echo Script läuft
+  mysqldump -l --opt -u webuser herbardb > $target/herbardb.dump      # zur Sicherheit
+
+  else
+
+    # jetzt werden die Tabellen erstellt
+    mysql -u$user --password=$passwort herbardb < $source/esql_create > $target/mysql.err
+    if [ -s $target/mysql.err ]
+    then
+
+      # wenn's nicht geklappt hat, dann wird eine Fehlermeldung abgeschickt und die alten Daten
+      # wieder restauriert
+      echo "Fehler beim Erstellen der Tabellen von herbardb." | mail -s update_db_herbar $sysop
+      mysql -u$user --password=$passwort herbardb < $target/herbardb.dump
+
+    else
+      # jetzt werden die eigentlichen Daten eingespielt
+      mysql -u$user --password=$passwort herbardb < $source/esql_add > $target/mysql.err
+      if [ -s $target/mysql.err ]
+      then
+
+        # wenn's nicht geklappt hat, dann wird eine Fehlermeldung abgeschickt und die alten Daten
+        # wieder restauriert
+        echo "Fehler beim Update von herbardb." | mail -s update_db_herbar $sysop
+        mysql -u$user --password=$passwort herbardb < $target/herbardb.dump
+
+      else
+
+        # jetzt werden die Datenfiles an die Stelle der alten befördert, das Fehlerfile (das an
+        # dieser Stelle nicht mehr gebraucht wird) gelöscht und eine Erfolgsmeldung abgeschickt
+        mv $source/esql_* $source/mysql-scripts-aktuell
+        rm $target/mysql.err
+        echo "Update von herbardb erfolgreich." | mail -s update_db_herbar $sysop
+
+        # das aktuelle Datum noch in der Homepage verewigt
+        sed "/database update/s/update: ..-..-..../update: `date +%d-%m-%Y`/" $html_file > $target/dummy.$$
+        mv $target/dummy.$$ $html_file
+
+	# das dumpfile wird per ftp auf den server am naturhistorischen museum gespielt
+	ncftpput -u hrainer -p acacia 193.170.196.64 /digibota_db herbardb.dump /programms/DB_Updates/herbardb/herbardb.dump
+
+      fi
+    fi
+  fi
+fi
+

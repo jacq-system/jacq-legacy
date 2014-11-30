@@ -4,22 +4,10 @@ require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
-	$f=FREUDABSDIR."login.php";
-	
-	if(is_file($f)){
-		header("Location: {$f}");
-	}else{
-		header("Location: login.php");
-	}
+    header("Location: login.php");
     exit();
 } else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-	$f=FREUDABSDIR."login.php";
-	
-	if(is_file($f)){
-		header("Location: {$f}");
-	}else{
-		header("Location: login.php");
-	}
+    header("Location: login.php");
 	exit();
 } else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
@@ -67,18 +55,18 @@ function doQuotes(&$obj,$mode){
 
 function db_query($sql,$debug=false){
 	global $_OPTIONS;
-	
+
 	if($debug || $_OPTIONS['debug']==1){
 		$debug=true;
 	}
-	
+
 	$res=mysql_query($sql);
-	
+
 	if(!$res && $debug){
 		echo $sql;
 		echo mysql_errno() . ": " . mysql_error() . "<br>\n";
 	}
-	
+
     return $res;
 }
 
@@ -164,7 +152,7 @@ function isLocked($table, $id){
     return false;
 }
 
-/** 
+/**
  * deprecated
  * get the IP of the appropriate picture server
  *
@@ -173,8 +161,8 @@ function isLocked($table, $id){
  */
 function getPictureServerIP($specimenID){
 	global $_OPTIONS;
-	
-    return $_OPTIONS['HERBARIMAGEURL']; 
+
+    return $_OPTIONS['HERBARIMAGEURL'];
 }
 
 /**

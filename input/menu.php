@@ -7,6 +7,7 @@ $xajax = new xajax();
 $xajax->setRequestURI("ajax/menuServer.php");
 
 $xajax->registerFunction("checkChats");
+$xajax->registerFunction("checkJacqLogin");
 
 $_SESSION['litType'] = 0;
 $_SESSION['taxType'] = 0;
@@ -33,11 +34,13 @@ $userdata = mysql_fetch_array(mysql_query($sql));
   <style type="text/css">
     #logout { position:absolute; top:1em; right:1em; width:5em; }
     #info { position:absolute; top:1em; left:1em }
+    #jacqThumb { position:absolute; top:15em; left:1em; }
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
     function timer(){
       window.setInterval("xajax_checkChats()",5000); //reload timer
+      window.setInterval("xajax_checkJacqLogin()",5000); //reload timer
     }
 
     function openWindow(target,name) {
@@ -150,6 +153,8 @@ $userdata = mysql_fetch_array(mysql_query($sql));
     </table>
   </form>
 </div>
+
+<div id="jacqThumb"></div>
 
 </body>
 </html>
