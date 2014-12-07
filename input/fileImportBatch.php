@@ -1,15 +1,12 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/api_functions.php");
-require("inc/clsDbAccess.php");
-require("inc/jacqServletJsonRPCClient.php");
 
 no_magic();
 
 //---------- check every input ----------
-if (!checkRight('batch')) { // only user with right "api" can change API
+if (!checkRight('batch')) {                 // only user with right "api" can change API
     echo "<html><head></head><body>\n"
        . "<h1>Error</h1>\n"
        . "Access denied\n"
@@ -27,6 +24,8 @@ if (!checkRight('batchAdmin')) {
     }
 }
 
+$batchID = (isset($_POST['batch'])) ? intval($_POST['batch']) : 0;
+
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
@@ -35,11 +34,9 @@ if (!checkRight('batchAdmin')) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <style type="text/css">
-    td.label { font-size: 100%; font-family: sans-serif; font-weight: bold; color: darkGray; text-align: right; white-space: nowrap; }
-    td.input { padding-left: 0.3em; }
-    input.text { font-size: 100%; font-family: sans-serif; padding-left: 0.3em; }
     input.button       { font-size: 100%; font-family: sans-serif; padding-left: 0; font-weight: bold; }
     input.button:hover { background-color: #abffab }
+    div.error { font-size: 100%; font-family: sans-serif; font-weight: bold; color: red; }
   </style>
 </head>
 
@@ -50,9 +47,6 @@ if (!checkRight('batchAdmin')) {
 
 <form enctype="multipart/form-data" action='<?php echo $_SERVER['PHP_SELF']; ?>' method='POST' name='f'>
 <?php
-    $batchID = (isset($_POST['batch'])) ? $_POST['batch'] : 0;
-    $batchValue = array();
-    $batchText = array();
     $sql = "SELECT remarks, date_supplied, batchID, batchnumber, source_code
             FROM api.tbl_api_batches
              LEFT JOIN herbarinput.meta ON api.tbl_api_batches.sourceID_fk = herbarinput.meta.source_id
@@ -79,20 +73,83 @@ if (!checkRight('batchAdmin')) {
 <?php
 if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])) {
     $buffer = file($_FILES['importfile']['tmp_name']);
+
+    // split into lines, keep only first column, strip everything after "_" or "." if any
     $lines = array();
     foreach ($buffer as $key => $val) {
         $columns = str_getcsv($val);
-        $pos = strpos($columns[0], '_');
-        if ($pos) {
-            $line = substr($columns[0], 0, $pos);
-        } else {
-            $line = substr($columns[0], 0, strpos($columns[0], '.'));
+        if ($columns) {
+            $pos1 = strpos($columns[0], '_');
+            $pos2 = strpos($columns[0], '.');
+            if ($pos1) {
+                $line = substr($columns[0], 0, $pos1);
+            } elseif ($pos2) {
+                $line = substr($columns[0], 0, $pos2);
+            } else {
+                $line = $columns[0];
+            }
+            $lines[$key] = $line;
         }
-        $lines[$key] = $line;
     }
-    $lines = array_unique($lines);
+
+    $lines = array_unique($lines);      // eliminate doubles
+
+    // find the longest coll_short_prj possible, using first line in file
+    $check = $lines[0];
+    $coll_short_prj = '';
+    for ($i = 1; $i <= strlen($check); $i++) {
+        $result = db_query("SELECT collectionID FROM tbl_management_collections WHERE coll_short_prj LIKE '" . substr($check, 0, $i) . "%'");
+        if (mysql_num_rows($result) > 0) {
+            $coll_short_prj = substr($check, 0, $i);
+        } else {
+            break;
+        }
+    }
+
+    // find specimen_ID for given HerbNummer, store any errors
+    $import = array();
+    $errors = false;
     foreach ($lines as $key => $val) {
-        echo $key . ": " . $val . "<br>\n";
+        $herbNummer = substr($val, strlen($coll_short_prj));  // strip coll_short_prj at the beginning
+        $result = db_query("SELECT s.specimen_ID
+                            FROM tbl_specimens s, tbl_management_collections mc
+                            WHERE s.collectionID = mc.collectionID
+                             AND mc.coll_short_prj LIKE '$coll_short_prj'
+                             AND s.HerbNummer = '$herbNummer'");
+        if (mysql_num_rows($result) == 0) {
+            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => 0, 'error' => 'specimen not found');
+            $errors = true;
+        } elseif (mysql_num_rows($result) > 1) {
+            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => 0, 'error' => 'multi specimen found');
+            $errors = true;
+        } else {
+            $row = mysql_fetch_array($result);
+            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => $row['specimen_ID'], 'error' => '');
+        }
+    }
+
+    if (count($import) == 0) {
+        echo "<div class='error'>Error: nothing to import</div>";
+    } elseif ($errors) {
+        echo "<div class='error'>Found " . $coll_short_prj . " as source<br>\n";
+        foreach ($import as $key => $val) {
+            echo $key . ": " . $val['HerbNummer'] . " - " . (($val['error']) ?  $val['error'] : $val['specimenID']) . "<br>\n";
+        }
+        echo "</div>";
+    } else {
+        if ($batchID) {
+            db_query("DELETE FROM api.tbl_api_specimens WHERE batchID_fk = '$batchID'");
+            foreach ($import as $key => $val) {
+                db_query("INSERT INTO api.tbl_api_specimens SET
+                           specimen_ID = '" . $val['specimenID'] . "',
+                           batchID_fk  = '$batchID'");
+                update_tbl_api_units($val['specimenID']);
+                update_tbl_api_units_identifications($val['specimenID']);
+            }
+            echo "Import successful";
+        } else {
+            echo "<div class='error'>wrong batch-ID: $batchID</div>";
+        }
     }
 }
 

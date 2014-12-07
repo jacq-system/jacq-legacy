@@ -14,7 +14,7 @@ function garbageCollection($id) {
 function update_tbl_api_units($id, $showError=true) {
 
   // gather information for the update of tbl_api_units
-  $sql = "SELECT specimen_ID, s.aktualdatum, herbarinput.meta.source_id,
+  $sql = "SELECT specimen_ID, s.aktualdatum, meta.source_id,
            c.SammlerID, c.Sammler, c2.Sammler_2ID, c2.Sammler_2,
            s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2, ss.series,
            gn.nation_engl, gn.iso_alpha_2_code,
@@ -23,14 +23,14 @@ function update_tbl_api_units($id, $showError=true) {
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
            s.Bemerkungen,
            gp.provinz
-          FROM (tbl_specimens s, tbl_collector c, tbl_management_collections mc, herbarinput.meta)
+          FROM (tbl_specimens s, tbl_collector c, tbl_management_collections mc, meta)
            LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
            LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
            LEFT JOIN tbl_geo_nation gn ON gn.nationID = s.NationID
            LEFT JOIN tbl_geo_province gp ON gp.provinceID = s.provinceID
           WHERE s.SammlerID = c.SammlerID
            AND s.collectionID = mc.collectionID
-           AND mc.source_id = herbarinput.meta.source_id
+           AND mc.source_id = meta.source_id
            AND s.observation = '0'
            AND specimen_ID = '$id'";
   $result = db_query($sql);
@@ -41,7 +41,7 @@ function update_tbl_api_units($id, $showError=true) {
 
   // fill Collectors
   $Collectors = $row['Sammler'];
-  if (strstr($row1['Sammler_2'],"&") || strstr($row['Sammler_2'],"et al."))
+  if (strstr($row['Sammler_2'],"&") || strstr($row['Sammler_2'],"et al."))
     $Collectors .= " et al.";
   elseif ($row['Sammler_2'])
     $Collectors .= " & ".$row['Sammler_2'];
@@ -305,4 +305,3 @@ function helper_tbl_api_units_identifications($id,$row,$det,$date,$identHistory,
            TypifiedName='$TypifiedName'";
   db_query($sql);
 }
-?>

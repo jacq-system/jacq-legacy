@@ -127,7 +127,11 @@ $userdata = mysql_fetch_array(mysql_query($sql));
 <?php if (checkRight('batch')): ?>
         <input class="button" type="button" value="Batches" onclick="openWindow('manageBatch.php','manageBatch')">
 <?php endif; ?>
-      </td><td style="width:20px">&nbsp;</td><td></td></tr>
+      </td><td style="width:20px">&nbsp;</td><td>
+<?php if (checkRight('batch')): ?>
+        <input class="button" type="button" value="Batches file import" onclick="openWindow('fileImportBatch.php','fileImportBatch')">
+<?php endif; ?>
+      </td></tr>
       <tr align="left"><td>
 <?php if (checkRight('btnSpc')): ?>
         <input class="button" type="button" value="Labels" onClick="openWindow('listLabel.php','Labels')">
