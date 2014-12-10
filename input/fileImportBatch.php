@@ -36,7 +36,7 @@ $batchID = (isset($_POST['batch'])) ? intval($_POST['batch']) : 0;
   <style type="text/css">
     input.button       { font-size: 100%; font-family: sans-serif; padding-left: 0; font-weight: bold; }
     input.button:hover { background-color: #abffab }
-    div.error { font-size: 100%; font-family: sans-serif; font-weight: bold; color: red; }
+    .error { font-size: 100%; font-family: sans-serif; font-weight: bold; color: black; background-color: red; }
   </style>
 </head>
 
@@ -105,54 +105,68 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
             break;
         }
     }
+    $coll_short_prj = strtolower($coll_short_prj);
 
     // find specimen_ID for given HerbNummer, store any errors
     $import = array();
-    $errors = false;
+    $errors = 0;
+    $linesToImport = 0;
     foreach ($lines as $key => $val) {
-        $herbNummer = substr($val, strlen($coll_short_prj));  // strip coll_short_prj at the beginning
-        $result = db_query("SELECT s.specimen_ID
-                            FROM tbl_specimens s, tbl_management_collections mc
-                            WHERE s.collectionID = mc.collectionID
-                             AND mc.coll_short_prj LIKE '$coll_short_prj'
-                             AND s.HerbNummer = '$herbNummer'");
-        if (mysql_num_rows($result) == 0) {
-            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => 0, 'error' => 'specimen not found');
-            $errors = true;
-        } elseif (mysql_num_rows($result) > 1) {
-            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => 0, 'error' => 'multi specimen found');
-            $errors = true;
+        $import[$key] = array('line' => $val, 'specimenID' => 0, 'error' => '');
+        if (strtolower(substr($val, 0, strlen($coll_short_prj))) != $coll_short_prj) {
+            $import[$key]['error'] = 'wrong or no collection';
+            $errors++;
         } else {
-            $row = mysql_fetch_array($result);
-            $import[$key] = array('HerbNummer' => $herbNummer, 'specimenID' => $row['specimen_ID'], 'error' => '');
+            $herbNummer = substr($val, strlen($coll_short_prj));  // strip coll_short_prj at the beginning
+            $result = db_query("SELECT s.specimen_ID
+                                FROM tbl_specimens s, tbl_management_collections mc
+                                WHERE s.collectionID = mc.collectionID
+                                 AND mc.coll_short_prj LIKE '$coll_short_prj'
+                                 AND s.HerbNummer = '$herbNummer'");
+            if (mysql_num_rows($result) == 0) {
+                $import[$key]['error'] = 'specimen not found';
+                $errors++;
+            } elseif (mysql_num_rows($result) > 1) {
+                $import[$key]['error'] = 'multi specimen found';
+                $errors++;
+            } else {
+                $row = mysql_fetch_array($result);
+                $import[$key]['specimenID'] = $row['specimen_ID'];
+                $linesToImport++;
+            }
         }
     }
 
-    if (count($import) == 0) {
+    if (count($import) == 0 || !$batchID) {
         echo "<div class='error'>Error: nothing to import</div>";
-    } elseif ($errors) {
-        echo "<div class='error'>Found " . $coll_short_prj . " as source<br>\n";
-        foreach ($import as $key => $val) {
-            echo $key . ": " . $val['HerbNummer'] . " - " . (($val['error']) ?  $val['error'] : $val['specimenID']) . "<br>\n";
-        }
-        echo "</div>";
     } else {
-        if ($batchID) {
-            db_query("DELETE FROM api.tbl_api_specimens WHERE batchID_fk = '$batchID'");
+        echo "<div>Collection found: $coll_short_prj<br>$linesToImport lines imported<br>$errors errors found</div>\n";
+        if ($errors) {
+            echo "<div class='error'>";
             foreach ($import as $key => $val) {
-                db_query("INSERT INTO api.tbl_api_specimens SET
-                           specimen_ID = '" . $val['specimenID'] . "',
-                           batchID_fk  = '$batchID'");
-                update_tbl_api_units($val['specimenID']);
-                update_tbl_api_units_identifications($val['specimenID']);
+                if ($val['error']) {
+                    echo $key . ": " . $val['line'] . " - " . $val['error'] . "<br>\n";
+                }
             }
-            echo "Import successful";
-        } else {
-            echo "<div class='error'>wrong batch-ID: $batchID</div>";
+            echo "</div>";
+        }
+        if ($linesToImport) {
+            db_query("DELETE FROM api.tbl_api_specimens WHERE batchID_fk = '$batchID'");
+            echo "<div>";
+            foreach ($import as $key => $val) {
+                if ($val['specimenID']) {
+                    db_query("INSERT INTO api.tbl_api_specimens SET
+                               specimen_ID = '" . $val['specimenID'] . "',
+                               batchID_fk  = '$batchID'");
+                    update_tbl_api_units($val['specimenID']);
+                    update_tbl_api_units_identifications($val['specimenID']);
+                    echo $key . ": " . $val['line'] . " - <" . $val['specimenID'] . "> imported<br>\n";
+                }
+            }
+            echo "</div>";
         }
     }
 }
-
 ?>
 
 </body>
