@@ -48,7 +48,7 @@
     </tr>
     <tr> 
       <td valign="top" colspan="8"><!-- #BeginEditable "Seiteninhalt" -->
-        <p class="normal">We are in the process of digitizing our collections, which should enable international users in the future not only to have quick access to what is available in GZU, JE, W and WU but also to view images of specimens especially type material.</p>
+        <p class="normal">We are in the process of digitizing our collections, which should enable international users to have quick access to botanical collections from the herbaria B, BAK, BRNU, CHER, ERE, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, OLD, PRC, TGU, W and WU. It is our main goal to provide images for all material online and especially high resolution images for type collections.</p>
         <p class="links"><img src="images/pfeil.jpg" width=20 height=18 border=0>&nbsp;&nbsp;<a href="search.php">Access the database</a></p>
         <p></p>
         <p class="normal"><strong>conspectus of taxonomic databases</strong></p>
@@ -95,14 +95,10 @@
     <p></p>
 	</div></td>
   </tr>
-  <tr>
-    <td align="center" colspan="2"></td>
-    <td align="center" colspan="3"><a href="http://eu-nomen.eu/pesi/" target="_blank"><img src="images/PESI_logo_small.gif" alt="--> PESI - PanEuropean Species directoris Infrastructure"></a></td>
-    <td align="center" colspan="2"></td>
-  </tr>
+  
   <tr>
     <td align="center" colspan="2"><a href="http://www.enbi.info/" target="_blank"><img src="images/enbi.gif" alt="--> ENBI - European Network fo Biodiversity Information"></a></td>
-    <td align="center" colspan="3"><a href="http://www.gbif.org" target="_blank"><img src="images/gbif.jpg" alt="--> GBIF International"></a></td>
+    <td align="center" colspan="3"><a href="http://www.gbif.org" target="_blank"><img src="images/gbif.jpg" alt="--> GBIF International"></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://eu-nomen.eu/pesi/" target="_blank"><img src="images/PESI_logo_small.gif" alt="--> PESI - PanEuropean Species directoris Infrastructure"></a></td>
     <td align="center" colspan="2"><a href="http://www.biocase.org/" target="_blank"><img src="images/biocase.gif" alt="--> BIOCASE"></a></td>
   </tr>
   <tr>
@@ -118,7 +114,7 @@
               <A HREF="http://www.botanik.univie.ac.at/index.htm">Homepage Institute</A> | <A HREF="mailto:heimo.rainer@univie.ac.at">Email contact</A>
           </p>
           <!-- #BeginEditable "Datum" -->
-          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <B>Last modified:</B> <EM>2014-Dec-11, DR</EM>
           <!-- #EndEditable -->
         </div>
       </td>
