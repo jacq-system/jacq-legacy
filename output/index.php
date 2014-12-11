@@ -63,13 +63,13 @@
           <strong>MPU, NCY, P</strong> / <a href="http://coldb.mnhn.fr/colweb/form.do?model=SONNERAT.wwwsonnerat.wwwsonnerat.wwwsonnerat" target="_blank">MNHN - Paris, France</a><br>
           <strong>Z, ZT</strong> / <a href="http://www.zuerich-herbarien.unizh.ch/" target="_blank">Z&uuml;rcher Herbarien - Zurich, Switzerland</a><br>
 		  <br><br>
-          &nbsp;NAm<br><br>
+          &nbsp;Northamerica<br><br>
           <strong>A, ECON, GH</strong> / <a href="http://asaweb.huh.harvard.edu:8080/databases/specimen_index.html" target="_blank">Harvard University Herbaria - Cambridge, MA</a><br>
           <strong>F</strong> / <a href="http://emuweb.fieldmuseum.org/botany/detailed.php" target="_blank">FMNH Botany Collections - Field Museum, Chicago, IL</a><br>
           <strong>MO</strong> / <a href="http://www.tropicos.org/" target="_blank">Tropicos Specimens Database - Missouri Botanical Garden, St. Louis, MO</a><br>
           <strong>NY</strong> / <a href="http://sciweb.nybg.org/science2/vii2.asp" target="_blank">Virtual Herbarium NY Botanical Garden - New York, NY</a><br>
           <br><br>
-          &nbsp;SAm<br><br>
+          &nbsp;Southamerica <br><br>
           <strong>COL</strong> / <a href="http://www.biovirtual.unal.edu.co/colecciones/datos/herbario/consultasHerbario.jsp" target="_blank">Herbario Nacional - Bogota, Colombia</a><br>
           <a href="http://splink.cria.org.br" target="_blank">Species link - CRIA, Brasil</a><br>
           <br><br>
