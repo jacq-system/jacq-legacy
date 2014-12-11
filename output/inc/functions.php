@@ -59,6 +59,7 @@ class MyTripleID extends TripleID
 		$this->sourceID = "Herbarium Berolinense";
 		$this->objectID = $id;
 	}
+	
 } // class MyTripleID
 
 function generateAnnoTable($metadata) {
