@@ -1,7 +1,7 @@
 <html><!-- #BeginTemplate "/Templates/database.dwt" --><!-- DW6 -->
 <head>
 <!-- #BeginEditable "doctitle" -->
-<title>Virtual Herbaria Austria</title>
+<title>Virtual Herbaria JACQ</title>
 <!-- #EndEditable -->
 <meta http-equiv="Content-Type" content="text/html;">
 <meta name="keywords" content="herbarium wu, herbarium vienna university, species 2000, digibota, gbif, projects, digitization, specimens">
