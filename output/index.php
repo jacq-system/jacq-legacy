@@ -48,13 +48,13 @@
     </tr>
     <tr> 
       <td valign="top" colspan="8"><!-- #BeginEditable "Seiteninhalt" -->
-        <p class="normal">We are in the process of digitizing our collections, which should enable international users to have quick access to botanical collections from the herbaria B, BAK, BRNU, CHER, ERE, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, OLD, PRC, TGU, W and WU. It is our main goal to provide images for all material online and especially high resolution images for type collections.</p>
+        <p class="normal">We are in the process of digitizing our collections, which should enable international users to have quick access to botanical collections from the herbaria B, BAK, BRNU, CHER, ERE, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, OLD, PRC, TGU, W and WU.<br/>It is our main goal to provide a unified and jointly administered specimen management system for the participating herbaria. Special attention is paid to providing images for all material online and especially high resolution images for type collections.</p>
         <p class="links"><img src="images/pfeil.jpg" width=20 height=18 border=0>&nbsp;&nbsp;<a href="search.php">Access the database</a></p>
         <p></p>
         <p class="normal"><strong>conspectus of taxonomic databases</strong></p>
         <p class="links"><a href="http://darwin.zoology.gla.ac.uk/~rpage/portal/index.html" target="_blank">Taxonomic Search Engine - Rod Page / Glasgow University</a></p>
         <p class="links"><br>
-          <strong>herbaria / botanical specimens databases</strong><br><br>
+          <strong>other herbaria / botanical specimen databases</strong><br><br>
           &nbsp;Europe<br><br>
 	  <strong>AAU</strong> / <a href="http://herb42.bio.au.dk/aau_herb/search_form.php" target="_blank">Aarhus University - Aarhus, Denmark</a><br>
           <strong>E</strong> / <a href="http://elmer.rbge.org.uk/bgbase/vherb/bgbasevherb.php" target="_blank">Royal Botanic Garden Edinburgh - Edinburgh, Scotland</a><br>
@@ -63,7 +63,7 @@
           <strong>MPU, NCY, P</strong> / <a href="http://coldb.mnhn.fr/colweb/form.do?model=SONNERAT.wwwsonnerat.wwwsonnerat.wwwsonnerat" target="_blank">MNHN - Paris, France</a><br>
           <strong>Z, ZT</strong> / <a href="http://www.zuerich-herbarien.unizh.ch/" target="_blank">Z&uuml;rcher Herbarien - Zurich, Switzerland</a><br>
 		  <br><br>
-          &nbsp;Northamerica<br><br>
+           &nbsp;Northamerica<br><br>
           <strong>A, ECON, GH</strong> / <a href="http://asaweb.huh.harvard.edu:8080/databases/specimen_index.html" target="_blank">Harvard University Herbaria - Cambridge, MA</a><br>
           <strong>F</strong> / <a href="http://emuweb.fieldmuseum.org/botany/detailed.php" target="_blank">FMNH Botany Collections - Field Museum, Chicago, IL</a><br>
           <strong>MO</strong> / <a href="http://www.tropicos.org/" target="_blank">Tropicos Specimens Database - Missouri Botanical Garden, St. Louis, MO</a><br>
