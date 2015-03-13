@@ -88,7 +88,8 @@ class AnnotationQuery
 		$uri = $this->serviceUri."/services/records/"
 		       . $tripleId->toString() . "/annotations";
 		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, $uri);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE);
+                curl_setopt($curl, CURLOPT_URL, $uri);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1); // return body as string
 		$response = curl_exec($curl);
 		if(!curl_errno($curl)) {

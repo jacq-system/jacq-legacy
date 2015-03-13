@@ -315,7 +315,7 @@ if ($row['ncbi_accession'])
             </table>
           <table border="2" cellpadding="2" width="80%">
             <tr>
-              <td align="right">Collection</td>
+              <td align="right" width="30%">Collection</td>
               <td><b>
                 <?php makeCell(collectionID($row)); ?>
                  </b>
@@ -428,24 +428,34 @@ if (strlen($typusText)>0):
             <tr>
               <td align="right">annotations</td>
               <td><b>
-                <?php makeCell($row['Bemerkungen']); ?>
-                </b></td>
+                        <?php 
+                                if ($row['source_id'] == '35'){
+                                    makeCell((preg_replace("#<a .*a>#","", $row['Bemerkungen'])));
+                                    }
+                                else {
+                                    makeCell($row['Bemerkungen']);
+                                    }
+                        ?>
+              </b></td>
             </tr>
 			<?php 
-				if ($row['source_id'] == '29'){
+				if ($row['source_id'] == '29' || $row['source_id'] == '6' ){
 				echo "<tr>";
 
 					// create new id object
-					$id = new MyTripleID(collectionID($row));
-
+					$id = new MyTripleID($row['specimen_ID']);
+						
 					// create new AnnotationQuery object
 					$query = new AnnotationQuery($serviceUri);
-		
+					
 					// fetch annotation metadata
 					$annotations = $query->getAnnotationMetadata($id);
 	
 					// build URI for new annotation
+					if ($row['source_id'] == '29')
 					$newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
+					if ($row['source_id'] == '6')
+					$newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
 					
 				echo "<td align='right'>Annosys annotations<br/>";
 			    echo '<a href="' . $newAnnoUri . '" target="_blank">Add annotation</a>';
@@ -487,7 +497,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     for ($i=0;$i<count($row);$i++)
       echo "<a href=\"javascript:showPicture('".$url_orig.$row[$i].".jpg')\">".
            "<img src=\"".$url_tn.$row[$i].".jpg\" border=\"2\"></a>"; */
-  echo "<p>\n";
+  //echo "<p>\n";
 
 /*  $sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, img_directory, tbl_specimens.collectionID ".
          "FROM tbl_specimens, tbl_management_collections, tbl_img_definition ".
@@ -521,13 +531,17 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   $picdetails=getPicDetails($row['specimen_ID']);
   
   $transfer=getPicInfo($picdetails);
-   if ($picdetails['is_djatoka'] == '2'){
+  
+  if ($picdetails['is_djatoka'] == '2'){
 		$file=rawurlencode(basename($picdetails['specimenID']));
 		echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
 
 	}
+        elseif ($picdetails['is_djatoka'] == '3') {
+           $file=rawurlencode(basename($picdetails['specimenID']));
+	   echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)</td>";
+    }
 	else
-  
   if ($transfer) {
     if (count($transfer['pics'])>0) {
 	 foreach ($transfer['pics'] as $v) {
@@ -569,7 +583,7 @@ EOF;
         </p>
         <div class="normal" align="center">
           <!-- #BeginEditable "Datum" -->
-          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <B>Last modified:</B> <EM>2015-Mar-13, DR</EM>
           <!-- #EndEditable -->
         </div>
       </td>

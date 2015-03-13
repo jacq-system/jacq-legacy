@@ -79,14 +79,14 @@ function getPicInfo($picdetails) {
     if ($picdetails['is_djatoka'] == '1') {
         // Construct URL to servlet
         $url = $picdetails['url'] . '/jacq-servlet/ImageServer';
-        
+
         // Prepare json-rpc conform request structure
         $jsonrpc_request = json_encode(array(
             'id' => 1234,
             'method' => 'listSpecimenImages',
             'params' => array( $picdetails['key'], $picdetails['specimenID'], $picdetails['filename'] )
         ));
-        
+
         // Prepare the context for the HTTP request
         $opts = array(
             'http' => array(
@@ -96,7 +96,7 @@ function getPicInfo($picdetails) {
             )
         );
         $context = stream_context_create($opts);
-        
+
         // Finally try to reach the djatoka server and ask for details
         if( ($fp = fopen($url, 'r', false, $context)) ) {
             $response = '';
@@ -104,40 +104,55 @@ function getPicInfo($picdetails) {
                 $response.=trim($row) . "\n";
             }
            $response = json_decode($response, true);
-            
+
 			$response = array(
                 'output' => '',
                 'pics' => $response['result']
-				
+
             );
-			
+
         } else {
             return jsonError('Unable to connect to ' . $url);
         }
-    } 
+    }
 	else if ($picdetails['is_djatoka'] == '2') {
         // Construct URL to servlet
-       $url = 'http://ww2.bgbm.org/rest/herb/thumb/'.$picdetails['filename'];
-		
+       $HerbNummer = str_replace('-', '', $picdetails['filename']);
+
+	   $url = 'http://ww2.bgbm.org/rest/herb/thumb/'.$HerbNummer;
+
 		$fp = fopen($url, "r");
          while ($row = fgets($fp)) {
                 $response.=trim($row) . "\n";
             }
+
 		 $response = json_decode($response, true);
+
 		$response = array(
                 'output' => '',
                 'pics' => $response
-				
+
             );
-    } 
-	
+
+    }
+	else if ($picdetails['is_djatoka'] == '3') {
+        // Construct URL to servlet
+        $url = $picdetails['filename'];
+            	 $response = $url;
+
+                 $response = array(
+                'output' => '',
+                'pics' => $response
+
+        );
+        }
 	else {
         global $_OPTIONS;
         $url = "{$picdetails['url']}/detail_server.php?key={$_OPTIONS['key']}&ID={$picdetails['specimenID']}{$q}";
 
         $response = @file_get_contents($url, "r");
         $response = @unserialize($response);
-		
+
     }
     if ($debug) {
         p($response);
@@ -156,28 +171,38 @@ function doRedirectShowPic($picdetails) {
         // Get additional identifiers (if available)
         $picinfo = getPicInfo($picdetails);
         $identifiers = implode($picinfo['pics'], ',');
-        
+
         // Construct URL to viewer
         $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
-    } 
+    }
 	else if ($picdetails['is_djatoka'] == '2') {
 		// Get additional identifiers (if available)
         $picinfo = getPicInfo($picdetails);
         $identifiers = implode($picinfo['pics'], ',');
 		// Construct URL to viewer
                 $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
-				p($url);
+
 		}
-	else {
+	else if ($picdetails['is_djatoka'] == '3') {
+		// Get additional identifiers (if available)
+        //$picinfo = getPicInfo($picdetails);
+
+        //$identifiers = implode($picinfo['pics'], ',');
+		// Construct URL to viewer
+
+            $url = $picdetails['key'];
+
+		}
+        else {
         $url = $picdetails['url'] . '/img/imgBrowser.php?name=' . $picdetails['requestFileName'] . $q;
     }
-    
+
 	if ($debug) {
         p($url);
         exit;
     }
     $url = cleanURL($url);
-    
+
     // Redirect to new location
     header("location: {$url}");
 }
@@ -267,7 +292,9 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         }
 
         // Construct URL to Berlin Server
-        $url2 = 'http://ww2.bgbm.org/rest/herb/image/'.$picdetails['filename'];
+        // Remove hyphens
+        $HerbNummer = str_replace('-', '', $picdetails['filename']);
+		$url2 = 'http://ww2.bgbm.org/rest/herb/image/'.$HerbNummer;
 		$fp = fopen($url2, "r");
          while ($row = fgets($fp)) {
                 $response.=trim($row) . "\n";
@@ -277,7 +304,47 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
 		//$url = $picdetails['url'].'images'.$response;
 		$url = 'http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source='.$response;
     }
-	
+	//... Check if we are using djatoka = 3 (Baku image server)
+	else if ($picdetails['is_djatoka'] == '3') {
+        // Check requested format
+        switch ($format) {
+            case 'jpeg2000':
+                $format = 'image/jp2';
+                $fileExt = 'jp2';
+                break;
+            case'tiff':
+                $format = 'image/tiff';
+                $fileExt = 'tif';
+                break;
+            default:
+                $format = 'image/jpeg';
+                $fileExt = 'jpg';
+                break;
+        }
+        // Default scaling is 50%
+        $scale = '0.5';
+        $mime = $format;
+
+        // Check if we need a thumbnail
+        if ($thumb != 0) {
+            // Thumbnail for kulturpool
+            if( $thumb == 2 ) {
+                $scale = '0,1300';
+            }
+            // thumbnail for europeana
+            else if( $thumb == 3 ) {
+                $scale = '200,0';
+            }
+            // Default thumbnail
+            else {
+                $scale = '160,0';
+            }
+        }
+
+
+		$url = $picdetails['url']. $picdetails['originalFilename'];
+    }
+
 	// ... if not fall back to old system
     else {
         switch ($format) {
@@ -303,7 +370,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
                 $fileurl = 'mktn.php';
             }
         }
-        
+
         $url = "{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$format}{$q}";
     }
     $url = cleanURL($url);
@@ -311,12 +378,12 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         p($url);
         exit;
     }
-    
+
     // Send correct headers
     header( 'Content-Type: ' . $mime );
     header( 'Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"' );
     readfile($url);
-    
+
     // Redirect to image download
     header("location: {$url}");
 }
@@ -351,13 +418,13 @@ function getPicDetails($request) {
         if (preg_match('/([^\.]+)/', $request, $matches) > 0) {
             $originalFilename = $matches[1];
         }
-        
+
         // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
         if( preg_match( '/^([^_]+)_([^_]+)/', $originalFilename, $matches ) > 0 ) {
             // Extract HerbNummer and construct alternative version
             $HerbNummer = $matches[2];
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
-            
+
             // Find entry in specimens table and return specimen ID for it
             $sql = "
                 SELECT
@@ -385,7 +452,7 @@ function getPicDetails($request) {
             id.`HerbNummerNrDigits`,
             id.`key`,
             mc.`coll_short_prj`,
-            s.`HerbNummer`
+            s.`HerbNummer`,s.`Bemerkungen`
             FROM
             `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc
@@ -398,7 +465,7 @@ function getPicDetails($request) {
     if ($debug) {
         print_r($sql);
     }
-    
+
     // Fetch information for this image
     $result = mysql_query($sql);
     if (mysql_num_rows($result) > 0) {
@@ -406,29 +473,74 @@ function getPicDetails($request) {
         if ($debug) {
             print_r($row);
         }
+
         $url = 'http://' . $row['imgserver_IP'];
         $url .= ($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '';
-        
+
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
-        
-        
-        
+
+
+
         // Construct clean filename
         if ($row['is_djatoka'] == '2') {
 			// Remove spaces for B HerbNumber
             $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
 			$filename = sprintf($HerbNummer);
 		}
-		else{
+	elseif ($row['is_djatoka'] == '3') {
+
+
+            $html = $row['Bemerkungen'];
+                    // create new IamgeQuery object
+                        $query = new ImageQuery();
+
+                    // fetch image uris
+                        try{
+                            $uris = $query->fetchUris($html);
+                            } catch(Exception $e) {
+                               echo 'an error occurred: ',  $e->getMessage(), "\n";
+                            die();
+                            }
+
+                    // just print the result
+                    #print_r($uris);
+
+                    // do something with uris
+                    foreach($uris as $uriSubset) {
+                    $newHtmlCode = '<a href="' . $uriSubset["image"] . '" target="_blank"><img src="' . $uriSubset["preview"] . '"/></a>';
+                    //echo $newHtmlCode . "\n";
+                    }
+
+                 $url = $uriSubset["base"];
+                 #$url .= ($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '';
+                 $filename = sprintf($uriSubset["filename"]);
+                 $originalFilename = sprintf($uriSubset["thumb"]);
+                 $key = sprintf($uriSubset["html"]);
+                    }
+                else{
 			$filename = sprintf( "%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer );
 			}
 
+
+
         // Set original file-name if we didn't pass one (required for djatoka)
         // (required for pictures with suffixes)
-        if( $originalFilename == null ) $originalFilename = $filename;
+        if( $originalFilename == null ){ $originalFilename = $filename;}
 
-        return array(
+        if ($row['is_djatoka'] == '3') {
+                return array(
+            'url' => $url,
+            'requestFileName' => $request,
+            'originalFilename' => $originalFilename,
+            'filename' => $filename,
+            'specimenID' => $specimenID,
+            'is_djatoka' => $row['is_djatoka'],
+            'key' => $key
+        );
+           }
+        else{
+            return array(
             'url' => $url,
             'requestFileName' => $request,
             'originalFilename' => $originalFilename,
@@ -437,6 +549,9 @@ function getPicDetails($request) {
             'is_djatoka' => $row['is_djatoka'],
             'key' => $row['key']
         );
+        }
+
+
     }
     return false;
 }
