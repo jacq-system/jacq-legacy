@@ -72,12 +72,15 @@ class MyTripleID extends TripleID
 		
 		if ($row['source_id'] == '29'){
 		$unitid = $row['herbNummer'];		
-		$source = $row['coll_gbif_pilot'];}		
-		if ($row['source_id'] == '6'){
+		$source = 'Herbarium Berolinense';		
+		$institutionID = 'BGBM';}
+                
+                if ($row['source_id'] == '6'){
 		$unitid = $row['specimen_ID'];
-		$source = 'Herbarium W';}
-		
-		$this->institutionID = $row['coll_short'];
+		$source = 'Herbarium W';
+		$institutionID = 'W';}
+                
+		$this->institutionID = $institutionID;
 		$this->sourceID = $source;
 		$this->objectID = $unitid;
 		
