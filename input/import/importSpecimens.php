@@ -445,7 +445,14 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                 }
             }
         }
+
+       /**
+        * obtain suggestions for a taxon name by TaxaMatch
+        */
         if (!$taxonOK) {
+//            if(!$_OPTIONS['staging_area']){
+//              // when using the staging area it is ok if the taxon names are not matching
+//            }
             $OK = false;
             $status[$i] .= "no_taxa ";
             $data[$i]['taxonID'] = 0;
@@ -713,7 +720,11 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $importableTaxaPresent = true;
         } elseif ($status[$i] == "no_taxa ") {                  // taxon not found at all, but genus is in database
             $position[$i] = 2;
-            $importableTaxaPresent = true;
+            $importableTaxaPresent = TRUE;
+        } elseif ($_OPTIONS['staging_area']['ignore_no_genus']  // taxon not found and genus unknown, but to be imported
+            && $status[$i] == "no_taxa no_genus ") {             // due to staging area option
+            $position[$i] = 2;
+            $importableTaxaPresent = TRUE;
         } elseif (strpos($status[$i], "exists") !== false) {    // HerbNummer exists already in database
             $position[$i] = 4;
         } else {                                                // nothing of the above, something else went wrong
@@ -861,9 +872,9 @@ if ($type == 1) {  // file uploaded
                 echo "<td" . ((strpos($status[$i], "no_collection") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][1]) . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_identstatus") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][2]) . "</td>";
                 if (strpos($status[$i], "similar_taxa") !== false) {
-                    echo "<td style=\"background-color:yellow\">";
+                    echo "<td style=\"background-color:yellow\" title=\"similar taxa found, choose in row below\">";
                 } elseif (strpos($status[$i], "no_taxa") !== false) {
-                    echo "<td style=\"background-color:red\">";
+                    echo "<td style=\"background-color:red\" title=\"" . $status[$i] . "\">";
                 } else {
                     echo "<td>";
                 }
