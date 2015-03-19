@@ -785,7 +785,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                    || $pieces[0] == 'Bemerkungen'   || $pieces[0] == 'typified'   || $pieces[0] == 'typusID' || $pieces[0] == 'NationID'
                    || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'det'
                    || $pieces[0] == 'exactness'     || $pieces[0] == 'Habitat'    || $pieces[0] == 'Habitus' || $pieces[0] == 'quadrant'
-                   || $pieces[0] == 'quadrantsub'
+                   || $pieces[0] == 'quadrant_sub'
                    || $pieces[0] == 'identstatusID' || $pieces[0] == 'importTaxa' || $pieces[0] == 'contentid') {
             $data[intval($pieces[1])][$pieces[0]] = $v;
         }
