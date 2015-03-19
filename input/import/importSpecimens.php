@@ -123,9 +123,10 @@ function splitTaxon($text)
  * @param string $taxon taxon to insert
  * @param integer $externalID external-ID, must be >0
  * @param integer $contentID primary ID of tbl_external_import_content
+ * @param boolean $allow_new_genera whether inserting of new taxa without know genus is allowed
  * @return array inserted "taxonID" or happened "error"
  */
-function insertTaxon($taxon, $externalID, $contentID)
+function insertTaxon($taxon, $externalID, $contentID, $allow_new_genera = FALSE)
 {
     $externalID = intval($externalID);
     $contentID  = intval($contentID);
@@ -141,15 +142,21 @@ function insertTaxon($taxon, $externalID, $contentID)
     $taxonParts = $parser->tokenize($taxon);
 
     $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($taxonParts['genus']));
-    if (mysql_num_rows($result) == 0) {  // genus not found -> abort
-        $ret['error'] = 'genus not found';
-        return $ret;
+    if (mysql_num_rows($result) == 0) {
+        if($allow_new_genera){
+          // add nevertheless
+          $genID = 0; // this the default value for that column in the db
+        } else {
+          // genus not found -> abort
+          $ret['error'] = 'genus not found';
+          return $ret;
+        }
+    } else {
+      $row = mysql_fetch_array($result);
+      $genID = $row['genID'];
     }
 
-    $row = mysql_fetch_array($result);
-    $genID = $row['genID'];
-
-    // find or insert the epithet if present
+  // find or insert the epithet if present
     if ($taxonParts['epithet']) {
         $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($taxonParts['epithet']));
         if (mysql_num_rows($result) > 0) {
@@ -996,8 +1003,8 @@ if ($type == 1) {  // file uploaded
         echo "</table>\n";
     }
 } elseif ($type ==2) {  // insert data
-    echo count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported<br>\n";
-
+    echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
+    echo '<div id="import_errors" class="error">' . "\n";
     $imported = 0;
     for ($i = 0; $i < count($data); $i++) {
         if (   $data[$i]['position'] == 0
@@ -1007,11 +1014,11 @@ if ($type == 1) {  // file uploaded
             if ($data[$i]['position'] == 1 && empty($data[$i]['importTaxa'])) {
                 $data[$i]['taxonID'] = $data[$i]['similarID'];
             } elseif (!empty($data[$i]['importTaxa']) && ($data[$i]['position'] == 1 || $data[$i]['position'] == 2)) {
-                $result = insertTaxon($data[$i]['importTaxa'], $_POST['externalID'], $data[$i]['contentid']);
+                $result = insertTaxon($data[$i]['importTaxa'], $_POST['externalID'], $data[$i]['contentid'], $_OPTIONS['staging_area']['ignore_no_genus']);
                 if (!$result['error']) {
                     $data[$i]['taxonID'] = $result['taxonID'];
                 } else {
-                    echo $result['error'] . "<br>\n";
+                    echo $data[$i]['importTaxa'] . ": " . $result['error'] . "<br>\n";
                     continue;  // abort the insertion of this taxon and the specimen because something went very wrong
                 }
             }
@@ -1082,7 +1089,8 @@ if ($type == 1) {  // file uploaded
             }
         }
     }
-    echo $imported . (($imported > 1) ? " entries have" : " entry has") . " been imported\n";
+    echo "</div>\n";
+    echo '<div id="import_success">' . $imported . (($imported > 1) ? " entries have" : " entry has") . " been imported </div>\n";
 }
 
 ?></form>
