@@ -196,7 +196,8 @@ function subTaxonItem($row) {
  * @param $lock
  * @return int the id of the created genus or 0 in case of an error
  */
-function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock = '')
+function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks,
+                     $lock = '', $external = 0, $externalID = NULL)
 {
     $sql = "INSERT INTO tbl_tax_genera SET
                          genus = " . quoteString($genus_name) . ",
@@ -207,7 +208,9 @@ function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_acce
                          accepted = " . (($is_accepted) ? "'1'" : "'0'") . ",
                          familyID = " . makeInt($familyID) . ",".
                          (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .  // FIXME:  fk_taxonID is not a column in the table
-                         " remarks = " . quoteString($remarks) . "
+                         "external = " . quoteString($external) . ",
+                         externalID = " . quoteString($externalID) . ",
+                         remarks = " . quoteString($remarks) . "
                          $lock";
     $result = db_query($sql);
     if ($result) {
