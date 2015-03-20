@@ -182,3 +182,39 @@ function subTaxonItem($row) {
 
   return $text;
 }
+
+/**
+ * @param $genus_name
+ * @param $authorID
+ * @param $dtid
+ * @param $dtzid
+ * @param $is_hybrid
+ * @param $is_accepted
+ * @param $familyID
+ * @param $taxonID
+ * @param $remarks
+ * @param $lock
+ * @return int the id of the created genus or 0 in case of an error
+ */
+function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock = '')
+{
+    $sql = "INSERT INTO tbl_tax_genera SET
+                         genus = " . quoteString($genus_name) . ",
+                         authorID = " . makeInt($authorID) . ",
+                         DallaTorreIDs = " . quoteString($dtid) . ",
+                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
+                         hybrid = " . (($is_hybrid) ? "'X'" : "NULL") . ",
+                         accepted = " . (($is_accepted) ? "'1'" : "'0'") . ",
+                         familyID = " . makeInt($familyID) . ",".
+                         (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .  // FIXME:  fk_taxonID is not a column in the table
+                         " remarks = " . quoteString($remarks) . "
+                         $lock";
+    $result = db_query($sql);
+    if ($result) {
+        $id = mysql_insert_id();
+        logGenera($id, 0);
+    } else {
+        $id = 0;
+    }
+    return $id;
+}

@@ -3,10 +3,11 @@ use herbarinput;
 
 
 --
--- adding a fk to the user to tbl_tax_species
+-- new incertae sedis family for the staging area
 --
-ALTER TABLE `tbl_tax_species`
-	ADD COLUMN `user_ID_fk` INT NULL DEFAULT NULL COMMENT 'foreignkey to herbarinput_log.tbl_herbardb_users' AFTER `API_taxID_fk`; 
+
+INSERT INTO `tbl_tax_families` (`familyID`, `family`, `authorID`, `categoryID`, `family_alt`, `locked`, `external`, `externalID`) VALUES (3449, 'incertae sedis', 0, 0, NULL, 1, 0, NULL);
+
 
 
 -- 

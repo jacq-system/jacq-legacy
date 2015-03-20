@@ -1,7 +1,11 @@
 <?php
-session_start();
+
+const INCERTAE_SEDIS_IMPORT = 3449
+
+;session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
+require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/jsonRPCClient.php');
 require_once('../inc/clsTaxonTokenizer.php');
 no_magic();
@@ -123,10 +127,13 @@ function splitTaxon($text)
  * @param string $taxon taxon to insert
  * @param integer $externalID external-ID, must be >0
  * @param integer $contentID primary ID of tbl_external_import_content
- * @param boolean $allow_new_genera whether inserting of new taxa without know genus is allowed
+ * @param boolean $insert_new_genera New taxa with a genus part which is not
+ *      yet in te database can be inserted if this option is turned ons. A
+ *      new genus entry flagged as external will be created. It will be associated
+ *      with a 'incertae sedis' family
  * @return array inserted "taxonID" or happened "error"
  */
-function insertTaxon($taxon, $externalID, $contentID, $allow_new_genera = FALSE)
+function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE)
 {
     $externalID = intval($externalID);
     $contentID  = intval($contentID);
@@ -143,17 +150,17 @@ function insertTaxon($taxon, $externalID, $contentID, $allow_new_genera = FALSE)
 
     $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($taxonParts['genus']));
     if (mysql_num_rows($result) == 0) {
-        if($allow_new_genera){
-          // add nevertheless
-          $genID = 0; // this the default value for that column in the db
+        if($insert_new_genera){
+            // add nevertheles
+            $genID = insertGenus($taxonParts['genus'], NULL, NULL, NULL, FALSE, TRUE, INCERTAE_SEDIS_IMPORT, NULL, NULL);
         } else {
-          // genus not found -> abort
-          $ret['error'] = 'genus not found';
-          return $ret;
+            // genus not found -> abort
+            $ret['error'] = 'genus not found';
+            return $ret;
         }
     } else {
-      $row = mysql_fetch_array($result);
-      $genID = $row['genID'];
+        $row = mysql_fetch_array($result);
+        $genID = $row['genID'];
     }
 
   // find or insert the epithet if present
