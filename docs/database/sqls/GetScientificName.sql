@@ -1,4 +1,8 @@
-CREATE DEFINER=`root`@`localhost` FUNCTION `GetScientificName`(`p_taxonID` INT(11), `p_bAvoidHybridFormula` TINYINT(1) UNSIGNED) RETURNS text CHARSET utf8
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost` 
+    FUNCTION `GetScientificName`( p_taxonID INT(11), `p_bAvoidHybridFormula` TINYINT(1) UNSIGNED) 
+   RETURNS text CHARSET utf8
     READS SQL DATA
     COMMENT 'legacy function for compatibility'
 BEGIN
@@ -40,7 +44,7 @@ BEGIN
     -- Check if a third parent exists
     IF( v_parent_3_ID != 0 )
     THEN
-    	SET v_ScientificNameString = CONCAT( v_ScientificNameString, " x ", _buildScientificName( v_parent_3_ID ) );
+      SET v_ScientificNameString = CONCAT( v_ScientificNameString, " x ", _buildScientificName( v_parent_3_ID ) );
     END IF;
 
   -- Non-Hybrid

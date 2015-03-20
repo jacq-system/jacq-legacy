@@ -1,3 +1,7 @@
+USE herbar_view
+
+DELIMITER $$
+
 CREATE DEFINER=`root`@`localhost` FUNCTION `_buildScientificName`(`p_taxonID` INT(11)) RETURNS text CHARSET utf8
     READS SQL DATA
 BEGIN
