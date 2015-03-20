@@ -28,6 +28,7 @@ if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';  //wird v
 if (!isset($_SESSION['siTyp'])) $_SESSION['siTyp'] = '';
 if (!isset($_SESSION['siType'])) $_SESSION['siType'] = 0;
 if (!isset($_SESSION['siImages'])) $_SESSION['siImages'] = '';
+if (!isset($_SESSION['siExternal'])) $_SESSION['siExternal'] = 0;
 if (!isset($_SESSION['siLinkList'])) $_SESSION['siLinkList'] = array();
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
@@ -94,6 +95,7 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     $_SESSION['siBemerkungen'] = $_POST['annotations'];
 
     $_SESSION['siTyp']    = (($_POST['typ']=="only") ? true : false);
+    $_SESSION['siExternal'] = $_POST['external'];
     $_SESSION['siImages'] = $_POST['images'];
 
     $_SESSION['siOrder'] = "genus, te.epithet, ta.author, "
@@ -345,20 +347,29 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b>Annotation:</b></td>
     <td><input type="text" name="annotations" value="<?php echoSpecial('siBemerkungen', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td colspan="2">
-    <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
-    <b>All records</b>
-    <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
-    <b>Type records only</b>
-  </td><td colspan="4" align="right">
-    <b>Images:</b>
-    <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
-    <b>Yes</b>
-    <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
-    <b>No</b>
-    <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
-    <b>All</b>
-  </td>
+    <td colspan="2">
+        <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
+        <b>All records</b>
+        <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
+        <b>Type records only</b>
+    </td>
+    <td colspan="2"  align="right">
+        <b>Taxon external:</b>
+        <select size="1" name="external">
+            <option value="-1" <?php if($_SESSION['siExternal'] == "-1") echo " selected"; ?>>&nbsp;</option>
+            <option value="0" <?php if($_SESSION['siExternal'] == "0") echo " selected"; ?>>none</option>
+            <option value="1" <?php if($_SESSION['siExternal'] == "1") echo " selected"; ?>>only</option>
+        </select>
+    </td>
+    <td colspan="2" align="right">
+        <b>Images:</b>
+        <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
+        <b>Yes</b>
+        <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
+        <b>No</b>
+        <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
+        <b>All</b>
+      </td>
 </tr><tr>
   <td colspan="2"><input class="button" type="submit" name="search" value=" search "></td>
   <td colspan="2" align="right">
@@ -482,6 +493,9 @@ if ($_SESSION['siType'] == 1) {
         $sql2 .= " AND si.digital_image != 0";
     } else if ($_SESSION['siImages'] == 'no') {
         $sql2 .= " AND si.digital_image = 0";
+    }
+    if ($_SESSION['siExternal'] > '-1') {
+        $sql2 .= " AND ts.external = " . $_SESSION['siExternal'];
     }
 
     $sql3 = " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001";
