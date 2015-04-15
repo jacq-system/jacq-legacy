@@ -12,10 +12,10 @@ function makeAuthor($search,$x,$y) {
   $pieces = explode(" <",$search);
   $results[] = "";
   if ($search && strlen($search)>1) {
-    $sql = "SELECT author, authorID, Brummit_Powell_full ".
-           "FROM tbl_tax_authors ".
-           "WHERE author LIKE '".mysql_escape_string($pieces[0])."%' ".
-           "ORDER BY author";
+    $sql = "SELECT author, authorID, Brummit_Powell_full
+            FROM tbl_tax_authors
+            WHERE author LIKE '" . mysql_escape_string($pieces[0]) . "%'
+            ORDER BY author";
     if ($result = db_query($sql)) {
       $cf->text($x,$y,"<b>".mysql_num_rows($result)." records found</b>");
       if (mysql_num_rows($result)>0) {
@@ -38,11 +38,11 @@ function makeFamily($search,$x,$y) {
   $pieces = explode(" ",$search);
   $results[] = "";
   if ($search && strlen($search)>1) {
-    $sql = "SELECT family, familyID, category ".
-           "FROM tbl_tax_families tf ".
-            "LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID ".
-           "WHERE family LIKE '".mysql_escape_string($pieces[0])."%' ".
-           "ORDER BY family";
+    $sql = "SELECT family, familyID, category
+            FROM tbl_tax_families tf
+             LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID
+            WHERE family LIKE '" . mysql_escape_string($pieces[0]) . "%'
+            ORDER BY family";
     if ($result = db_query($sql)) {
       $cf->text($x,$y,"<b>".mysql_num_rows($result)." records found</b>");
       if (mysql_num_rows($result)>0)
@@ -61,28 +61,28 @@ function makeTaxon2($search) {
   if ($search && strlen($search)>1) {
     $pieces = explode(chr(194).chr(183),$search);
     $pieces = explode(" ",$pieces[0]);
-    $sql = "SELECT taxonID, tg.genus, ".
-            "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-            "ta4.author author4, ta5.author author5, ".
-            "te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-            "te4.epithet epithet4, te5.epithet epithet5 ".
-           "FROM tbl_tax_species ts ".
-            "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-            "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-            "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-            "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-            "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-            "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-            "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-            "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-            "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-            "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-            "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-            "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-            "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-           "WHERE tg.genus LIKE '".mysql_escape_string($pieces[0])."%' ";
+    $sql = "SELECT taxonID, tg.genus,
+             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+             ta4.author author4, ta5.author author5,
+             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+             te4.epithet epithet4, te5.epithet epithet5
+            FROM tbl_tax_species ts
+             LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+             LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+             LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+            WHERE tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
     if ($pieces[1])
-      $sql .= "AND te.epithet LIKE '".mysql_escape_string($pieces[1])."%' ";
+      $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
     $sql .= "ORDER BY tg.genus, te.epithet, epithet1, epithet2, epithet3";
     if ($result = db_query($sql)) {
       if (mysql_num_rows($result)>0)
@@ -127,7 +127,7 @@ if ($_POST['submitUpdate'] && $_SESSION['acc']) {
   if (intval($_POST['genID'])) {
     // check if user has update rights for the old familyID
     $sql = "SELECT ac.update
-            FROM herbarinput_log.tbl_herbardb_access ac, tbl_tax_genera tg
+            FROM (herbarinput_log.tbl_herbardb_access ac, tbl_tax_genera tg)
              INNER JOIN tbl_tax_families tf USING (familyID)
             WHERE tg.genID='".intval($_POST['genID'])."'
              AND (ac.familyID=tf.familyID
@@ -158,43 +158,43 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x8)!=0) && !$blocked
   $dtzid = $_POST['DTZID'];
   $remarks = $_POST['remarks'];
   if (intval($_POST['genID'])) {
-    $sql = "UPDATE tbl_tax_genera SET ".
-            "genus='".mysql_escape_string($_POST['genus'])."', ".
-            "authorID=".extractID($_POST['author']).", ".
-            "DallaTorreIDs=".quoteString($dtid).", ".
-            "DallaTorreZusatzIDs=".quoteString($dtzid).", ".
-            "hybrid=".(($_POST['hybrid']) ? "'X'" : "NULL").", ".
-            "accepted=".(($_POST['accepted']) ? "'1'" : "'0'").", ".
-            "familyID=".extractID($_POST['family']).", ".
-            "fk_taxonID=".extractID($_POST['taxon']).", ".
-            "remarks=".quoteString($remarks)." ".
-           "WHERE genID=".intval($_POST['genID']);
+    $sql = "UPDATE tbl_tax_genera SET
+             genus='"              . mysql_escape_string($_POST['genus']) . "',
+             authorID="            . extractID($_POST['author']) . ",
+             DallaTorreIDs="       . quoteString($dtid) . ",
+             DallaTorreZusatzIDs=" . quoteString($dtzid) . ",
+             hybrid="              . (($_POST['hybrid']) ? "'X'" : "NULL") . ",
+             accepted="            . (($_POST['accepted']) ? "'1'" : "'0'") . ",
+             familyID="            . extractID($_POST['family']) . ",
+             fk_taxonID="          . extractID($_POST['taxon']) . ",
+             remarks="             . quoteString($remarks) . "
+            WHERE genID="          . intval($_POST['genID']);
     $updated = 1;
   } else {
-    $sql = "INSERT INTO tbl_tax_genera (genus, authorID, DallaTorreIDs, DallaTorreZusatzIDs, ".
-            "hybrid, accepted, familyID, fk_taxonID, remarks) ".
-           "VALUES ('".mysql_escape_string($_POST['genus'])."', ".
-            extractID($_POST['author']).", ".
-            quoteString($dtid).", ".
-            quoteString($dtzid).", ".
-            (($_POST['hybrid']) ? "'X'" : "NULL").", ".
-            (($_POST['accepted']) ? "'1'" : "'0'").", ".
-            extractID($_POST['family']).", ".
-            extractID($_POST['taxon']).", ".
-            quoteString($remarks).")";
+    $sql = "INSERT INTO tbl_tax_genera (genus, authorID, DallaTorreIDs, DallaTorreZusatzIDs,
+             hybrid, accepted, familyID, fk_taxonID, remarks)
+            VALUES ('" . mysql_escape_string($_POST['genus']) . "', "
+          . extractID($_POST['author']) . ", "
+          . quoteString($dtid) . ", "
+          . quoteString($dtzid) . ", "
+          . (($_POST['hybrid']) ? "'X'" : "NULL") . ", "
+          . (($_POST['accepted']) ? "'1'" : "'0'") . ", "
+          . extractID($_POST['family']) . ", "
+          . extractID($_POST['taxon']) . ", "
+          . quoteString($remarks) . ")";
     $updated = 0;
   }
   $result = db_query($sql);
   $id = ($_POST['genID']) ? intval($_POST['genID']) : mysql_insert_id();
   logGenera($id,$updated);
 
-  $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ".
-          "ta.author, tf.family, tsc.category ".
-         "FROM tbl_tax_genera tg ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=tg.authorID ".
-          "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-          "LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID ".
-         "WHERE genID='$id'";
+  $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
+          ta.author, tf.family, tsc.category
+          FROM tbl_tax_genera tg
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID=tg.authorID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
+           LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID
+          WHERE genID = '$id'";
   $result = db_query($sql);
   $row = mysql_fetch_array($result);
   $res = $row['genus']." ".$row['author']." ".$row['family']." ".$row['category']." ".
@@ -210,23 +210,22 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x8)!=0) && !$blocked
 }
 elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x4000)!=0) && !$blocked) {
   if (intval($_POST['genID'])) {
-    $sql = "UPDATE tbl_tax_genera SET ".
-            "DallaTorreIDs=".quoteString($_POST['DTID']).", ".
-            "DallaTorreZusatzIDs=".quoteString($_POST['DTZID']).", ".
-            "accepted=".(($_POST['accepted']) ? "'1'" : "'0'")." ".
-           "WHERE genID=".intval($_POST['genID']);
+    $sql = "UPDATE tbl_tax_genera SET
+             DallaTorreIDs=" . quoteString($_POST['DTID']) . ",
+             DallaTorreZusatzIDs=" . quoteString($_POST['DTZID']) . ",
+             accepted=" . (($_POST['accepted']) ? "'1'" : "'0'") . "
+            WHERE genID=" . intval($_POST['genID']);
     $result = db_query($sql);
     $id = intval($_POST['genID']);
     logGenera($id,1);
   }
 
-  $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ".
-          "ta.author, tf.family, tsc.category ".
-         "FROM tbl_tax_genera tg ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=tg.authorID ".
-          "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-          "LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID ".
-         "WHERE genID='$id'";
+  $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category
+          FROM tbl_tax_genera tg
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID = tg.authorID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+           LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
+          WHERE genID = '$id'";
   $result = db_query($sql);
   $row = mysql_fetch_array($result);
   $res = $row['genus']." ".$row['author']." ".$row['family']." ".$row['category']." ".
@@ -241,15 +240,15 @@ elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x4000)!=0) && !$
   }
 }
 elseif (extractID($_GET['sel'])!=="NULL") {
-  $sql = "SELECT tg.genID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ".
-          "tg.hybrid, tg.accepted, tg.fk_taxonID, tg.remarks, ".
-          "ta.author, ta.authorID, ta.Brummit_Powell_full, ".
-          "tf.family, tf.familyID, tsc.category ".
-         "FROM tbl_tax_genera tg ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=tg.authorID ".
-          "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-          "LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID ".
-         "WHERE genID=".extractID($_GET['sel']);
+  $sql = "SELECT tg.genID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
+           tg.hybrid, tg.accepted, tg.fk_taxonID, tg.remarks,
+           ta.author, ta.authorID, ta.Brummit_Powell_full,
+           tf.family, tf.familyID, tsc.category
+          FROM tbl_tax_genera tg
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID = tg.authorID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+           LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
+          WHERE genID = " . extractID($_GET['sel']);
   $result = db_query($sql);
   if (mysql_num_rows($result)>0) {
     $row = mysql_fetch_array($result);
@@ -264,26 +263,26 @@ elseif (extractID($_GET['sel'])!=="NULL") {
     if ($row['Brummit_Powell_full']) $p_author .= " [".strtr($row['Brummit_Powell_full'],"\r\n\xa0","   ")."]";
     $p_family   = $row['family']." ".$row['category']." <".$row['familyID'].">";
     if ($row['fk_taxonID']) {
-      $sql = "SELECT ts.taxonID, tg.genus, ".
-              "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-              "ta4.author author4, ta5.author author5, ".
-              "te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-              "te4.epithet epithet4, te5.epithet epithet5 ".
-             "FROM tbl_tax_species ts ".
-              "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-              "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-              "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-              "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-              "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-              "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-              "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-              "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-              "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-              "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-              "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-              "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-              "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-             "WHERE ts.taxonID='".mysql_escape_string($row['fk_taxonID'])."'";
+      $sql = "SELECT ts.taxonID, tg.genus,
+               ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+               ta4.author author4, ta5.author author5,
+               te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+               te4.epithet epithet4, te5.epithet epithet5
+              FROM tbl_tax_species ts
+               LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+               LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+               LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+               LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+               LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+               LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+               LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+               LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+               LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+               LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+               LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+               LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+               LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+              WHERE ts.taxonID = '" . mysql_escape_string($row['fk_taxonID']) . "'";
       $result2 = db_query($sql);
       $row2 = mysql_fetch_array($result2);
       $p_taxon  = taxon($row2);
@@ -324,15 +323,15 @@ echo "<input type=\"hidden\" name=\"genID\" value=\"$p_genID\">\n";
 $cf->label(8,0.5,"ID");
 $cf->text(8,0.5,"&nbsp;".(($p_genID)?$p_genID:"new"));
 if ($p_genID) {
-  $sql = "SELECT taxonID ".
-         "FROM tbl_tax_species ".
-         "WHERE speciesID IS NULL".
-         " AND subspeciesID IS NULL AND subspecies_authorID IS NULL".
-         " AND varietyID IS NULL AND variety_authorID IS NULL".
-         " AND subvarietyID IS NULL AND subvariety_authorID IS NULL".
-         " AND formaID IS NULL AND forma_authorID IS NULL".
-         " AND subformaID IS NULL AND subforma_authorID IS NULL".
-         " AND genID='".intval($p_genID)."'";
+  $sql = "SELECT taxonID
+          FROM tbl_tax_species
+          WHERE speciesID IS NULL
+           AND subspeciesID IS NULL AND subspecies_authorID IS NULL
+           AND varietyID IS NULL AND variety_authorID IS NULL
+           AND subvarietyID IS NULL AND subvariety_authorID IS NULL
+           AND formaID IS NULL AND forma_authorID IS NULL
+           AND subformaID IS NULL AND subforma_authorID IS NULL
+           AND genID = '" . intval($p_genID) . "'";
   $result = db_query($sql);
   $row = mysql_fetch_array($result);
   $cf->label(8,2,"edit Species","javascript:editSpecies('".$row['taxonID']."')");

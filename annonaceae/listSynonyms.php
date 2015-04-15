@@ -36,15 +36,15 @@ function taxonList($row) {
 }
 
 function protologList($taxon,$short=false) {
-  $sql ="SELECT paginae, figures, ".
-         "l.suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, ".
-         "l.vol, l.part, l.jahr ".
-        "FROM tbl_tax_index ti ".
-         "LEFT JOIN tbl_lit l ON l.citationID=ti.citationID ".
-         "LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID ".
-         "LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID ".
-         "LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID ".
-        "WHERE taxonID='".mysql_escape_string($taxon)."'";
+  $sql ="SELECT paginae, figures,
+          l.suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical,
+          l.vol, l.part, l.jahr
+         FROM tbl_tax_index ti
+          LEFT JOIN tbl_lit l ON l.citationID = ti.citationID
+          LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
+          LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
+          LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
+         WHERE taxonID = '" . mysql_escape_string($taxon) . "'";
   $result = db_query($sql);
   $display = "";
   if (mysql_num_rows($result)>0) {
@@ -65,11 +65,11 @@ function protologList($taxon,$short=false) {
 }
 
 function typusList($taxon,$sw) {
-  $sql ="SELECT Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplicates ".
-        "FROM tbl_tax_typecollections tt, tbl_collector c ".
-         "LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID=c2.Sammler_2ID ".
-        "WHERE tt.SammlerID=c.SammlerID ".
-         "AND taxonID='".mysql_escape_string($taxon)."'";
+  $sql ="SELECT Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplicates
+         FROM tbl_tax_typecollections tt, tbl_collector c
+          LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID = c2.Sammler_2ID
+         WHERE tt.SammlerID = c.SammlerID
+          AND taxonID = '" . mysql_escape_string($taxon) . "'";
   $result = db_query($sql);
   if (mysql_num_rows($result)>0) {
     while ($row=mysql_fetch_array($result)) {
@@ -137,27 +137,27 @@ if (!empty($row['synID'])) $id = $row['synID'];
 
 $order = " ORDER BY genus, epithet, author, epithet1, author1, epithet2, author2, epithet3, author3";
 
-$sql = "SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status, ".
-        "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-        "ta4.author author4, ta5.author author5, ".
-        "te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-        "te4.epithet epithet4, te5.epithet epithet5 ".
-       "FROM tbl_tax_species ts ".
-        "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-        "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-        "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-        "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-        "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-        "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-        "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-        "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-        "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-        "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-        "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-        "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-        "LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID ".
-        "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-       "WHERE taxonID='".mysql_escape_string($id)."'";
+$sql = "SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
+         ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+         ta4.author author4, ta5.author author5,
+         te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+         te4.epithet epithet4, te5.epithet epithet5
+        FROM tbl_tax_species ts
+         LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+         LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+         LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+         LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+         LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+         LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+         LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+         LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+         LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+         LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+         LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+         LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+         LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID
+         LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+        WHERE taxonID='".mysql_escape_string($id)."'";
 $result = db_query($sql);
 if (mysql_num_rows($result)>0) {
   $row = mysql_fetch_array($result);
@@ -172,27 +172,27 @@ if (mysql_num_rows($result)>0) {
   if (empty($row['synID']) && empty($row['basID'])) typusList($row['taxonID'],false);
 
   $tableStart = "<table cellspacing=\"0\" cellpadding=\"2\">";
-  $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status, ".
-          "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-          "ta4.author author4, ta5.author author5, ".
-          "te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-          "te4.epithet epithet4, te5.epithet epithet5 ".
-         "FROM tbl_tax_species ts ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-          "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-          "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-          "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-          "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-          "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-          "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-          "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-          "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-          "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-          "LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID ".
-          "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-         "WHERE synID='".mysql_escape_string($id)."' ";
+  $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status,
+           ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+           ta4.author author4, ta5.author author5,
+           te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+           te4.epithet epithet4, te5.epithet epithet5
+          FROM tbl_tax_species ts
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+           LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+           LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+           LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+           LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+           LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+           LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+           LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+           LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+           LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+           LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+           LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+           LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
+           LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+          WHERE synID = '" . mysql_escape_string($id) . "' ";
   if (empty($row['basID']))
     $result2 = db_query($sql."AND basID='".mysql_escape_string($id)."'");
   else
