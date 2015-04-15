@@ -220,17 +220,17 @@ for ($i=0,$a='A';$i<26;$i++,$a++)
 echo "</form>\n<p>\n";
 
 if ($_SESSION['taxType']==2) {
-  $sql = "SELECT tg.genID, tg.genus, tag.author auth_g, tf.family, ".
-          "tsc.cat_description category, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs ".
-         "FROM tbl_tax_genera tg ".
-          "LEFT JOIN tbl_tax_authors tag ON tag.authorID=tg.authorID ".
-          "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-          "LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID ".
-         "WHERE genus LIKE '".mysql_escape_string($_SESSION['taxGenus'])."%' ".
-          "AND family LIKE 'Annonaceae' ";
+  $sql = "SELECT tg.genID, tg.genus, tag.author auth_g, tf.family,
+           tsc.cat_description category, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs
+          FROM tbl_tax_genera tg
+           LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+           LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
+          WHERE genus LIKE '" . mysql_escape_string($_SESSION['taxGenus']) . "%'
+           AND family LIKE 'Annonaceae' ";
   if ($_SESSION['taxAuthor'])
-    $sql .= "AND tag.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ";
-  $sql .= "ORDER BY ".$_SESSION['taxOrder'];
+    $sql .= "AND tag.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ";
+  $sql .= "ORDER BY " . $_SESSION['taxOrder'];
   $result = db_query($sql);
   if (mysql_num_rows($result)>0) {
     echo "<table class=\"out\" cellspacing=\"0\">\n";
@@ -265,38 +265,38 @@ if ($_SESSION['taxType']==2) {
     echo "<b>nothing found!</b>\n";
 }
 else if ($_SESSION['taxType']==3) {
-  $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, ".
-          "ta.author author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-          "ta4.author author4, ta5.author author5, ".
-          "te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-          "te4.epithet epithet4, te5.epithet epithet5 ".
-         "FROM tbl_tax_species ts ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-          "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-          "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-          "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-          "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-          "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-          "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-          "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-          "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-          "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-          "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-          "LEFT JOIN tbl_tax_authors tag ON tag.authorID=tg.authorID ".
-          "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-         "WHERE te.epithet LIKE '".mysql_escape_string($_SESSION['taxSpecies'])."%' ".
-          "AND family LIKE 'Annonaceae' ";
+  $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family,
+           ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
+           ta4.author author4, ta5.author author5,
+           te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+           te4.epithet epithet4, te5.epithet epithet5
+          FROM tbl_tax_species ts
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+           LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+           LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+           LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+           LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+           LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+           LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+           LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+           LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+           LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+           LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+           LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+           LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+           LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+          WHERE te.epithet LIKE '" . mysql_escape_string($_SESSION['taxSpecies']) . "%'
+           AND family LIKE 'Annonaceae' ";
   if ($_SESSION['taxGenus'])
-    $sql .= "AND genus LIKE '".mysql_escape_string($_SESSION['taxGenus'])."%' ";
+    $sql .= "AND genus LIKE '" . mysql_escape_string($_SESSION['taxGenus']) . "%' ";
   if ($_SESSION['taxAuthor'])
-    $sql .= "AND (ta.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ".
-              "OR ta1.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ".
-              "OR ta2.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ".
-              "OR ta3.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ".
-              "OR ta4.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%' ".
-              "OR ta5.author LIKE '%".mysql_escape_string($_SESSION['taxAuthor'])."%') ";
+    $sql .= "AND (ta.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ".
+              "OR ta1.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ".
+              "OR ta2.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ".
+              "OR ta3.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ".
+              "OR ta4.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%' ".
+              "OR ta5.author LIKE '%" . mysql_escape_string($_SESSION['taxAuthor']) . "%') ";
   $sql .= "ORDER BY ".$_SESSION['taxOrder'];
   $result = db_query($sql);
   if (mysql_num_rows($result)>0) {
@@ -347,30 +347,30 @@ else if ($_SESSION['taxType']==3) {
     echo "<b>nothing found!</b>\n";
 }
 else if ($_SESSION['taxType']==4) {
-  $sql = "SELECT ts.taxonID, tg.genus, ".
-          "ta.author author, ta1.author author1, ta2.author author2, ta3.author author3, ".
-          "ta4.author author4, ta5.author author5, ".
-          "te.epithet epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, ".
-          "te4.epithet epithet4, te5.epithet epithet5, ".
-          "Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplicates ".
-         "FROM tbl_tax_species ts ".
-          "LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID ".
-          "LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID ".
-          "LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID ".
-          "LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID ".
-          "LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID ".
-          "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
-          "LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID ".
-          "LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID ".
-          "LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID ".
-          "LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID ".
-          "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
-          "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-           "LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID ".
-          "LEFT JOIN tbl_tax_typecollections tt ON tt.taxonID=ts.taxonID ".
-           "LEFT JOIN tbl_collector tc ON tc.SammlerID=tt.SammlerID ".
-           "LEFT JOIN tbl_collector_2 tc2 ON tc2.Sammler_2ID=tt.Sammler_2ID ";
+  $sql = "SELECT ts.taxonID, tg.genus,
+           ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
+           ta4.author author4, ta5.author author5,
+           te.epithet epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+           te4.epithet epithet4, te5.epithet epithet5,
+           Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplicates
+          FROM tbl_tax_species ts
+           LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+           LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+           LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+           LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+           LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+           LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+           LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+           LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+           LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+           LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+           LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+           LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+           LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+           LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+           LEFT JOIN tbl_tax_typecollections tt ON tt.taxonID = ts.taxonID
+           LEFT JOIN tbl_collector tc ON tc.SammlerID = tt.SammlerID
+           LEFT JOIN tbl_collector_2 tc2 ON tc2.Sammler_2ID = tt.Sammler_2ID ";
   $preSQL = "WHERE ";
   if ($_SESSION['taxDate']) {
     $sql .= $preSQL."tt.date LIKE '".mysql_escape_string($_SESSION['taxDate'])."%' ";
