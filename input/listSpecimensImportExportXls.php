@@ -138,6 +138,10 @@ function makeTypus($ID) {
 
     return $text;
 }
+// extend memory and timeout settings
+
+ini_set("memory_limit", "512M"); 
+set_time_limit(0);
 
 // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();
@@ -155,7 +159,7 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('I1', 'Collector')
         ->setCellValue('J1', 'Date')
         ->setCellValue('K1', 'Country')
-        ->setCellValue('L1', 'Admin1')
+        ->setCellValue('L1', 'Admin2')
         ->setCellValue('M1', 'Latitude')
         ->setCellValue('N1', 'Longitude')
         ->setCellValue('O1', 'Altitude lower')
