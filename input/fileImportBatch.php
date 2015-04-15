@@ -118,6 +118,9 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
             $errors++;
         } else {
             $herbNummer = substr($val, strlen($coll_short_prj));  // strip coll_short_prj at the beginning
+            if ($coll_short_prj == 'W' && strlen($herbNummer) == 12) {
+                $herbNummer = substr($herbNummer, 0, 4) . '-' . substr($herbNummer, 4);
+            }
             $result = db_query("SELECT s.specimen_ID
                                 FROM tbl_specimens s, tbl_management_collections mc
                                 WHERE s.collectionID = mc.collectionID
