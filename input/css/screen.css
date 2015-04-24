@@ -53,3 +53,5 @@ div.cssf_input_autocomplete ul li.selected { color:HighlightText; background-col
 
 a.iBox { color:blue; }
 a.iBox:hover { color:red; }
+
+.error { background-color:red; }

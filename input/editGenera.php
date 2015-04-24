@@ -77,6 +77,8 @@ $blocked = false;
 /**
  * Update-Button was clicked
  */
+
+
 if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
     if (checkRight('use_access')) {
         if (intval($_POST['genID'])) {
@@ -140,24 +142,10 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                     logGenera($id,1);
                 }
             } else {
-                $sql = "INSERT INTO tbl_tax_genera SET
-                         genus = ".quoteString($_POST['genus']).",
-                         authorID = ".makeInt($authorID).",
-                         DallaTorreIDs = ".quoteString($dtid).",
-                         DallaTorreZusatzIDs = ".quoteString($dtzid).",
-                         hybrid = ".(($_POST['hybrid']) ? "'X'" : "NULL").",
-                         accepted = ".(($_POST['accepted']) ? "'1'" : "'0'").",
-                         familyID = ".makeInt($familyID).",
-                         fk_taxonID = ".makeInt($taxonID).",
-                         remarks = ".quoteString($remarks)."
-                         $lock";
-                $result = db_query($sql);
-                if ($result) {
-                    $id = mysql_insert_id();
-                    logGenera($id,0);
-                } else {
-                    $id = 0;
-                }
+                $genus_name = $_POST['genus'];
+                $is_hybrid = $_POST['hybrid'];
+                $is_accepted = $_POST['accepted'];
+                $id = insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock);
             }
 
             $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category

@@ -28,6 +28,7 @@ if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';  //wird v
 if (!isset($_SESSION['siTyp'])) $_SESSION['siTyp'] = '';
 if (!isset($_SESSION['siType'])) $_SESSION['siType'] = 0;
 if (!isset($_SESSION['siImages'])) $_SESSION['siImages'] = '';
+if (!isset($_SESSION['siExternal'])) $_SESSION['siExternal'] = 0;
 if (!isset($_SESSION['siLinkList'])) $_SESSION['siLinkList'] = array();
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
@@ -94,6 +95,7 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     $_SESSION['siBemerkungen'] = $_POST['annotations'];
 
     $_SESSION['siTyp']    = (($_POST['typ']=="only") ? true : false);
+    $_SESSION['siExternal'] = $_POST['external'];
     $_SESSION['siImages'] = $_POST['images'];
 
     $_SESSION['siOrder'] = "genus, te.epithet, ta.author, "
@@ -141,6 +143,30 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     if ($_SESSION['siOrTyp'] < 0) $_SESSION['siOrder'] = implode(" DESC, ", explode(", ", $_SESSION['siOrder'])) . " DESC";
 }
 
+if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] && is_array($_POST['specimen_ID'])){
+    if($_POST['action'] == 'add') {
+        $values = array();
+        foreach( $_POST['specimen_ID'] as $id=>$op){
+            if($op == 'op'){
+                $values[] = '(' . $id . ', ' . $_POST['user_ID'] . ')';
+            }
+        }
+        $sql = "INSERT INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
+        $result = db_query($sql);
+    }
+    if($_POST['action'] == 'remove') {
+        $values = array();
+        foreach( $_POST['specimen_ID'] as $id=>$op){
+            if($op == 'op'){
+                $values[] = '( specimen_ID = ' . $id . ' AND user_ID = ' . $_POST['user_ID'] . ')';
+            }
+        }
+        $sql = "DELETE FROM tbl_specimens_import_users WHERE " . implode('OR ', $values) . " ;";
+        $result = db_query($sql);
+    }
+}
+
+
 function makeDropdownInstitution()
 {
     echo "<select size=\"1\" name=\"collection\">\n";
@@ -170,6 +196,20 @@ function makeDropdownCollection()
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
     }
 
+    echo "  </select>\n";
+}
+
+function makeDropdownUsers()
+{
+    echo "<select size=\"1\" name=\"user_ID\">\n";
+    echo "  <option value=\"0\"></option>\n";
+
+    $sql = "SELECT userID, username FROM herbarinput_log.tbl_herbardb_users ORDER BY username";
+    $result = db_query($sql);
+    while ($row = mysql_fetch_array($result)) {
+        echo "  <option value=\"" . $row['userID'] . "\"".
+            ">" . htmlspecialchars($row['username']) . "</option>\n";
+    }
     echo "  </select>\n";
 }
 
@@ -236,6 +276,24 @@ function getImportEntries($checked)
     return mysql_num_rows($result);
 }
 
+/**
+ * @param $specimen_ID
+ * @return array
+ *     An associative array of userID as key and username as value
+ */
+function listEditors($specimen_ID){
+    $editors = array();
+    $sql = "SELECT u.userID, u.username FROM  tbl_specimens_import as si
+      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+      LEFT JOIN herbarinput_log.tbl_herbardb_users as u ON si_u.user_ID = u.userID
+      WHERE si_u.user_ID IS NOT NULL AND si.specimen_ID = " . $specimen_ID . " ;";
+    $result = mysql_query($sql);
+    while ($row=mysql_fetch_array($result)) {
+        $editors[$row['userID']] = $row['username'];
+    }
+    return $editors;
+}
+
 
 if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && $_POST['specimen']) {
     $location = "Location: editSpecimensImport.php?sel=<" . $_POST['specimen'] . ">";
@@ -256,6 +314,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
@@ -345,20 +404,29 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b>Annotation:</b></td>
     <td><input type="text" name="annotations" value="<?php echoSpecial('siBemerkungen', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td colspan="2">
-    <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
-    <b>All records</b>
-    <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
-    <b>Type records only</b>
-  </td><td colspan="4" align="right">
-    <b>Images:</b>
-    <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
-    <b>Yes</b>
-    <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
-    <b>No</b>
-    <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
-    <b>All</b>
-  </td>
+    <td colspan="2">
+        <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
+        <b>All records</b>
+        <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
+        <b>Type records only</b>
+    </td>
+    <td colspan="2"  align="right">
+        <b>Taxon external:</b>
+        <select size="1" name="external">
+            <option value="-1" <?php if($_SESSION['siExternal'] == "-1") echo " selected"; ?>>&nbsp;</option>
+            <option value="0" <?php if($_SESSION['siExternal'] == "0") echo " selected"; ?>>none</option>
+            <option value="1" <?php if($_SESSION['siExternal'] == "1") echo " selected"; ?>>only</option>
+        </select>
+    </td>
+    <td colspan="2" align="right">
+        <b>Images:</b>
+        <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
+        <b>Yes</b>
+        <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
+        <b>No</b>
+        <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
+        <b>All</b>
+      </td>
 </tr><tr>
   <td colspan="2"><input class="button" type="submit" name="search" value=" search "></td>
   <td colspan="2" align="right">
@@ -376,6 +444,18 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 
 <hr>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
+    <div style="text-align:right;">
+        <b>Add/Remove Editor: </b>
+        <?php
+        makeDropdownUsers();
+        ?>
+        <select size="1" name="action">
+            <option value="0"></option>
+            <option value="add">add</option>
+            <option value="remove">remove</option>
+        </select>
+        <input class="button" type="submit" name="editors_action_do" value="editors_action_do" />
+    </div>
 <?php
 if ($_SESSION['siType'] == 1) {
     $sql = "SELECT si.specimen_ID, tg.genus, si.digital_image,
@@ -387,7 +467,7 @@ if ($_SESSION['siType'] == 1) {
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
+             te4.epithet epithet4, te5.epithet epithet5, si.userID, hu.username
             FROM (tbl_specimens_import si, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc)
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = si.seriesID
              LEFT JOIN tbl_typi t ON t.typusID = si.typusID
@@ -408,11 +488,12 @@ if ($_SESSION['siType'] == 1) {
              LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+             LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON si.userID = hu.userID
             WHERE ts.taxonID = si.taxonID
              AND tg.genID = ts.genID
              AND tf.familyID = tg.familyID
              AND mc.collectionID = si.collectionID
-             AND userID='" . $_SESSION['uid'] . "'";
+             AND si.userID='" . $_SESSION['uid'] . "'";
     $sql2 = "";
     if (trim($_SESSION['siTaxon'])) {
         $pieces = explode(" ", trim($_SESSION['siTaxon']));
@@ -483,6 +564,9 @@ if ($_SESSION['siType'] == 1) {
     } else if ($_SESSION['siImages'] == 'no') {
         $sql2 .= " AND si.digital_image = 0";
     }
+    if ($_SESSION['siExternal'] > '-1') {
+        $sql2 .= " AND ts.external = " . $_SESSION['siExternal'];
+    }
 
     $sql3 = " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001";
 
@@ -504,6 +588,9 @@ if ($_SESSION['siType'] == 1) {
            . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['siOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
            . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['siOrTyp'], 5) . "</th>";
+        echo "<th class=\"out\">Owner</th>";
+        echo "<th class=\"out\">Editors</th>";
+        echo "<th class=\"out\"><input id=\"check_all\" type=\"checkbox\" name=\"check_all\" value=\"op\" /></th>";
         echo "</tr>\n";
         $nr = 1;
         while ($row = mysql_fetch_array($result)) {
@@ -541,6 +628,7 @@ if ($_SESSION['siType'] == 1) {
                 $textLatLon = "<td class=\"out\"></td>";
             }
 
+            $editors = listEditors($row['specimen_ID']);
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out\">"
@@ -552,7 +640,10 @@ if ($_SESSION['siType'] == 1) {
                . "<td class=\"out\">".locationItem($row)."</td>"
                . "<td class=\"out\">".htmlspecialchars($row['typus_lat'])."</td>"
                . "<td class=\"outCenter\" title=\"".htmlspecialchars($row['collection'])."\">"
-               .  htmlspecialchars($row['coll_short'])." ".htmlspecialchars($row['HerbNummer'])."</td>";
+               .  htmlspecialchars($row['coll_short'])." ".htmlspecialchars($row['HerbNummer'])."</td>"
+               . "<td class=\"out\">" . $row['username'] . " &lt;" . $row['userID'] . "&gt;</td>"
+               . "<td class=\"out\">" . implode(',', $editors) . "</td>"
+               . "<td class=\"out\"><input class=\"specimen_ID\" type=\"checkbox\" name=\"specimen_ID[".$row['specimen_ID']."]\" value=\"op\" /></td>";
             echo "</tr>\n";
             $nr++;
         }
@@ -565,6 +656,14 @@ if ($_SESSION['siType'] == 1) {
 }
 ?>
 </form>
+<script type="application/javascript"  language="JavaScript">
+
+    $( document ).ready(function() {
+        $('#check_all').change(function(e){
+            $('input.specimen_ID').attr('checked', $(e.target).attr('checked'));
+        });
+    });
+</script>
 
 </body>
 </html>
