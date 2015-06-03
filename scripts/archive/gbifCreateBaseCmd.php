@@ -143,7 +143,9 @@ $tbls = array(array('name' => "tbl_prj_gbif_pilot_wu",   'source_id' =>  '1'),
               array('name' => "tbl_prj_gbif_pilot_mjg",  'source_id' => '22'),
               array('name' => "tbl_prj_gbif_pilot_lz",   'source_id' => '32'),
               array('name' => "tbl_prj_gbif_pilot_b",    'source_id' => '29'),
-              array('name' => "tbl_prj_gbif_pilot_brnu", 'source_id' => '30')
+              array('name' => "tbl_prj_gbif_pilot_brnu", 'source_id' => '30'),
+              array('name' => "tbl_prj_gbif_pilot_lagu", 'source_id' => '27'),
+              array('name' => "tbl_prj_gbif_pilot_tbi",  'source_id' => '48')
              );
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
