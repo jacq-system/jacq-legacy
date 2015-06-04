@@ -40,7 +40,9 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                      'W_Sec', 'Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_E', 'E_Min', 'E_Sec',
                      'quadrant', 'quadrant_sub', 'exactness', 'altitude_min', 'altitude_max', 'Fundort', 'Fundort_engl',
                      'habitat', 'habitus', 'Bemerkungen', 'digital_image', 'digital_image_obs', 'garten', 'voucherID');
-    $result = db_query("SELECT * FROM tbl_specimens_import WHERE checked > 0 AND userID = '" . intval($_SESSION['uid']) . "'");
+    $result = db_query("SELECT * FROM tbl_specimens_import as si
+        LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+        WHERE checked > 0 AND " . user_where_clause());
     while ($row = mysql_fetch_array($result)) {
         $sql = "SELECT specimen_ID FROM tbl_specimens WHERE 1 = 1";
         foreach ($columns as $column) {
@@ -65,14 +67,17 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                        pending = 0
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND pending = 1");
-            db_query("DELETE FROM tbl_specimens_import
+            db_query("DELETE  si, si_u FROM tbl_specimens_import as si
+                      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND checked > 0
-                       AND userID = '" . intval($_SESSION['uid']) . "'");
+                       AND " . user_where_clause());
         }
     }
 } elseif (isset($_POST['deleteNow']) && $_POST['deleteNow']) {
-    db_query("DELETE FROM tbl_specimens_import WHERE checked = 0 AND userID = '" . intval($_SESSION['uid']) . "'");
+    db_query("DELETE si, si_u FROM tbl_specimens_import as si
+      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+      WHERE checked = 0 AND " . user_where_clause());
 }
 
 if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['deleteNow'])) {
@@ -267,13 +272,45 @@ function collectionItem($coll)
 
 function getImportEntries($checked)
 {
-    $sql = "SELECT specimen_ID
-            FROM tbl_specimens_import
-            WHERE userID = '" . intval($_SESSION['uid']) . "'
-             AND " . (($checked) ? "checked > 0" : "checked = 0");
+    $sql = "SELECT si.specimen_ID
+            FROM tbl_specimens_import as si
+            LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+            WHERE ". user_where_clause() .
+            " AND " . (($checked) ? "checked > 0" : "checked = 0");
     $result = db_query($sql);
 
     return mysql_num_rows($result);
+}
+
+/**
+ * Creates the where clause to find specimens which of which the
+ * currently logged in use is the owner. In case the stagin area
+ * in enabled also users which are editor of the speciemen are
+ * also taken into account.
+ *
+ * This function expects that the tbl_specimens_import_users is joined
+ * to the tbl_specimens_import table whereas si is used as alias for
+ * tbl_specimens_import:
+ *
+ * LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+ *
+ * @param boolean $limit_to_own
+ *    The users that are editors are always ignored if this is TRUE
+ *    independently of of whether the staging area is enabled or not
+ *
+ * @return string
+ *   returns the where clause
+ */
+function user_where_clause($limit_to_own = FALSE){
+  global $_OPTIONS;
+
+  $where = "(si.userID='" . intval($_SESSION['uid']) . "'";
+  if(!$limit_to_own && $_OPTIONS['staging_area']['enabled'] === true){
+    $where .= " OR si_u.user_ID='" . intval($_SESSION['uid']) . "')";
+  } else {
+    $where .= ")";
+  }
+  return $where;
 }
 
 /**
@@ -489,11 +526,12 @@ if ($_SESSION['siType'] == 1) {
              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON si.userID = hu.userID
+             LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
             WHERE ts.taxonID = si.taxonID
              AND tg.genID = ts.genID
              AND tf.familyID = tg.familyID
              AND mc.collectionID = si.collectionID
-             AND si.userID='" . $_SESSION['uid'] . "'";
+             AND " . user_where_clause();
     $sql2 = "";
     if (trim($_SESSION['siTaxon'])) {
         $pieces = explode(" ", trim($_SESSION['siTaxon']));
