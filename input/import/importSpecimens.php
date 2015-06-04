@@ -1013,6 +1013,9 @@ if ($type == 1) {  // file uploaded
     echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
     echo '<div id="import_errors" class="error">' . "\n";
     $imported = 0;
+    // $imported_taxa: an associative array to remember taxa that have been imported already
+    //      key = taxon name string, value = taxonID in db
+    $imported_taxa = array();
     for ($i = 0; $i < count($data); $i++) {
         if (   $data[$i]['position'] == 0
             || ($data[$i]['position'] == 1 && !empty($data[$i]['similarID']))
@@ -1021,12 +1024,19 @@ if ($type == 1) {  // file uploaded
             if ($data[$i]['position'] == 1 && empty($data[$i]['importTaxa'])) {
                 $data[$i]['taxonID'] = $data[$i]['similarID'];
             } elseif (!empty($data[$i]['importTaxa']) && ($data[$i]['position'] == 1 || $data[$i]['position'] == 2)) {
-                $result = insertTaxon($data[$i]['importTaxa'], $_POST['externalID'], $data[$i]['contentid'], $_OPTIONS['staging_area']['ignore_no_genus']);
-                if (!$result['error']) {
+                // this taxon was not yet in the db on CheckImport
+                if(!array_key_exists($data[$i]['importTaxa'], $imported_taxa)) {
+                  $result = insertTaxon($data[$i]['importTaxa'], $_POST['externalID'], $data[$i]['contentid'], $_OPTIONS['staging_area']['ignore_no_genus']);
+                  if (!$result['error']) {
                     $data[$i]['taxonID'] = $result['taxonID'];
-                } else {
+                    $imported_taxa[$data[$i]['importTaxa']] = $result['taxonID'];
+                  }
+                  else {
                     echo $data[$i]['importTaxa'] . ": " . $result['error'] . "<br>\n";
                     continue;  // abort the insertion of this taxon and the specimen because something went very wrong
+                  }
+                } else {
+                  $data[$i]['taxonID'] = $imported_taxa[$data[$i]['importTaxa']];
                 }
             }
             $sql = "SELECT specimen_ID FROM tbl_specimens_import WHERE 1 = 1";
