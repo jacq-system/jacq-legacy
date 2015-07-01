@@ -134,17 +134,18 @@ $dbLink2->query("INSERT INTO $dbt.metadb
                           disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
                    FROM metadb");
 $tbls = array(array('name' => "tbl_prj_gbif_pilot_wu",   'source_id' =>  '1'),
-              array('name' => "tbl_prj_gbif_pilot_w",    'source_id' =>  '6'),
               array('name' => "tbl_prj_gbif_pilot_gzu",  'source_id' =>  '4'),
               array('name' => "tbl_prj_gbif_pilot_gjo",  'source_id' =>  '5'),
+              array('name' => "tbl_prj_gbif_pilot_w",    'source_id' =>  '6'),
               array('name' => "tbl_prj_gbif_pilot_je",   'source_id' => '12'),
               array('name' => "tbl_prj_gbif_pilot_hal",  'source_id' => '15'),
               array('name' => "tbl_prj_gbif_pilot_tgu",  'source_id' => '18'),
               array('name' => "tbl_prj_gbif_pilot_mjg",  'source_id' => '22'),
-              array('name' => "tbl_prj_gbif_pilot_lz",   'source_id' => '32'),
+              array('name' => "tbl_prj_gbif_pilot_lagu", 'source_id' => '27'),
               array('name' => "tbl_prj_gbif_pilot_b",    'source_id' => '29'),
               array('name' => "tbl_prj_gbif_pilot_brnu", 'source_id' => '30'),
-              array('name' => "tbl_prj_gbif_pilot_lagu", 'source_id' => '27'),
+              array('name' => "tbl_prj_gbif_pilot_lz",   'source_id' => '32'),
+              array('name' => "tbl_prj_gbif_pilot_gat",  'source_id' => '37'),
               array('name' => "tbl_prj_gbif_pilot_tbi",  'source_id' => '48')
              );
 foreach ($tbls as $tbl) {
