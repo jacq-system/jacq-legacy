@@ -122,7 +122,7 @@ function splitTaxon($text)
 
 /**
  * inserts a new taxon into tbl_tax_species if the genus already exists
- * inserts all neccessary epithets and authors into the apropriate tables
+ * inserts all necessary epithets and authors into the appropriate tables
  *
  * @param string $taxon taxon to insert
  * @param integer $externalID external-ID, must be >0
@@ -141,7 +141,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
     $ret = array('error' => '');
 
     if ($externalID == 0) {  // external-ID = 0 is not allowed
-        $ret['error'] = 'illegal externalID';
+        $ret['error'] = 'Import of this new taxon has been skipped, you need to choose an externalID in the "Import Specimens" dialog first';
         return $ret;
     }
 
