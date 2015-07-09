@@ -495,7 +495,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     </div>
 <?php
 if ($_SESSION['siType'] == 1) {
-    $sql = "SELECT si.specimen_ID, tg.genus, si.digital_image,
+    $sql = "SELECT distinct si.specimen_ID, tg.genus, si.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, si.series_number,
              si.Nummer, si.alt_number, si.Datum, si.HerbNummer,
              n.nation_engl, p.provinz, si.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
