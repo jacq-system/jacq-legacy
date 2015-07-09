@@ -55,3 +55,5 @@ a.iBox { color:blue; }
 a.iBox:hover { color:red; }
 
 .error { background-color:red; }
+
+.taxon_external a {color: darkorange;}

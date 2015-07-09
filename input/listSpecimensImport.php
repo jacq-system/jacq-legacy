@@ -504,7 +504,7 @@ if ($_SESSION['siType'] == 1) {
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5, si.userID, hu.username
+             te4.epithet epithet4, te5.epithet epithet5, si.userID, hu.username, ts.external taxon_external
             FROM (tbl_specimens_import si, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc)
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = si.seriesID
              LEFT JOIN tbl_typi t ON t.typusID = si.typusID
@@ -666,10 +666,13 @@ if ($_SESSION['siType'] == 1) {
                 $textLatLon = "<td class=\"out\"></td>";
             }
 
+
+            $taxon_class_attribute = $row['taxon_external'] ? " taxon_external": "";
+
             $editors = listEditors($row['specimen_ID']);
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                . "<td class=\"out\">$digitalImage</td>"
-               . "<td class=\"out\">"
+               . "<td class=\"out$taxon_class_attribute\" title=\"$taxon_class_attribute\">"
                .  "<a href=\"editSpecimensImport.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=0\">"
                .  htmlspecialchars(taxonItem($row))."</a></td>"
                . "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>"
