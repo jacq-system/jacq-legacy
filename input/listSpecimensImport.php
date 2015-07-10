@@ -1,6 +1,7 @@
 <?php
 session_start();
 require("inc/connect.php");
+require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
@@ -147,7 +148,7 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     }
     if ($_SESSION['siOrTyp'] < 0) $_SESSION['siOrder'] = implode(" DESC, ", explode(", ", $_SESSION['siOrder'])) . " DESC";
 }
-
+/* ----------------- Editor actions ----------------- */
 if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] && is_array($_POST['specimen_ID'])){
     if($_POST['action'] == 'add') {
         $values = array();
@@ -169,6 +170,18 @@ if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] &
         $sql = "DELETE FROM tbl_specimens_import_users WHERE " . implode('OR ', $values) . " ;";
         $result = db_query($sql);
     }
+}
+
+/* ----------------- Taxon actions ----------------- */
+if(isset($_POST['taxon_action_do']) && is_numeric($_POST['taxonIndex']) && is_array($_POST['specimen_ID'])){
+  $sp_ids = array();
+  foreach( $_POST['specimen_ID'] as $id=>$op){
+    if($op == 'op'){
+      $sp_ids[] = $id;
+    }
+    $sql = "UPDATE tbl_specimens_import SET taxonID=" . $_POST['taxonIndex'] . " WHERE specimen_ID in (" . join(',', $sp_ids) . ") ;";
+    $result = db_query($sql);
+  }
 }
 
 
@@ -346,12 +359,35 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <title>herbardb - list Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <style type="text/css">
     body { background-color: #008080 }
+
+    /**************************************
+     *  styling for the autocompleter
+     */
+    .ui-autocomplete {
+      font-size: 0.9em;  /* smaller size */
+      max-height: 200px;
+      overflow-y: auto;
+      /* prevent horizontal scrollbar */
+      overflow-x: hidden;
+      /* add padding to account for vertical scrollbar */
+      padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+      height: 200px;
+    }
+    /***************************************/
+
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
@@ -479,22 +515,32 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </table>
 </form>
 
-<hr>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
-    <div style="text-align:right;">
-        <b>Add/Remove Editor: </b>
-        <?php
-        makeDropdownUsers();
-        ?>
-        <select size="1" name="action">
-            <option value="0"></option>
-            <option value="add">add</option>
-            <option value="remove">remove</option>
-        </select>
-        <input class="button" type="submit" name="editors_action_do" value="editors_action_do" />
-    </div>
-<?php
-if ($_SESSION['siType'] == 1) {
+  <hr />
+  <div class="clearfix" style="text-align:right;">
+    <b>Add/Remove Editor: </b>
+    <?php
+    makeDropdownUsers();
+    ?>
+    <select size="1" name="action">
+      <option value="0"></option>
+      <option value="add">add</option>
+      <option value="remove">remove</option>
+    </select>
+    <button type="submit" name="editors_action_do" value="1" >Apply to checked entries</button>
+  </div>
+  <hr />
+  <div style="text-align:right;">
+    <b>Assign Taxon:</b>
+    <?php
+      $cf = new CSSF();
+      $cf->inputJqAutocomplete(NULL, NULL, 50, "taxon", NULL, NULL, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '', "", FALSE, FALSE, "display_inline");
+    ?>
+    <button type="submit" name="taxon_action_do" value="1" >Apply to checked entries</button>
+  </div>
+  <hr />
+  <?php
+  if ($_SESSION['siType'] == 1) {
     $sql = "SELECT distinct si.specimen_ID, tg.genus, si.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, si.series_number,
              si.Nummer, si.alt_number, si.Datum, si.HerbNummer,
