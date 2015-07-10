@@ -140,7 +140,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
 
     $ret = array('error' => '');
 
-    if ($externalID == 0) {  // external-ID = 0 is not allowed
+    if ($externalID == 0) {  // external-ID = 0 is not allowed since this is the value of the empty default
         $ret['error'] = 'Import of this new taxon has been skipped, you need to choose an externalID in the "Import Specimens" dialog first';
         return $ret;
     }
@@ -1012,31 +1012,37 @@ if ($type == 1) {  // file uploaded
 } elseif ($type ==2) {  // insert data
     echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
     echo '<div id="import_errors" class="error">' . "\n";
+
+    $autocomplete = clsAutocomplete::Load();
+
     $imported = 0;
-    // $imported_taxa: an associative array to remember taxa that have been imported already
-    //      key = taxon name string, value = taxonID in db
-    $imported_taxa = array();
     for ($i = 0; $i < count($data); $i++) {
         if (   $data[$i]['position'] == 0
             || ($data[$i]['position'] == 1 && !empty($data[$i]['similarID']))
             || (!empty($data[$i]['importTaxa']) && ($data[$i]['position'] == 1 || $data[$i]['position'] == 2))) {
 
-            if ($data[$i]['position'] == 1 && empty($data[$i]['importTaxa'])) {
+          if ($data[$i]['position'] == 1 && empty($data[$i]['importTaxa'])) {
                 $data[$i]['taxonID'] = $data[$i]['similarID'];
             } elseif (!empty($data[$i]['importTaxa']) && ($data[$i]['position'] == 1 || $data[$i]['position'] == 2)) {
                 // this taxon was not yet in the db on CheckImport
-                if(!array_key_exists($data[$i]['importTaxa'], $imported_taxa)) {
+                // check again if taxon name is not existing in database
+                $results = $autocomplete->taxonWithHybrids(array('exact' => $data[$i]['importTaxa']));
+                if(count($results) > 1){
+                  echo "WARNING: " . count($results) . " identical entries of the same taxon name found in database: "
+                    . $data[$i]['importTaxa'] . " - import of specimen skipped<br>\n";
+                  continue;
+                } else
+                if(count($results) == 0) {
                   $result = insertTaxon($data[$i]['importTaxa'], $_POST['externalID'], $data[$i]['contentid'], $_OPTIONS['staging_area']['ignore_no_genus']);
                   if (!$result['error']) {
                     $data[$i]['taxonID'] = $result['taxonID'];
-                    $imported_taxa[$data[$i]['importTaxa']] = $result['taxonID'];
                   }
                   else {
                     echo $data[$i]['importTaxa'] . ": " . $result['error'] . "<br>\n";
                     continue;  // abort the insertion of this taxon and the specimen because something went very wrong
                   }
                 } else {
-                  $data[$i]['taxonID'] = $imported_taxa[$data[$i]['importTaxa']];
+                  $data[$i]['taxonID'] = $results[0]['id'];
                 }
             }
             $sql = "SELECT specimen_ID FROM tbl_specimens_import WHERE 1 = 1";
