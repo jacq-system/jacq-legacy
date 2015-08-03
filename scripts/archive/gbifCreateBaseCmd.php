@@ -1,10 +1,6 @@
 #!/usr/bin/php -q
 <?php
-$host = "localhost";        // hostname
-$user = "gbif";             // username
-$pass = "gbif";             // password
-$db   = "herbarinput";      // source database
-$dbt  = "gbif_pilot_tst";   // target database   fldiue77w
+include './inc/variables.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -115,48 +111,21 @@ function makeHybrid($dbLink, $taxonID)
 
 $dbLink2->query("TRUNCATE $dbt.meta");
 $dbLink2->query("INSERT INTO $dbt.meta
-                         (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry,
-                          source_number_of_records, source_abbr_engl)
-                   SELECT source_id, source_code, source_name, source_update, source_version, source_url, source_expiry,
-                          source_number_of_records, source_abbr_engl
+                         (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl)
+                   SELECT source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl
                    FROM meta");
 $dbLink2->query("TRUNCATE $dbt.metadb");
 $dbLink2->query("INSERT INTO $dbt.metadb
-                         (db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code,
-                          supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email,
-                          legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress,
-                          legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description,
-                          disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url)
-                   SELECT db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code,
-                          supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email,
-                          legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress,
-                          legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description,
-                          disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
+                         (db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url)
+                   SELECT db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
                    FROM metadb");
-$tbls = array(array('name' => "tbl_prj_gbif_pilot_wu",   'source_id' =>  '1'),
-              array('name' => "tbl_prj_gbif_pilot_w",    'source_id' =>  '6'),
-              array('name' => "tbl_prj_gbif_pilot_gzu",  'source_id' =>  '4'),
-              array('name' => "tbl_prj_gbif_pilot_gjo",  'source_id' =>  '5'),
-              array('name' => "tbl_prj_gbif_pilot_je",   'source_id' => '12'),
-              array('name' => "tbl_prj_gbif_pilot_hal",  'source_id' => '15'),
-              array('name' => "tbl_prj_gbif_pilot_tgu",  'source_id' => '18'),
-              array('name' => "tbl_prj_gbif_pilot_mjg",  'source_id' => '22'),
-              array('name' => "tbl_prj_gbif_pilot_lz",   'source_id' => '32'),
-              array('name' => "tbl_prj_gbif_pilot_b",    'source_id' => '29'),
-              array('name' => "tbl_prj_gbif_pilot_brnu", 'source_id' => '30'),
-              array('name' => "tbl_prj_gbif_pilot_lagu", 'source_id' => '27'),
-              array('name' => "tbl_prj_gbif_pilot_tbi",  'source_id' => '48')
-             );
+
+// use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
-                        (UnitID, Genus, FirstEpithet, Rank, HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed,
-                        CountryName, ISO3Letter, MeasurmentLowerValue, MeasurmentUpperValue, exactness, IdentificationHistory,
-                        NamedCollection, UnitIDNumeric, UnitDescription, source_id_fk, det)
-                      SELECT
-                        s.specimen_ID, tg.genus, te.epithet, ttr.rank, tf.family, s.Datum2, s.Fundort, s.Fundort,
-                        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min, s.altitude_max, s.exactness, s.taxon_alt,
-                        mc.coll_gbif_pilot, s.HerbNummer, s.Bemerkungen, mc.source_id, s.det
+                            (UnitID,        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
+                      SELECT s.specimen_ID, tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, s.taxon_alt,           mc.coll_gbif_pilot, s.HerbNummer,  s.Bemerkungen,   mc.source_id, s.det
                       FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                        LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
                        LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
