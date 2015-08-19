@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-include './inc/variables.php';
+include 'inc/variables.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -122,10 +122,10 @@ $dbLink2->query("INSERT INTO $dbt.metadb
 
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
-    $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
+    $dbLink2->query("TRUNCATE $dbt." . $tbl['name']); // TODO: switch UnitID and UnitIDNumeric
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
-                            (UnitID,        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
-                      SELECT s.specimen_ID, tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, s.taxon_alt,           mc.coll_gbif_pilot, s.HerbNummer,  s.Bemerkungen,   mc.source_id, s.det
+                            (UnitID,       Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
+                      SELECT s.HerbNummer, tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID,  s.Bemerkungen,   mc.source_id, s.det
                       FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                        LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
                        LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
@@ -276,7 +276,7 @@ foreach ($tbls as $tbl) {
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = "           . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
-                WHERE UnitID = " . $row['specimen_ID'];
+                WHERE UnitIDNumeric = " . $row['specimen_ID'];
         $dbLink2->query($sql);
     }
     $result->free();
