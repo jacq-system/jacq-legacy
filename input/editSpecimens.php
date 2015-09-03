@@ -640,7 +640,7 @@ if (isset($_GET['sel'])) {
       else
         return true;
     }
-    
+
     function doSubmit( p_type ) {
         // If all fields are set, trigger a submit
         if( checkMandatory(1) ) {
@@ -875,7 +875,7 @@ if ($result && mysql_num_rows($result) > 0) {
 }
 
 if ($nr) {
-    echo "<div style=\"position: absolute; left: 15em; top: 0.4em;\">";
+    echo "<div style=\"position: absolute; left: 16em; top: 0.4em;\">";
     if ($nr > 1) {
         echo "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $linkList[$nr - 1] . ">") . "&nr=" . ($nr - 1) . "\">"
            . "<img border=\"0\" height=\"22\" src=\"webimages/left.gif\" width=\"20\">"
@@ -884,7 +884,7 @@ if ($nr) {
         echo "<img border=\"0\" height=\"22\" src=\"webimages/left_gray.gif\" width=\"20\">";
     }
     echo "</div>\n";
-    echo "<div style=\"position: absolute; left: 17em; top: 0.4em;\">";
+    echo "<div style=\"position: absolute; left: 17.5em; top: 0.4em;\">";
     if ($nr < $linkList[0]) {
         echo "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $linkList[$nr + 1] . ">") . "&nr=" . ($nr + 1) . "\">"
            . "<img border=\"0\" height=\"22\" src=\"webimages/right.gif\" width=\"20\">"
