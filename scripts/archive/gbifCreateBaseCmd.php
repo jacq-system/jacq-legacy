@@ -39,76 +39,6 @@ class DB extends mysqli
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
-
-function makeTaxon($row)
-{
-    $text = $row['genus'];
-    if ($row['epithet'])  $text .= " "          . $row['epithet']  . " " . $row['author'];
-    if ($row['epithet1']) $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1'];
-    if ($row['epithet2']) $text .= " var. "     . $row['epithet2'] . " " . $row['author2'];
-    if ($row['epithet3']) $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3'];
-    if ($row['epithet4']) $text .= " forma "    . $row['epithet4'] . " " . $row['author4'];
-    if ($row['epithet5']) $text .= " subforma " . $row['epithet5'] . " " . $row['author5'];
-
-    return $text;
-}
-
-
-function makeHybrid($dbLink, $taxonID)
-{
-    $sql = "SELECT parent_1_ID, parent_2_ID
-            FROM tbl_tax_hybrids
-            WHERE taxon_ID_fk='$taxonID'";
-    $result = $dbLink->query($sql);
-    $row = $result->fetch_array();
-
-    $sql = "SELECT tg.genus,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
-            FROM tbl_tax_species ts
-             LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1  ON ta1.authorID  = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2  ON ta2.authorID  = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3  ON ta3.authorID  = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4  ON ta4.authorID  = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5  ON ta5.authorID  = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-            WHERE taxonID = '" . $row['parent_1_ID'] . "'";
-    $row1 = $dbLink->query($sql)->fetch_array();
-
-    $sql = "SELECT tg.genus,
-             ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-             ta4.author author4, ta5.author author5,
-             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
-            FROM tbl_tax_species ts
-             LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1  ON ta1.authorID  = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2  ON ta2.authorID  = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3  ON ta3.authorID  = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4  ON ta4.authorID  = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5  ON ta5.authorID  = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-            WHERE taxonID = '" . $row['parent_2_ID'] . "'";
-    $row2 = $dbLink->query($sql)->fetch_array();
-
-    return makeTaxon($row1) . " x " . makeTaxon($row2);
-}
-
 $dbLink2->query("TRUNCATE $dbt.meta");
 $dbLink2->query("INSERT INTO $dbt.meta
                          (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl)
@@ -122,16 +52,17 @@ $dbLink2->query("INSERT INTO $dbt.metadb
 
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
-    $dbLink2->query("TRUNCATE $dbt." . $tbl['name']); // TODO: switch UnitID and UnitIDNumeric
+    $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
-                            (UnitID,       Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
-                      SELECT s.HerbNummer, tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID,  s.Bemerkungen,   mc.source_id, s.det
-                      FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
+                            (NameAuthorYearString,                        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   PrimaryCollector, IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
+                      SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID,  s.Bemerkungen,   mc.source_id, s.det
+                      FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                        LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
                        LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                        LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
                        LEFT JOIN tbl_geo_nation gn ON gn.nationID = s.NationID
-                      WHERE s.taxonID = ts.taxonID
+                      WHERE s.SammlerID = c.SammlerID
+                       AND s.taxonID = ts.taxonID
                        AND ts.tax_rankID = ttr.tax_rankID
                        AND s.collectionID = mc.collectionID
                        AND s.accessible > 0
@@ -140,7 +71,7 @@ foreach ($tbls as $tbl) {
     $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-             s.digital_image, s.observation,
+             s.digital_image, s.observation, s.HerbNummer,
              c.Sammler, c2.Sammler_2,
              ts.taxonID, ts.statusID, tg.genus,
              ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -175,12 +106,10 @@ foreach ($tbls as $tbl) {
     $result = $dbLink1->query($sql, MYSQLI_USE_RESULT);
     while ($row = $result->fetch_array()) {
 
-        if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
-          $NameAuthorYearString = makeHybrid($dbLink2, $row['taxonID']);
-        } else {
-          $NameAuthorYearString = makeTaxon($row);
-        }
-
+        /**
+         * AuthorTeam
+         * SecondEpithet
+         */
         if ($row['epithet5']) {
             $AuthorTeam = $row['author5'];
             $SecondEpithet = $row['epithet5'];
@@ -201,6 +130,11 @@ foreach ($tbls as $tbl) {
             $SecondEpithet = "";
         }
 
+        /**
+         * LatitudeDecimal
+         * LongitudeDecimal
+         * SpatialDatum
+         */
         if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
             $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
         } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
@@ -221,6 +155,9 @@ foreach ($tbls as $tbl) {
 
         $SpatialDatum = ($lat || $lon) ? "WGS84" : "";
 
+        /**
+         * GatheringAgentsText
+         */
         $GatheringAgentsText = $row['Sammler'];
         if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
             $GatheringAgentsText .= " et al.";
@@ -240,12 +177,34 @@ foreach ($tbls as $tbl) {
             if (strstr($row['alt_number'], "s.n.")) $GatheringAgentsText .= " [" . $row['Datum'] . "]";
         }
 
+        /**
+         * CollectorTeam
+         */
+        $CollectorTeam = $row['Sammler'];
+        if (strstr($row['Sammler_2'], "et al.") || strstr($row['Sammler_2'], "alii")) {
+            $CollectorTeam .= " et al.";
+        } elseif ($row['Sammler_2']) {
+            $parts = explode(',', $row['Sammler_2']);           // some people forget the final "&"
+            if (count($parts) > 2) {                            // so we have to use an alternative way
+                $CollectorTeam .= ", ".$row['Sammler_2'];
+            } else {
+                $CollectorTeam .= " & ".$row['Sammler_2'];
+            }
+        }
+
+        /**
+         * image_url
+         */
         if ($row['digital_image']) {
             $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
         } else {
            $image_url = "";
         }
 
+        /**
+         * LastEditor
+         * DateLastEdited
+         */
         $sql = "SELECT u.firstname, u.surname, u.timestamp
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users u
                 WHERE ls.userID = u.userID
@@ -260,8 +219,11 @@ foreach ($tbls as $tbl) {
             $DateLastEdited = "2004-11-26 19:20:22";
         }
 
+        /**
+         * UPDATE database
+         */
         $sql = "UPDATE $dbt." . $tbl['name'] . " SET
-                 NameAuthorYearString = "  . $dbLink2->quoteString($NameAuthorYearString) . ",
+                 UnitID = "                . $dbLink2->quoteString(($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQ-ID ' . $row['specimen_ID'])) . ",
                  AuthorTeam = "            . $dbLink2->quoteString($AuthorTeam) . ",
                  SecondEpithet = "         . $dbLink2->quoteString($SecondEpithet) . ",
                  HybridFlag = "            . (($row['statusID'] == 1) ? "1" : "NULL") . ",
@@ -271,7 +233,9 @@ foreach ($tbls as $tbl) {
                  LatitudeDecimal = "       . $dbLink2->quoteString($LatitudeDecimal) . ",
                  LongitudeDecimal = "      . $dbLink2->quoteString($LongitudeDecimal) . ",
                  SpatialDatum = "          . $dbLink2->quoteString($SpatialDatum) . ",
+                 CollectorsFieldNumber = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
                  GatheringAgentsText = "   . $dbLink2->quoteString($GatheringAgentsText) . ",
+                 CollectorTeam = "         . $dbLink2->quoteString($CollectorTeam) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
