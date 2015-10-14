@@ -1,3 +1,7 @@
+USE herbar_view
+
+DELIMITER $$
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `_buildScientificNameComponents`(IN `p_taxonID` INT(11), OUT `p_scientificName` TEXT CHARSET utf8, OUT `p_author` TEXT CHARSET utf8)
     READS SQL DATA
 BEGIN

@@ -1,6 +1,7 @@
 <?php
 session_start();
 require("inc/connect.php");
+require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
@@ -28,6 +29,7 @@ if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';  //wird v
 if (!isset($_SESSION['siTyp'])) $_SESSION['siTyp'] = '';
 if (!isset($_SESSION['siType'])) $_SESSION['siType'] = 0;
 if (!isset($_SESSION['siImages'])) $_SESSION['siImages'] = '';
+if (!isset($_SESSION['siExternal'])) $_SESSION['siExternal'] = 0;
 if (!isset($_SESSION['siLinkList'])) $_SESSION['siLinkList'] = array();
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
@@ -39,7 +41,9 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                      'W_Sec', 'Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_E', 'E_Min', 'E_Sec',
                      'quadrant', 'quadrant_sub', 'exactness', 'altitude_min', 'altitude_max', 'Fundort', 'Fundort_engl',
                      'habitat', 'habitus', 'Bemerkungen', 'digital_image', 'digital_image_obs', 'garten', 'voucherID');
-    $result = db_query("SELECT * FROM tbl_specimens_import WHERE checked > 0 AND userID = '" . intval($_SESSION['uid']) . "'");
+    $result = db_query("SELECT * FROM tbl_specimens_import as si
+        LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+        WHERE checked > 0 AND " . user_where_clause());
     while ($row = mysql_fetch_array($result)) {
         $sql = "SELECT specimen_ID FROM tbl_specimens WHERE 1 = 1";
         foreach ($columns as $column) {
@@ -64,14 +68,17 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                        pending = 0
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND pending = 1");
-            db_query("DELETE FROM tbl_specimens_import
+            db_query("DELETE  si, si_u FROM tbl_specimens_import as si
+                      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND checked > 0
-                       AND userID = '" . intval($_SESSION['uid']) . "'");
+                       AND " . user_where_clause());
         }
     }
 } elseif (isset($_POST['deleteNow']) && $_POST['deleteNow']) {
-    db_query("DELETE FROM tbl_specimens_import WHERE checked = 0 AND userID = '" . intval($_SESSION['uid']) . "'");
+    db_query("DELETE si, si_u FROM tbl_specimens_import as si
+      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+      WHERE checked = 0 AND " . user_where_clause());
 }
 
 if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['deleteNow'])) {
@@ -94,6 +101,7 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     $_SESSION['siBemerkungen'] = $_POST['annotations'];
 
     $_SESSION['siTyp']    = (($_POST['typ']=="only") ? true : false);
+    $_SESSION['siExternal'] = $_POST['external'];
     $_SESSION['siImages'] = $_POST['images'];
 
     $_SESSION['siOrder'] = "genus, te.epithet, ta.author, "
@@ -140,6 +148,42 @@ if (!empty($_POST['search']) || !empty($_POST['importNow']) || !empty($_POST['de
     }
     if ($_SESSION['siOrTyp'] < 0) $_SESSION['siOrder'] = implode(" DESC, ", explode(", ", $_SESSION['siOrder'])) . " DESC";
 }
+/* ----------------- Editor actions ----------------- */
+if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] && is_array($_POST['specimen_ID'])){
+    if($_POST['action'] == 'add') {
+        $values = array();
+        foreach( $_POST['specimen_ID'] as $id=>$op){
+            if($op == 'op'){
+                $values[] = '(' . $id . ', ' . $_POST['user_ID'] . ')';
+            }
+        }
+        $sql = "INSERT INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
+        $result = db_query($sql);
+    }
+    if($_POST['action'] == 'remove') {
+        $values = array();
+        foreach( $_POST['specimen_ID'] as $id=>$op){
+            if($op == 'op'){
+                $values[] = '( specimen_ID = ' . $id . ' AND user_ID = ' . $_POST['user_ID'] . ')';
+            }
+        }
+        $sql = "DELETE FROM tbl_specimens_import_users WHERE " . implode('OR ', $values) . " ;";
+        $result = db_query($sql);
+    }
+}
+
+/* ----------------- Taxon actions ----------------- */
+if(isset($_POST['taxon_action_do']) && is_numeric($_POST['taxonIndex']) && is_array($_POST['specimen_ID'])){
+  $sp_ids = array();
+  foreach( $_POST['specimen_ID'] as $id=>$op){
+    if($op == 'op'){
+      $sp_ids[] = $id;
+    }
+    $sql = "UPDATE tbl_specimens_import SET taxonID=" . $_POST['taxonIndex'] . " WHERE specimen_ID in (" . join(',', $sp_ids) . ") ;";
+    $result = db_query($sql);
+  }
+}
+
 
 function makeDropdownInstitution()
 {
@@ -170,6 +214,20 @@ function makeDropdownCollection()
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
     }
 
+    echo "  </select>\n";
+}
+
+function makeDropdownUsers()
+{
+    echo "<select size=\"1\" name=\"user_ID\">\n";
+    echo "  <option value=\"0\"></option>\n";
+
+    $sql = "SELECT userID, username FROM herbarinput_log.tbl_herbardb_users ORDER BY username";
+    $result = db_query($sql);
+    while ($row = mysql_fetch_array($result)) {
+        echo "  <option value=\"" . $row['userID'] . "\"".
+            ">" . htmlspecialchars($row['username']) . "</option>\n";
+    }
     echo "  </select>\n";
 }
 
@@ -227,13 +285,63 @@ function collectionItem($coll)
 
 function getImportEntries($checked)
 {
-    $sql = "SELECT specimen_ID
-            FROM tbl_specimens_import
-            WHERE userID = '" . intval($_SESSION['uid']) . "'
-             AND " . (($checked) ? "checked > 0" : "checked = 0");
+    $sql = "SELECT si.specimen_ID
+            FROM tbl_specimens_import as si
+            LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+            WHERE ". user_where_clause() .
+            " AND " . (($checked) ? "checked > 0" : "checked = 0");
     $result = db_query($sql);
 
     return mysql_num_rows($result);
+}
+
+/**
+ * Creates the where clause to find specimens which of which the
+ * currently logged in use is the owner. In case the stagin area
+ * in enabled also users which are editor of the speciemen are
+ * also taken into account.
+ *
+ * This function expects that the tbl_specimens_import_users is joined
+ * to the tbl_specimens_import table whereas si is used as alias for
+ * tbl_specimens_import:
+ *
+ * LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+ *
+ * @param boolean $limit_to_own
+ *    The users that are editors are always ignored if this is TRUE
+ *    independently of of whether the staging area is enabled or not
+ *
+ * @return string
+ *   returns the where clause
+ */
+function user_where_clause($limit_to_own = FALSE){
+  global $_OPTIONS;
+
+  $where = "(si.userID='" . intval($_SESSION['uid']) . "'";
+  if(!$limit_to_own && $_OPTIONS['staging_area']['enabled'] === true){
+    $where .= " OR si_u.user_ID='" . intval($_SESSION['uid']) . "')";
+  } else {
+    $where .= ")";
+  }
+  return $where;
+}
+
+/**
+ * @param $specimen_ID
+ * @return array
+ *     An associative array of userID as key and username as value
+ */
+function listEditors($specimen_ID){
+    $editors = array();
+    $sql = "SELECT u.userID, u.username FROM  tbl_specimens_import as si
+      LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
+      LEFT JOIN herbarinput_log.tbl_herbardb_users as u ON si_u.user_ID = u.userID
+      WHERE si_u.user_ID IS NOT NULL AND si.specimen_ID = " . $specimen_ID . " ;";
+    $result = mysql_query($sql);
+    while ($row=mysql_fetch_array($result)) {
+        $editors[$row['userID']] = $row['username'];
+    }
+    return $editors;
 }
 
 
@@ -251,11 +359,35 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <title>herbardb - list Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
   <style type="text/css">
     body { background-color: #008080 }
+
+    /**************************************
+     *  styling for the autocompleter
+     */
+    .ui-autocomplete {
+      font-size: 0.9em;  /* smaller size */
+      max-height: 200px;
+      overflow-y: auto;
+      /* prevent horizontal scrollbar */
+      overflow-x: hidden;
+      /* add padding to account for vertical scrollbar */
+      padding-right: 20px;
+    }
+    /* IE 6 doesn't support max-height
+     * we use height instead, but this forces the menu to always be this tall
+     */
+    * html .ui-autocomplete {
+      height: 200px;
+    }
+    /***************************************/
+
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
@@ -345,20 +477,29 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b>Annotation:</b></td>
     <td><input type="text" name="annotations" value="<?php echoSpecial('siBemerkungen', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td colspan="2">
-    <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
-    <b>All records</b>
-    <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
-    <b>Type records only</b>
-  </td><td colspan="4" align="right">
-    <b>Images:</b>
-    <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
-    <b>Yes</b>
-    <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
-    <b>No</b>
-    <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
-    <b>All</b>
-  </td>
+    <td colspan="2">
+        <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
+        <b>All records</b>
+        <input type="radio" name="typ" value="only"<?php if($_SESSION['siTyp']) echo " checked"; ?>>
+        <b>Type records only</b>
+    </td>
+    <td colspan="2"  align="right">
+        <b>Taxon external:</b>
+        <select size="1" name="external">
+            <option value="-1" <?php if($_SESSION['siExternal'] == "-1") echo " selected"; ?>>&nbsp;</option>
+            <option value="0" <?php if($_SESSION['siExternal'] == "0") echo " selected"; ?>>none</option>
+            <option value="1" <?php if($_SESSION['siExternal'] == "1") echo " selected"; ?>>only</option>
+        </select>
+    </td>
+    <td colspan="2" align="right">
+        <b>Images:</b>
+        <input type="radio" name="images" value="only"<?php if($_SESSION['siImages'] == 'only') echo " checked"; ?>>
+        <b>Yes</b>
+        <input type="radio" name="images" value="no"<?php if($_SESSION['siImages'] == 'no') echo " checked"; ?>>
+        <b>No</b>
+        <input type="radio" name="images" value="all"<?php if($_SESSION['siImages'] != 'only' && $_SESSION['siImages'] != 'no') echo " checked"; ?>>
+        <b>All</b>
+      </td>
 </tr><tr>
   <td colspan="2"><input class="button" type="submit" name="search" value=" search "></td>
   <td colspan="2" align="right">
@@ -374,11 +515,33 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </table>
 </form>
 
-<hr>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
-<?php
-if ($_SESSION['siType'] == 1) {
-    $sql = "SELECT si.specimen_ID, tg.genus, si.digital_image,
+  <hr />
+  <div class="clearfix" style="text-align:right;">
+    <b>Add/Remove Editor: </b>
+    <?php
+    makeDropdownUsers();
+    ?>
+    <select size="1" name="action">
+      <option value="0"></option>
+      <option value="add">add</option>
+      <option value="remove">remove</option>
+    </select>
+    <button type="submit" name="editors_action_do" value="1" >Apply to checked entries</button>
+  </div>
+  <hr />
+  <div style="text-align:right;">
+    <b>Assign Taxon:</b>
+    <?php
+      $cf = new CSSF();
+      $cf->inputJqAutocomplete(NULL, NULL, 50, "taxon", NULL, NULL, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '', "", FALSE, FALSE, "display_inline");
+    ?>
+    <button type="submit" name="taxon_action_do" value="1" >Apply to checked entries</button>
+  </div>
+  <hr />
+  <?php
+  if ($_SESSION['siType'] == 1) {
+    $sql = "SELECT distinct si.specimen_ID, tg.genus, si.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, si.series_number,
              si.Nummer, si.alt_number, si.Datum, si.HerbNummer,
              n.nation_engl, p.provinz, si.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -387,7 +550,7 @@ if ($_SESSION['siType'] == 1) {
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-             te4.epithet epithet4, te5.epithet epithet5
+             te4.epithet epithet4, te5.epithet epithet5, si.userID, hu.username, ts.external taxon_external
             FROM (tbl_specimens_import si, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc)
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = si.seriesID
              LEFT JOIN tbl_typi t ON t.typusID = si.typusID
@@ -408,11 +571,13 @@ if ($_SESSION['siType'] == 1) {
              LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+             LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON si.userID = hu.userID
+             LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
             WHERE ts.taxonID = si.taxonID
              AND tg.genID = ts.genID
              AND tf.familyID = tg.familyID
              AND mc.collectionID = si.collectionID
-             AND userID='" . $_SESSION['uid'] . "'";
+             AND " . user_where_clause();
     $sql2 = "";
     if (trim($_SESSION['siTaxon'])) {
         $pieces = explode(" ", trim($_SESSION['siTaxon']));
@@ -483,6 +648,9 @@ if ($_SESSION['siType'] == 1) {
     } else if ($_SESSION['siImages'] == 'no') {
         $sql2 .= " AND si.digital_image = 0";
     }
+    if ($_SESSION['siExternal'] > '-1') {
+        $sql2 .= " AND ts.external = " . $_SESSION['siExternal'];
+    }
 
     $sql3 = " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001";
 
@@ -504,6 +672,9 @@ if ($_SESSION['siType'] == 1) {
            . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['siOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
            . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['siOrTyp'], 5) . "</th>";
+        echo "<th class=\"out\">Owner</th>";
+        echo "<th class=\"out\">Editors</th>";
+        echo "<th class=\"out\"><input id=\"check_all\" type=\"checkbox\" name=\"check_all\" value=\"op\" /></th>";
         echo "</tr>\n";
         $nr = 1;
         while ($row = mysql_fetch_array($result)) {
@@ -541,9 +712,13 @@ if ($_SESSION['siType'] == 1) {
                 $textLatLon = "<td class=\"out\"></td>";
             }
 
+
+            $taxon_class_attribute = $row['taxon_external'] ? " taxon_external": "";
+
+            $editors = listEditors($row['specimen_ID']);
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                . "<td class=\"out\">$digitalImage</td>"
-               . "<td class=\"out\">"
+               . "<td class=\"out$taxon_class_attribute\" title=\"$taxon_class_attribute\">"
                .  "<a href=\"editSpecimensImport.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=0\">"
                .  htmlspecialchars(taxonItem($row))."</a></td>"
                . "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>"
@@ -552,7 +727,10 @@ if ($_SESSION['siType'] == 1) {
                . "<td class=\"out\">".locationItem($row)."</td>"
                . "<td class=\"out\">".htmlspecialchars($row['typus_lat'])."</td>"
                . "<td class=\"outCenter\" title=\"".htmlspecialchars($row['collection'])."\">"
-               .  htmlspecialchars($row['coll_short'])." ".htmlspecialchars($row['HerbNummer'])."</td>";
+               .  htmlspecialchars($row['coll_short'])." ".htmlspecialchars($row['HerbNummer'])."</td>"
+               . "<td class=\"out\">" . $row['username'] . " &lt;" . $row['userID'] . "&gt;</td>"
+               . "<td class=\"out\">" . implode(',', $editors) . "</td>"
+               . "<td class=\"out\"><input class=\"specimen_ID\" type=\"checkbox\" name=\"specimen_ID[".$row['specimen_ID']."]\" value=\"op\" /></td>";
             echo "</tr>\n";
             $nr++;
         }
@@ -565,6 +743,14 @@ if ($_SESSION['siType'] == 1) {
 }
 ?>
 </form>
+<script type="application/javascript"  language="JavaScript">
+
+    $( document ).ready(function() {
+        $('#check_all').change(function(e){
+            $('input.specimen_ID').attr('checked', $(e.target).attr('checked'));
+        });
+    });
+</script>
 
 </body>
 </html>

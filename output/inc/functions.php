@@ -1,6 +1,8 @@
 <?php
 require_once( 'variables.php' );
 require_once( 'AnnotationQuery.inc.php' );
+require_once( 'ImagePreview.inc.php' );
+
 function db_connect( $dbConfig, $dbAccess = "readonly" ) {
     $host = $dbConfig['host'];
     $db = $dbConfig['db'];
@@ -55,23 +57,48 @@ class MyTripleID extends TripleID
 		//      sql = "SELECT * FROM table WHERE id=" . $id
 		
 		// fill variables with data from database
-		$this->institutionID = "BGBM";
-		$this->sourceID = "Herbarium Berolinense";
-		$this->objectID = $id;
+		
+		$query = "SELECT s.specimen_ID, mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, s.herbNummer
+          FROM tbl_specimens s
+           LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
+           WHERE specimen_ID=".($id);
+		$result = mysql_query($query);
+		
+		if (!$result) {
+			echo $query."<br>\n";
+			echo mysql_error()."<br>\n";
+			}
+		$row=mysql_fetch_array($result);
+		
+		if ($row['source_id'] == '29'){
+		$unitid = $row['herbNummer'];		
+		$source = 'Herbarium Berolinense';		
+		$institutionID = 'BGBM';}
+                
+                if ($row['source_id'] == '6'){
+		$unitid = $row['specimen_ID'];
+		$source = 'Herbarium W';
+		$institutionID = 'W';}
+                
+		$this->institutionID = $institutionID;
+		$this->sourceID = $source;
+		$this->objectID = $unitid;
+		
 	}
 	
+
 } // class MyTripleID
 
 function generateAnnoTable($metadata) {
 	// table header
-	$str = '<table width="190px"><tr><td align="left">'
+	$str = '<table width="100%"><tr><td align="left">'
 	     . '<strong>' . count($metadata) . ' annotation(s)</strong></td></tr>';
 	// add annotations
 	foreach($metadata as $anno) {
 		$str .= '<tr><td align="left">';
-		$str .= "<strong>Annotator:</strong> " . $anno['annotator'] . "<br/>";
-		$str .= "<strong>Type of annotation:</strong> " . $anno['motivation'] . "<br/>";
-		$str .= "<strong>Date:</strong> " . date("d M Y", $anno['time']/1000) . "<br/>";
+		$str .= "<strong>Annotator:</strong> " . $anno['annotator'] . "; ";
+		$str .= "<strong>Type of annotation:</strong> " . $anno['motivation'] . "; ";
+		$str .= "<strong>Date:</strong> " . date("d M Y", $anno['time']/1000) . "; ";
 		$str .= "<a href=\"" . $anno['viewURI'] . '" target="_blank" class="leftnavi">View annotation</a><br/>';
 		$str .= "<hr /></td></tr>";
 	}
@@ -87,7 +114,7 @@ function generateAnnoTable($metadata) {
 
 function collectionID ($row)
 {
-	if ($row['collection'] == 'B') {
+	if ($row['source_id'] == '29') {
 	$text = $row['herbNummer'];
 	}
 	else {

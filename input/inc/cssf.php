@@ -334,8 +334,8 @@ class CSSF{
 	 * deprecated
 	 */
 	
-	function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false, $zeroOnEmpty=false) {
-		$this->_divclass($x, $y, "cssfinput");
+	function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus=false, $zeroOnEmpty=false, $class_attribute = "") {
+		$this->_divclass($x, $y, "cssfinput" . " " .$class_attribute);
 		print "<input  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;";
 		if ($bgcol) print " background-color: $bgcol;";
 		print "' type='text' name='{$name}' id='ajax_{$name}' value='" . htmlspecialchars($value, ENT_QUOTES) . "'";
@@ -660,12 +660,18 @@ EOF;
 	*																			*
 	****************************************************************************/
 	function _divclass($x,$y,$class,$id = "") {
-            $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
+
+        $fixed_position = "";
+        if($x !== NULL && $y!== NULL){
+          $fixed_position =  "position: absolute; left: ".$x."em; top: ".$y."em;";
+        }
+
+        $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
             
 		if($this->yrelative){
 			$y+=$this->yrel;
 		}
 		$this->yrel=$y;
-		print "<div $idtext class=\"$class\" style=\"position: absolute; left: ".$x."em; top: ".$y."em;\">";
+		print "<div $idtext class=\"$class\" style=\"" .$fixed_position. "\">";
 	}
 }

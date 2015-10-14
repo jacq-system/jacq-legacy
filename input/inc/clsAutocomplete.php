@@ -940,7 +940,7 @@ class clsAutocomplete {
             $display = clsDisplay::Load();
             /* @var $db clsDbAccess */
             $db = clsDbAccess::Connect('INPUT');
-            $sql = "SELECT taxonID, ts.synID
+            $sql = "SELECT taxonID, ts.synID, ts.external
 				FROM tbl_tax_species ts
 				 LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
 				 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
@@ -988,11 +988,19 @@ class clsAutocomplete {
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
+
+                    $color = '';
+                    if(is_numeric($row['synID'])){
+                      $color = 'red';
+                    } else if ($row['external']){
+                      $color = 'darkorange'; // see also .taxon_external in screen.css
+                    }
+
                     $results[] = array(
                         'id' => $row['taxonID'],
                         'label' => $display->taxon($row['taxonID'], true, false, true),
                         'value' => $display->taxon($row['taxonID'], true, false, true),
-                        'color' => ($row['synID']) ? 'red' : ''
+                        'color' => $color,
                     );
                 }
             }

@@ -51,7 +51,7 @@ $_OPTIONS['internMDLDService'] = array(
     'password' => 'geheim'
 );
 // Taxamatch JSON-RPC service
-$_OPTIONS['serviceTaxamatch'] = 'http://website.com/taxamatch/json_rpc_taxamatchMdld.php';
+$_OPTIONS['serviceTaxamatch'] = 'http://website.com/taxamatch/jsonRPC/json_rpc_taxamatchMdld.php';
 
 // Geonames user / password
 $_OPTIONS['GEONAMES'] = array(
@@ -86,3 +86,9 @@ $_OPTIONS['debug'] = 0;
 
 //  Use TCPDF 4.5 or 5.8
 $_OPTIONS['tcpdf_5_8'] = false;
+
+// Staging area
+  $_OPTIONS['staging_area'] = array(
+    'enabled' => TRUE,
+    'ignore_no_genus' => TRUE, // allows adding new taxa to the DB, even if no matching genus has been found
+  );
