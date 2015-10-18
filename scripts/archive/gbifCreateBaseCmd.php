@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-include 'inc/variables.php';
+require 'inc/variables.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -55,7 +55,7 @@ foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
                             (NameAuthorYearString,                        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   PrimaryCollector, IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
-                      SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID,  s.Bemerkungen,   mc.source_id, s.det
+                      SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID, s.Bemerkungen,   mc.source_id, s.det
                       FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                        LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
                        LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
@@ -68,7 +68,7 @@ foreach ($tbls as $tbl) {
                        AND s.accessible > 0
                        AND mc.source_id = '" . $tbl['source_id'] . "'");
 
-    $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum,
+    $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.det,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
              s.digital_image, s.observation, s.HerbNummer,
@@ -79,7 +79,8 @@ foreach ($tbls as $tbl) {
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
              te4.epithet epithet4, te5.epithet epithet5,
              gn.nation_engl, gp.provinz,
-             ss.series
+             ss.series,
+             uim.uuid
             FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_management_collections mc)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
              LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
@@ -98,6 +99,7 @@ foreach ($tbls as $tbl) {
              LEFT JOIN tbl_geo_nation gn ON gn.nationID = s.NationID
              LEFT JOIN tbl_geo_province gp ON gp.provinceID = s.provinceID
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
+             LEFT JOIN jacq_input.srvc_uuid_minter uim ON (uim.internal_id = s.specimen_ID AND uim.uuid_minter_type_id = 3)
             WHERE s.SammlerID = c.SammlerID
              AND s.taxonID = ts.taxonID
              AND s.collectionID = mc.collectionID
@@ -193,6 +195,21 @@ foreach ($tbls as $tbl) {
         }
 
         /**
+         * IdentificationDate
+         */
+        if (intval(substr($row['det'], -2, 2)) != 0) {
+            if (substr($row['det'], -3, 1) != "-") {
+                $IdentificationDate = substr($row['det'], -4, 4);
+            } else if (substr($row['det'], -6, 1) != "-") {
+                $IdentificationDate = substr($row['det'], -7, 7);
+            } else {
+                $IdentificationDate = substr($row['det'], -10, 10);
+            }
+        } else {
+            $IdentificationDate = "";
+        }
+
+        /**
          * image_url
          */
         if ($row['digital_image']) {
@@ -236,7 +253,10 @@ foreach ($tbls as $tbl) {
                  CollectorsFieldNumber = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
                  GatheringAgentsText = "   . $dbLink2->quoteString($GatheringAgentsText) . ",
                  CollectorTeam = "         . $dbLink2->quoteString($CollectorTeam) . ",
+                 IdentificationDate = "    . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
+                 MultimediaIPR = "         . (($image_url) ? "'MultimediaIPR'" : "NULL") . ",
+                 recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = "           . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
