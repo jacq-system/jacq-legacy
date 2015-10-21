@@ -218,6 +218,8 @@ foreach ($tbls as $tbl) {
            $image_url = "";
         }
 
+        $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
+
         /**
          * LastEditor
          * DateLastEdited
@@ -255,7 +257,7 @@ foreach ($tbls as $tbl) {
                  CollectorTeam = "         . $dbLink2->quoteString($CollectorTeam) . ",
                  IdentificationDate = "    . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
-                 MultimediaIPR = "         . (($image_url) ? "'MultimediaIPR'" : "NULL") . ",
+                 MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($MultimediaIPR) : "NULL") . ",
                  recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
