@@ -53,21 +53,29 @@ function doQuotes(&$obj,$mode){
 	}
 }
 
+/**
+ * @deprecated since mysql_* functions are deprecated
+ *
+ * @param $sql
+ * @param bool|FALSE $debug
+ * @return resource
+ *
+ */
 function db_query($sql,$debug=false){
-	global $_OPTIONS;
+  global $_OPTIONS;
 
-	if($debug || $_OPTIONS['debug']==1){
-		$debug=true;
-	}
+  if($debug || $_OPTIONS['debug']==1){
+    $debug=true;
+  }
 
-	$res=mysql_query($sql);
+  $res=mysql_query($sql);
 
-	if(!$res && $debug){
-		echo $sql;
-		echo mysql_errno() . ": " . mysql_error() . "<br>\n";
-	}
+  if(!$res && $debug){
+    echo $sql;
+    echo mysql_errno() . ": " . mysql_error() . "<br>\n";
+  }
 
-    return $res;
+  return $res;
 }
 
 
