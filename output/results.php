@@ -148,63 +148,21 @@ EOF;
 
 //echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
 echo "<div align=\"center\"><table width=\"100%\">\n";
-echo "<tr><td colspan=\"3\"><b>".$res_count." records found</b></td>\n";
+echo "<tr><td colspan=\"2\"><b>".$res_count." records found</b></td>\n";
 
-// Values f�r "Generic Point Mapper" der "Canadian Biological Information Facility" erzeugen
-$xml_head = "%3C%3Fxml+version%3D%221.0%22+encoding%3D%22iso-8859-1%22%3F%3E";
-$xml = "<response>".
-       "  <header>".
-       "    <author>Virtual Herbaria Austria</author>".
-       "    <boundingbox>-180,-90,180,90,World Map</boundingbox>".
-       "    <description>This Generic Point Mapper is a service provided by the Canadian Biological Information Facility</description>".
-       "    <ifx></ifx>".
-       "    <language>en</language>".
-       "    <projection>latlong</projection>".
-       "    <recordcount></recordcount>".
-       "    <timestamp>2005-02-10T09:46:41Z</timestamp>".
-       "    <title></title>".
-       "    <url>http://www.cbif.gc.ca/mc/index_e.php</url>".
-       "  </header>".
-       "  <records>";
-while ($row=mysql_fetch_array($result)) {
-  if ($row['Coord_S']>0 || $row['S_Min']>0 || $row['S_Sec']>0)
-    $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-  else if ($row['Coord_N']>0 || $row['N_Min']>0 || $row['N_Sec']>0)
-    $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
-  else
-    $lat = 0;
-  if ($row['Coord_W']>0 || $row['W_Min']>0 || $row['W_Sec']>0)
-    $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-  else if ($row['Coord_E']>0 || $row['E_Min']>0 || $row['E_Sec']>0)
-    $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
-  else
-    $lon = 0;
-  if ($lat!=0 && $lon!=0)
-    $xml .= "    <record><longitude>$lon</longitude><latitude>$lat</latitude>".
-            "<recordurl>http://herbarium.univie.ac.at/database/detail.php?ID=".$row['specimen_ID']."</recordurl>".
-            "</record>";
-}
-//if ($results)
-@mysql_data_seek($result,0);
-$xml .= "  </records>".
-        "</response>";
 ?>
-<td colspan="6" align="right">
-<form style="display:inline;" action="http://linuxgurrl.agr.gc.ca/mapdata/itis/itisrosa.php" method="post" target="showlinuxgurrl">
-  <input type="button" value="Create google-map" onClick="googleMap()">
-  <input type="hidden" value="<?php echo $xml_head.urlencode($xml) ?>" name="xml">
-  <input type="hidden" value="L" name="msize">
-  <input type="submit" value="Create map" style="width:100px;">
+<td colspan="7" align="right">
+<form style="display:inline;" action="javascript:googleMap();" method="post">
+  <input type="button" value="Create map" onClick="googleMap()" style="width:120px;">
 </form>
-</td></tr>
-<tr><td colspan="3"></td><td colspan="6" align="right">
-<form style="display:inline;" action="exportKml.php" method="post" target="_blank">
-  <input type="submit" value="download KML" style="width:120px;">
-</form>
-<form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
-  <input type="submit" value="download CSV" style="width:120px;">
-</form>
-</td></tr>
+            <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
+                <input type="submit" value="download KML" style="width:120px;">
+            </form>
+            <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
+                <input type="submit" value="download CSV" style="width:120px;">
+            </form>
+        </td></tr>
+
 <tr><td colspan="9" align="center" valign="center">
 
 

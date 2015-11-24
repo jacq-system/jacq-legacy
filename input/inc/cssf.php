@@ -661,17 +661,18 @@ EOF;
 	****************************************************************************/
 	function _divclass($x,$y,$class,$id = "") {
 
+        $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
+
+		if($this->yrelative){
+			$y+=$this->yrel;
+		}
+		$this->yrel=$y;
+
         $fixed_position = "";
         if($x !== NULL && $y!== NULL){
           $fixed_position =  "position: absolute; left: ".$x."em; top: ".$y."em;";
         }
 
-        $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
-            
-		if($this->yrelative){
-			$y+=$this->yrel;
-		}
-		$this->yrel=$y;
 		print "<div $idtext class=\"$class\" style=\"" .$fixed_position. "\">";
 	}
 }

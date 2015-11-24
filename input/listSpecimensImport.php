@@ -41,9 +41,10 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                      'W_Sec', 'Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_E', 'E_Min', 'E_Sec',
                      'quadrant', 'quadrant_sub', 'exactness', 'altitude_min', 'altitude_max', 'Fundort', 'Fundort_engl',
                      'habitat', 'habitus', 'Bemerkungen', 'digital_image', 'digital_image_obs', 'garten', 'voucherID');
-    $result = db_query("SELECT * FROM tbl_specimens_import as si
+  $importable_specimens_sql = "SELECT si.* FROM tbl_specimens_import as si
         LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
-        WHERE checked > 0 AND " . user_where_clause());
+        WHERE checked > 0 AND " . user_where_clause();
+    $result = db_query($importable_specimens_sql);
     while ($row = mysql_fetch_array($result)) {
         $sql = "SELECT specimen_ID FROM tbl_specimens WHERE 1 = 1";
         foreach ($columns as $column) {
@@ -68,11 +69,14 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                        pending = 0
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND pending = 1");
-            db_query("DELETE  si, si_u FROM tbl_specimens_import as si
+            $delete_sql = "DELETE  si, si_u FROM tbl_specimens_import as si
                       LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
-                      WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
+                      WHERE si.specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND checked > 0
-                       AND " . user_where_clause());
+                       AND " . user_where_clause();
+            db_query($delete_sql);
+        } else {
+          print ("<div class=\"error\"> Specimen " . $row['specimen_ID'] . " could not be imported since it already exists in the database.</div>");
         }
     }
 } elseif (isset($_POST['deleteNow']) && $_POST['deleteNow']) {

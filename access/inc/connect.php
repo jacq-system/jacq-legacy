@@ -29,6 +29,11 @@ function no_magic() {  // PHP >= 4.1
   }
 }
 
+/**
+ * @param $sql
+ * @return resource
+ * @deprecated
+ */
 function db_query($sql) {
   $result = @mysql_query($sql);
   if (!$result) {
