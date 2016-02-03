@@ -235,21 +235,21 @@ $i = 2;
 while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'], $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
 
-    if ($row['epithet5']) {
-        $infra_spec = $row['epithet5'];
-        $infra_author = $row['author5'];
-    } elseif ($row['epithet4']) {
-        $infra_spec = $row['epithet4'];
-        $infra_author = $row['author4'];
-    } elseif ($row['epithet3']) {
-        $infra_spec = $row['epithet3'];
-        $infra_author = $row['author3'];
-    } elseif ($row['epithet2']) {
-        $infra_spec = $row['epithet2'];
-        $infra_author = $row['author2'];
-    } elseif ($row['epithet1']) {
-        $infra_spec = $row['epithet1'];
-        $infra_author = $row['author1'];
+    if ($rowSpecimen['epithet5']) {
+        $infra_spec = $rowSpecimen['epithet5'];
+        $infra_author = $rowSpecimen['author5'];
+    } elseif ($rowSpecimen['epithet4']) {
+        $infra_spec = $rowSpecimen['epithet4'];
+        $infra_author = $rowSpecimen['author4'];
+    } elseif ($rowSpecimen['epithet3']) {
+        $infra_spec = $rowSpecimen['epithet3'];
+        $infra_author = $rowSpecimen['author3'];
+    } elseif ($rowSpecimen['epithet2']) {
+        $infra_spec = $rowSpecimen['epithet2'];
+        $infra_author = $rowSpecimen['author2'];
+    } elseif ($rowSpecimen['epithet1']) {
+        $infra_spec = $rowSpecimen['epithet1'];
+        $infra_author = $rowSpecimen['author1'];
     } else {
         $infra_spec = '';
         $infra_author = '';
