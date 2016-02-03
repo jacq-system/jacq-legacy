@@ -144,21 +144,36 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('E1', 'Type information')
         ->setCellValue('F1', 'Typified by')
         ->setCellValue('G1', 'Taxon')
-        ->setCellValue('H1', 'Family')
-        ->setCellValue('I1', 'Collector')
-        ->setCellValue('J1', 'Date')
-        ->setCellValue('K1', 'Country')
-        ->setCellValue('L1', 'Admin2')
-        ->setCellValue('M1', 'Latitude')
-        ->setCellValue('N1', 'Longitude')
-        ->setCellValue('O1', 'Altitude lower')
-        ->setCellValue('P1', 'Altitude higher')
-        ->setCellValue('Q1', 'Label')
-        ->setCellValue('R1', 'det./rev./conf./assigned')
-        ->setCellValue('S1', 'ident. history')
-        ->setCellValue('T1', 'annotations')
-        ->setCellValue('U1', 'habitat')
-        ->setCellValue('V1', 'habitus');
+        ->setCellValue('H1', 'Genus')
+        ->setCellValue('I1', 'Species')
+        ->setCellValue('J1', 'Author')
+        ->setCellValue('K1', 'Rank')
+        ->setCellValue('L1', 'Infra_spec')
+        ->setCellValue('M1', 'Infra_author')
+        ->setCellValue('N1', 'Family')
+        ->setCellValue('O1', 'Collection')
+        ->setCellValue('P1', 'First_collector')
+        ->setCellValue('Q1', 'First_collectors_number')
+        ->setCellValue('R1', 'Add_collectors')
+        ->setCellValue('S1', 'Alt_number')
+        ->setCellValue('T1', 'Series')
+        ->setCellValue('U1', 'Series_number')
+        ->setCellValue('V1', 'Date')
+        ->setCellValue('W1', 'Date_2')
+        ->setCellValue('X1', 'Country')
+        ->setCellValue('Y1', 'Province')
+        ->setCellValue('Z1', 'Latitude')
+        ->setCellValue('AA1', 'Latitude_DMS')
+        ->setCellValue('AB1', 'Longitude')
+        ->setCellValue('AC1', 'Longitude_DMS')
+        ->setCellValue('AD1', 'Altitude lower')
+        ->setCellValue('AE1', 'Altitude higher')
+        ->setCellValue('AF1', 'Location')
+        ->setCellValue('AG1', 'det./rev./conf./assigned')
+        ->setCellValue('AH1', 'ident. history')
+        ->setCellValue('AI1', 'annotations')
+        ->setCellValue('AJ1', 'habitat')
+        ->setCellValue('AK1', 'habitus');
 
 if (isset($_SESSION['sLabelDate'])) {
     $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
@@ -166,7 +181,7 @@ if (isset($_SESSION['sLabelDate'])) {
     $searchDate = '2000-01-01';
 }
 $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-         s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+         s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
          s.CollNummer, s.altitude_min, s.altitude_max,
          n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
          mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
@@ -174,6 +189,7 @@ $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.se
          s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
          s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
          s.habitat, s.habitus,
+         tr.rank_abbr,
          ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
          ta4.author author4, ta5.author author5,
          te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -201,6 +217,7 @@ $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.se
          LEFT JOIN tbl_tax_epithets              te3 ON te3.epithetID = ts.subvarietyID
          LEFT JOIN tbl_tax_epithets              te4 ON te4.epithetID = ts.formaID
          LEFT JOIN tbl_tax_epithets              te5 ON te5.epithetID = ts.subformaID
+         LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
          LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
          LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
          LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
@@ -218,27 +235,76 @@ $i = 2;
 while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'], $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
 
-    $country = $rowSpecimen['nation_engl'];
-    $province = $rowSpecimen['provinz'];
+    if ($row['epithet5']) {
+        $infra_spec = $row['epithet5'];
+        $infra_author = $row['author5'];
+    } elseif ($row['epithet4']) {
+        $infra_spec = $row['epithet4'];
+        $infra_author = $row['author4'];
+    } elseif ($row['epithet3']) {
+        $infra_spec = $row['epithet3'];
+        $infra_author = $row['author3'];
+    } elseif ($row['epithet2']) {
+        $infra_spec = $row['epithet2'];
+        $infra_author = $row['author2'];
+    } elseif ($row['epithet1']) {
+        $infra_spec = $row['epithet1'];
+        $infra_author = $row['author1'];
+    } else {
+        $infra_spec = '';
+        $infra_author = '';
+    }
 
-    $lon = '';
-    $lat = '';
-    if ($rowSpecimen['Coord_S'] > 0 || $rowSpecimen['S_Min'] > 0 || $rowSpecimen['S_Sec'] > 0)
+    if ($rowSpecimen['Coord_S'] > 0 || $rowSpecimen['S_Min'] > 0 || $rowSpecimen['S_Sec'] > 0) {
         $lat = -($rowSpecimen['Coord_S'] + $rowSpecimen['S_Min'] / 60 + $rowSpecimen['S_Sec'] / 3600);
-    else if ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0)
+        $latDMS = $rowSpecimen['Coord_S'] . "°";
+        if (!empty($rowSpecimen['S_Min'])) {
+            $latDMS .= ' ' . $rowSpecimen['S_Min'] . "'";
+        }
+        if (!empty($rowSpecimen['S_Sec'])) {
+            $latDMS .= ' ' . $rowSpecimen['S_Sec'] . '"';
+        }
+        $latDMS .= ' S';
+    } else if ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0) {
         $lat = $rowSpecimen['Coord_N'] + $rowSpecimen['N_Min'] / 60 + $rowSpecimen['N_Sec'] / 3600;
-    else
-        $lat = '';
+        $latDMS = $rowSpecimen['Coord_N'] . "°";
+        if (!empty($rowSpecimen['N_Min'])) {
+            $latDMS .= ' ' . $rowSpecimen['N_Min'] . "'";
+        }
+        if (!empty($rowSpecimen['N_Sec'])) {
+            $latDMS .= ' ' . $rowSpecimen['N_Sec'] . '"';
+        }
+        $latDMS .= ' N';
+    } else {
+        $lat = $latDMS = '';
+    }
     if (strlen($lat) > 0) {
         $lat = "" . number_format(round($lat, 9), 9) . "° ";
     }
 
-    if ($rowSpecimen['Coord_W'] > 0 || $rowSpecimen['W_Min'] > 0 || $rowSpecimen['W_Sec'] > 0)
+    if ($rowSpecimen['Coord_W'] > 0 || $rowSpecimen['W_Min'] > 0 || $rowSpecimen['W_Sec'] > 0) {
         $lon = -($rowSpecimen['Coord_W'] + $rowSpecimen['W_Min'] / 60 + $rowSpecimen['W_Sec'] / 3600);
-    else if ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0)
+        $lonDMS = $rowSpecimen['Coord_W'] . "°";
+        if (!empty($rowSpecimen['W_Min'])) {
+            $lonDMS .= ' ' . $rowSpecimen['W_Min'] . "'";
+        }
+        if (!empty($rowSpecimen['W_Sec'])) {
+            $lonDMS .= ' ' . $rowSpecimen['W_Sec'] . '"';
+        }
+        $lonDMS .= ' W';
+    } else if ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0) {
         $lon = $rowSpecimen['Coord_E'] + $rowSpecimen['E_Min'] / 60 + $rowSpecimen['E_Sec'] / 3600;
-    else
-        $lon = '';
+        $lonDMS = $rowSpecimen['Coord_E'] . "°";
+        if (!empty($rowSpecimen['E_Min'])) {
+            $lonDMS .= ' ' . $rowSpecimen['E_Min'] . "'";
+        }
+        if (!empty($rowSpecimen['E_Sec'])) {
+            $lonDMS .= ' ' . $rowSpecimen['E_Sec'] . '"';
+        }
+        $lonDMS .= ' E';
+    } else {
+        $lon = $lonDMS = '';
+    }
 
     if (strlen($lon) > 0) {
         $lon = "" . number_format(round($lon, 9), 9) . "° ";
@@ -251,21 +317,36 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         ->setCellValue('E' . $i, makeTypus(intval($rowSpecimen['specimen_ID'])))
         ->setCellValue('F' . $i, $rowSpecimen['typified'])
         ->setCellValue('G' . $i, makeTaxon($rowSpecimen['taxonID']))
-        ->setCellValue('H' . $i, $rowSpecimen['family'])
-        ->setCellValue('I' . $i, $sammler)
-        ->setCellValue('J' . $i, $rowSpecimen['Datum'])
-        ->setCellValue('K' . $i, $country)
-        ->setCellValue('L' . $i, $province)
-        ->setCellValue('M' . $i, $lat)
-        ->setCellValue('N' . $i, $lon)
-        ->setCellValue('O' . $i, $rowSpecimen['altitude_min'])
-        ->setCellValue('P' . $i, $rowSpecimen['altitude_max'])
-        ->setCellValue('Q' . $i, $rowSpecimen['Fundort'])
-        ->setCellValue('R' . $i, $rowSpecimen['det'])
-        ->setCellValue('S' . $i, $rowSpecimen['taxon_alt'])
-        ->setCellValue('T' . $i, $rowSpecimen['Bemerkungen'])
-        ->setCellValue('U' . $i, $rowSpecimen['habitat'])
-        ->setCellValue('V' . $i, $rowSpecimen['habitus']);
+        ->setCellValue('H' . $i, $rowSpecimen['genus'])
+        ->setCellValue('I' . $i, $rowSpecimen['epithet'])
+        ->setCellValue('J' . $i, $rowSpecimen['author'])
+        ->setCellValue('K' . $i, $rowSpecimen['rank_abbr'])
+        ->setCellValue('L' . $i, $infra_spec)
+        ->setCellValue('M' . $i, $infra_author)
+        ->setCellValue('N' . $i, $rowSpecimen['family'])
+        ->setCellValue('O' . $i, $sammler)
+        ->setCellValue('P' . $i, $rowSpecimen['Sammler'])
+        ->setCellValue('Q' . $i, $rowSpecimen['Nummer'])
+        ->setCellValue('R' . $i, $rowSpecimen['Sammler_2'])
+        ->setCellValue('S' . $i, $rowSpecimen['alt_number'])
+        ->setCellValue('T' . $i, $rowSpecimen['series'])
+        ->setCellValue('U' . $i, $rowSpecimen['series_number'])
+        ->setCellValue('V' . $i, $rowSpecimen['Datum'])
+        ->setCellValue('W' . $i, $rowSpecimen['Datum2'])
+        ->setCellValue('X' . $i, $rowSpecimen['nation_engl'])
+        ->setCellValue('Y' . $i, $rowSpecimen['provinz'])
+        ->setCellValue('Z' . $i, $lat)
+        ->setCellValue('AA' . $i, $latDMS)
+        ->setCellValue('AB' . $i, $lon)
+        ->setCellValue('AC' . $i, $lonDMS)
+        ->setCellValue('AD' . $i, $rowSpecimen['altitude_min'])
+        ->setCellValue('AE' . $i, $rowSpecimen['altitude_max'])
+        ->setCellValue('AF' . $i, $rowSpecimen['Fundort'])
+        ->setCellValue('AG' . $i, $rowSpecimen['det'])
+        ->setCellValue('AH' . $i, $rowSpecimen['taxon_alt'])
+        ->setCellValue('AI' . $i, $rowSpecimen['Bemerkungen'])
+        ->setCellValue('AJ' . $i, $rowSpecimen['habitat'])
+        ->setCellValue('AK' . $i, $rowSpecimen['habitus']);
 
     $i++;
 }
