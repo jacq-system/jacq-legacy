@@ -49,7 +49,7 @@ div.cssf_input_autocomplete ul             { border:2px solid #888; margin:0; pa
 div.cssf_input_autocomplete ul li          { margin:0; padding:3px; }
 div.cssf_input_autocomplete ul li.selected { color:HighlightText; background-color:Highlight; }
 
-#close { position:absolute; top:1em; right:1em; width:8em ; }
+#close { position:absolute; top:1em; right:1em; width:9em ; }
 
 a.iBox { color:blue; }
 a.iBox:hover { color:red; }

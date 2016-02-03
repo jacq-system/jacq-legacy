@@ -6,17 +6,6 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("./inc/PHPExcel/PHPExcel.php");
 
-function formatCell($value) {
-
-    if (!isset($value) || $value == "")
-        $value = "<td></td>";
-    else {
-        //$value = "<td>".str_replace('"', '""', $value); // escape quotes
-        $value = '<td>' . $value . "</td>";
-    }
-    return $value;
-}
-
 function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
@@ -171,53 +160,59 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('U1', 'habitat')
         ->setCellValue('V1', 'habitus');
 
-$sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-        s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-        s.CollNummer, s.altitude_min, s.altitude_max,
-        n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
-        mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
-        s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
-        s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-        s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-        s.habitat, s.habitus,
-        ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-        ta4.author author4, ta5.author author5,
-        te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-        te4.epithet epithet4, te5.epithet epithet5,
-        ts.synID, ts.taxonID, ts.statusID
-        FROM tbl_specimens s
-        LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
-        LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
-        LEFT JOIN meta m ON m.source_id = mc.source_id
-        LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
-        LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
-        LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
-        LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
-        LEFT JOIN tbl_tax_species ts ON ts.taxonID=s.taxonID
-        LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-        LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-        LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-        LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-        LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-        LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-        LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-        LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-        LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-        LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-        LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-        LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-        LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-        LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
-        LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
-        WHERE 1
-        ";
-
-if (empty($_SESSION['sSQLCondition'])) {
-    $sql_condition = " AND 0 = 1";
+if (isset($_SESSION['sLabelDate'])) {
+    $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
 } else {
-    $sql_condition = $_SESSION['sSQLCondition'];
+    $searchDate = '2000-01-01';
 }
-$resultSpecimens = mysql_query($sql . $sql_condition);
+$sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+         s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+         s.CollNummer, s.altitude_min, s.altitude_max,
+         n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
+         mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
+         s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
+         s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+         s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+         s.habitat, s.habitus,
+         ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+         ta4.author author4, ta5.author author5,
+         te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+         te4.epithet epithet4, te5.epithet epithet5,
+         ts.synID, ts.taxonID, ts.statusID
+        FROM (herbarinput_log.log_specimens ls, tbl_specimens s)
+         LEFT JOIN tbl_typi                      t   ON t.typusID = s.typusID
+         LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seriesID
+         LEFT JOIN tbl_management_collections    mc  ON mc.collectionID = s.collectionID
+         LEFT JOIN meta                          m   ON m.source_id = mc.source_id
+         LEFT JOIN tbl_geo_nation                n   ON n.NationID = s.NationID
+         LEFT JOIN tbl_geo_province              p   ON p.provinceID = s.provinceID
+         LEFT JOIN tbl_collector                 c   ON c.SammlerID = s.SammlerID
+         LEFT JOIN tbl_collector_2               c2  ON c2.Sammler_2ID = s.Sammler_2ID
+         LEFT JOIN tbl_tax_species               ts  ON ts.taxonID = s.taxonID
+         LEFT JOIN tbl_tax_authors               ta  ON ta.authorID = ts.authorID
+         LEFT JOIN tbl_tax_authors               ta1 ON ta1.authorID = ts.subspecies_authorID
+         LEFT JOIN tbl_tax_authors               ta2 ON ta2.authorID = ts.variety_authorID
+         LEFT JOIN tbl_tax_authors               ta3 ON ta3.authorID = ts.subvariety_authorID
+         LEFT JOIN tbl_tax_authors               ta4 ON ta4.authorID = ts.forma_authorID
+         LEFT JOIN tbl_tax_authors               ta5 ON ta5.authorID = ts.subforma_authorID
+         LEFT JOIN tbl_tax_epithets              te  ON te.epithetID = ts.speciesID
+         LEFT JOIN tbl_tax_epithets              te1 ON te1.epithetID = ts.subspeciesID
+         LEFT JOIN tbl_tax_epithets              te2 ON te2.epithetID = ts.varietyID
+         LEFT JOIN tbl_tax_epithets              te3 ON te3.epithetID = ts.subvarietyID
+         LEFT JOIN tbl_tax_epithets              te4 ON te4.epithetID = ts.formaID
+         LEFT JOIN tbl_tax_epithets              te5 ON te5.epithetID = ts.subformaID
+         LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
+         LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
+         LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
+        WHERE ls.specimenID = s.specimen_ID
+         AND ls.userID = '" . intval($_SESSION['uid']) . "'
+         AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate', '1')
+        GROUP BY ls.specimenID";
+if (isset($_SESSION['sOrder'])) {
+    $sql .= " ORDER BY " . $_SESSION['sOrder'];
+}
+
+$resultSpecimens = mysql_query($sql);
 
 $i = 2;
 while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
@@ -249,7 +244,7 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         $lon = "" . number_format(round($lon, 9), 9) . "° ";
     }
 
-$objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
+    $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
         ->setCellValue('B' . $i, $rowSpecimen['HerbNummer'])
         ->setCellValue('C' . $i, $rowSpecimen['coll_short'])
         ->setCellValue('D' . $i, $rowSpecimen['CollNummer'])
@@ -275,11 +270,12 @@ $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
     $i++;
 }
 
+//error_log(var_export($i, true));
+
 // Redirect output to a client’s web browser (Excel2007)
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-header('Content-Disposition: attachment;filename="specimens_download.xlsx"');
+header('Content-Disposition: attachment;filename="specimens_labels_download.xlsx"');
 header('Cache-Control: max-age=0');
 
 $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 $objWriter->save('php://output');
-exit;

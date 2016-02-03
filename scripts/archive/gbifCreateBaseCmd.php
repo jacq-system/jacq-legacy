@@ -215,7 +215,7 @@ foreach ($tbls as $tbl) {
         if ($row['digital_image']) {
             $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
         } else {
-           $image_url = "";
+            $image_url = "";
         }
 
         $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
