@@ -69,6 +69,7 @@ function makeSammler($search, $x, $y, $nr)
 	 */
 	* html .ui-autocomplete {
 		height: 200px;
+        }
   </style>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>

@@ -140,7 +140,7 @@ function makeTypus($ID) {
 }
 // extend memory and timeout settings
 
-ini_set("memory_limit", "512M"); 
+ini_set("memory_limit", "512M");
 set_time_limit(0);
 
 // Create new PHPExcel object
@@ -212,7 +212,11 @@ $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.se
         WHERE 1
         ";
 
-$sql_condition = $_SESSION['sSQLCondition'];
+if (empty($_SESSION['sSQLCondition'])) {
+    $sql_condition = " AND 0 = 1";
+} else {
+    $sql_condition = $_SESSION['sSQLCondition'];
+}
 $resultSpecimens = mysql_query($sql . $sql_condition);
 
 $i = 2;

@@ -31,6 +31,8 @@ if (!isset($_SESSION['sType'])) $_SESSION['sType'] = 0;
 if (!isset($_SESSION['sImages'])) $_SESSION['sImages'] = '';
 if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
+if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
+if (!isset($_SESSION['sUserDate'])) $_SESSION['sUserDate'] = '';
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
@@ -78,7 +80,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
 		$_SESSION['sImages'] = $_POST['images'];
 	}
-	
+
     $_SESSION['sOrder'] = "genus, te.epithet, ta.author, "
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
@@ -208,7 +210,7 @@ function makeDropdownDate($label = false)
 {
     $sql = "SELECT DATE(timestamp) as date
             FROM herbarinput_log.log_specimens
-            WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 12 ";
+            WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 120 ";
     if (intval($label)) {
         $sql .= "AND userID='" . intval($_SESSION['uid']) . "' ";
     } elseif (intval($_SESSION['sUserID'])) {
@@ -320,7 +322,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         color: #FFFF00;
         border: 1px solid #000000;
       }
-      
+
       .pagination .current {
           background: none repeat scroll 0 0 #AA0000;
           color: #FFFF00;
@@ -467,8 +469,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </tr><tr>
   <td colspan="2">
       <input class="button" type="submit" name="search" value=" search ">
-      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php'" name="downloadCSV" value=" download CSV ">
-      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportXls.php'" name="downloadXLSX" value=" download XLSX ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php';return false;" name="downloadCSV" value=" download CSV ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportXls.php';return false;" name="downloadXLSX" value=" download XLSX ">
   </td>
   <td colspan="2" align="right">
   </td>
@@ -490,6 +492,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </td><td style="width: 2em">&nbsp;</td><td>
   <?php makeDropdownDate(true); ?>
   <input class="button" type="submit" name="prepareLabels" value=" Labels ">
+  <input class="button" type="image" onclick="document.location.href='listSpecimensLabelsExportXls.php';return false;" name="labelsXLSX" src="webimages/disk.png" title="download Labels XLS">
 </td>
 <?php if (checkRight('editor')):    // only editors may check logged in users ?>
 <td style="width: 2em">&nbsp;</td><td>
@@ -585,7 +588,7 @@ if ($_SESSION['sType'] == 1) {
         function listSpecimens() {
             xajax_listSpecimens( 0, true, $('#items_per_page').val() );
         }
-                        
+
     // init pagination
     $(function() {
         listSpecimens();
@@ -676,9 +679,9 @@ if ($_SESSION['sType'] == 1) {
                  AND tg.genID = ts.genID
                  AND mc.collectionID = s.collectionID
                  AND ls.userID = '" . intval($_SESSION['uid']) . "'
-                 AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')";
-        $sql .= " GROUP BY ls.specimenID
-                  ORDER BY ".$_SESSION['sOrder'];
+                 AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
+                GROUP BY ls.specimenID
+                ORDER BY ".$_SESSION['sOrder'];
         $result = db_query($sql);
         if (mysql_num_rows($result) > 0) {
             echo "<table class=\"out\" cellspacing=\"0\">\n";

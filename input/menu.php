@@ -45,10 +45,10 @@ $userdata = mysql_fetch_array(mysql_query($sql));
 
     function openWindow(target,name) {
       options = "width=";
-      if (screen.availWidth<990)
+      if (screen.availWidth<1130)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
+        options += "1130, height=";
       if (screen.availHeight<710)
         options += (screen.availHeight - 10);
       else

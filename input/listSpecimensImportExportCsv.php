@@ -41,17 +41,17 @@ function makeTaxon($taxonID) {
     // prepare variables
     $taxonID = intval($taxonID);
     $scientificName = null;
-    
+
     // prepare query
     $sql = "SELECT `herbar_view`.GetScientificName( $taxonID, 0 ) AS `scientificName`";
     $result = mysql_query($sql);
-    
+
     // check if we found a result
     if(mysql_num_rows($result) > 0) {
         $row = mysql_fetch_array($result);
         $scientificName = $row['scientificName'];
     }
-    
+
     return $scientificName;
 }
 
@@ -179,7 +179,11 @@ $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.se
         WHERE 1
         ";
 
-$sql_condition = $_SESSION['sSQLCondition'];
+if (empty($_SESSION['sSQLCondition'])) {
+    $sql_condition = " AND 0 = 1";
+} else {
+    $sql_condition = $_SESSION['sSQLCondition'];
+}
 $resultSpecimens = mysql_query($sql . $sql_condition);
 
 while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
@@ -188,7 +192,7 @@ while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
 
   $country = $rowSpecimen['nation_engl'];
   $province = $rowSpecimen['provinz'];
- 
+
  $lon ='';$lat ='';
   if ($rowSpecimen['Coord_S']>0 || $rowSpecimen['S_Min']>0 || $rowSpecimen['S_Sec']>0)
     $lat = -($rowSpecimen['Coord_S'] + $rowSpecimen['S_Min'] / 60 + $rowSpecimen['S_Sec'] / 3600);
@@ -199,18 +203,18 @@ while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
   if(strlen($lat)>0){
     $lat="".number_format(round($lat,9), 9) ."° ";
   }
-  
+
  if ($rowSpecimen['Coord_W']>0 || $rowSpecimen['W_Min']>0 || $rowSpecimen['W_Sec']>0)
     $lon = -($rowSpecimen['Coord_W'] + $rowSpecimen['W_Min'] / 60 + $rowSpecimen['W_Sec'] / 3600);
   else if ($rowSpecimen['Coord_E']>0 || $rowSpecimen['E_Min']>0 || $rowSpecimen['E_Sec']>0)
     $lon = $rowSpecimen['Coord_E'] + $rowSpecimen['E_Min'] / 60 + $rowSpecimen['E_Sec'] / 3600;
   else
     $lon = '';
-  
+
   if(strlen($lon)>0){
     $lon= "".number_format(round($lon,9), 9)."° ";
   }
-  
+
   $csvData .= "<tr>".
               formatCell($rowSpecimen['specimen_ID']).
               formatCell($rowSpecimen['HerbNummer']).
