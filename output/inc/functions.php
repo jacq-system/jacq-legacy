@@ -2,7 +2,7 @@
 require_once( 'variables.php' );
 require_once( 'AnnotationQuery.inc.php' );
 require_once( 'ImagePreview.inc.php' );
-
+require_once('StableIdentifier.php');
 function db_connect( $dbConfig, $dbAccess = "readonly" ) {
     $host = $dbConfig['host'];
     $db = $dbConfig['db'];
