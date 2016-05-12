@@ -92,7 +92,8 @@ tbl_tax_systematic_categories
     <tr>
       <td valign="top" colspan="9">
         <?php
-if (empty($_SESSION['s_query'])) die("The database is under maintenance and currently not available!"); // if no sessions -> stop script
+        if (empty($_SESSION['s_query'])) header("location:search.php"); // if no sessions -> forward to search page
+
 
 if ($_GET['order']==2)
   $sql = $_SESSION['s_query']."ORDER BY Sammler, Sammler_2, series, Nummer";
