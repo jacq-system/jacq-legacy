@@ -183,7 +183,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                  */
                 for ($i = 0; $i < 2; $i++) {
                     // do the normal search
-                    $res = mysql_query("SELECT g.genus, f.family, genID, a.author, s.taxonID,
+                    $res = mysql_query("SELECT g.genus, f.family, s.genID, a.author, s.taxonID,
                                          mdld('" . mysql_real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
                                         FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
                                         WHERE g.familyID = f.familyID
