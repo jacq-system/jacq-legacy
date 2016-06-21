@@ -314,7 +314,14 @@ if ($row['ncbi_accession'])
                 </tr>
             </table>
           <table border="2" cellpadding="2" width="80%">
-            <tr>
+              <tr>
+                  <td align="right" width="30%">Stable Identifier</td>
+                  <td><b>
+                          <?php makeCell(StableIdentifier($row)); ?>
+                      </b>
+                  </td>
+              </tr>
+              <tr>
               <td align="right" width="30%">Collection</td>
               <td><b>
                 <?php makeCell(collectionID($row)); ?>

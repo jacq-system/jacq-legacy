@@ -20,17 +20,18 @@
 require_once('inc/variables.php');
 
 class cls_herbarium_jacq extends cls_herbarium_base {
+
     private $matches = array();    // result of getMatches() are stored here
     private $currSynonyms20;       // holds temporary list of synonyms20 for current species
     private $counterSyns20 = 0;    // counter20 for temporary list
     var $block_limit = 2;
     var $limit = 4;
 
-    /*******************\
-    |                   |
-    |  public functions |
-    |                   |
-    \*******************/
+    /*     * *****************\
+      |                   |
+      |  public functions |
+      |                   |
+      \****************** */
 
     /**
      * get all possible matches against the virtual herbarium vienna
@@ -64,7 +65,6 @@ class cls_herbarium_jacq extends cls_herbarium_base {
             $sort1 = $sort2 = $sort3 = array();
             $lev = array();
             $ctr = 0;  // how many checks did we do
-            
             // create a clean taxon name
             $searchItem = $this->nameParser->parse($searchItem);
 
@@ -75,7 +75,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                     $searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
                     $uninomial = ucfirst(trim($searchItemNearmatch));
                     $lenUninomial = mb_strlen(trim($searchItemNearmatch), "UTF-8");
-                } else {
+                }
+                else {
                     $searchItemNearmatch = '';
                     $uninomial = ucfirst(trim($searchItem));
                     $lenUninomial = mb_strlen(trim($searchItem), "UTF-8");
@@ -103,6 +104,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                             'taxon' => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
                             'ID' => $row['genID'],
                             'taxonID' => $row['taxonID'],
+                            'family' => $row['family'],
                             'species' => array());
                     }
                     $ctr++;
@@ -129,6 +131,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                             'taxon' => $row['family'],
                             'ID' => $row['familyID'],
                             'taxonID' => $row['taxonID'],
+                            'family' => $row['family'], // this is redundant, but for result format conformance, add it twice
                             'species' => array());
                     }
                     $ctr++;
@@ -143,7 +146,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                     }
                     array_multisort($sort1, SORT_NUMERIC, $sort2, SORT_DESC, SORT_NUMERIC, $sort3, $searchresult);
                 }
-            } else {
+            }
+            else {
                 $type = 'multi';
 
                 // parse the taxon string
@@ -156,7 +160,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                     $parts['epithet'] = $this->_near_match($parts['epithet'], true);
                     $parts['subepithet'] = $this->_near_match($parts['subepithet'], true);
                     $searchItemNearmatch = $this->_formatTaxon($parts);
-                } else {
+                }
+                else {
                     $searchItemNearmatch = '';
                 }
 
@@ -178,11 +183,14 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                  */
                 for ($i = 0; $i < 2; $i++) {
                     // do the normal search
-                    $res = mysql_query("SELECT g.genus, f.family, genID, a.author,
+                    $res = mysql_query("SELECT g.genus, f.family, s.genID, a.author, s.taxonID,
                                          mdld('" . mysql_real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
-                                        FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
+                                        FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
                                         WHERE g.familyID = f.familyID
-                                         AND g.authorID = a.authorID");
+                                         AND g.authorID = a.authorID
+                                         AND g.`genID` = s.`genID`
+                                         AND s.`tax_rankID` = 7
+                                         ");
 
                     /**
                      * do the actual calculation of the distances
@@ -195,7 +203,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 'distance' => $row['mdld'],
                                 'ratio' => 1 - $row['mdld'] / max(mb_strlen($row['genus'], "UTF-8"), $lenGenus[$i]),
                                 'taxon' => $row['genus'] . ' ' . $row['author'] . ' (' . $row['family'] . ')',
-                                'ID' => $row['genID']);
+                                'ID' => $row['genID'],
+                                'taxonID' => $row['taxonID'],
+                                'family' => $row['family']);
                         }
                         $ctr++;
                     }
@@ -260,12 +270,14 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                         $ratio = 1 - $distance / max(mb_strlen($row['epithet0'], "UTF-8"), $lenEpithet) - $row['mdld2'] / max(mb_strlen($row['epithet' . $rank], "UTF-8"), $lenEpithet2);
                                         $distance += $row['mdld2'];
                                     }
-                                } else {
+                                }
+                                else {
                                     $found = true;  // we've hit something
                                     $ratio = 1 - $distance / max(mb_strlen($row['epithet0'], "UTF-8"), $lenEpithet);
                                 }
                             }
-                        } else {
+                        }
+                        else {
                             $found = true;  // no epithet, so we've hit something anyway
                             $ratio = 1;
                             $distance = 0;
@@ -361,7 +373,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 while ($row_cn = mysql_fetch_array($result_cn)) {
                                     // get the reference name for the given common name entry
                                     $reference = 'jacq';
-                                    switch($row_cn['source_type']) {
+                                    switch ($row_cn['source_type']) {
                                         case 'person':
                                             $reference = $this->_getPersonString($row_cn['source_id']);
                                             break;
@@ -372,7 +384,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                             $reference = $this->_getLiteratureString($row_cn['source_id']);
                                             break;
                                     }
-                                    
+
                                     // add all relevant information to the response
                                     $commonNames[] = array(
                                         'id' => $row_cn['common_id'],
@@ -391,6 +403,7 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 'ratio' => $ratio * $val['ratio'],
                                 'taxon' => $taxon,
                                 'taxonID' => $taxonID,
+                                'family' => $val['family'],
                                 'syn' => $syn,
                                 'synID' => $synID,
                                 'commonNames' => $commonNames
@@ -481,7 +494,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                 $searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
                 $commonName = strtolower(trim($searchItemNearmatch));
                 $lenCommonName = mb_strlen(trim($searchItemNearmatch), "UTF-8");
-            } else {
+            }
+            else {
                 $searchItemNearmatch = '';
                 $commonName = strtolower(trim($searchItem));
                 $lenCommonName = mb_strlen(trim($searchItem), "UTF-8");
@@ -627,11 +641,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         return $this->matches;
     }
 
-    /********************\
-    |                    |
-    |  private functions |
-    |                    |
-    \********************/
+    /*     * ******************\
+      |                    |
+      |  private functions |
+      |                    |
+      \******************* */
 
     /**
      * returns an array with the various parts of a taxon
@@ -663,7 +677,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         $result = mysql_query($sql);
         if ($result) {
             return mysql_fetch_array($result);
-        } else {
+        }
+        else {
             return array();
         }
     }
@@ -684,7 +699,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
 
         if ($result) {
             return mysql_fetch_array($result);
-        } else {
+        }
+        else {
             return array();
         }
     }
@@ -706,7 +722,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         $result = mysql_query($sql);
         if ($result) {
             return mysql_fetch_array($result);
-        } else {
+        }
+        else {
             return array();
         }
     }
@@ -773,7 +790,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                         // 1 = x (hybrid name), 96 = acc (accepted name), 97 = prov. acc. (provisionally accepted name), 103 = appl. incert. (application uncertain)
                         if ($row['statusID'] == 96 || $row['statusID'] == 97 || $row['statusID'] == 103 || $row['statusID'] == 1) {
                             $id = $row['taxonID'];
-                        } else {
+                        }
+                        else {
                             $id = $row['synID'];
                         }
 
@@ -832,7 +850,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                     WHERE synID = '" . mysql_escape_string($id) . "' ";
                                 if (empty($row['basID'])) {
                                     $result2 = mysql_query($sql . "AND basID = '" . mysql_escape_string($id) . "'");
-                                } else {
+                                }
+                                else {
                                     $result2 = mysql_query($sql . "AND (basID IS NULL OR basID = '" . mysql_escape_string($id) . "') AND taxonID = '" . $row['basID'] . "'");
                                 }
 
@@ -843,7 +862,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
 
                                 if (empty($row['basID'])) {
                                     $result2 = mysql_query($sql . "AND basID IS NULL" . $order);
-                                } else {
+                                }
+                                else {
                                     $result2 = mysql_query($sql . "AND (basID IS NULL OR basID = '" . mysql_escape_string($id) . "') AND taxonID != '" . $row['basID'] . "'" . $order);
                                 }
 
@@ -852,10 +872,12 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 if (!empty($row['synID'])) {
                                     $id = $row['synID'];
                                     echo "\n";
-                                } else {
+                                }
+                                else {
                                     $id = 0;
                                 }
-                            } else {
+                            }
+                            else {
                                 $id = 0;
                             }
                         } while ($id);
@@ -959,7 +981,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
      */
     private function _getPersonString($person_ID) {
         $person_ID = intval($person_ID);
-        if( $person_ID <= 0 ) return NULL;
+        if ($person_ID <= 0)
+            return NULL;
 
         $sql = "
             SELECT `person_ID`, `p_familyname`, `p_firstname`, `p_birthdate`, `p_death`
@@ -979,12 +1002,14 @@ class cls_herbarium_jacq extends cls_herbarium_base {
      */
     private function _getLiteratureString($citationID) {
         $citationID = intval($citationID);
-        if( $citationID <= 0 ) return NULL;
-        
+        if ($citationID <= 0)
+            return NULL;
+
         $sql = "SELECT `herbar_view`.GetProtolog({$citationID}) AS 'citation'";
 
         $result = mysql_query($sql);
         $row = mysql_fetch_assoc($result);
         return $row['citation'];
     }
+
 }

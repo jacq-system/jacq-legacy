@@ -1,5 +1,7 @@
 <?php
 session_start();
+if (empty($_SESSION['s_query'])) header("location:search.php"); // if no sessions -> forward to search page
+
 require("inc/functions.php");
 ?>
 <html>
@@ -7,7 +9,7 @@ require("inc/functions.php");
 <title>Virtual Herbaria / search results</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="description" content="FW4 DW4 HTML">
-<!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeurop�ische Normalzeit) 2002-->
+<!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropaeische Normalzeit) 2002-->
 <link rel="stylesheet" href="css/herbarium.css" type="text/css">
 
 <script type="text/javascript" language="javascript"><!--
@@ -38,7 +40,7 @@ function collectionItem($coll) {
 
 }
 /*
-F�r die Webabfrage brauchen wir nur(!!) die folgenden Tabellen:
+Fuer die Webabfrage brauchen wir nur(!!) die folgenden Tabellen:
 - tbl_collector
 - tbl_collector_2
 - tbl_management_collections
@@ -92,15 +94,13 @@ tbl_tax_systematic_categories
     <tr>
       <td valign="top" colspan="9">
         <?php
-if (empty($_SESSION['s_query'])) die("The database is under maintenance and currently not available!"); // if no sessions -> stop script
-
 if ($_GET['order']==2)
   $sql = $_SESSION['s_query']."ORDER BY Sammler, Sammler_2, series, Nummer";
 else
   $sql = $_SESSION['s_query']."ORDER BY genus, epithet, author";
 
 
-  
+
 // PAGINATOR BEGIN
 $limits=array(10,30,50,100);
 if(!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE'])!=0 && in_array(intval($_GET['ITEMS_PER_PAGE']),$limits) ){
@@ -113,7 +113,7 @@ if($PAGE==0)$PAGE=1;
 
 $sql.=" LIMIT ".( $ITEMS_PER_PAGE*($PAGE-1) ).", ".$ITEMS_PER_PAGE;
 
-	
+
 // PAGINATOR END
 
 
@@ -166,7 +166,7 @@ echo "<tr><td colspan=\"2\"><b>".$res_count." records found</b></td>\n";
 <tr><td colspan="9" align="center" valign="center">
 
 
-	
+
 
 <?PHP
 echo $NAVIG."</td></tr>";
@@ -241,16 +241,16 @@ while ($row=mysql_fetch_array($result)) {
   echo "<td class=\"result\" style=\"text-align: center\">".
        (($row['typusID']) ? "<font color=\"red\"><b>".$row['typus']."</b></font>" : "")."</td>\n";
 
-  
+
 	if ($row['source_id'] == '29') {
     	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['HerbNummer'])."</td>";
-	
+
 	}
 	else {
     	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".
         htmlspecialchars(collectionItem($row['collection']))." ".htmlspecialchars($row['HerbNummer'])."</td>";
 	}
-	
+
 
   if ($row['Coord_S']>0 || $row['S_Min']>0 || $row['S_Sec']>0)
     $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
@@ -292,13 +292,13 @@ echo "</table></div>\n";
     </tr>
     <tr>
       <td valign="top" colspan="9" align="center">
-       
+
 
   <?PHP echo $NAVIG; ?>
 
   <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
           Rainer<br></a><br>
-          <b>php-programming</b> -- <a href="mailto:joschach@EUnet.at">Johannes
+          <b>php-programming</b> -- <a href="mailto:joschach@ap4net.at">Johannes
           Schachner</a></p>
         <div class="normal" align="center">
           <!-- #BeginEditable "Datum" -->
