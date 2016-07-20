@@ -11,7 +11,7 @@
 //------------------------------------------------------------------------------
 
 // connection settings
-$serviceUri = "https://annosys.bgbm.fu-berlin.de/AnnoSysTest";	
+$serviceUri = "https://annosys.bgbm.fu-berlin.de/AnnoSys";
 
 class TripleID
 {

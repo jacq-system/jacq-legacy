@@ -460,7 +460,7 @@ if (strlen($typusText)>0):
 	
 					// build URI for new annotation
 					if ($row['source_id'] == '29')
-					$newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
+					$newAnnoUri = $query->newAnnotationUri("http://130.133.131.9/biocase/pywrapper.cgi?dsa=gbif_b&", $id);
 					if ($row['source_id'] == '6')
 					$newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
 					
