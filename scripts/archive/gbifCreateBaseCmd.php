@@ -39,16 +39,25 @@ class DB extends mysqli
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
-$dbLink2->query("TRUNCATE $dbt.meta");
-$dbLink2->query("INSERT INTO $dbt.meta
-                         (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl)
-                   SELECT source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl
-                   FROM meta");
-$dbLink2->query("TRUNCATE $dbt.metadb");
-$dbLink2->query("INSERT INTO $dbt.metadb
-                         (db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url)
-                   SELECT db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
-                   FROM metadb");
+/*
+ * TODO: transfer complete meta and metadb including structure
+ */
+//$dbLink2->query("DROP $dbt.meta");
+//$dbLink2->query("INSERT INTO $dbt.meta
+//                         (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl)
+//                   SELECT source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl
+//                   FROM meta");
+//$dbLink2->query("TRUNCATE $dbt.metadb");
+//$dbLink2->query("INSERT INTO $dbt.metadb
+//                         (db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url)
+//                   SELECT db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
+//                   FROM metadb");
+$dbLink2->query("DROP TABLE $dbt.meta");
+$dbLink2->query("CREATE TABLE $dbt.meta LIKE meta");
+$dbLink2->query("INSERT $dbt.meta SELECT * FROM meta");
+$dbLink2->query("DROP TABLE $dbt.metadb");
+$dbLink2->query("CREATE TABLE $dbt.metadb LIKE metadb");
+$dbLink2->query("INSERT $dbt.metadb SELECT * FROM metadb");
 
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
@@ -214,8 +223,10 @@ foreach ($tbls as $tbl) {
          */
         if ($row['digital_image']) {
             $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
+            $thumb_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=thumb";
         } else {
             $image_url = "";
+            $thumb_url = "";
         }
 
         $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
@@ -257,6 +268,7 @@ foreach ($tbls as $tbl) {
                  CollectorTeam = "         . $dbLink2->quoteString($CollectorTeam) . ",
                  IdentificationDate = "    . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
+                 thumb_url = "             . $dbLink2->quoteString($thumb_url) . ",
                  MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($MultimediaIPR) : "NULL") . ",
                  recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
