@@ -39,19 +39,6 @@ class DB extends mysqli
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
-/*
- * TODO: transfer complete meta and metadb including structure
- */
-//$dbLink2->query("DROP $dbt.meta");
-//$dbLink2->query("INSERT INTO $dbt.meta
-//                         (source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl)
-//                   SELECT source_id, source_code, source_name, source_update, source_version, source_url, source_expiry, source_number_of_records, source_abbr_engl
-//                   FROM meta");
-//$dbLink2->query("TRUNCATE $dbt.metadb");
-//$dbLink2->query("INSERT INTO $dbt.metadb
-//                         (db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url)
-//                   SELECT db_id, source_id_fk, supplier_supplied_when, supplier_organisation, supplier_organisation_code, supplier_person, supplier_url, supplier_adress, supplier_telephone, supplier_email, legal_owner_organisation, legal_owner_organisation_code, legal_owner_person, legal_owner_adress, legal_owner_telephone, legal_owner_email, legal_owner_url, terms_of_use, acknowledgement, description, disclaimer, restrictions, logo_url, statement_url, copyright, ipr, rights_url
-//                   FROM metadb");
 $dbLink2->query("DROP TABLE $dbt.meta");
 $dbLink2->query("CREATE TABLE $dbt.meta LIKE meta");
 $dbLink2->query("INSERT $dbt.meta SELECT * FROM meta");
