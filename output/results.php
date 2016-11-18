@@ -191,12 +191,15 @@ while ($row=mysql_fetch_array($result)) {
     }
   }
   else {
-    if ($row['digital_image']) {
-      if ($row['digital_image_obs'])
+    if ($row['digital_image'] ||$row['digital_image_obs']) {
+      if ($row['digital_image_obs'] && $row['digital_image'])
         $image = "spec_obs.png";
-      else
+      elseif ($row['digital_image_obs'] && !$row['digital_image'])
+        $image = "obs.png";
+        else
         $image = "camera.png";
     }
+
     else {
       $image = "";
       $link = false;
