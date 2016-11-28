@@ -46,6 +46,19 @@ $dbLink2->query("DROP TABLE $dbt.metadb");
 $dbLink2->query("CREATE TABLE $dbt.metadb LIKE metadb");
 $dbLink2->query("INSERT $dbt.metadb SELECT * FROM metadb");
 
+$dbLink2->query("TRUNCATE $dbt.tbl_specimens_types_mv");
+$dbLink2->query("INSERT $dbt.tbl_specimens_types_mv
+                    SELECT NULL,
+                           `herbar_view`.`GetScientificName`(`tbl_specimens_types`.`taxonID`, 0),
+                           `specimenID`,
+                           `tbl_typi`.`typus_engl`,
+                           `typified_by_Person`,
+                           `typified_Date`,
+                           `annotations`
+                    FROM `tbl_specimens_types`
+                     LEFT JOIN `tbl_typi` ON `tbl_specimens_types`.`typusID` = `tbl_typi`.`typusID`");
+
+
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
@@ -163,16 +176,16 @@ foreach ($tbls as $tbl) {
             $GatheringAgentsText .= " & ".$row['Sammler_2'];
         }
         if ($row['series_number']) {
-            if ($row['Nummer'])                     $GatheringAgentsText .= " "  . $row['Nummer'];
-            if ($row['alt_number'])                 $GatheringAgentsText .= " "  . $row['alt_number'];
-            if (strstr($row['alt_number'], "s.n.")) $GatheringAgentsText .= " [" . $row['Datum'] . "]";
-            if ($row['series'])                     $GatheringAgentsText .= " "  . $row['series'];
+            if ($row['Nummer'])                     { $GatheringAgentsText .= " "  . $row['Nummer']; }
+            if ($row['alt_number'])                 { $GatheringAgentsText .= " "  . $row['alt_number']; }
+            if (strstr($row['alt_number'], "s.n.")) { $GatheringAgentsText .= " [" . $row['Datum'] . "]"; }
+            if ($row['series'])                     { $GatheringAgentsText .= " "  . $row['series']; }
             $GatheringAgentsText .= " " . $row['series_number'];
         } else {
-            if ($row['series'])                     $GatheringAgentsText .= " "  . $row['series'];
-            if ($row['Nummer'])                     $GatheringAgentsText .= " "  . $row['Nummer'];
-            if ($row['alt_number'])                 $GatheringAgentsText .= " "  . $row['alt_number'];
-            if (strstr($row['alt_number'], "s.n.")) $GatheringAgentsText .= " [" . $row['Datum'] . "]";
+            if ($row['series'])                     { $GatheringAgentsText .= " "  . $row['series']; }
+            if ($row['Nummer'])                     { $GatheringAgentsText .= " "  . $row['Nummer']; }
+            if ($row['alt_number'])                 { $GatheringAgentsText .= " "  . $row['alt_number']; }
+            if (strstr($row['alt_number'], "s.n.")) { $GatheringAgentsText .= " [" . $row['Datum'] . "]"; }
         }
 
         /**
