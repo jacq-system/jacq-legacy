@@ -314,14 +314,15 @@ if ($row['ncbi_accession'])
                 </tr>
             </table>
           <table border="2" cellpadding="2" width="80%">
-              <tr>
+         <tr>
                   <td align="right" width="30%">Stable Identifier</td>
                   <td><b>
                           <?php makeCell(StableIdentifier($row)); ?>
                       </b>
                   </td>
               </tr>
-              <tr>
+
+            <tr>
               <td align="right" width="30%">Collection</td>
               <td><b>
                 <?php makeCell(collectionID($row)); ?>
@@ -450,8 +451,11 @@ if (strlen($typusText)>0):
 				echo "<tr>";
 
 					// create new id object
-					$id = new MyTripleID($row['specimen_ID']);
-						
+                  if ($row['source_id'] == '29')
+                  $id = new MyTripleID($row['specimen_ID']);
+
+                  if ($row['source_id'] == '6')
+                  $id = new MyTripleID($row['herbNummer']);
 					// create new AnnotationQuery object
 					$query = new AnnotationQuery($serviceUri);
 					
@@ -460,7 +464,7 @@ if (strlen($typusText)>0):
 	
 					// build URI for new annotation
 					if ($row['source_id'] == '29')
-					$newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
+					$newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_b&", $id);
 					if ($row['source_id'] == '6')
 					$newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
 					

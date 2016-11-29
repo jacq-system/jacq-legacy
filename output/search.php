@@ -210,7 +210,7 @@ tbl_wu_generale
             } elseif ($var == "type" && $value == "only") {
                 $sql_restrict_specimen .= "AND tst.typusID IS NOT NULL ";
             } elseif ($var == "images" && $value == "only") {
-                $sql_restrict_specimen .= "AND s.digital_image = 1 ";
+                $sql_restrict_specimen .= "AND (s.digital_image = 1 OR s.digital_image_obs = 1)";
             }
         }
     }

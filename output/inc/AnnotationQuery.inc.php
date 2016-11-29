@@ -7,11 +7,11 @@
 //   This library provides an easy way to fetch annotations from an AnnoSys
 //   service.
 // author: Felix Hilgerdenaar
-// last modification: 2014-09-15
+// last modification: 2014-09-15 Updated
 //------------------------------------------------------------------------------
 
 // connection settings
-$serviceUri = "https://annosys.bgbm.fu-berlin.de/AnnoSysTest";	
+$serviceUri = "https://annosys.bgbm.fu-berlin.de/AnnoSys";
 
 class TripleID
 {
