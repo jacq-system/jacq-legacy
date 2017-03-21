@@ -115,7 +115,7 @@ foreach ($tbls as $tbl) {
              AND s.taxonID = ts.taxonID
              AND s.collectionID = mc.collectionID
              AND s.accessible > 0
-             AND mc.source_id ='" . $tbl['source_id'] . "'";
+             AND mc.source_id = '" . $tbl['source_id'] . "'";
     $result = $dbLink1->query($sql, MYSQLI_USE_RESULT);
     while ($row = $result->fetch_array()) {
 
@@ -226,16 +226,12 @@ foreach ($tbls as $tbl) {
         if ($row['digital_image']) {
             $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
             $thumb_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=thumb";
-            $MultimediaIPR = $row['ipr'];
-            $coyright= $row['copyright'];
-            $rights_url= $row['rights_url'];
-        }
-        else {
+        } else {
             $image_url = "";
             $thumb_url = "";
         }
 
-       /** $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";*/
+//       $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
 
         /**
          * LastEditor
@@ -275,9 +271,9 @@ foreach ($tbls as $tbl) {
                  IdentificationDate = "    . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
                  thumb_url = "             . $dbLink2->quoteString($thumb_url) . ",
-                 MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($MultimediaIPR) : "NULL") . ",
-                 Copyright= "              . (($image_url) ? $dbLink2->quoteString($coyright) : "NULL") . ",
-                 rights_url= "             . (($image_url) ? $dbLink2->quoteString($rights_url) : "NULL") . ",
+                 MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($row['ipr']) : "NULL") . ",
+                 copyright = "             . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
+                 rights_url = "            . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
