@@ -89,6 +89,7 @@ foreach ($tbls as $tbl) {
              te4.epithet epithet4, te5.epithet epithet5,
              gn.nation_engl, gp.provinz,
              ss.series,
+			 md.copyright, md.ipr, md.rights_url,
              uim.uuid
             FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_management_collections mc)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
@@ -108,6 +109,7 @@ foreach ($tbls as $tbl) {
              LEFT JOIN tbl_geo_nation gn ON gn.nationID = s.NationID
              LEFT JOIN tbl_geo_province gp ON gp.provinceID = s.provinceID
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
+             LEFT JOIN metadb md ON md.source_id_fk = mc.source_id
              LEFT JOIN jacq_input.srvc_uuid_minter uim ON (uim.internal_id = s.specimen_ID AND uim.uuid_minter_type_id = 3)
             WHERE s.SammlerID = c.SammlerID
              AND s.taxonID = ts.taxonID
@@ -229,7 +231,7 @@ foreach ($tbls as $tbl) {
             $thumb_url = "";
         }
 
-        $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
+//       $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
 
         /**
          * LastEditor
@@ -269,7 +271,9 @@ foreach ($tbls as $tbl) {
                  IdentificationDate = "    . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = "             . $dbLink2->quoteString($image_url) . ",
                  thumb_url = "             . $dbLink2->quoteString($thumb_url) . ",
-                 MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($MultimediaIPR) : "NULL") . ",
+                 MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($row['ipr']) : "NULL") . ",
+                 copyright = "             . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
+                 rights_url = "            . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
