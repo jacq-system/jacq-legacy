@@ -89,7 +89,7 @@ foreach ($tbls as $tbl) {
              te4.epithet epithet4, te5.epithet epithet5,
              gn.nation_engl, gp.provinz,
              ss.series,
-			 md.copyright, md.ipr, md.rights_url,
+			 md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
              uim.uuid
             FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_management_collections mc)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
@@ -274,6 +274,7 @@ foreach ($tbls as $tbl) {
                  MultimediaIPR = "         . (($image_url) ? $dbLink2->quoteString($row['ipr']) : "NULL") . ",
                  copyright = "             . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
                  rights_url = "            . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
+                 multimedia_object_format = ". (($image_url) ? $dbLink2->quoteString($row['multimedia_object_format']) : "NULL") . ",
                  recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
