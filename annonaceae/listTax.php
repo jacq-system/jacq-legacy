@@ -191,18 +191,18 @@ function typusItem($row) {
 <table cellspacing="5" cellpadding="0">
 <tr>
   <td align="right">&nbsp;<b>Genus:</b></td>
-    <td><input type="text" name="genus" value="<?php echo $_SESSION['taxGenus']?>"></td>
+    <td><input type="text" name="genus" value="<?php echo htmlspecialchars($_SESSION['taxGenus']); ?>"></td>
   <td align="right">&nbsp;<b>Species:</b></td>
-    <td><input type="text" name="species" value="<?php echo $_SESSION['taxSpecies']?>"></td>
+    <td><input type="text" name="species" value="<?php echo htmlspecialchars($_SESSION['taxSpecies']); ?>"></td>
   <td align="right">&nbsp;<b>Author:</b></td>
-    <td><input type="text" name="author" value="<?php echo $_SESSION['taxAuthor']?>"</td>
+    <td><input type="text" name="author" value="<?php echo htmlspecialchars($_SESSION['taxAuthor']); ?>"</td>
 </tr><tr>
   <td align="right">&nbsp;<b>Typecollection:</b></td>
-    <td><input type="text" name="collector" value="<?php echo $_SESSION['taxCollector']?>"></td>
+    <td><input type="text" name="collector" value="<?php echo htmlspecialchars($_SESSION['taxCollector']); ?>"></td>
   <td align="right">&nbsp;<b>Number:</b></td>
-    <td><input type="text" name="number" value="<?php echo $_SESSION['taxNumber']?>"></td>
+    <td><input type="text" name="number" value="<?php echo htmlspecialchars($_SESSION['taxNumber']); ?>"></td>
   <td align="right">&nbsp;<b>Date:</b></td>
-    <td><input type="text" name="date" value="<?php echo $_SESSION['taxDate']?>"></td>
+    <td><input type="text" name="date" value="<?php echo htmlspecialchars($_SESSION['taxDate']); ?>"></td>
 </tr>
 </table>
 <input class="button" type="submit" name="search" value=" search ">
