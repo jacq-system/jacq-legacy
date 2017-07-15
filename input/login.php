@@ -68,7 +68,7 @@ function show_page($text)
 <div align="center">
   <?php if ($text) echo "<h3>".$text."</h3>"; ?>
 
-  <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post" name=f>
+  <form action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="post" name=f>
     <table>
       <tr>
         <td colspan="2"><font face="Helvetica,Arial,sans-serif" size="+2"><b>Please log in:</b></font></td>
