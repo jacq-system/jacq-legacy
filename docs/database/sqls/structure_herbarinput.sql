@@ -22,62 +22,75 @@ SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `meta`
+-- Tabellenstruktur für Tabelle `metadata`
 --
 
-DROP TABLE IF EXISTS `meta`;
-CREATE TABLE IF NOT EXISTS `meta` (
-  `source_id` int(11) NOT NULL default '0',
-  `source_code` char(250) default NULL,
-  `source_name` char(250) default NULL,
-  `source_update` datetime default NULL,
-  `source_version` char(250) default NULL,
-  `source_url` char(250) default NULL,
-  `source_expiry` datetime default NULL,
-  `source_number_of_records` int(11) default NULL,
-  `source_abbr_engl` varchar(255) default NULL,
-  PRIMARY KEY  (`source_id`)
+DROP TABLE IF EXISTS `metadata`;
+CREATE TABLE TABLE IF NOT EXISTS metadata (
+	MetadataID INT UNSIGNED primary key,
+	DatasetGUID VARCHAR(50) NULL DEFAULT NULL,
+	TechnicalContactName VARCHAR(50) NOT NULL DEFAULT '',
+	TechnicalContactEmail VARCHAR(50) NULL DEFAULT NULL,
+	TechnicalContactPhone VARCHAR(50) NULL DEFAULT '',
+	TechnicalContactAddress VARCHAR(255) NULL DEFAULT NULL,
+	ContentContactName VARCHAR(50) NOT NULL DEFAULT '',
+	ContentContactEmail VARCHAR(50) NULL DEFAULT NULL,
+	ContentContactPhone VARCHAR(50) NULL DEFAULT NULL,
+	ContentContactAddress VARCHAR(255) NULL DEFAULT NULL,
+	OtherProviderUDDI VARCHAR(50) NULL DEFAULT NULL,
+	DatasetTitle VARCHAR(250) NULL DEFAULT NULL,
+	DatasetDetails VARCHAR(1000) NULL DEFAULT NULL,
+	DatasetCoverage VARCHAR(500) NULL DEFAULT NULL,
+	DatasetURI VARCHAR(250) NULL DEFAULT NULL,
+	DatasetIconURI VARCHAR(50) NULL DEFAULT NULL,
+	DatasetVersionMajor VARCHAR(50) NOT NULL DEFAULT '',
+	DatasetCreators VARCHAR(200) NULL DEFAULT NULL,
+	DatasetContributors VARCHAR(200) NULL DEFAULT NULL,
+	DateCreated DATETIME NULL DEFAULT NULL,
+	DateModified DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
+	OwnerOrganizationName VARCHAR(255) NULL DEFAULT NULL,
+	OwnerOrganizationAbbrev VARCHAR(50) NULL DEFAULT NULL,
+	OwnerContactPerson VARCHAR(255) NULL DEFAULT '',
+	OwnerContactRole VARCHAR(50) NULL DEFAULT NULL,
+	OwnerAddress VARCHAR(255) NULL DEFAULT NULL,
+	OwnerTelephone VARCHAR(50) NULL DEFAULT NULL,
+	OwnerEmail VARCHAR(50) NULL DEFAULT NULL,
+	OwnerURI VARCHAR(255) NULL DEFAULT NULL,
+	OwnerLogoURI VARCHAR(255) NULL DEFAULT NULL,
+	IPRText VARCHAR(512) NULL DEFAULT NULL,
+	IPRDetails VARCHAR(512) NULL DEFAULT NULL,
+	IPRURI VARCHAR(255) NULL DEFAULT NULL,
+	CopyrightText VARCHAR(512) NULL DEFAULT NULL,
+	CopyrightDetails VARCHAR(512) NULL DEFAULT NULL,
+	CopyrightURI VARCHAR(255) NULL DEFAULT NULL,
+	TermsOfUseText VARCHAR(512) NULL DEFAULT NULL,
+	TermsOfUseDetails VARCHAR(512) NULL DEFAULT NULL,
+	TermsOfUseURI VARCHAR(255) NULL DEFAULT NULL,
+	DisclaimersText VARCHAR(512) NULL DEFAULT NULL,
+	DisclaimersDetails VARCHAR(512) NULL DEFAULT NULL,
+	DisclaimersURI VARCHAR(255) NULL DEFAULT NULL,
+	LicenseText VARCHAR(512) NULL DEFAULT NULL,
+	LicensesDetails VARCHAR(512) NULL DEFAULT NULL,
+	LicenseURI VARCHAR(255) NULL DEFAULT NULL,
+	AcknowledgementsText VARCHAR(512) NULL DEFAULT NULL,
+	AcknowledgementsDetails VARCHAR(512) NULL DEFAULT NULL,
+	AcknowledgementsURI VARCHAR(255) NULL DEFAULT NULL,
+	CitationsText VARCHAR(512) NULL DEFAULT NULL,
+	CitationsDetails VARCHAR(512) NULL DEFAULT NULL,
+	CitationsURI VARCHAR(255) NULL DEFAULT NULL,
+	SourceInstitutionID VARCHAR(50) NOT NULL DEFAULT '',
+	SourceID VARCHAR(250) NOT NULL DEFAULT '',
+	RecordBasis VARCHAR(50) NULL DEFAULT NULL,
+	MultimediaObjectFormat VARCHAR(50) NULL DEFAULT NULL,
+	/* These fields are not used by ABCD 2.06 */
+	source_expiry DATETIME NULL DEFAULT NULL,
+	source_number_of_records int NULL DEFAULT NULL,
+	source_abbr_engl VARCHAR(255) NULL DEFAULT NULL,
+	supplier_organisation_code VARCHAR(50) NULL DEFAULT NULL,
+	supplier_url VARCHAR(250) NULL DEFAULT NULL,
+	restrictions VARCHAR(512) NULL DEFAULT NULL,
+	db_id INT NULL DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
--- --------------------------------------------------------
-
---
--- Tabellenstruktur für Tabelle `metadb`
---
-
-DROP TABLE IF EXISTS `metadb`;
-CREATE TABLE IF NOT EXISTS `metadb` (
-  `db_id` int(11) NOT NULL default '0',
-  `source_id_fk` int(11) default NULL,
-  `supplier_supplied_when` datetime default NULL,
-  `supplier_organisation` varchar(250) default NULL,
-  `supplier_organisation_code` varchar(50) default NULL,
-  `supplier_person` varchar(250) default NULL,
-  `supplier_url` varchar(250) default NULL,
-  `supplier_adress` varchar(50) default NULL,
-  `supplier_telephone` varchar(50) default NULL,
-  `supplier_email` varchar(250) default NULL,
-  `legal_owner_organisation` varchar(250) default NULL,
-  `legal_owner_organisation_code` varchar(50) default NULL,
-  `legal_owner_person` varchar(250) default NULL,
-  `legal_owner_adress` varchar(250) default NULL,
-  `legal_owner_telephone` varchar(250) default NULL,
-  `legal_owner_email` varchar(250) default NULL,
-  `legal_owner_url` varchar(250) default NULL,
-  `terms_of_use` text,
-  `acknowledgement` text,
-  `description` text,
-  `disclaimer` text,
-  `restrictions` text,
-  `logo_url` varchar(250) default NULL,
-  `statement_url` varchar(250) default NULL,
-  `copyright` text,
-  `ipr` text,
-  `rights_url` varchar(250) default NULL,
-  PRIMARY KEY  (`db_id`),
-  KEY `source_id_fk` (`source_id_fk`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
-
 -- --------------------------------------------------------
 
 --
@@ -1603,3 +1616,19 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 DROP TABLE IF EXISTS `view_sourcedatabase`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `view_sourcedatabase` AS select `m`.`source_name` AS `DatabaseFullName`,`m`.`source_code` AS `DatabaseShortName`,`m`.`source_version` AS `DatabaseVersion`,`m`.`source_update` AS `ReleaseDate`,`mdb`.`supplier_person` AS `AuthorsEditors`,_utf8'TaxonomicCoverage' AS `TaxonomicCoverage`,`m`.`source_abbr_engl` AS `GroupNameInEnglish`,`mdb`.`description` AS `Abstract`,`mdb`.`supplier_organisation` AS `Organisation`,`mdb`.`supplier_url` AS `HomeURL`,_utf8'' AS `Coverage`,_utf8'' AS `Completeness`,`mdb`.`disclaimer` AS `Confidence`,`mdb`.`logo_url` AS `LogoFileName`,`mdb`.`supplier_person` AS `ContactPerson` from (`meta` `m` left join `metadb` `mdb` on((`mdb`.`source_id_fk` = `m`.`source_id`)));
+
+-- --------------------------------------------------------
+
+--
+-- Struktur des Views `meta`
+DROP TABLE IF EXISTS `meta`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `meta` AS select MetadataID, SourceInstitutionID, SourceID, DateModified, DatasetVersionMajor, DatasetURI,	source_expiry, source_number_of_records, source_abbr_engl from metadata;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur des Views `metadb`
+DROP TABLE IF EXISTS `metadb`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `metadb` AS select db_id, MetadataID, DateCreated, DatasetTitle, supplier_organisation_code, TechnicalContactName, supplier_url,	TechnicalContactAddress, TechnicalContactPhone, TechnicalContactEmail,	OwnerOrganizationName, OwnerOrganizationAbbrev, OwnerContactPerson, ContentContactAddress, OwnerTelephone, ContentContactEmail, OwnerURI,	TermsOfUseText, AcknowledgementsText, DatasetDetails,	DisclaimersText, restrictions, OwnerLogoURI, DisclaimersURI, LicenseText, IPRText, CopyrightURI, MultimediaObjectFormat from metadata;

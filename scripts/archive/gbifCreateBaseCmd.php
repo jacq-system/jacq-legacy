@@ -39,12 +39,12 @@ class DB extends mysqli
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
-$dbLink2->query("DROP TABLE $dbt.meta");
-$dbLink2->query("CREATE TABLE $dbt.meta LIKE meta");
-$dbLink2->query("INSERT $dbt.meta SELECT * FROM meta");
-$dbLink2->query("DROP TABLE $dbt.metadb");
-$dbLink2->query("CREATE TABLE $dbt.metadb LIKE metadb");
-$dbLink2->query("INSERT $dbt.metadb SELECT * FROM metadb");
+$dbLink2->query("DROP TABLE $dbt.metadata");
+$dbLink2->query("CREATE TABLE $dbt.metadata LIKE metadata");
+$dbLink2->query("INSERT $dbt.metadata SELECT * FROM metadata");
+//$dbLink2->query("DROP TABLE $dbt.metadb");
+//$dbLink2->query("CREATE TABLE $dbt.metadb LIKE metadb");
+//$dbLink2->query("INSERT $dbt.metadb SELECT * FROM metadb");
 
 $dbLink2->query("TRUNCATE $dbt.tbl_specimens_types_mv");
 $dbLink2->query("INSERT $dbt.tbl_specimens_types_mv
