@@ -1623,7 +1623,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- Struktur des Views `meta`
 DROP TABLE IF EXISTS `meta`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `meta` AS select MetadataID, SourceInstitutionID, SourceID, DateModified, DatasetVersionMajor, DatasetURI,	source_expiry, source_number_of_records, source_abbr_engl from metadata;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `meta` AS select MetadataID as source_id, SourceInstitutionID as source_code, SourceID as source_name, DateModified as source_update, DatasetVersionMajor as source_version, DatasetURI as source_url,	source_expiry, source_number_of_records, source_abbr_engl from metadata;
 
 -- --------------------------------------------------------
 
@@ -1631,4 +1631,4 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- Struktur des Views `metadb`
 DROP TABLE IF EXISTS `metadb`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `metadb` AS select db_id, MetadataID, DateCreated, DatasetTitle, supplier_organisation_code, TechnicalContactName, supplier_url,	TechnicalContactAddress, TechnicalContactPhone, TechnicalContactEmail,	OwnerOrganizationName, OwnerOrganizationAbbrev, OwnerContactPerson, ContentContactAddress, OwnerTelephone, ContentContactEmail, OwnerURI,	TermsOfUseText, AcknowledgementsText, DatasetDetails,	DisclaimersText, restrictions, OwnerLogoURI, DisclaimersURI, LicenseText, IPRText, CopyrightURI, MultimediaObjectFormat from metadata;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `metadb` AS select db_id, MetadataID as source_id_fk, DateCreated as supplier_supplied_when, DatasetTitle as supplier_organisation, supplier_organisation_code, TechnicalContactName as supplier_person, supplier_url,	TechnicalContactAddress as supplier_adress, TechnicalContactPhone as supplier_telephone, TechnicalContactEmail as supplier_email,	OwnerOrganizationName as legal_owner_organisation, OwnerOrganizationAbbrev as legal_owner_organisation_code,	OwnerContactPerson legal_owner_person, ContentContactAddress as legal_owner_adress, OwnerTelephone as legal_owner_telephone,	ContentContactEmail as legal_owner_email, OwnerURI as legal_owner_url,	TermsOfUseText as terms_of_use, AcknowledgementsText as acknowledgement, DatasetDetails as description,	DisclaimersText as disclaimer, restrictions, OwnerLogoURI as logo_url, DisclaimersURI as statement_url,	LicenseText as copyright, IPRText as ipr, CopyrightURI as rights_url, MultimediaObjectFormat as multimedia_object_format from metadata;
