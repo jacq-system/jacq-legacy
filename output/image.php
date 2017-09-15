@@ -496,14 +496,15 @@ function getPicDetails($request) {
         // Construct clean filename
         if ($row['is_djatoka'] == '2') {
             // Remove spaces for B HerbNumber
-            $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
+            $HerbNummer = ($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQID' . $specimenID);
+            $HerbNummer = str_replace(' ', '', $HerbNummer);
             $filename = sprintf($HerbNummer);
         }
         elseif ($row['is_djatoka'] == '3') {
 
 
             $html = $row['Bemerkungen'];
-            // create new IamgeQuery object
+            // create new ImageQuery object
             $query = new ImageQuery();
 
             // fetch image uris

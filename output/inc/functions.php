@@ -115,9 +115,12 @@ function generateAnnoTable($metadata) {
 function collectionID ($row)
 {
 	if ($row['source_id'] == '29') {
-	$text = $row['herbNummer'];
-	}
-	else {
+    $text = ($row['herbNummer']) ? $row['herbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
+    }
+    elseif ($row['source_id'] == '50') {
+	$text = ($row['herbNummer']) ? $row['herbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
+    }
+    else {
 	$text = $row['collection']." ".$row['herbNummer'];
 	}
 

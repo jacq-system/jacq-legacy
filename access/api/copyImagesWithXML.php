@@ -224,7 +224,7 @@ if ($batchID) {
             GROUP BY source_id_fk";
     $result = db_query($sql);
     while ($row=mysql_fetch_array($result)) {
-        db_query("UPDATE herbarinput.meta SET source_update = NOW() WHERE source_id = " . quoteString($row['source_id_fk']));
+        db_query("UPDATE herbarinput.metadata SET source_update = NOW() WHERE source_id = " . quoteString($row['source_id_fk']));
     }
 
     $result = db_query("SELECT * FROM herbarinput.meta, herbarinput.metadb WHERE herbarinput.meta.source_id = herbarinput.metadb.source_id_fk");
