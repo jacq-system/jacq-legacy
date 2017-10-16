@@ -61,8 +61,8 @@ function contains ($points, $point, $limit = 6)
 
 
 unset($points);
-$result = mysql_query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
-while ($row = mysql_fetch_array($result)) {
+$result = $dbLink->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
+while ($row = $result->fetch_array()) {
     $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']);
     $lng = dms2sec($row['Coord_W'], $row['W_Min'], $row['W_Sec'], $row['Coord_E'], $row['E_Min'], $row['E_Sec']);
     if ($lat != 0 && $lng != 0) {
@@ -77,7 +77,9 @@ while ($row = mysql_fetch_array($result)) {
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
              . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])) . " / "
              . $row['Datum'] . " / ";
-        if ($row['typusID']) $txt .= htmlspecialchars($row['typusID']) . " / ";
+        if ($row['typusID']) {
+            $txt .= htmlspecialchars($row['typusID']) . " / ";
+        }
         $txt .= htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</div>";
         $txt = strtr($txt, array("\r" => '', "\n" => ''));
 
@@ -123,7 +125,7 @@ $mean_lng = ($max_lng + $min_lng) / 2.0;
         map.addMapType(G_PHYSICAL_MAP);
         map.addControl(new GOverviewMapControl()); // small overview in corner
         map.addControl(new GScaleControl());
-        map.setMapType(G_HYBRID_MAP)
+        map.setMapType(G_HYBRID_MAP);
 
         bestLevel = map.getBoundsZoomLevel(bounds);
         if (bestLevel>12) bestLevel = 12;

@@ -101,7 +101,7 @@ tbl_tax_systematic_categories
     <tr>
       <td valign="top" colspan="9">
         <?php
-if ($_GET['order'] == 2) {
+if (isset($_GET['order']) && $_GET['order'] == 2) {
     $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer";
 } else {
     $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
@@ -172,8 +172,8 @@ echo "<div align='center'><table width='100%'>\n"
 echo $navigation . "</td></tr>"
    . "<tr bgcolor=\"#EEEEEE\">"
    . "<th></th>"
-   . "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=1')\">Taxon</a></th>"
-   . "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=2')\">Collector</a></th>"
+   . "<th class=\"result\"><a href=\"javascript:neuladen('" . $_SERVER['SCRIPT_NAME'] . "?order=1')\">Taxon</a></th>"
+   . "<th class=\"result\"><a href=\"javascript:neuladen('" . $_SERVER['SCRIPT_NAME'] . "?order=2')\">Collector</a></th>"
    . "<th class=\"result\">Date</th><th class=\"result\">Location</th>"
    . "<th class=\"result\">Typus</th><th class=\"result\">Coll.</th>"
    . "<th class=\"result\">Lat/Lon</th><th class=\"result\">NCBI</th></tr>\n";

@@ -10,9 +10,9 @@ function replaceNewline($text)
 
 function formatCell($value)
 {
-    if(!isset($value) || $value == "")
+    if(!isset($value) || $value == "") {
         $value = "<td></td>";
-    else {
+    } else {
         //$value = "<td>".str_replace('"', '""', $value); // escape quotes
         $value = '<td>'.$value."</td>";
     }
@@ -52,6 +52,8 @@ function protolog($row)
 
 function makeTypus($ID)
 {
+    global $dbLink;
+
     $sql = "SELECT typus_lat, tg.genus,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
@@ -75,10 +77,10 @@ function makeTypus($ID)
             WHERE tst.typusID=tt.typusID
              AND tst.taxonID=ts.taxonID
              AND specimenID='" . intval($ID) . "'";
-    $result = mysql_query($sql);
+    $result = $dbLink->query($sql);
 
     $text = "";
-    while ($row=mysql_fetch_array($result)) {
+    while ($row = $result->fetch_array()) {
         if ($row['synID']) {
             $sql3 = "SELECT ts.statusID, tg.genus,
                       ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -100,8 +102,8 @@ function makeTypus($ID)
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID=".$row['synID'];
-            $result3 = mysql_query($sql3);
-            $row3 = mysql_fetch_array($result3);
+            $result3 = $dbLink->query($sql3);
+            $row3 = $result3->fetch_array();
             $accName = taxonWithHybrids($row3);
         } else {
             $accName = "";
@@ -114,10 +116,10 @@ function makeTypus($ID)
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
                   LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
                  WHERE ti.taxonID='".$row['taxonID']."'";
-        $result2 = mysql_query($sql2);
+        $result2 = $dbLink->query($sql2);
 
         $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
-        while ($row2=mysql_fetch_array($result2)) {
+        while ($row2 = $result2->fetch_array()) {
             $text .= protolog($row2)." ";
         }
         if (strlen($accName)>0) {
@@ -132,14 +134,14 @@ function makeTypus($ID)
 
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
 
-$result = mysql_query($sql);
+$result = $dbLink->query($sql);
 if (!$result) {
     echo $sql . "<br>\n";
-    echo mysql_error() . "<br>\n";
+    echo $dbLink->error . "<br>\n";
 }
 
 $kmlData = '';
-while ($row=mysql_fetch_array($result)) {
+while ($row = $result->fetch_array()) {
     $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
@@ -176,12 +178,12 @@ while ($row=mysql_fetch_array($result)) {
              LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
             WHERE specimen_ID='" . intval($row['specimen_ID']) . "'";
-    $resultSpecimen = mysql_query($sql);
+    $resultSpecimen = $dbLink->query($sql);
     if (!$resultSpecimen) {
         echo $sql."<br>\n";
-        echo mysql_error()."<br>\n";
+        echo $dbLink->error . "<br>\n";
     }
-    $rowSpecimen = mysql_fetch_array($resultSpecimen);
+    $rowSpecimen = $resultSpecimen->fetch_array();
 
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'],
                           $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
