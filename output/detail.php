@@ -215,7 +215,7 @@ $query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
            mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, s.typified,
-           s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
+           s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,s.observation,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
            ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -317,7 +317,7 @@ if ($row['ncbi_accession'])
          <tr>
                   <td align="right" width="30%">Stable Identifier</td>
                   <td><b>
-                          <?php makeCell(StableIdentifier($row)); ?>
+                          <?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],1)); ?>
                       </b>
                   </td>
               </tr>
@@ -455,7 +455,7 @@ if (strlen($typusText)>0):
                   $id = new MyTripleID($row['specimen_ID']);
 
                   if ($row['source_id'] == '6')
-                  $id = new MyTripleID($row['herbNummer']);
+                  $id = new MyTripleID($row['HerbNummer']);
 					// create new AnnotationQuery object
 					$query = new AnnotationQuery($serviceUri);
 					

@@ -1,6 +1,7 @@
 #!/usr/bin/php -q
 <?php
 require 'inc/variables.php';
+require '../../output/inc/StableIdentifier.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -80,7 +81,7 @@ foreach ($tbls as $tbl) {
     $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.det,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-             s.digital_image, s.observation, s.HerbNummer,
+             s.digital_image, s.observation, s.digital_image_obs, s.HerbNummer,
              c.Sammler, c2.Sammler_2,
              ts.taxonID, ts.statusID, tg.genus,
              ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -223,7 +224,7 @@ foreach ($tbls as $tbl) {
         /**
          * image_url
          */
-        if ($row['digital_image']) {
+        if ($row['digital_image'] || $row['digital_image_obs']) {
             $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
             $thumb_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=thumb";
         } else {
@@ -233,6 +234,10 @@ foreach ($tbls as $tbl) {
 
 //       $MultimediaIPR = "Image parts provided by this server with the given resolution have been released under Creative Commons CC-BY-SA 3.0 DE licence.";
 
+        /**
+         * recordURI
+         */
+        $recordURI = StableIdentifier($tbl['source_id'],$row['HerbNummer'],$row['specimen_ID'],$row['collection'],0);
         /**
          * LastEditor
          * DateLastEdited
@@ -275,7 +280,7 @@ foreach ($tbls as $tbl) {
                  copyright = "             . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
                  rights_url = "            . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  multimedia_object_format = ". (($image_url) ? $dbLink2->quoteString($row['multimedia_object_format']) : "NULL") . ",
-                 recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : "NULL") . ",
+                 recordURI = "             . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : ($recordURI)) . ",
                  LastEditor = "            . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = "        . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = "           . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "

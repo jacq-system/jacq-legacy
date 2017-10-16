@@ -1,25 +1,26 @@
 <?php
-function StableIdentifier ($row)
+function StableIdentifier ($source_id,$HerbNummer,$specimen_ID,$formatted)
 {
-    $HerbNummer = str_replace(' ', '',$row['herbNummer']);
-    if ($row['source_id'] == '29') {
-        if (strlen(trim($row['herbNummer']))>0){
+    $HerbNummer = str_replace(' ', '',$HerbNummer);
+    if ($source_id == '29') {
+        if (strlen(trim($HerbNummer))>0){
             $HerbNummer = str_replace('-', '', $HerbNummer);
         }
         else {
-            $HerbNummer = ($row['herbNummer']) ? $row['herbNummer'] : ('JACQ-ID' . $row['specimen_ID']);
+            $HerbNummer = ($HerbNummer) ? $HerbNummer : ('JACQ-ID' . $specimen_ID);
             $HerbNummer = str_replace('-', '', $HerbNummer);
         }
         $text = "http://herbarium.bgbm.org/object/".$HerbNummer;
     }
-    elseif ($row['source_id'] == '27') {
-        $text = "http://lagu.jacq.org/object/".$HerbNummer;
+    elseif ($source_id == '27') {
+        $text = "https://lagu.jacq.org/object/".$HerbNummer;
     }
     else {
-        $text = "http://herbarium.jacq.org/object/".$row['collection'].$row['herbNummer'];
+        $text = "http://herbarium.jacq.org/object/".$HerbNummer;
         $text = "";
     }
-    $text = "<a href=\"" . $text. '" target="_blank">'.$text.'</a><br/>';
+    if ($formatted == '1') {
+        $text = "<a href=\"" . $text. '" target="_blank">'.$text.'</a><br/>';
+    }
     return $text;
-
 }

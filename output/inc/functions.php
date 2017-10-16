@@ -71,7 +71,7 @@ class MyTripleID extends TripleID
 		$row=mysql_fetch_array($result);
 		
 		if ($row['source_id'] == '29'){
-		$unitid = $row['herbNummer'];		
+		$unitid = $row['HerbNummer'];
 		$source = 'Herbarium Berolinense';		
 		$institutionID = 'B';}
                 
@@ -115,13 +115,13 @@ function generateAnnoTable($metadata) {
 function collectionID ($row)
 {
 	if ($row['source_id'] == '29') {
-    $text = ($row['herbNummer']) ? $row['herbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
+    $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
     }
     elseif ($row['source_id'] == '50') {
-	$text = ($row['herbNummer']) ? $row['herbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
+	$text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
     }
     else {
-	$text = $row['collection']." ".$row['herbNummer'];
+	$text = $row['collection']." ".$row['HerbNummer'];
 	}
 
 return $text;
