@@ -1,43 +1,22 @@
 <?php
 session_start();
-if (empty($_SESSION['s_query'])) header("location:search.php"); // if no sessions -> forward to search page
+if (empty($_SESSION['s_query'])) { header("location:search.php"); } // if no sessions -> forward to search page
+
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Cache-Control: post-check=0, pre-check=0", false);
 
 require("inc/functions.php");
-?>
-<html>
-<head>
-<title>Virtual Herbaria / search results</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="description" content="FW4 DW4 HTML">
-<!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropaeische Normalzeit) 2002-->
-<link rel="stylesheet" href="css/herbarium.css" type="text/css">
 
-<script type="text/javascript" language="javascript"><!--
-  function neuladen(url) {
-    location.replace(url);
-  }
-  function googleMap() {
-    MeinFenster = window.open('google_maps.php','_blank',
-                              'width=820,height=620,top=50,left=50,resizable,scrollbars');
-    MeinFenster.focus();
-  }
-  --></script>
-</head>
-<body bgcolor="#ffffff">
-<div align="center">
-  <table border="0" cellpadding="0" cellspacing="0" width="800">
-    <!-- fwtable fwsrc="databasemenu.png" fwbase="databasemenu.gif" fwstyle="Dreamweaver" fwdocid = "742308039" fwnested="0" -->
-    <tr>
-      <td height="50" valign="top" colspan="9">
-        <?php
-function collectionItem($coll) {
-
-  if (strpos($coll,"-")!==false)
-    return substr($coll,0,strpos($coll,"-"));
-  elseif (strpos($coll," ")!==false)
-    return substr($coll,0,strpos($coll," "));
-  else return($coll);
-
+function collectionItem($coll)
+{
+    if (strpos($coll, "-") !== false) {
+        return substr($coll, 0, strpos($coll, "-"));
+    } elseif (strpos($coll, " ") !== false) {
+        return substr($coll, 0, strpos($coll, " "));
+    } else {
+        return($coll);
+    }
 }
 /*
 Fuer die Webabfrage brauchen wir nur(!!) die folgenden Tabellen:
@@ -56,7 +35,35 @@ tbl_tax_systematic_categories
 - tbl_typi
 - tbl_wu_generale
 */
-?>
+
+?><html>
+<head>
+    <title>Virtual Herbaria / search results</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="description" content="FW4 DW4 HTML">
+    <!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropaeische Normalzeit) 2002-->
+    <meta http-equiv=“cache-control“ content=“no-cache“>
+    <meta http-equiv=“pragma“ content=“no-cache“>
+    <meta http-equiv=“expires“ content=“0″>
+    <link rel="stylesheet" href="css/herbarium.css" type="text/css">
+
+    <script type="text/javascript" language="javascript"><!--
+      function neuladen(url) {
+        location.replace(url);
+      }
+      function googleMap() {
+        MeinFenster = window.open('google_maps.php','_blank',
+                                  'width=820,height=620,top=50,left=50,resizable,scrollbars');
+        MeinFenster.focus();
+      }
+      --></script>
+</head>
+<body bgcolor="#ffffff">
+<div align="center">
+  <table border="0" cellpadding="0" cellspacing="0" width="800">
+    <!-- fwtable fwsrc="databasemenu.png" fwbase="databasemenu.gif" fwstyle="Dreamweaver" fwdocid = "742308039" fwnested="0" -->
+    <tr>
+      <td height="50" valign="top" colspan="9">
       </td>
     </tr>
     <tr>
@@ -94,61 +101,57 @@ tbl_tax_systematic_categories
     <tr>
       <td valign="top" colspan="9">
         <?php
-if ($_GET['order']==2)
-  $sql = $_SESSION['s_query']."ORDER BY Sammler, Sammler_2, series, Nummer";
-else
-  $sql = $_SESSION['s_query']."ORDER BY genus, epithet, author";
-
-
-
-// PAGINATOR BEGIN
-$limits=array(10,30,50,100);
-if(!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE'])!=0 && in_array(intval($_GET['ITEMS_PER_PAGE']),$limits) ){
-	$_SESSION['ITEMS_PER_PAGE']=intval($_GET['ITEMS_PER_PAGE']);
+if ($_GET['order'] == 2) {
+    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer";
+} else {
+    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
 }
-$ITEMS_PER_PAGE=(!empty($_SESSION['ITEMS_PER_PAGE']))?intval($_SESSION['ITEMS_PER_PAGE']):10;
-if($ITEMS_PER_PAGE==0)$ITEMS_PER_PAGE=10;
-$PAGE=(!empty($_GET['page']))?intval($_GET['page']):1;
-if($PAGE==0)$PAGE=1;
 
-$sql.=" LIMIT ".( $ITEMS_PER_PAGE*($PAGE-1) ).", ".$ITEMS_PER_PAGE;
-
-
-// PAGINATOR END
-
-
-
-$result = mysql_query($sql);
-if (!$result) {
-  echo $sql."<br>\n";
-  echo mysql_error()."<br>\n";
+/**
+ * pagination
+ */
+$_SESSION['ITEMS_PER_PAGE'] = 10;
+$limits=array(10, 30, 50, 100);
+if (!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE']) != 0 && in_array(intval($_GET['ITEMS_PER_PAGE']), $limits) ){
+	$_SESSION['ITEMS_PER_PAGE'] = intval($_GET['ITEMS_PER_PAGE']);
 }
-// PAGINATOR BEGIN
-$res_count = mysql_query("SELECT FOUND_ROWS()");
-if($res_count){
-	$res_count=mysql_fetch_row($res_count);
-	$res_count=$res_count[0];
+$page = (!empty($_GET['page'])) ? intval($_GET['page']) : 1;
+if ($page < 1) {
+    $page = 1;
 }
-$res_count=intval($res_count);
 
-$a=paginate_three($_SERVER['PHP_SELF'].'?s=s', $PAGE, ceil($res_count/$ITEMS_PER_PAGE), 2);
-$b="";
-foreach($limits as $f)$b.= "<option value=\"$f\" ".(($f==$ITEMS_PER_PAGE)?'selected':'').">$f</option>";
-$NAVIG=<<<EOF
-<form name="page"  action="{$_SERVER['REQUEST_URI']}" method="get">
-<HR SIZE="1"  width="800" NOSHADE>
-<select size="1" name="ITEMS_PER_PAGE" onchange="this.form.submit()" style="float:right;margin-top:-3px">
-{$b}
-</select>
-{$a}
-<HR SIZE="1"  width="800" NOSHADE>
-</form>
-EOF;
-// PAGINATOR END
+$sql .= " LIMIT " . ($_SESSION['ITEMS_PER_PAGE'] * ($page - 1)) . ", " . $_SESSION['ITEMS_PER_PAGE'];
+
+$result = $dbLink->query($sql);
+if ($dbLink->errno) {
+    echo $sql . "<br>\n";
+    echo $dbLink->error . "<br>\n";
+}
+$res_count = $dbLink->query("select found_rows()");
+if ($res_count) {
+	$res_count = $res_count->fetch_row();
+	$res_count = $res_count[0];
+}
+$res_count = intval($res_count);
+
+$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($res_count / $_SESSION['ITEMS_PER_PAGE']), 2);
+$b = "";
+foreach ($limits as $f) {
+    $b .= "<option value=\"$f\" " . (($f == $_SESSION['ITEMS_PER_PAGE']) ? 'selected' : '') . ">$f</option>";
+}
+$navigation = "<form name='page' action='{$_SERVER['SCRIPT_NAME']}' method='get'>\n"
+            . "<hr size='1'  width='800' noshade>\n"
+            . "<select size='1' name='ITEMS_PER_PAGE' onchange='this.form.submit()' style='float:right;margin-top:-3px'>\n"
+            . "{$b}\n"
+            . "</select>\n"
+            . "{$a}\n"
+            . "<hr size='1'  width='800' noshade>\n"
+            . "</form>";
+
 
 //echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
-echo "<div align=\"center\"><table width=\"100%\">\n";
-echo "<tr><td colspan=\"2\"><b>".$res_count." records found</b></td>\n";
+echo "<div align='center'><table width='100%'>\n"
+   . "<tr><td colspan='2'><b>" . $res_count . " record" . (($res_count > 1) ? "s" : "") . " found</b></td>\n";
 
 ?>
 <td colspan="7" align="right">
@@ -165,129 +168,127 @@ echo "<tr><td colspan=\"2\"><b>".$res_count." records found</b></td>\n";
 
 <tr><td colspan="9" align="center" valign="center">
 
-
-
-
-<?PHP
-echo $NAVIG."</td></tr>";
-echo "<tr bgcolor=\"#EEEEEE\">";
-echo "<th></th>".
-     "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=1')\">Taxon</a></th>".
-     "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=2')\">Collector</a></th>".
-     "<th class=\"result\">Date</th><th class=\"result\">Location</th>".
-     "<th class=\"result\">Typus</th><th class=\"result\">Coll.</th>".
-     "<th class=\"result\">Lat/Lon</th><th class=\"result\">NCBI</th></tr>\n";
+<?php
+echo $navigation . "</td></tr>"
+   . "<tr bgcolor=\"#EEEEEE\">"
+   . "<th></th>"
+   . "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=1')\">Taxon</a></th>"
+   . "<th class=\"result\"><a href=\"javascript:neuladen('$PHP_SELF?order=2')\">Collector</a></th>"
+   . "<th class=\"result\">Date</th><th class=\"result\">Location</th>"
+   . "<th class=\"result\">Typus</th><th class=\"result\">Coll.</th>"
+   . "<th class=\"result\">Lat/Lon</th><th class=\"result\">NCBI</th></tr>\n";
 $bgcolor = "#FFFFFF";
-while ($row=mysql_fetch_array($result)) {
-  echo "<tr bgcolor=\"$bgcolor\">\n";
+while ($row = $result->fetch_array()) {
+    echo "<tr bgcolor=\"$bgcolor\">\n";
 
-  $link = true;
-  if ($row['observation']) {
-    if ($row['digital_image_obs'])
-      $image = "obs.png";
-    else {
-      $image = "obs_bw.png";
-      $link = false;
+    $link = true;
+    if ($row['observation']) {
+        if ($row['digital_image_obs']) {
+            $image = "obs.png";
+        } else {
+            $image = "obs_bw.png";
+            $link = false;
+        }
+    } else {
+        if ($row['digital_image'] || $row['digital_image_obs']) {
+            if ($row['digital_image_obs'] && $row['digital_image']) {
+                $image = "spec_obs.png";
+            } elseif ($row['digital_image_obs'] && !$row['digital_image']) {
+                $image = "obs.png";
+            } else {
+                $image = "camera.png";
+            }
+        } else {
+            $image = "";
+            $link = false;
+        }
     }
-  }
-  else {
-    if ($row['digital_image'] ||$row['digital_image_obs']) {
-      if ($row['digital_image_obs'] && $row['digital_image'])
-        $image = "spec_obs.png";
-      elseif ($row['digital_image_obs'] && !$row['digital_image'])
-        $image = "obs.png";
-        else
-        $image = "camera.png";
+    if (strlen($image) > 0) {
+        echo "<td class=\"result\">";
+        if ($link) {
+            echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
+               . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
+        } else {
+            echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
+        }
+        echo "</td>\n";
+    } else {
+        echo "<td class=\"result\"></td>\n";
     }
 
-    else {
-      $image = "";
-      $link = false;
+    echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=" . $row['specimen_ID'] . "\" target=\"_blank\">"
+       . taxonWithHybrids($row)
+       . "</a></td>";
+
+    echo "<td class=\"result\" valign=\"top\">"
+       . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])
+       . "</td>";
+
+    echo "<td class=\"result\" valign=\"top\">" . $row['Datum'] . "</td>";
+
+    echo "<td class=\"result\" valign=\"top\">";
+    $switch = false;
+    if ($row['nation_engl']) {
+        echo "<img src=\"images/flags/" . strtolower($row['iso_alpha_2_code']) . ".png\"> " . $row['nation_engl'];
+        $switch = true;
     }
-  }
-  if (strlen($image)>0) {
-    echo "<td class=\"result\">";
-    if ($link)
-      echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">".
-           "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
-    else
-      echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
-    echo "</td>\n";
-  }
-  else
-    echo "<td class=\"result\"></td>\n";
+    if ($row['provinz']) {
+        if ($switch) {
+            echo ". ";
+        }
+        echo $row['provinz'];
+        $switch = true;
+    }
+    echo "</td>";
 
-  echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=".$row['specimen_ID']."\" target=\"_blank\">";
-  echo taxonWithHybrids($row);
-  echo "</a></td>";
-
-  echo "<td class=\"result\" valign=\"top\">";
-  echo collection($row['Sammler'],$row['Sammler_2'],$row['series'],$row['series_number'],
-                  $row['Nummer'],$row['alt_number'],$row['Datum']);
-  echo "</td>";
-
-  echo "<td class=\"result\" valign=\"top\">".$row['Datum']."</td>";
-
-  echo "<td class=\"result\" valign=\"top\">";
-  $switch = false;
-  if ($row['nation_engl']) {
-    echo "<img src=\"images/flags/".strtolower($row['iso_alpha_2_code']).".png\"> ".$row['nation_engl'];
-    $switch = true;
-  }
-  if ($row['provinz']) {
-    if ($switch) echo ". ";
-    echo $row['provinz'];
-    $switch = true;
-  }
-  echo "</td>";
-
-  echo "<td class=\"result\" style=\"text-align: center\">".
-       (($row['typusID']) ? "<font color=\"red\"><b>".$row['typus']."</b></font>" : "")."</td>\n";
+    echo "<td class=\"result\" style=\"text-align: center\">"
+       . (($row['typusID']) ? "<font color=\"red\"><b>" . $row['typus'] . "</b></font>" : "") . "</td>\n";
 
 
-	if ($row['source_id'] == '29') {
-    	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".htmlspecialchars($row['HerbNummer'])."</td>";
+    if ($row['source_id'] == '29') {
+        echo "<td class=\"result\" style=\"text-align: center\" title=\"" . htmlspecialchars($row['collection']) . "\">" . htmlspecialchars($row['HerbNummer']) . "</td>";
+    } else {
+        echo "<td class=\"result\" style=\"text-align: center\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+           . htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+    }
 
-	}
-	else {
-    	echo "<td class=\"result\" style=\"text-align: center\" title=\"".htmlspecialchars($row['collection'])."\">".
-        htmlspecialchars(collectionItem($row['collection']))." ".htmlspecialchars($row['HerbNummer'])."</td>";
-	}
+    if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
+        $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
+    } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
+        $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
+    } else {
+        $lat = 0;
+    }
+    if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
+        $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
+    } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
+        $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
+    } else {
+        $lon = 0;
+    }
+    if ($lat != 0 || $lon != 0) {
+        echo "<td class=\"result\" style=\"text-align: center\" title=\"".round($lat,2)."&deg; / ".round($lon,2)."&deg;\">"
+           . "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
+           .  "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/mapquest.png\" width=\"15\"></a>&nbsp;"
+    //         "<a href=\"http://onearth.jpl.nasa.gov/landsat.cgi?zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin".
+    //          "&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600\" ".
+    //          "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/nasa.png\" width=\"15\"></a>".
+           . "</td>\n";
+    } else {
+        echo "<td class=\"result\"></td>\n";
+    }
+
+    if ($row['ncbi_accession']) {
+        echo "<td class=\"result\" style=\"text-align: center\" title=\"".$row['ncbi_accession']."\">"
+           . "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" "
+           .  "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
+    } else {
+        echo "<td class=\"result\"></td>\n";
+    }
 
 
-  if ($row['Coord_S']>0 || $row['S_Min']>0 || $row['S_Sec']>0)
-    $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-  else if ($row['Coord_N']>0 || $row['N_Min']>0 || $row['N_Sec']>0)
-    $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
-  else
-    $lat = 0;
-  if ($row['Coord_W']>0 || $row['W_Min']>0 || $row['W_Sec']>0)
-    $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-  else if ($row['Coord_E']>0 || $row['E_Min']>0 || $row['E_Sec']>0)
-    $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
-  else
-    $lon = 0;
-  if ($lat!=0 || $lon!=0)
-    echo "<td class=\"result\" style=\"text-align: center\" title=\"".round($lat,2)."&deg; / ".round($lon,2)."&deg;\">".
-         "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" ".
-          "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/mapquest.png\" width=\"15\"></a>&nbsp;".
-//         "<a href=\"http://onearth.jpl.nasa.gov/landsat.cgi?zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin".
-//          "&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600\" ".
-//          "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/nasa.png\" width=\"15\"></a>".
-         "</td>\n";
-  else
-    echo "<td class=\"result\"></td>\n";
-
-  if ($row['ncbi_accession'])
-    echo "<td class=\"result\" style=\"text-align: center\" title=\"".$row['ncbi_accession']."\">".
-         "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" ".
-          "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
-  else
-    echo "<td class=\"result\"></td>\n";
-
-
-  echo "</tr>\n";
-  $bgcolor = ($bgcolor=="#FFFFFF") ? "#EEEEEE" : "#FFFFFF";
+    echo "</tr>\n";
+    $bgcolor = ($bgcolor=="#FFFFFF") ? "#EEEEEE" : "#FFFFFF";
 }
 echo "</table></div>\n";
 ?>
@@ -297,7 +298,7 @@ echo "</table></div>\n";
       <td valign="top" colspan="9" align="center">
 
 
-  <?PHP echo $NAVIG; ?>
+  <?php echo $navigation; ?>
 
   <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
           Rainer<br></a><br>
@@ -305,7 +306,7 @@ echo "</table></div>\n";
           Schachner</a></p>
         <div class="normal" align="center">
           <!-- #BeginEditable "Datum" -->
-          <B>Last modified:</B> <EM>2011-Oct-20, WK</EM>
+          <B>Last modified:</B> <EM>2017-Jul-19, JS</EM>
           <!-- #EndEditable -->
         </div>
       </td>
