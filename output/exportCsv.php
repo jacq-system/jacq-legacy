@@ -140,7 +140,7 @@ while ($row = $result->fetch_array()) {
              s.CollNummer, s.altitude_min, s.altitude_max,
              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
              mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
-             s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
+             s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -212,7 +212,7 @@ while ($row = $result->fetch_array()) {
 
     $csvData .= "<tr>".
                 formatCell($rowSpecimen['specimen_ID']).
-                formatCell($rowSpecimen['source_code']." ".$rowSpecimen['herbNummer']).
+                formatCell($rowSpecimen['source_code']." ".$rowSpecimen['HerbNummer']).
                 formatCell($rowSpecimen['coll_short']).
                 formatCell($rowSpecimen['CollNummer']).
                 formatCell(makeTypus(intval($rowSpecimen['specimen_ID']))).

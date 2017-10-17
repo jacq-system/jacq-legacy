@@ -174,7 +174,7 @@ while( $data_row = $data_result->fetch_array() ) {
                s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
                n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
                mc.collection, mc.collectionID, mc.coll_short, mc.coll_descr, tid.imgserver_IP, s.typified,
-               s.digital_image, s.digital_image_obs, s.herbNummer, s.ncbi_accession,
+               s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
                s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,

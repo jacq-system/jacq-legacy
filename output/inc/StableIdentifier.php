@@ -1,7 +1,7 @@
 <?php
 function StableIdentifier ($row)
 {
-    $HerbNummer = str_replace(' ', '', $row['herbNummer']);
+    $HerbNummer = str_replace(' ', '', $row['HerbNummer']);
     if ($row['source_id'] == '29') {
         if (strlen(trim($HerbNummer)) > 0){
             $HerbNummer = str_replace('-', '', $HerbNummer);
@@ -18,7 +18,7 @@ function StableIdentifier ($row)
         $text = "<a href=\"" . $text. '" target="_blank">' . $text . '</a><br/>';
     }
     else {
-        $text = "http://herbarium.jacq.org/object/" . $row['collection'] . $row['herbNummer'];
+        $text = "http://herbarium.jacq.org/object/" . $row['collection'] . $row['HerbNummer'];
         $text = "";
     }
 
