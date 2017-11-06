@@ -467,12 +467,13 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <b>All</b>
   </td>
 </tr><tr>
-  <td colspan="2">
+  <td colspan="3">
       <input class="button" type="submit" name="search" value=" search ">
-      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportCsv.php';return false;" name="downloadCSV" value=" download CSV ">
-      <input class="button" type="button" onclick="document.location.href='listSpecimensImportExportXls.php';return false;" name="downloadXLSX" value=" download XLSX ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=csv';return false;" name="downloadCSV" value=" download CSV ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=xslx';return false;" name="downloadXLSX" value=" download XLSX ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=ods';return false;" name="downloadODS" value=" download ODS ">
   </td>
-  <td colspan="2" align="right">
+  <td colspan="1" align="right">
   </td>
   <td colspan="2" align="right">
     <?php if (checkRight('specim')): ?>
@@ -492,7 +493,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </td><td style="width: 2em">&nbsp;</td><td>
   <?php makeDropdownDate(true); ?>
   <input class="button" type="submit" name="prepareLabels" value=" Labels ">
-  <input class="button" type="image" onclick="document.location.href='listSpecimensLabelsExportXls.php';return false;" name="labelsXLSX" src="webimages/disk.png" title="download Labels XLS">
+  <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=labels&type=xlsx';return false;" name="labelsXLSX" src="webimages/disk.png" title="download Labels XLS">
 </td>
 <?php if (checkRight('editor')):    // only editors may check logged in users ?>
 <td style="width: 2em">&nbsp;</td><td>

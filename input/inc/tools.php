@@ -7,22 +7,23 @@
  * @version 14.07.2010
  */
 
-function AjaxParseValue($value){
-	$ret=array();
-	
-	$result=preg_match('/\<\<(?P<exact>.*)\>/',$value,$matches);
-	if($result==1){
-		$exact=$matches['exact'];
+function AjaxParseValue($value)
+{
+	$ret = array();
+
+	$result = preg_match('/\<\<(?P<exact>.*)\>/', $value, $matches);
+	if($result == 1){
+		$exact = $matches['exact'];
 		return array('exact'=>$exact);
 	}
-	
-	$result=preg_match('/\<(?P<ID>.*)\>/',$value,$matches);
-	if($result==1){
-		$ID=$matches['ID'];
+
+	$result = preg_match('/\<(?P<ID>.*)\>/', $value, $matches);
+	if($result == 1){
+		$ID = $matches['ID'];
 		return array('id'=>$ID);
 	}
 
-	$result=preg_replace('/\<.*\>/','',$value);
+	$result = preg_replace('/\<.*\>/', '', $value);
 	return array('search'=>$result);
 }
 
@@ -31,28 +32,27 @@ function AjaxParseValue($value){
  * extracts an ID from a string. ID must be enclosed in "<>" brackets and be positioned at the end
  *
  * @param string $text string to extract ID from
- * @param boolean $bNoQuotes return plain ID without quotes
+ * @param boolean[optional] $bNoQuotes return plain ID without quotes
  * @return string ID enclosed in single quotes or the string "NULL" (without quotes)
  */
-
-	function extractID ($text, $bNoQuotes = false){
-		$pos1 = strrpos($text, "<");
-		$pos2 = strpos($text, ">", $pos1);
-		if ($pos1 !== false && $pos2 !== false) {
-			if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
-                            if( $bNoQuotes ) {
-                                return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
-                            }
-                            else {
-				return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
-                            }
-			} else {
-				return "NULL"; // no ID found
-			}
-		} else {
-			return "NULL"; // no ID found
-		}
-	}
+function extractID ($text, $bNoQuotes = false)
+{
+    $pos1 = strrpos($text, "<");
+    $pos2 = strpos($text, ">", $pos1);
+    if ($pos1 !== false && $pos2 !== false) {
+        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
+            if ($bNoQuotes) {
+                return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
+            } else {
+                return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+            }
+        } else {
+            return "NULL"; // no ID found
+        }
+    } else {
+        return "NULL"; // no ID found
+    }
+}
 
 
 /**
@@ -61,17 +61,16 @@ function AjaxParseValue($value){
  * @param string $text text to scan
  * @return string result of replacements
  */
-
-	function replaceNewline($text)
-	{
-		return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
-	}
+function replaceNewline($text)
+{
+	return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
+}
 
 function extractID2($text)
 {
     $pos1 = strrpos($text, "<");
     $pos2 = strrpos($text, ">");
-    if ($pos1!==false && $pos2 !== false) {
+    if ($pos1 !== false && $pos2 !== false) {
         if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
             return  intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
         } else {
