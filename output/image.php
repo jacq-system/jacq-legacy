@@ -239,7 +239,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
             }
             // thumbnail for europeana
             else if ($thumb == 3) {
-                $scale = '200,0';
+                $scale = '1200,0';
             }
             // thumbnail for nhmw digitization project
             else if ($thumb == 4) {
@@ -283,7 +283,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
             }
             // thumbnail for europeana
             else if ($thumb == 3) {
-                $scale = '200,0';
+                $scale = '1200,0';
             }
             // thumbnail for nhmw digitization project
             else if ($thumb == 4) {
@@ -337,7 +337,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
             }
             // thumbnail for europeana
             else if ($thumb == 3) {
-                $scale = '200,0';
+                $scale = '1200,0';
             }
             // thumbnail for nhmw digitization project
             else if ($thumb == 4) {
