@@ -316,7 +316,7 @@ foreach ($tbls as $tbl) {
                  copyright = " . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
                  rights_url = " . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  multimedia_object_format = " . (($image_url) ? $dbLink2->quoteString($row['multimedia_object_format']) : "NULL") . ",
-                 recordURI = " . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : ($recordURI)) . ",
+                 recordURI = " . $dbLink2->quoteString(($row['uuid'] ? "http://resolv.jacq.org/" . $row['uuid'] : ($recordURI))) . ",
                  LastEditor = " . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = " . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
