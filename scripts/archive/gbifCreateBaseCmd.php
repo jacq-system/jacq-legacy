@@ -92,8 +92,8 @@ foreach ($tbls as $tbl) {
              te4.epithet epithet4, te5.epithet epithet5,
              gn.nation_engl, gp.provinz,
              ss.series,
-			 md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
-             uim.uuid
+             md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
+             uim.uuid, mc.source_id, mc.collection
             FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_management_collections mc)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
              LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
@@ -272,7 +272,7 @@ foreach ($tbls as $tbl) {
         /**
          * recordURI
          */
-        $recordURI = StableIdentifier($tbl['source_id'], $row['HerbNummer'], $row['specimen_ID'], $row['collection'], 0);
+        $recordURI = StableIdentifier($row);
         /**
          * LastEditor
          * DateLastEdited
