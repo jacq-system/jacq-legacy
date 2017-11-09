@@ -48,7 +48,7 @@
     </tr>
     <tr> 
       <td valign="top" colspan="8"><!-- #BeginEditable "Seiteninhalt" -->
-        <p class="normal">We are in the process of digitizing our collections, which should enable international users to have quick access to botanical collections from the herbaria B, BAK, BRNU, CHER, ERE, FT, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, OLD, PRC, TBI, TGU, TMRC, UBT, W and WU.<br/>It is our main goal to provide a unified and jointly administered specimen management system for the participating herbaria. Special attention is paid to providing images for all material online and especially high resolution images for type collections.</p>
+        <p class="normal">We are in the process of digitizing our collections, which should enable international users to have quick access to botanical collections from the herbaria ADMONT, B, BAK, BRNU, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W and WU.<br/>It is our main goal to provide a unified and jointly administered specimen management system for the participating herbaria. Special attention is paid to providing images for all material online and especially high resolution images for type collections.</p>
         <p class="links"><img src="images/pfeil.jpg" width=20 height=18 border=0>&nbsp;&nbsp;<a href="search.php">Access the database</a></p>
         <p></p>
         <p class="normal"><strong>conspectus of taxonomic databases</strong></p>

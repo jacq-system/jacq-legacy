@@ -1,0 +1,230 @@
+./ajax/chatPrivServer.php:        $sql = "INSERT INTO tbl_chat_priv SET
+./ajax/chatServer.php:		$sql = "INSERT INTO tbl_chat SET
+./ajax/checkDjatoka.php:        $db_pictures->query("INSERT INTO djatoka_scans SET IP ={$serverIPd}, start = NOW()");
+./ajax/checkDjatoka.php:        $sql = "INSERT INTO djatoka_files (scan_id,filename,inconsistency) VALUES ";
+./ajax/editChorologyServer.php:    db_query("INSERT INTO herbarinput_log.log_tax_chorol_status
+./ajax/editChorologyServer.php:                    $sql = "INSERT INTO tbl_tax_chorol_status SET
+./ajax/editCommonNamesEquals.php:INSERT INTO  herbarinput.tbl_tax_synonymy
+./ajax/editLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".$_SESSION['labelSpecimen_ID'].", userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".$_SESSION['labelSpecimen_ID'].", userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".$_SESSION['labelSpecimen_ID'].", userID='".$_SESSION['uid']."'");
+./ajax/editLitServer.php:                        $sql = "INSERT INTO tbl_lit_container SET
+./ajax/editLitServer.php:                INSERT INTO `tbl_tax_classification`
+./ajax/editSpecimensServer.php:                            $sql = "INSERT INTO tbl_specimens_links SET
+./ajax/editSpecimensServer.php:                        $sql = "INSERT INTO tbl_specimens_taxa SET
+./ajax/listLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:        mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listWUServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listWUServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listWUServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listWUServer.php:    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/listWUServer.php:      mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+./ajax/MapLines_CommonNamesEqual.php:INSERT INTO {$this->dbprefix}tbl_name_names_equals
+./ajax/MapLines_editLit.php:INSERT INTO  herbarinput.tbl_tax_synonymy
+./ajax/modules/xclsCheckPictures.php:            $db->query("INSERT INTO herbar_pictures.scans SET IP = " . $db->quote($formData['serverIP']) . ", start = NOW()");
+./ajax/modules/xclsCheckPictures.php:                            $dbst = $db->prepare("INSERT INTO herbar_pictures.files (source_id, file, extension, path, basefile, img_coll_short, mtime, specimen_ID, IP) VALUES " . implode(",\n", $insert));
+./ajax/modules/xclsCheckPictures.php:                    $dbst = $db->prepare("INSERT INTO herbar_pictures.files (source_id, file, extension, path, basefile, img_coll_short, mtime, specimen_ID, IP) VALUES " . implode(",\n", $insert));
+./check/scanPerson.php:                $sql = "INSERT INTO tbl_person SET
+./check/scanPerson.php:        mysql_query("INSERT INTO tbl_person_alternative SET person_ID = " . $row['person_ID'] . ", p_alternative = '" . mysql_real_escape_string($alternative) . "'");
+./editAuthor.php:            $sql = "INSERT INTO tbl_tax_authors SET
+./editAuthor.php:    $text = ($row['authorID']) ? " Update " : " Insert ";
+./editCollector.php:      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID) ".
+./editCollector.php:  $text = ($row['SammlerID']) ? " Update " : " Insert ";
+./editCollector2.php:      $sql = "INSERT INTO tbl_collector_2 (Sammler_2) ".
+./editCollector2.php:  $text = ($row['Sammler_2ID']) ? " Update " : " Insert ";
+./editCommonName.php:		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}')");
+./editCommonNames.php:				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+./editCommonNames.php:				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_literature (literature_id,citationID) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+./editCommonNames.php:				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+./editCommonNames.php:				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_persons (person_id,personId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+./editCommonNames.php:			}else{$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+./editCommonNames.php:				$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_webservices (webservice_id,serviceId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix}tbl_geonames_cache (geonameId, name) VALUES ('{$_dvar['geonameIndex']}','{$_dvar['geoname']}') ON DUPLICATE KEY UPDATE  geonameId=VALUES(geonameId)");
+./editCommonNames.php:			$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_tribes (tribe_name) VALUES ('{$_dvar['tribe_name']}') ON DUPLICATE KEY UPDATE tribe_id=LAST_INSERT_ID(tribe_id)");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}') ON DUPLICATE KEY UPDATE transliteration_id=LAST_INSERT_ID(transliteration_id)");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_entities (entity_id) VALUES (NULL)");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
+./editCommonNames.php:		$sql="INSERT INTO {$dbprefix}tbl_name_applies_to SET {$sql}";
+./editEpithet.php:            $sql = "INSERT INTO tbl_tax_epithets SET
+./editEpithet.php:    $text = ($row['epithetID']) ? " Update " : " Insert ";
+./editFamily.php:            $sql = "INSERT INTO tbl_tax_families SET
+./editFamily.php:  $text = ($p_familyID) ? " Update " : " Insert ";
+./editGenera.php:    $text = ($p_genID) ? " Update " : " Insert ";
+./editGroup.php:            $sql = "INSERT INTO herbarinput_log.tbl_herbardb_groups SET " . implode(", ", $sqldata);
+./editGroupUnlock.php:            $sql = "INSERT INTO herbarinput_log.tbl_herbardb_unlock SET " . $sqldata;
+./editHybrids.php:            $sql = "INSERT INTO tbl_tax_hybrids SET
+./editIndex.php:                $sql = "INSERT INTO tbl_tax_index SET $sql_data";
+./editLit.php:            $sql = "INSERT INTO tbl_lit SET
+./editLitAuthor.php:      $sql = "INSERT INTO tbl_lit_authors (autor, autorsystbot) ".
+./editLitAuthor.php:  $text = ($row['autorID']) ? " Update " : " Insert ";
+./editLitPeriodical.php:        $sql = "INSERT INTO tbl_lit_periodicals SET
+./editLitPeriodical.php:    $text = ($row['periodicalID']) ? " Update " : " Insert ";
+./editLitPersons.php:        $sql = "INSERT INTO tbl_lit_persons SET
+./editLitPersons.php:    $cf->buttonSubmit(20, 14, "submitUpdate", ($p_lit_persons_ID) ? " Update " : " Insert ");
+./editLitPublisher.php:    $sql = "INSERT INTO tbl_lit_publishers (publisher) ".
+./editLitTaxa.php:        $sql = "INSERT INTO tbl_lit_taxa SET
+./editLitTaxa.php:    $text = ($p_lit_tax_ID) ? " Update " : " Insert ";
+./editObservations.php:          $sql = "INSERT INTO tbl_specimens SET
+./editPeriodicalLib.php:        $sql = "INSERT INTO tbl_lit_lib_period SET
+./editPeriodicalLib.php:    $text = ($p_lib_period_ID) ? " Update " : " Insert ";
+./editSeries.php:            $sql = "INSERT INTO tbl_specimens_series (series)
+./editSeries.php:    $text = ($row['seriesID']) ? " Update " : " Insert ";
+./editSpecies.php:                $sql = "INSERT INTO tbl_tax_species SET
+./editSpecimens.php:            $sql = "INSERT INTO tbl_specimens SET "
+./editSpecimensImport.php:            $sql = "INSERT INTO tbl_specimens_import SET "
+./editSpecimensSimple.php:            $sql = "INSERT INTO tbl_specimens SET "
+./editSpecimensTypes.php:                $sql = "INSERT INTO tbl_specimens_types SET $sql_data";
+./editTable.php:    $sql = "INSERT INTO $tblName ($tblID) VALUES ('$newID')";
+./editTaxSynonymy.php:        $sql = "INSERT INTO tbl_tax_synonymy SET
+./editTaxSynonymy.php:    $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
+./editType.php:        $sql = "INSERT INTO tbl_tax_typecollections SET
+./editType.php:    $text = ($p_typecollID) ? " Update " : " Insert ";
+./editUser.php:            $sql = "INSERT INTO herbarinput_log.tbl_herbardb_users SET " . $sqldata;
+./editUserAccess.php:            $sql = "INSERT INTO herbarinput_log.tbl_herbardb_access SET " . $sqldata;
+./fileImportBatch.php:                    db_query("INSERT INTO api.tbl_api_specimens SET
+./import/importSpecimens.php:            db_query("INSERT INTO tbl_tax_epithets SET
+./import/importSpecimens.php:            db_query("INSERT INTO tbl_tax_authors SET
+./import/importSpecimens.php:            db_query("INSERT INTO tbl_tax_epithets SET
+./import/importSpecimens.php:            db_query("INSERT INTO tbl_tax_authors SET
+./import/importSpecimens.php:    $sql = "INSERT INTO tbl_tax_species SET
+./import/importSpecimens.php:        db_query("INSERT INTO tbl_external_import_content SET
+./import/importSpecimens.php:                $sqlInsert = "INSERT INTO tbl_specimens_import SET
+./import/importTaxa.php:                    $sqlService = "INSERT INTO tbl_nom_service_names SET
+./import/importTaxa.php:        $sql2 = "INSERT INTO tbl_tax_species SET
+./import/importTaxa.php:                    $sqlService = "INSERT INTO tbl_nom_service_names SET
+./inc/api_functions.php:    $sql = "INSERT INTO api.tbl_api_units ";
+./inc/api_functions.php:  $sql = "INSERT INTO api.tbl_api_units_identifications SET
+./inc/clsAutocompleteCommonName.php:                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('1','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
+./inc/clsAutocompleteCommonName.php:                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
+./inc/herbardb_input_functions.php:    $sql = "INSERT INTO tbl_tax_genera SET
+./inc/log_functions.php:	$sql='INSERT INTO herbarinput_log.log_commonnames_tbl_names '.
+./inc/log_functions.php:	$sql='INSERT INTO herbarinput_log.log_tbl_tax_synonymy '.
+./inc/log_functions.php:	$sql='INSERT INTO herbarinput_log.log_tbl_tax_synonymy '.
+./inc/log_functions.php:	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to ".
+./inc/log_functions.php:	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_commons ".
+./inc/log_functions.php:	$sql="INSERT INTO herbarinput_log.log_commonnames_tbl_name_languages ".
+./inc/log_functions.php:    $sql = "INSERT INTO herbarinput_log.log_specimens SET
+./inc/log_functions.php:    $sql = "INSERT INTO herbarinput_log.log_specimens SET
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_specimens_types ".
+./inc/log_functions.php:    db_query("INSERT INTO herbarinput_log.log_specimens_series SET
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_authors ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_families ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_genera ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_index ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_species ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_tax_typecollections ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_lit ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_lit_taxa SET
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_lit_authors ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_lit_periodicals ".
+./inc/log_functions.php:  $sql = "INSERT INTO herbarinput_log.log_lit_publishers ".
+./listObservations.php:                    $sql = "INSERT INTO api.tbl_api_specimens SET
+./listSpecimens.php:                        $sql = "INSERT INTO api.tbl_api_specimens SET
+./listSpecimensImport.php:            $sql = "INSERT INTO tbl_specimens SET ";
+./listSpecimensImport.php:        $sql = "INSERT INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
+./manageBatch.php:    $sql = "INSERT INTO api.tbl_api_batches (batchnumber)
+./updateBatch.php:      $sql = "INSERT INTO api.tbl_api_specimens SET
+./ajax/chatPrivServer.php:    $sql = "UPDATE tbl_chat_priv SET
+./ajax/checkDjatoka.php:                $dfuSth = $dbPictures->prepare("UPDATE `djatoka_files` SET `faulty` = 1 WHERE `ID` = :ID");
+./ajax/checkDjatoka.php:                $dfuSth = $dbPictures->prepare("UPDATE `djatoka_files` SET `specimen_ID` = :specimen_ID WHERE `ID` = :ID");
+./ajax/checkDjatoka.php:            $db_pictures->query("UPDATE djatoka_scans SET finish = NOW(), errors = 'script terminated, entry corrected' WHERE finish IS NULL AND IP = {$serverIPd}");
+./ajax/checkDjatoka.php:        $db_pictures->query("UPDATE djatoka_scans SET finish = NOW() WHERE scan_id={$scanid}");
+./ajax/editChorologyServer.php:                        db_query("UPDATE tbl_tax_chorol_status SET province_debatable = '$debatable' WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");
+./ajax/editChorologyServer.php:                        db_query("UPDATE tbl_tax_chorol_status SET
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/editLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/editLabelServer.php:        mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/editLitServer.php:                        $sql = "UPDATE tbl_lit_container SET
+./ajax/editLitServer.php:            UPDATE `tbl_tax_classification`
+./ajax/editSpecimensServer.php:                            $sql = "UPDATE tbl_specimens_links SET
+./ajax/editSpecimensServer.php:                        $sql = "UPDATE tbl_specimens_taxa SET
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listLabelServer.php:        mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
+./ajax/listLabelServer.php:        mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listWUServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listWUServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listWUServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listWUServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/listWUServer.php:      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+./ajax/modules/xclsCheckPictures.php:                $db->query("UPDATE herbar_pictures.scans SET finish = NOW(), errors = 'script terminated, entry corrected' WHERE finish IS NULL AND IP = " . $db->quote($formData['serverIP']));
+./ajax/modules/xclsCheckPictures.php:            $db->query("UPDATE herbar_pictures.scans SET finish = NOW(), errors = " . $db->quote($e->getMessage()) . " WHERE ID = $scanID");
+./ajax/modules/xclsCheckPictures.php:                    if ($filename) $db->query("UPDATE tbl_specimens SET
+./ajax/modules/xclsCheckPictures.php:        $db->query("UPDATE herbar_pictures.scans SET finish = NOW(), errors = " . $db->quote(implode("\n", $data['errors'])) . " WHERE ID = $scanID");
+./check/scanPerson.php:                    $sql = "UPDATE tbl_person SET ";
+./editAuthor.php:                $sql = "UPDATE tbl_tax_authors SET
+./editAuthor.php:    $text = ($row['authorID']) ? " Update " : " Insert ";
+./editCollector.php:        $sql = "UPDATE tbl_collector SET ".
+./editCollector.php:  $text = ($row['SammlerID']) ? " Update " : " Insert ";
+./editCollector2.php:        $sql = "UPDATE tbl_collector_2 SET ".
+./editCollector2.php:  $text = ($row['Sammler_2ID']) ? " Update " : " Insert ";
+./editCommonName.php:		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}', locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
+./editCommonName.php:		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_names SET transliteration_id='{$_dvar['transliterationIndex']}' WHERE name_id='{$_dvar['nameIndex']}'");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix}tbl_geonames_cache (geonameId, name) VALUES ('{$_dvar['geonameIndex']}','{$_dvar['geoname']}') ON DUPLICATE KEY UPDATE  geonameId=VALUES(geonameId)");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)");
+./editCommonNames.php:	$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_tribes (tribe_name) VALUES ('{$_dvar['tribe_name']}') ON DUPLICATE KEY UPDATE tribe_id=LAST_INSERT_ID(tribe_id)");
+./editCommonNames.php:		$result = doDBQuery("INSERT INTO {$dbprefix} tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}') ON DUPLICATE KEY UPDATE transliteration_id=LAST_INSERT_ID(transliteration_id)");
+./editCommonNames.php:		$sql="UPDATE {$dbprefix}tbl_name_applies_to SET {$sql} WHERE {$where} ";
+./editEpithet.php:            $sql = "UPDATE tbl_tax_epithets SET
+./editEpithet.php:    $text = ($row['epithetID']) ? " Update " : " Insert ";
+./editGenera.php:                $sql = "UPDATE tbl_tax_genera SET
+./editGroup.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_groups SET " . implode(", ", $sqldata) . " WHERE groupID='" . intval($p_groupID) . "'";
+./editGroupUnlock.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_unlock SET " . $sqldata . " WHERE ID = '" . intval($p_accessID) . "'";
+./editHybrids.php:            $sql = "UPDATE tbl_tax_hybrids SET
+./editIndex.php:                $sql = "UPDATE tbl_tax_index SET
+./editLit.php:            $sql = "UPDATE tbl_lit SET
+./editLitAuthor.php:      $sql = "UPDATE tbl_lit_authors SET ".
+./editLitPeriodical.php:        $sql = "UPDATE tbl_lit_periodicals SET
+./editLitPersons.php:        $sql = "UPDATE tbl_lit_persons SET
+./editLitPublisher.php:    $sql = "UPDATE tbl_lit_publishers SET ".
+./editLitTaxa.php:        $sql = "UPDATE tbl_lit_taxa SET
+./editNCBI.php:  $sql = "UPDATE tbl_specimens ".
+./editObservations.php:          $sql = "UPDATE tbl_specimens SET
+./editPassword.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
+./editPeriodicalLib.php:        $sql = "UPDATE tbl_lit_lib_period SET
+./editSeries.php:            $sql = "UPDATE tbl_specimens_series SET
+./editSpecies.php:            db_query("UPDATE $table SET external = 0 WHERE $pid = $id");
+./editSpecies.php:                  $sql = "UPDATE tbl_tax_species SET
+./editSpecimens.php:            $sql = "UPDATE tbl_specimens SET "
+./editSpecimensImport.php:            $sql = "UPDATE tbl_specimens_import SET "
+./editSpecimensSimple.php:            $sql = "UPDATE tbl_specimens SET "
+./editSpecimensTypes.php:                $sql = "UPDATE tbl_specimens_types SET
+./editTable.php:                $sql = "UPDATE $tblName SET "
+./editTaxSynonymy.php:        db_query("UPDATE tbl_tax_synonymy SET
+./editTaxSynonymy.php:        $sql = "UPDATE tbl_tax_synonymy SET
+./editType.php:        $sql = "UPDATE tbl_tax_typecollections SET
+./editUser.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET " . $sqldata . " WHERE userID = '" . intval($p_userID) . "'";
+./editUser.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
+./editUserAccess.php:            $sql = "UPDATE herbarinput_log.tbl_herbardb_access SET " . $sqldata . " WHERE ID = '" . intval($p_accessID) . "'";
+./editVoucher.php:            $sql = "UPDATE tbl_specimens_voucher SET
+./import/importSpecimens.php:    db_query("UPDATE tbl_external_import_content SET
+./import/importSpecimens.php:                db_query("UPDATE tbl_external_import_content SET
+./inc/api_functions.php:    $sql = "UPDATE api.tbl_api_units ";
+./inc/clsAutocompleteCommonName.php:                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('1','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
+./inc/clsAutocompleteCommonName.php:                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
+./listSpecimensImport.php:            db_query("UPDATE tbl_external_import_content SET
+./listSpecimensImport.php:    $sql = "UPDATE tbl_specimens_import SET taxonID=" . $_POST['taxonIndex'] . " WHERE specimen_ID in (" . join(',', $sp_ids) . ") ;";
+./login.php:                $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
+./logout.php:$sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
+./manageBatch.php:    $sql = "UPDATE api.tbl_api_batches SET
+./manageBatch.php:    $sql = "UPDATE api.tbl_api_batches SET ";
+./parseLitPp.php:    mysql_query("UPDATE tbl_lit SET
+./updateBatch.php:      $sql = "UPDATE api.tbl_api_specimens
