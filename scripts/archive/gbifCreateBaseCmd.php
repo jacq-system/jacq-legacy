@@ -272,7 +272,7 @@ foreach ($tbls as $tbl) {
         /**
          * recordURI
          */
-        $recordURI = StableIdentifier($row);
+        $recordURI = StableIdentifier($row, false);
         /**
          * LastEditor
          * DateLastEdited
