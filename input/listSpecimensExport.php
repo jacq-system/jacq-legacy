@@ -1,5 +1,5 @@
 <?php
-//error_reporting(0);
+error_reporting(0);
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
@@ -162,7 +162,7 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('G1', 'accessible')
         ->setCellValue('H1', 'Institution-Code')
         ->setCellValue('I1', 'Herbarium-Number/BarCode')
-        ->setCellValue('J1', 'Collection')
+        ->setCellValue('J1', 'institution_subcollection')
         ->setCellValue('K1', 'Collection Number')
         ->setCellValue('L1', 'Type information')
         ->setCellValue('M1', 'Typified by')
