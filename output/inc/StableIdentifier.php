@@ -13,7 +13,7 @@ function StableIdentifier($source_id,$HerbNummer,$specimen_ID, $addHtmlTags = tr
         $text = "http://herbarium.bgbm.org/object/" . $HerbNummer;
     }
     elseif ($source_id == '27') {
-        $text = "https://lagu.jacq.org/object/" . $HerbNummer;
+        $text = "http://lagu.jacq.org/object/" . $HerbNummer;
     }
     else {
         $text = "http://herbarium.jacq.org/object/" . $HerbNummer;
