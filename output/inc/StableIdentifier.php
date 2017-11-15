@@ -16,7 +16,7 @@ function StableIdentifier($source_id,$HerbNummer,$specimen_ID, $addHtmlTags = tr
         $text = "https://lagu.jacq.org/object/" . $HerbNummer;
     }
     else {
-        $text = "http://herbarium.jacq.org/object/" . $HerbNummer];
+        $text = "http://herbarium.jacq.org/object/" . $HerbNummer;
         $text = "";
     }
 
