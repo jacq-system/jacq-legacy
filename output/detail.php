@@ -328,7 +328,7 @@ if ($row['ncbi_accession']) {
          <tr>
                   <td align="right" width="30%">Stable Identifier</td>
                   <td><b>
-                          <?php makeCell(StableIdentifier($row)); ?>
+                          <?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?>
                       </b>
                   </td>
               </tr>
