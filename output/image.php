@@ -402,9 +402,8 @@ function getPicDetails($request) {
 
     $specimenID = 0;
     $originalFilename = null;
-    $debug = 1;
+    $debug = 0;
 
-    print_r($request);
     //specimenid
     if (is_numeric($request)) {
         $specimenID = $request;
