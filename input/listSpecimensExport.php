@@ -1,4 +1,5 @@
 <?php
+
 error_reporting(0);
 session_start();
 require("inc/connect.php");
@@ -10,12 +11,12 @@ if ($select != 'labels' && $select != 'list') {
     die();
 }
 
-function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
-{
+function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
         $text .= " et al.";
-    } elseif ($Sammler_2) {
+    }
+    elseif ($Sammler_2) {
         $text .= " & " . $Sammler_2;
     }
     if ($series_number) {
@@ -29,7 +30,8 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
             $text .= " " . $series;
         }
         $text .= " " . $series_number;
-    } else {
+    }
+    else {
         if ($series) {
             $text .= " " . $series;
         }
@@ -47,8 +49,7 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
     return $text;
 }
 
-function makeTaxon($taxonID)
-{
+function makeTaxon($taxonID) {
     // prepare variables
     $taxonID = intval($taxonID);
     $scientificName = null;
@@ -66,14 +67,13 @@ function makeTaxon($taxonID)
     return $scientificName;
 }
 
-function makeTypus($ID)
-{
+function makeTypus($ID) {
     $sql = "SELECT typus_lat, tg.genus,
            ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
            ta4.author author4, ta5.author author5,
            te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
            te4.epithet epithet4, te5.epithet epithet5,
-           ts.synID, ts.taxonID, ts.statusID
+           ts.synID, ts.taxonID, ts.statusID, `herbar_view`.GetScientificName(ts.taxonID, 0) AS `scientificName`
           FROM (tbl_specimens_types tst, tbl_typi tt, tbl_tax_species ts)
            LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
            LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
@@ -96,43 +96,47 @@ function makeTypus($ID)
     $text = "";
     while ($row = mysql_fetch_array($result)) {
         if ($row['synID']) {
-            $sql3 = "SELECT ts.statusID, tg.genus,
-                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                ta4.author author4, ta5.author author5,
-                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                te4.epithet epithet4, te5.epithet epithet5
-               FROM tbl_tax_species ts
-                LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-                LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-                LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-               WHERE taxonID=" . $row['synID'];
-            $result3 = mysql_query($sql3);
-            $row3 = mysql_fetch_array($result3);
-            $accName = taxonWithHybrids($row3);
-        } else {
+            /*            $sql3 = "SELECT ts.statusID, tg.genus,
+              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+              ta4.author author4, ta5.author author5,
+              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+              te4.epithet epithet4, te5.epithet epithet5, taxonID
+              FROM tbl_tax_species ts
+              LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+              LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+              LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+              LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+              LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+              LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+              LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+              LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+              LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+              LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+              WHERE taxonID=" . $row['synID'];
+              $result3 = mysql_query($sql3);
+              $row3 = mysql_fetch_array($result3);
+              $accName = taxonWithHybrids($row3); */
+            $accName = makeTaxon($row['synID']);
+        }
+        else {
             $accName = "";
         }
 
         $sql2 = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part,
-              ti.paginae, ti.figures, l.jahr
+              ti.paginae, ti.figures, l.jahr, l.citationID, l.pp, ti.taxonID, le.autor as editor
              FROM tbl_tax_index ti
               INNER JOIN tbl_lit l ON l.citationID=ti.citationID
               LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
-              LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
+              LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
+              LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID
              WHERE ti.taxonID='" . $row['taxonID'] . "'";
         $result2 = mysql_query($sql2);
 
-        $text .= $row['typus_lat'] . " for " . taxonWithHybrids($row) . " ";
+        //$text .= $row['typus_lat'] . " for " . taxonWithHybrids($row) . " ";
+        $text .= $row['typus_lat'] . " for " . $row['scientificName'] . " ";
         while ($row2 = mysql_fetch_array($result2)) {
             $text .= protolog($row2) . " ";
         }
@@ -145,8 +149,13 @@ function makeTypus($ID)
 }
 
 // extend memory and timeout settings
-ini_set("memory_limit", "512M");
+ini_set("memory_limit", "4096M");
 set_time_limit(0);
+
+// SQLiteCache hält die Cell-Data nicht im Speicher
+if (!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip)) {
+    die('Caching not available!');
+}
 
 // Create new PHPExcel object
 $objPHPExcel = new PHPExcel();
@@ -261,7 +270,8 @@ $sqlJoin = " LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seri
 if ($select == 'labels') {
     if (isset($_SESSION['sLabelDate'])) {
         $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
-    } else {
+    }
+    else {
         $searchDate = '2000-01-01';
     }
     $sqlFrom = " FROM (herbarinput_log.log_specimens ls, tbl_specimens s) ";
@@ -272,13 +282,15 @@ if ($select == 'labels') {
     if (isset($_SESSION['sOrder'])) {
         $sqlWhere .= " ORDER BY " . $_SESSION['sOrder'];
     }
-} else {
+}
+else {
     $sqlFrom = " FROM tbl_specimens s ";
-    $sqlWhere =  " WHERE 1 ";
+    $sqlWhere = " WHERE 1 ";
 
     if (empty($_SESSION['sSQLCondition'])) {
         $sqlWhere .= " AND 0 = 1";
-    } else {
+    }
+    else {
         $sqlWhere .= $_SESSION['sSQLCondition'];
     }
 }
@@ -291,19 +303,24 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
     if ($rowSpecimen['epithet5']) {
         $infra_spec = $rowSpecimen['epithet5'];
         $infra_author = $rowSpecimen['author5'];
-    } elseif ($rowSpecimen['epithet4']) {
+    }
+    elseif ($rowSpecimen['epithet4']) {
         $infra_spec = $rowSpecimen['epithet4'];
         $infra_author = $rowSpecimen['author4'];
-    } elseif ($rowSpecimen['epithet3']) {
+    }
+    elseif ($rowSpecimen['epithet3']) {
         $infra_spec = $rowSpecimen['epithet3'];
         $infra_author = $rowSpecimen['author3'];
-    } elseif ($rowSpecimen['epithet2']) {
+    }
+    elseif ($rowSpecimen['epithet2']) {
         $infra_spec = $rowSpecimen['epithet2'];
         $infra_author = $rowSpecimen['author2'];
-    } elseif ($rowSpecimen['epithet1']) {
+    }
+    elseif ($rowSpecimen['epithet1']) {
         $infra_spec = $rowSpecimen['epithet1'];
         $infra_author = $rowSpecimen['author1'];
-    } else {
+    }
+    else {
         $infra_spec = '';
         $infra_author = '';
     }
@@ -319,7 +336,8 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         }
         $latDMS .= ' S';
         $latHemisphere = 'S';
-    } else if ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0) {
+    }
+    else if ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0) {
         $lat = $rowSpecimen['Coord_N'] + $rowSpecimen['N_Min'] / 60 + $rowSpecimen['N_Sec'] / 3600;
         $latDMS = $rowSpecimen['Coord_N'] . "°";
         if (!empty($rowSpecimen['N_Min'])) {
@@ -330,7 +348,8 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         }
         $latDMS .= ' N';
         $latHemisphere = 'N';
-    } else {
+    }
+    else {
         $lat = $latDMS = $latHemisphere = '';
     }
     if (strlen($lat) > 0) {
@@ -348,7 +367,8 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         }
         $lonDMS .= ' W';
         $lonHemisphere = 'W';
-    } else if ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0) {
+    }
+    else if ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0) {
         $lon = $rowSpecimen['Coord_E'] + $rowSpecimen['E_Min'] / 60 + $rowSpecimen['E_Sec'] / 3600;
         $lonDMS = $rowSpecimen['Coord_E'] . "°";
         if (!empty($rowSpecimen['E_Min'])) {
@@ -359,7 +379,8 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         }
         $lonDMS .= ' E';
         $lonHemisphere = 'E';
-    } else {
+    }
+    else {
         $lon = $lonDMS = $lonHemisphere = '';
     }
 
@@ -370,72 +391,137 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
     if ($rowSpecimen['date_supplied']) {
         $apibatch = $rowSpecimen['date_supplied'];
         if ($rowSpecimen['remarks']) {
-            $apibatch .= " (" . $rowSpecimen['remarks'] .")";
+            $apibatch .= " (" . $rowSpecimen['remarks'] . ")";
         }
-    } else {
+    }
+    else {
         $apibatch = "";
     }
 
-    $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
-        ->setCellValue('B' . $i, $rowSpecimen['observation'])
-        ->setCellValue('C' . $i, $apibatch)
-        ->setCellValue('D' . $i, ($rowSpecimen['digital_image']) ? '1' : '')
-        ->setCellValue('E' . $i, ($rowSpecimen['digital_image_obs']) ? '1' : '')
-        ->setCellValue('F' . $i, ($rowSpecimen['checked']) ? '1' : '')
-        ->setCellValue('G' . $i, ($rowSpecimen['accessible']) ? '1' : '')
-        ->setCellValue('H' . $i, $rowSpecimen['source_code'])
-        ->setCellValue('I' . $i, $rowSpecimen['HerbNummer'])
-        ->setCellValue('J' . $i, $rowSpecimen['coll_short'])
-        ->setCellValue('K' . $i, $rowSpecimen['CollNummer'])
-        ->setCellValue('L' . $i, makeTypus(intval($rowSpecimen['specimen_ID'])))
-        ->setCellValue('M' . $i, $rowSpecimen['typified'])
-        ->setCellValue('N' . $i, makeTaxon($rowSpecimen['taxonID']))
-        ->setCellValue('O' . $i, $rowSpecimen['identification_status'])
-        ->setCellValue('P' . $i, $rowSpecimen['genus'])
-        ->setCellValue('Q' . $i, $rowSpecimen['epithet'])
-        ->setCellValue('R' . $i, $rowSpecimen['author'])
-        ->setCellValue('S' . $i, $rowSpecimen['rank_abbr'])
-        ->setCellValue('T' . $i, $infra_spec)
-        ->setCellValue('U' . $i, $infra_author)
-        ->setCellValue('V' . $i, $rowSpecimen['family'])
-        ->setCellValue('W' . $i, $rowSpecimen['garten'])
-        ->setCellValue('X' . $i, $rowSpecimen['voucher'])
-        ->setCellValue('Y' . $i, $sammler)
-        ->setCellValue('Z' . $i, $rowSpecimen['Sammler'])
-        ->setCellValue('AA' . $i, $rowSpecimen['Nummer'])
-        ->setCellValue('AB' . $i, $rowSpecimen['Sammler_2'])
-        ->setCellValue('AC' . $i, $rowSpecimen['alt_number'])
-        ->setCellValue('AD' . $i, $rowSpecimen['series'])
-        ->setCellValue('AE' . $i, $rowSpecimen['series_number'])
-        ->setCellValue('AF' . $i, $rowSpecimen['Datum'])
-        ->setCellValue('AG' . $i, $rowSpecimen['Datum2'])
-        ->setCellValue('AH' . $i, $rowSpecimen['nation_engl'])
-        ->setCellValue('AI' . $i, $rowSpecimen['provinz'])
-        ->setCellValue('AJ' . $i, $rowSpecimen['Bezirk'])
-        ->setCellValue('AK' . $i, $lat)
-        ->setCellValue('AL' . $i, $latDMS)
-        ->setCellValue('AM' . $i, $latHemisphere)
-        ->setCellValue('AN' . $i, ($latHemisphere == 'N') ? $rowSpecimen['Coord_N'] : $rowSpecimen['Coord_S'])
-        ->setCellValue('AO' . $i, ($latHemisphere == 'N') ? $rowSpecimen['N_Min'] : $rowSpecimen['S_Min'])
-        ->setCellValue('AP' . $i, ($latHemisphere == 'N') ? $rowSpecimen['N_Sec'] : $rowSpecimen['S_Sec'])
-        ->setCellValue('AQ' . $i, $lon)
-        ->setCellValue('AR' . $i, $lonDMS)
-        ->setCellValue('AS' . $i, $lonHemisphere)
-        ->setCellValue('AT' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['Coord_E'] : $rowSpecimen['Coord_W'])
-        ->setCellValue('AU' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['E_Min'] : $rowSpecimen['W_Min'])
-        ->setCellValue('AV' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['E_Sec'] : $rowSpecimen['W_Sec'])
-        ->setCellValue('AW' . $i, $rowSpecimen['exactness'])
-        ->setCellValue('AX' . $i, $rowSpecimen['altitude_min'])
-        ->setCellValue('AY' . $i, $rowSpecimen['altitude_max'])
-        ->setCellValue('AZ' . $i, $rowSpecimen['quadrant'])
-        ->setCellValue('BA' . $i, $rowSpecimen['quadrant_sub'])
-        ->setCellValue('BB' . $i, $rowSpecimen['Fundort'])
-        ->setCellValue('BC' . $i, $rowSpecimen['det'])
-        ->setCellValue('BD' . $i, $rowSpecimen['taxon_alt'])
-        ->setCellValue('BE' . $i, $rowSpecimen['Bemerkungen'])
-        ->setCellValue('BF' . $i, $rowSpecimen['habitat'])
-        ->setCellValue('BG' . $i, $rowSpecimen['habitus']);
+    $objPHPExcelWorksheet->fromArray(array(
+        $rowSpecimen['specimen_ID'],
+        $rowSpecimen['observation'],
+        $apibatch,
+        ($rowSpecimen['digital_image']) ? '1' : '',
+        ($rowSpecimen['digital_image_obs']) ? '1' : '',
+        ($rowSpecimen['checked']) ? '1' : '',
+        ($rowSpecimen['accessible']) ? '1' : '',
+        $rowSpecimen['source_code'],
+        $rowSpecimen['HerbNummer'],
+        $rowSpecimen['coll_short'],
+        $rowSpecimen['CollNummer'],
+        makeTypus(intval($rowSpecimen['specimen_ID'])),
+        $rowSpecimen['typified'],
+        makeTaxon($rowSpecimen['taxonID']),
+        $rowSpecimen['identification_status'],
+        $rowSpecimen['genus'],
+        $rowSpecimen['epithet'],
+        $rowSpecimen['author'],
+        $rowSpecimen['rank_abbr'],
+        $infra_spec,
+        $infra_author,
+        $rowSpecimen['family'],
+        $rowSpecimen['garten'],
+        $rowSpecimen['voucher'],
+        $sammler,
+        $rowSpecimen['Sammler'],
+        $rowSpecimen['Nummer'],
+        $rowSpecimen['Sammler_2'],
+        $rowSpecimen['alt_number'],
+        $rowSpecimen['series'],
+        $rowSpecimen['series_number'],
+        $rowSpecimen['Datum'],
+        $rowSpecimen['Datum2'],
+        $rowSpecimen['nation_engl'],
+        $rowSpecimen['provinz'],
+        $rowSpecimen['Bezirk'],
+        $lat,
+        $latDMS,
+        $latHemisphere,
+        ($latHemisphere == 'N') ? $rowSpecimen['Coord_N'] : $rowSpecimen['Coord_S'],
+        ($latHemisphere == 'N') ? $rowSpecimen['N_Min'] : $rowSpecimen['S_Min'],
+        ($latHemisphere == 'N') ? $rowSpecimen['N_Sec'] : $rowSpecimen['S_Sec'],
+        $lon,
+        $lonDMS,
+        $lonHemisphere,
+        ($lonHemisphere == 'E') ? $rowSpecimen['Coord_E'] : $rowSpecimen['Coord_W'],
+        ($lonHemisphere == 'E') ? $rowSpecimen['E_Min'] : $rowSpecimen['W_Min'],
+        ($lonHemisphere == 'E') ? $rowSpecimen['E_Sec'] : $rowSpecimen['W_Sec'],
+        $rowSpecimen['exactness'],
+        $rowSpecimen['altitude_min'],
+        $rowSpecimen['altitude_max'],
+        $rowSpecimen['quadrant'],
+        $rowSpecimen['quadrant_sub'],
+        $rowSpecimen['Fundort'],
+        $rowSpecimen['det'],
+        $rowSpecimen['taxon_alt'],
+        $rowSpecimen['Bemerkungen'],
+        $rowSpecimen['habitat'],
+        $rowSpecimen['habitus']
+            ), null, 'A' . $i);
 
+
+    /*
+      $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
+      ->setCellValue('B' . $i, $rowSpecimen['observation'])
+      ->setCellValue('C' . $i, $apibatch)
+      ->setCellValue('D' . $i, ($rowSpecimen['digital_image']) ? '1' : '')
+      ->setCellValue('E' . $i, ($rowSpecimen['digital_image_obs']) ? '1' : '')
+      ->setCellValue('F' . $i, ($rowSpecimen['checked']) ? '1' : '')
+      ->setCellValue('G' . $i, ($rowSpecimen['accessible']) ? '1' : '')
+      ->setCellValue('H' . $i, $rowSpecimen['source_code'])
+      ->setCellValue('I' . $i, $rowSpecimen['HerbNummer'])
+      ->setCellValue('J' . $i, $rowSpecimen['coll_short'])
+      ->setCellValue('K' . $i, $rowSpecimen['CollNummer'])
+      ->setCellValue('L' . $i, makeTypus(intval($rowSpecimen['specimen_ID'])))
+      ->setCellValue('M' . $i, $rowSpecimen['typified'])
+      ->setCellValue('N' . $i, makeTaxon($rowSpecimen['taxonID']))
+      ->setCellValue('O' . $i, $rowSpecimen['identification_status'])
+      ->setCellValue('P' . $i, $rowSpecimen['genus'])
+      ->setCellValue('Q' . $i, $rowSpecimen['epithet'])
+      ->setCellValue('R' . $i, $rowSpecimen['author'])
+      ->setCellValue('S' . $i, $rowSpecimen['rank_abbr'])
+      ->setCellValue('T' . $i, $infra_spec)
+      ->setCellValue('U' . $i, $infra_author)
+      ->setCellValue('V' . $i, $rowSpecimen['family'])
+      ->setCellValue('W' . $i, $rowSpecimen['garten'])
+      ->setCellValue('X' . $i, $rowSpecimen['voucher'])
+      ->setCellValue('Y' . $i, $sammler)
+      ->setCellValue('Z' . $i, $rowSpecimen['Sammler'])
+      ->setCellValue('AA' . $i, $rowSpecimen['Nummer'])
+      ->setCellValue('AB' . $i, $rowSpecimen['Sammler_2'])
+      ->setCellValue('AC' . $i, $rowSpecimen['alt_number'])
+      ->setCellValue('AD' . $i, $rowSpecimen['series'])
+      ->setCellValue('AE' . $i, $rowSpecimen['series_number'])
+      ->setCellValue('AF' . $i, $rowSpecimen['Datum'])
+      ->setCellValue('AG' . $i, $rowSpecimen['Datum2'])
+      ->setCellValue('AH' . $i, $rowSpecimen['nation_engl'])
+      ->setCellValue('AI' . $i, $rowSpecimen['provinz'])
+      ->setCellValue('AJ' . $i, $rowSpecimen['Bezirk'])
+      ->setCellValue('AK' . $i, $lat)
+      ->setCellValue('AL' . $i, $latDMS)
+      ->setCellValue('AM' . $i, $latHemisphere)
+      ->setCellValue('AN' . $i, ($latHemisphere == 'N') ? $rowSpecimen['Coord_N'] : $rowSpecimen['Coord_S'])
+      ->setCellValue('AO' . $i, ($latHemisphere == 'N') ? $rowSpecimen['N_Min'] : $rowSpecimen['S_Min'])
+      ->setCellValue('AP' . $i, ($latHemisphere == 'N') ? $rowSpecimen['N_Sec'] : $rowSpecimen['S_Sec'])
+      ->setCellValue('AQ' . $i, $lon)
+      ->setCellValue('AR' . $i, $lonDMS)
+      ->setCellValue('AS' . $i, $lonHemisphere)
+      ->setCellValue('AT' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['Coord_E'] : $rowSpecimen['Coord_W'])
+      ->setCellValue('AU' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['E_Min'] : $rowSpecimen['W_Min'])
+      ->setCellValue('AV' . $i, ($lonHemisphere == 'E') ? $rowSpecimen['E_Sec'] : $rowSpecimen['W_Sec'])
+      ->setCellValue('AW' . $i, $rowSpecimen['exactness'])
+      ->setCellValue('AX' . $i, $rowSpecimen['altitude_min'])
+      ->setCellValue('AY' . $i, $rowSpecimen['altitude_max'])
+      ->setCellValue('AZ' . $i, $rowSpecimen['quadrant'])
+      ->setCellValue('BA' . $i, $rowSpecimen['quadrant_sub'])
+      ->setCellValue('BB' . $i, $rowSpecimen['Fundort'])
+      ->setCellValue('BC' . $i, $rowSpecimen['det'])
+      ->setCellValue('BD' . $i, $rowSpecimen['taxon_alt'])
+      ->setCellValue('BE' . $i, $rowSpecimen['Bemerkungen'])
+      ->setCellValue('BF' . $i, $rowSpecimen['habitat'])
+      ->setCellValue('BG' . $i, $rowSpecimen['habitus']);
+     */
     $i++;
 }
 
