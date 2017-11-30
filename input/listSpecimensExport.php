@@ -279,9 +279,9 @@ if ($select == 'labels') {
                    AND ls.userID = '" . intval($_SESSION['uid']) . "'
                    AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate', '1')
                   GROUP BY ls.specimenID ";
-    if (isset($_SESSION['sOrder'])) {
-        $sqlWhere .= " ORDER BY " . $_SESSION['sOrder'];
-    }
+//    if (isset($_SESSION['sOrder'])) {
+//        $sqlWhere .= " ORDER BY " . $_SESSION['sOrder'];
+//    }
 }
 else {
     $sqlFrom = " FROM tbl_specimens s ";
@@ -294,6 +294,9 @@ else {
         $sqlWhere .= $_SESSION['sSQLCondition'];
     }
 }
+
+error_log("listSpecimensExport: Running query: " . $sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
+
 $resultSpecimens = mysql_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 
 $i = 2;
