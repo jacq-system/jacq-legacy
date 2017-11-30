@@ -220,7 +220,10 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('BD1', 'ident. history')
         ->setCellValue('BE1', 'annotations')
         ->setCellValue('BF1', 'habitat')
-        ->setCellValue('BG1', 'habitus');
+        ->setCellValue('BG1', 'habitus')
+        ->setCellValue('BH1', 'aktualdatum')
+        ->setCellValue('BI1', 'eingabedatum')
+;
 
 $sqlSelect = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
                s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
@@ -237,7 +240,7 @@ $sqlSelect = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series
                tr.rank_abbr,
                ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
-               ts.synID, ts.taxonID, ts.statusID ";
+               ts.synID, ts.taxonID, ts.statusID, s.aktualdatum, s.eingabedatum ";
 $sqlJoin = " LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seriesID
              LEFT JOIN tbl_specimens_identstatus     si  ON si.identstatusID = s.identstatusID
              LEFT JOIN tbl_specimens_voucher         sv  ON sv.voucherID = s.voucherID
@@ -460,7 +463,9 @@ while (($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false) {
         $rowSpecimen['taxon_alt'],
         $rowSpecimen['Bemerkungen'],
         $rowSpecimen['habitat'],
-        $rowSpecimen['habitus']
+        $rowSpecimen['habitus'],
+        $rowSpecimen['aktualdatum'],
+        $rowSpecimen['eingabedatum']
             ), null, 'A' . $i);
 
 
