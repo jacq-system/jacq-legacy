@@ -209,6 +209,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
     $mime = 'image/jpeg';
     $fileExt = 'jpg';
     $url = '';
+    $downloadPic = true;
 
     // Check if we are using djatoka
     if ($picdetails['is_djatoka'] == '1') {
@@ -239,6 +240,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
             }
             // thumbnail for europeana
             else if ($thumb == 3) {
+                $downloadPic = false;
                 $scale = '1200,0';
             }
             // thumbnail for nhmw digitization project
@@ -252,7 +254,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
         }
 
         // Construct URL to djatoka-resolver
-        $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['requestFileName']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
+        $url = $picdetails['url'] . "/adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
     }
     //... Check if we are using djatoka = 2 (Berlin image server)
     else if ($picdetails['is_djatoka'] == '2') {
@@ -389,7 +391,9 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
 
     // Send correct headers
     header('Content-Type: ' . $mime);
-    header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
+    if ($downloadPic) {
+        header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
+    }
     readfile($url);
 
     // Redirect to image download
