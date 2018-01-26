@@ -419,6 +419,7 @@ function getPicDetails($request) {
             $specimenID = $matches['specimenID'];
         }
         // obs digital_image_obs
+        $originalFilename = $request;
     }
     else if (strpos($request, 'obs_') !== false) {
         $result = preg_match('/obs_((?P<specimenID>\d+)[\._]*(.*))/', $request, $matches);
@@ -426,6 +427,7 @@ function getPicDetails($request) {
             $specimenID = $matches['specimenID'];
         }
         // filename
+        $originalFilename = $request;
     }
     else {
         $originalFilename = $request;
