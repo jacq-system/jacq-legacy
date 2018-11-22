@@ -110,7 +110,9 @@ if (isset($_GET['order']) && $_GET['order'] == 2) {
 /**
  * pagination
  */
-$_SESSION['ITEMS_PER_PAGE'] = 10;
+if (empty($_SESSION['ITEMS_PER_PAGE'])) {
+    $_SESSION['ITEMS_PER_PAGE'] = 10;
+}
 $limits=array(10, 30, 50, 100);
 if (!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE']) != 0 && in_array(intval($_GET['ITEMS_PER_PAGE']), $limits) ){
 	$_SESSION['ITEMS_PER_PAGE'] = intval($_GET['ITEMS_PER_PAGE']);
@@ -129,12 +131,13 @@ if ($dbLink->errno) {
 }
 $res_count = $dbLink->query("select found_rows()");
 if ($res_count) {
-	$res_count = $res_count->fetch_row();
-	$res_count = $res_count[0];
+	$res_count_row = $res_count->fetch_row();
+	$nrRows = intval($res_count_row[0]);
+} else {
+    $nrRows = 0;
 }
-$res_count = intval($res_count);
 
-$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($res_count / $_SESSION['ITEMS_PER_PAGE']), 2);
+$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2);
 $b = "";
 foreach ($limits as $f) {
     $b .= "<option value=\"$f\" " . (($f == $_SESSION['ITEMS_PER_PAGE']) ? 'selected' : '') . ">$f</option>";
@@ -151,7 +154,7 @@ $navigation = "<form name='page' action='{$_SERVER['SCRIPT_NAME']}' method='get'
 
 //echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
 echo "<div align='center'><table width='100%'>\n"
-   . "<tr><td colspan='2'><b>" . $res_count . " record" . (($res_count > 1) ? "s" : "") . " found</b></td>\n";
+   . "<tr><td colspan='2'><b>" . $nrRows . " record" . (($nrRows > 1) ? "s" : "") . " found</b></td>\n";
 
 ?>
 <td colspan="7" align="right">

@@ -301,7 +301,7 @@ tbl_wu_generale
         $array_sub_taxonID = array();
         $array_sub_basID   = array();
         $array_sub_synID   = array();
-        while ($row_sub = $res_sub->fetch_array($res_sub)) {
+        while ($row_sub = $res_sub->fetch_array()) {
             if ($row_sub['taxonID']) { $array_sub_taxonID[] = $row_sub['taxonID']; }
             if ($row_sub['basID'])   { $array_sub_basID[]   = $row_sub['basID']; }
             if ($row_sub['synID'])   { $array_sub_synID[]   = $row_sub['synID']; }
@@ -324,51 +324,63 @@ tbl_wu_generale
         }
     } else {
         if (!empty($str_sub_taxonID) || !empty($str_sub_basID) || !empty($str_sub_synID)) {
-            $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (( SELECT " . $sql_names . $sql_tables . trim($sql_restrict_specimen . $sql_restrict_species) . ")
+            $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (
+                                    ( SELECT " . $sql_names . $sql_tables . trim($sql_restrict_specimen . $sql_restrict_species) . " GROUP BY specimen_ID)
                                     UNION
                                     ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                       AND (0";
+                                       AND (";
             if (!empty($str_sub_taxonID)) {
-                $_SESSION['s_query'] .= " OR ts.taxonID IN ($str_sub_taxonID)
+                $_SESSION['s_query'] .= "ts.taxonID IN ($str_sub_taxonID)
                                           OR ts.basID IN ($str_sub_taxonID)
                                           OR ts.synID IN ($str_sub_taxonID)";
+                $connector = " OR ";
+            } else {
+                $connector = "";
             }
             if (!empty($str_sub_basID)) {
-                $_SESSION['s_query'] .= " OR ts.taxonID IN ($str_sub_basID)
+                $_SESSION['s_query'] .=  $connector
+                                      . "ts.taxonID IN ($str_sub_basID)
                                           OR ts.basID IN ($str_sub_basID)
                                           OR ts.synID IN ($str_sub_basID)";
+                $connector = " OR ";
             }
             if (!empty($str_sub_synID)) {
-                $_SESSION['s_query'] .= " OR ts.taxonID IN ($str_sub_synID)
+                $_SESSION['s_query'] .=  $connector
+                                      . "ts.taxonID IN ($str_sub_synID)
                                           OR ts.basID IN ($str_sub_synID)
                                           OR ts.synID IN ($str_sub_synID)";
             }
-            $_SESSION['s_query'] .= "))
+            $_SESSION['s_query'] .= ") GROUP BY specimen_ID)
                                      UNION
                                      ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                        AND (0";
+                                        AND (";
             if (!empty($str_sub_taxonID)) {
-                $_SESSION['s_query'] .= " OR ts2.taxonID IN ($str_sub_taxonID)
+                $_SESSION['s_query'] .= "ts2.taxonID IN ($str_sub_taxonID)
                                           OR ts2.basID IN ($str_sub_taxonID)
                                           OR ts2.synID IN ($str_sub_taxonID)";
+                $connector = " OR ";
+            } else {
+                $connector = "";
             }
             if (!empty($str_sub_basID)) {
-                $_SESSION['s_query'] .= " OR ts2.taxonID IN ($str_sub_basID)
+                $_SESSION['s_query'] .= $connector
+                                      . "ts2.taxonID IN ($str_sub_basID)
                                           OR ts2.basID IN ($str_sub_basID)
                                           OR ts2.synID IN ($str_sub_basID)";
+                $connector = " OR ";
             }
             if (!empty($str_sub_synID)) {
-                $_SESSION['s_query'] .= " OR ts2.taxonID IN ($str_sub_synID)
+                $_SESSION['s_query'] .= $connector
+                                      . "ts2.taxonID IN ($str_sub_synID)
                                           OR ts2.basID IN ($str_sub_synID)
                                           OR ts2.synID IN ($str_sub_synID)";
             }
-            $_SESSION['s_query'] .= "))) AS `union_tbl` GROUP BY `specimen_ID` ";
+            $_SESSION['s_query'] .= ") GROUP BY specimen_ID)) AS union_tbl ";
         } else {
             $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . "
                                     GROUP BY specimen_ID ";
         }
     }
-
     $location="Location: results.php";
     if (SID!="") { $location = $location."?".SID; }
     header($location);
