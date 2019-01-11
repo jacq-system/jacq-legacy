@@ -102,9 +102,9 @@ tbl_tax_systematic_categories
       <td valign="top" colspan="9">
         <?php
 if (isset($_GET['order']) && $_GET['order'] == 2) {
-    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer";
+    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer";
 } else {
-    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
+    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer";
 }
 
 /**
