@@ -33,6 +33,7 @@ if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
 if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sUserDate'])) $_SESSION['sUserDate'] = '';
+if (!isset($_SESSION['sLabelDate'])) $_SESSION['sLabelDate'] = '';
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
@@ -601,7 +602,9 @@ if ($_SESSION['sType'] == 1) {
         $sql = "SELECT ls.specimenID, ls.updated, ls.timestamp, hu.firstname, hu.surname
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users hu
                 WHERE ls.userID = hu.userID ";
-        if (intval($_SESSION['sUserID'])) $sql .= "AND ls.userID = '" . intval($_SESSION['sUserID']) . "' ";
+        if (intval($_SESSION['sUserID'])) {
+            $sql .= "AND ls.userID = '" . intval($_SESSION['sUserID']) . "' ";
+        }
         if (strlen(trim($_SESSION['sUserDate']))) {
             $searchDate = mysql_escape_string(trim($_SESSION['sUserDate']));
             $sql .= "AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1') ";
