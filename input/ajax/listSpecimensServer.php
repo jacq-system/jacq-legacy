@@ -2,7 +2,7 @@
 
 /**
  * This file is included from listWUServer.php
- * function is separated for cleaner code only 
+ * function is separated for cleaner code only
  */
 require_once("../inc/herbardb_input_functions.php");
 
@@ -11,16 +11,16 @@ require_once("../inc/herbardb_input_functions.php");
  * @param int $page Pagination parameter
  * @param bool $bInitialize init pagination
  * @param int $itemsPerPage Items per page
- * @return \xajaxResponse 
+ * @return \xajaxResponse
  */
 function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     ob_start();
-    
+
     // check value of items per page
     $itemsPerPage = intval($itemsPerPage);
     $itemsPerPage = ( $itemsPerPage > 0 ) ? $itemsPerPage : (($_SESSION['sItemsPerPage'] > 0) ? $_SESSION['sItemsPerPage'] : 10);
     $_SESSION['sItemsPerPage'] = $itemsPerPage;
-    
+
     $objResponse = new xajaxResponse();
 
     $start = intval($page) * $itemsPerPage;
@@ -102,6 +102,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         if (trim($_SESSION['sNumberC'])) {
             $sql2 .= " AND (s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
 							s.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.CollNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
 							s.series_number LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
         }
         if (trim($_SESSION['sDate'])) {
@@ -210,16 +211,16 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 else {
                     $textLatLon = "<td class=\"out\"></td>";
                 }
-				 
+
 				 if ($row['source_id'] == '29') {
 					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                  				. htmlspecialchars($row['HerbNummer']) . "</td>";
-					} 
+					}
 				else {
 					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                  				. htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
 					};
-				
+
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                 . "<td class=\"out\">$digitalImage</td>"
                 . "<td class=\"out\">"
