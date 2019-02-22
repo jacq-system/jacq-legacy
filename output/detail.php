@@ -464,35 +464,25 @@ if (strlen($typusText) > 0):
 			<?php
 				if ($row['source_id'] == '29' || $row['source_id'] == '6' ){
                     echo "<tr>";
-
 					// create new id object
-                    if ($row['source_id'] == '29') {
-                        $id = new MyTripleID($row['specimen_ID']);
-                    } else { //$row['source_id'] == '6'
-                        $id = new MyTripleID($row['HerbNummer']);
-                    }
+                    $id = new MyTripleID($row['HerbNummer']);
 					// create new AnnotationQuery object
 					$query = new AnnotationQuery($serviceUri);
-
 					// fetch annotation metadata
 					$annotations = $query->getAnnotationMetadata($id);
-
 					// build URI for new annotation
 					if ($row['source_id'] == '29') {
-                        $newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_b&", $id);
+                        $newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
                     } else { //$row['source_id'] == '6'
                         $newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
                     }
-
                     echo "<td align='right'>Annosys annotations<br/>"
                        . "<a href='". $newAnnoUri . "' target='_blank'>Add annotation</a>"
 					   . "<br/>"
                        . "</td>"
                        . "<td><b>";
-
 					// generate table
 					$table = generateAnnoTable($annotations);
-
 					// output
 					echo $table;
                     echo "</b></td>";
