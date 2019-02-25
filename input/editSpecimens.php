@@ -542,7 +542,7 @@ if (isset($_GET['sel'])) {
     }
     function editCollector(sel) {
       target = "editCollector.php?sel=" + encodeURIComponent(sel.value);
-      MeinFenster = window.open(target,"editCollector","width=350,height=130,top=50,left=50,scrollbars=yes,resizable=yes");
+      MeinFenster = window.open(target,"editCollector","width=850,height=250,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function editCollector2(sel) {

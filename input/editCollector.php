@@ -12,9 +12,8 @@ no_magic();
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <script type="text/javascript" language="JavaScript">
-    function showHUH(sel) {
-      target = "selectCollector.php?id=" + encodeURIComponent(sel.value);
-      MeinFenster = window.open(target,"showHUH");
+    function showExternal(sel) {
+      MeinFenster = window.open(sel.value,"showHUH");
       MeinFenster.focus();
     }
   </script>
@@ -30,7 +29,7 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x1800)!=0)) {
          "WHERE Sammler=".quoteString($_POST['Sammler']).
           "AND SammlerID!='".intval($_POST['ID'])."'";
   $result = db_query($sql);
-  while (($row=mysql_fetch_array($result)) && $sw) {
+  while (($row = mysql_fetch_array($result)) && $sw) {
     if ($row['Sammler']==$_POST['Sammler']) {
       echo "<script language=\"JavaScript\">\n";
       echo "alert('Collector \"".$row['Sammler']."\" already present with ID ".$row['SammlerID']."');\n";
@@ -41,24 +40,30 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x1800)!=0)) {
   }
   if ($sw) {
     if (intval($_POST['ID'])) {
-      if (($_SESSION['editControl'] & 0x1000)!=0) {
-        $sql = "UPDATE tbl_collector SET ".
-                "Sammler='".mysql_escape_string($_POST['Sammler'])."', ".
-                "HUH_ID=".quoteString($_POST['HUH_ID'])." ".
-               "WHERE SammlerID='".intval($_POST['ID'])."'";
-      } else
+      if (($_SESSION['editControl'] & 0x1000) != 0) {
+        $sql = "UPDATE tbl_collector SET
+                 Sammler = '" . mysql_escape_string($_POST['Sammler']) . "',
+                 HUH_ID = " . quoteString($_POST['HUH_ID']) . ",
+                 VIAF_ID = " . quoteString($_POST['VIAF_ID']) . ",
+                 WIKIDATA_ID = " . quoteString($_POST['WIKIDATA_ID']) . "
+                WHERE SammlerID = '" . intval($_POST['ID']) . "'";
+      } else {
         $sql = "";
+      }
     } else {
-      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID) ".
-             "VALUES ('".mysql_escape_string($_POST['Sammler'])."', ".
-              quoteString($_POST['HUH_ID']).")";
+      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID)
+              VALUES ('
+              " . mysql_escape_string($_POST['Sammler']) . "',
+              " . quoteString($_POST['HUH_ID']) . ",
+              " . quoteString($_POST['VIAF_ID']) . ",
+              " . quoteString($_POST['WIKIDATA_ID']) . ")";
     }
     $result = db_query($sql);
     $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
 
     echo "<script language=\"JavaScript\">\n";
     echo "  window.opener.document.f.sammler.value = \"".addslashes($_POST['Sammler'])." <$id>\";\n";
-    echo "  window.opener.document.f.reload.click()\n";
+//    echo "  window.opener.document.f.reload.click()\n";
     echo "  self.close()\n";
     echo "</script>\n";
     echo "</body>\n</html>\n";
@@ -71,27 +76,31 @@ else {
   $id = $pieces[0];
 }
 
-echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
+echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\n";
 
-$sql = "SELECT Sammler, SammlerID, HUH_ID ".
-       "FROM tbl_collector WHERE SammlerID='".mysql_escape_string($id)."'";
+$sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID
+        FROM tbl_collector WHERE SammlerID = '" . mysql_escape_string($id) . "'";
 $result = db_query($sql);
 $row = mysql_fetch_array($result);
 
 $cf = new CSSF();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['SammlerID']."\">\n";
-$cf->label(6,0.5,"ID");
-$cf->text(6,0.5,"&nbsp;".(($row['SammlerID'])?$row['SammlerID']:"new"));
-$cf->label(6,2,"Collector");
-$cf->inputText(6,2,15,"Sammler",$row['Sammler'],50);
-$cf->label(6,4,"HUH","javascript:showHUH(document.f.HUH_ID)");
-$cf->inputText(6,4,5,"HUH_ID",$row['HUH_ID'],15);
+$cf->label(7,0.5,"ID");
+$cf->text(7,0.5,"&nbsp;".(($row['SammlerID'])?$row['SammlerID']:"new"));
+$cf->label(7,2,"Collector");
+$cf->inputText(7,2,15,"Sammler",$row['Sammler'],50);
+$cf->label(6.5,4.5,"HUH","javascript:showExternal(document.f.HUH_ID)");
+$cf->inputText(7,4.5,50,"HUH_ID",$row['HUH_ID'],200);
+$cf->label(7,6.5,"VIAF","javascript:showExternal(document.f.VIAF_ID)");
+$cf->inputText(7,6.5,50,"VIAF_ID",$row['VIAF_ID'],200);
+$cf->label(7,8.5,"WIKIDATA","javascript:showExternal(document.f.WIKIDATA_ID)");
+$cf->inputText(7,8.5,50,"WIKIDATA_ID",$row['WIKIDATA_ID'],200);
 
 if (($_SESSION['editControl'] & 0x1800)!=0) {
   $text = ($row['SammlerID']) ? " Update " : " Insert ";
-  $cf->buttonSubmit(2,7,"submitUpdate",$text);
-  $cf->buttonJavaScript(12,7," New ","self.location.href='editCollector.php?sel=<0>'");
+  $cf->buttonSubmit(2,12,"submitUpdate",$text);
+  $cf->buttonJavaScript(12,12," New ","self.location.href='editCollector.php?sel=<0>'");
 }
 
 echo "</form>\n";

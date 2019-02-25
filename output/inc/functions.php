@@ -67,10 +67,11 @@ class MyTripleID extends TripleID {
         //      sql = "SELECT * FROM table WHERE id=" . $id
         // fill variables with data from database
 
-        $query = "SELECT s.specimen_ID, mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, s.HerbNummer
+        $query = "SELECT s.specimen_ID, mc.collection, mc.collectionID, s.HerbNummer, md.SourceInstitutionID, md.SourceID
                   FROM tbl_specimens s
                    LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
-                  WHERE specimen_ID=" . ($id);
+                   LEFT JOIN metadata md ON md.db_id=mc.source_id
+                  WHERE HerbNummer like '" . ($id)."'";
         $result = $dbLink->query($query);
 
         if ($dbLink->connect_errno) {
@@ -78,24 +79,10 @@ class MyTripleID extends TripleID {
             echo $dbLink->error . "<br>\n";
         }
         $row = $result->fetch_array();
-
-        if ($row['source_id'] == '29') {
-            $unitid = $row['HerbNummer'];
-            $source = 'Herbarium Berolinense';
-            $institutionID = 'B';
-        }
-
-        if ($row['source_id'] == '6') {
-            $unitid = $row['specimen_ID'];
-            $source = 'Herbarium W';
-            $institutionID = 'W';
-        }
-
-        $this->institutionID = $institutionID;
-        $this->sourceID = $source;
-        $this->objectID = $unitid;
+        $this->institutionID = $row['SourceInstitutionID'];
+        $this->sourceID = $row['SourceID'];
+        $this->objectID = $row['HerbNummer'];
     }
-
 }
 
 // class MyTripleID

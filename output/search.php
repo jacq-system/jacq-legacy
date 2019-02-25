@@ -309,15 +309,19 @@ tbl_wu_generale
         if (!empty($array_sub_taxonID)) { $str_sub_taxonID = implode(", ", array_unique($array_sub_taxonID)); }
         if (!empty($array_sub_basID))   { $str_sub_basID   = implode(", ", array_unique($array_sub_basID)); }
         if (!empty($array_sub_synID))   { $str_sub_synID   = implode(", ", array_unique($array_sub_synID)); }
+//        echo "<pre>" . var_export($str_sub_taxonID, true) . "<br>" . var_export($str_sub_basID, true) . "<br>" . var_export($str_sub_synID, true) . "</pre>"; die();
     }
 
-    if (!$_POST['synonym'] || strpos(trim($_POST['taxon']), " ") === false) {
+    if (!$_POST['synonym']) {
         if (!empty($str_sub_taxonID)) {
-            $_SESSION['s_query'] = "( SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                       AND ts.taxonID IN ($str_sub_taxonID))
+            $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (
+                                    ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . " GROUP BY specimen_ID)
                                     UNION
                                     ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                       AND ts2.taxonID IN ($str_sub_taxonID)) ";
+                                       AND ts.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)
+                                    UNION
+                                    ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
+                                       AND ts2.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)) AS union_tbl ";
         } else {
             $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . "
                                     GROUP BY specimen_ID ";
@@ -325,7 +329,7 @@ tbl_wu_generale
     } else {
         if (!empty($str_sub_taxonID) || !empty($str_sub_basID) || !empty($str_sub_synID)) {
             $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (
-                                    ( SELECT " . $sql_names . $sql_tables . trim($sql_restrict_specimen . $sql_restrict_species) . " GROUP BY specimen_ID)
+                                    ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . " GROUP BY specimen_ID)
                                     UNION
                                     ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
                                        AND (";

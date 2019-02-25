@@ -1,8 +1,8 @@
 <?php
 
-const INCERTAE_SEDIS_IMPORT = 3449
+const INCERTAE_SEDIS_IMPORT = 3449;
 
-;session_start();
+session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
 require_once("../inc/herbardb_input_functions.php");
@@ -291,16 +291,16 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
       $(document).ready(function() {
           $( 'input[name^="similarTaxa_"]' ).change( function() {
               if( !$(this).attr( 'checked' ) ) return;
-              
+
               // Find compare string
               var origString = $( 'input[name="' + $(this).attr( 'name' ) + '_orig"]' ).val();
               var selectVal = $(this).val();
-              
+
               // Now find all other entries with the same value
               $( 'input[value="' + origString + '"]' ).each( function() {
                   var currName = $(this).attr( 'name' );
                   currName = currName.replace( '_orig', '' );
-                  
+
                   $( 'input[name="' + currName + '"][value="' + selectVal + '"]' ).attr( 'checked', true );
               } );
           } );
@@ -394,10 +394,15 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         }
 
         /**
+         * fill collection number CollNummer
+         */
+        $data[$i]['CollNummer'] = (!empty($import[$i][2])) ? $import[$i][2] : '';
+
+        /**
          * check if identstatus exists
          */
-        if (trim($import[$i][2])) {
-            $result = db_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][2])));
+        if (trim($import[$i][3])) {
+            $result = db_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][3])));
             if (mysql_num_rows($result) > 0) {
                 $row = mysql_fetch_array($result);
                 $data[$i]['identstatusID'] = $row['identstatusID'];
@@ -414,7 +419,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
          */
         $taxonOK = false;
         $genusOK = false;
-        $pieces = explode(' ', $import[$i][3], 3);
+        $pieces = explode(' ', $import[$i][4], 3);
         $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
         if (mysql_num_rows($result) > 0) {
             $genusOK = true;
@@ -428,11 +433,11 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     $result = db_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
                     if (mysql_num_rows($result) > 0) {
                         while ($row = mysql_fetch_array($result)) {
-                          if (strcmp(trim(getTaxon($row['taxonID'])), trim($import[$i][3])) == 0) {
+                          if (strcmp(trim(getTaxon($row['taxonID'])), trim($import[$i][4])) == 0) {
                               $taxonOK = true;
                               $data[$i]['taxonID'] = $row['taxonID'];
                               break;
-                          } else if (strcmp(trim(getTaxon($row['taxonID'], false)), trim($import[$i][3])) == 0) {
+                          } else if (strcmp(trim(getTaxon($row['taxonID'], false)), trim($import[$i][4])) == 0) {
                               $taxonOK = true;
                               $data[$i]['taxonID'] = $row['taxonID'];
                               break;
@@ -472,7 +477,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $data[$i]['taxonID'] = 0;
 
             $parser = clsTaxonTokenizer::Load();
-            $taxonParts = $parser->tokenize($import[$i][3]);
+            $taxonParts = $parser->tokenize($import[$i][4]);
 
             $taxamatch[$i] = array();
             $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
@@ -501,14 +506,14 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
          * check the collectors (first and additional)
          */
         $collectorsOK = false;
-        if (substr(trim($import[$i][4]), -6) == 'et al.') {
-            $collector = substr(trim($import[$i][4]), 0, -7);
+        if (substr(trim($import[$i][5]), -6) == 'et al.') {
+            $collector = substr(trim($import[$i][5]), 0, -7);
             $collector2 = "et al.";
         } else {
-            $collectors = trim(strtr($import[$i][4], '&', ','));
+            $collectors = trim(strtr($import[$i][5], '&', ','));
             $parts = explode(', ', $collectors);
             $collector = trim($parts[0]);
-            $collector2 = trim(substr(trim($import[$i][4]), strlen($collector) + 2));
+            $collector2 = trim(substr(trim($import[$i][5]), strlen($collector) + 2));
         }
         $result = db_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
         if (mysql_num_rows($result) > 0) {
@@ -536,8 +541,8 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         /**
          * check if series exists
          */
-        if (trim($import[$i][5])) {
-          $result = db_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][5])));
+        if (trim($import[$i][6])) {
+          $result = db_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][6])));
           if (mysql_num_rows($result) > 0) {
               $row = mysql_fetch_array($result);
               $data[$i]['seriesID'] = $row['seriesID'];
@@ -552,43 +557,43 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         /**
          * fill series_number
          */
-        $data[$i]['series_number'] = (!empty($import[$i][6])) ? $import[$i][6] : '';
+        $data[$i]['series_number'] = (!empty($import[$i][7])) ? $import[$i][7] : '';
 
         /**
          * fill Nummer
          */
-        $data[$i]['Nummer'] = (!empty($import[$i][7])) ? $import[$i][7] : '';
+        $data[$i]['Nummer'] = (!empty($import[$i][8])) ? $import[$i][8] : '';
 
         /**
          * fill alt_number
          */
-        $data[$i]['alt_number'] = (!empty($import[$i][8])) ? $import[$i][8] : '';
+        $data[$i]['alt_number'] = (!empty($import[$i][9])) ? $import[$i][9] : '';
 
         /**
          * fill Datum
          */
-        $data[$i]['Datum'] = (!empty($import[$i][9])) ? $import[$i][9] : '';
+        $data[$i]['Datum'] = (!empty($import[$i][10])) ? $import[$i][10] : '';
 
         /**
          * fill Datum2
          */
-        $data[$i]['Datum2'] = (!empty($import[$i][10])) ? $import[$i][10] : '';
+        $data[$i]['Datum2'] = (!empty($import[$i][11])) ? $import[$i][11] : '';
 
         /**
          * fill det
          */
-        $data[$i]['det'] = (!empty($import[$i][11])) ? $import[$i][11] : '';
+        $data[$i]['det'] = (!empty($import[$i][12])) ? $import[$i][12] : '';
 
         /**
          * fill typified
          */
-        $data[$i]['typified'] = (!empty($import[$i][12])) ? $import[$i][12] : '';
+        $data[$i]['typified'] = (!empty($import[$i][13])) ? $import[$i][13] : '';
 
         /**
          * check if type exists
          */
-        if (isset($import[$i][13]) && trim($import[$i][13])) {
-            $result = db_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][13])));
+        if (isset($import[$i][14]) && trim($import[$i][14])) {
+            $result = db_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][14])));
             if (mysql_num_rows($result) > 0) {
                 $row = mysql_fetch_array($result);
                 $data[$i]['typusID'] = $row['typusID'];
@@ -603,13 +608,13 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         /**
          * fill taxon_alt
          */
-        $data[$i]['taxon_alt'] = (!empty($import[$i][14])) ? $import[$i][14] : '';
+        $data[$i]['taxon_alt'] = (!empty($import[$i][15])) ? $import[$i][15] : '';
 
         /**
          * check if nation exists
          */
-        if (isset($import[$i][15]) && trim($import[$i][15])) {
-            $result = db_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][15])));
+        if (isset($import[$i][16]) && trim($import[$i][16])) {
+            $result = db_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][16])));
             if (mysql_num_rows($result) > 0) {
                 $row = mysql_fetch_array($result);
                 $data[$i]['NationID'] = $row['nationID'];
@@ -625,10 +630,10 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         /**
          * check if province exists
          */
-        if (isset($import[$i][16]) && trim($import[$i][16])) {
+        if (isset($import[$i][17]) && trim($import[$i][17])) {
             $sql = "SELECT provinceID
                     FROM tbl_geo_province
-                    WHERE provinz = " . quoteString(trim($import[$i][16])) . "
+                    WHERE provinz = " . quoteString(trim($import[$i][17])) . "
                      AND nationID = '" . intval($data[$i]['NationID']) . "'";
             $result = db_query($sql);
             if (mysql_num_rows($result) > 0) {
@@ -645,71 +650,70 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         /**
          * fill Fundort
          */
-        $data[$i]['Fundort'] = (!empty($import[$i][17])) ? $import[$i][17] : '';
-        $data[$i]['Fundort_engl'] = (!empty($import[$i][18])) ? $import[$i][18] : '';
-        
+        $data[$i]['Fundort'] = (!empty($import[$i][18])) ? $import[$i][18] : '';
+        $data[$i]['Fundort_engl'] = (!empty($import[$i][19])) ? $import[$i][19] : '';
+
         /**
          * fill habitat & habitus
          */
-        $data[$i]['Habitat'] = (!empty($import[$i][19])) ? $import[$i][19] : '';
-        $data[$i]['Habitus'] = (!empty($import[$i][20])) ? $import[$i][20] : '';
+        $data[$i]['Habitat'] = (!empty($import[$i][20])) ? $import[$i][20] : '';
+        $data[$i]['Habitus'] = (!empty($import[$i][21])) ? $import[$i][21] : '';
 
         /**
          * fill Bemerkungen
          */
-        $data[$i]['Bemerkungen'] = (!empty($import[$i][21])) ? $import[$i][21] : '';
+        $data[$i]['Bemerkungen'] = (!empty($import[$i][22])) ? $import[$i][22] : '';
 
         /**
          * fill geografical coordinates
          */
-        if (isset($import[$i][22]) && isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25])) {
-            $data[$i]['Coord_N'] = ($import[$i][22]=='N') ? $import[$i][23] : "";
-            $data[$i]['N_Min']   = ($import[$i][22]=='N') ? $import[$i][24] : "";
-            $data[$i]['N_Sec']   = ($import[$i][22]=='N') ? strtr($import[$i][25], ",", ".") : "";
-            $data[$i]['Coord_S'] = ($import[$i][22]=='S') ? $import[$i][23] : "";
-            $data[$i]['S_Min']   = ($import[$i][22]=='S') ? $import[$i][24] : "";
-            $data[$i]['S_Sec']   = ($import[$i][22]=='S') ? strtr($import[$i][25], ",", ".") : "";
+        if (isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25]) && isset($import[$i][26])) {
+            $data[$i]['Coord_N'] = ($import[$i][23]=='N') ? $import[$i][24] : "";
+            $data[$i]['N_Min']   = ($import[$i][23]=='N') ? $import[$i][25] : "";
+            $data[$i]['N_Sec']   = ($import[$i][23]=='N') ? strtr($import[$i][26], ",", ".") : "";
+            $data[$i]['Coord_S'] = ($import[$i][23]=='S') ? $import[$i][24] : "";
+            $data[$i]['S_Min']   = ($import[$i][23]=='S') ? $import[$i][25] : "";
+            $data[$i]['S_Sec']   = ($import[$i][23]=='S') ? strtr($import[$i][26], ",", ".") : "";
         } else {
             $data[$i]['Coord_N'] = $data[$i]['N_Min'] = $data[$i]['N_Sec'] = $data[$i]['Coord_S'] = $data[$i]['S_Min'] = $data[$i]['S_Sec'] = '';
         }
-        if (isset($import[$i][26]) && isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29])) {
-            $data[$i]['Coord_W'] = ($import[$i][26]=='W') ? $import[$i][27] : "";
-            $data[$i]['W_Min']   = ($import[$i][26]=='W') ? $import[$i][28] : "";
-            $data[$i]['W_Sec']   = ($import[$i][26]=='W') ? strtr($import[$i][29], ",", ".") : "";
-            $data[$i]['Coord_E'] = ($import[$i][26]=='E') ? $import[$i][27] : "";
-            $data[$i]['E_Min']   = ($import[$i][26]=='E') ? $import[$i][28] : "";
-            $data[$i]['E_Sec']   = ($import[$i][26]=='E') ? strtr($import[$i][29], ",", ".") : "";
+        if (isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29]) && isset($import[$i][30])) {
+            $data[$i]['Coord_W'] = ($import[$i][27]=='W') ? $import[$i][28] : "";
+            $data[$i]['W_Min']   = ($import[$i][27]=='W') ? $import[$i][29] : "";
+            $data[$i]['W_Sec']   = ($import[$i][27]=='W') ? strtr($import[$i][30], ",", ".") : "";
+            $data[$i]['Coord_E'] = ($import[$i][27]=='E') ? $import[$i][28] : "";
+            $data[$i]['E_Min']   = ($import[$i][27]=='E') ? $import[$i][29] : "";
+            $data[$i]['E_Sec']   = ($import[$i][27]=='E') ? strtr($import[$i][30], ",", ".") : "";
         } else {
             $data[$i]['Coord_W'] = $data[$i]['W_Min'] = $data[$i]['W_Sec'] = $data[$i]['Coord_E'] = $data[$i]['E_Min'] = $data[$i]['E_Sec'] = '';
         }
-        $data[$i]['exactness'] = (isset($import[$i][30])) ? strtr($import[$i][30], ",", ".") : '';
-        
         /**
          * Fill in quadrant info
          */
         $data[$i]['quadrant'] = (isset($import[$i][31])) ? $import[$i][31] : '';
         $data[$i]['quadrant_sub'] = (isset($import[$i][32])) ? $import[$i][32] : '';
+        $data[$i]['exactness'] = (isset($import[$i][33])) ? strtr($import[$i][33], ",", ".") : '';
 
         /**
          * fill altitude
          */
-        $data[$i]['altitude_min'] = (!empty($import[$i][33])) ? $import[$i][33] : '';
-        $data[$i]['altitude_max'] = (!empty($import[$i][34])) ? $import[$i][34] : '';
+        $data[$i]['altitude_min'] = (!empty($import[$i][34])) ? $import[$i][34] : '';
+        $data[$i]['altitude_max'] = (!empty($import[$i][35])) ? $import[$i][35] : '';
 
         /**
          * fill switch: digital image
          */
-        $data[$i]['digital_image'] = (!empty($import[$i][35])) ? 1 : 0;
+        $data[$i]['digital_image'] = (!empty($import[$i][36])) ? 1 : 0;
 
         /**
          * fill switch: digital image obs
          */
-        $data[$i]['digital_image_obs'] = (!empty($import[$i][36])) ? 1 : 0;
+        $data[$i]['digital_image_obs'] = (!empty($import[$i][37])) ? 1 : 0;
 
         /**
          * fill switch: observation
          */
-        $data[$i]['observation'] = (!empty($import[$i][37])) ? 1 : 0;
+        $data[$i]['observation'] = (!empty($import[$i][38])) ? 1 : 0;
 
         /**
          * finished -> log the file contents and processing errors (if any)
@@ -806,6 +810,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         } elseif ($pieces[0] == 'Fundortengl') {
             $data[intval($pieces[1])]['Fundort_engl'] = $v;
         } elseif (    $pieces[0] == 'HerbNummer'    || $pieces[0] == 'seriesID'   || $pieces[0] == 'taxonID' || $pieces[0] == 'SammlerID'
+                   || $pieces[0] == 'CollNummer'
                    || $pieces[0] == 'collectionID'  || $pieces[0] == 'Nummer'     || $pieces[0] == 'Datum'   || $pieces[0] == 'Datum2'
                    || $pieces[0] == 'Bemerkungen'   || $pieces[0] == 'typified'   || $pieces[0] == 'typusID' || $pieces[0] == 'NationID'
                    || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'det'
@@ -884,7 +889,8 @@ if ($type == 1) {  // file uploaded
                     echo "<td>" . $import[$i][0] . "</td>";
                 }
                 echo "<td" . ((strpos($status[$i], "no_collection") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][1]) . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_identstatus") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][2]) . "</td>";
+                echo "<td>" . $import[$i][2] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_identstatus") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][3]) . "</td>";
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<td style=\"background-color:yellow\" title=\"similar taxa found, choose in row below\">";
                 } elseif (strpos($status[$i], "no_taxa") !== false) {
@@ -892,21 +898,20 @@ if ($type == 1) {  // file uploaded
                 } else {
                     echo "<td>";
                 }
-                echo htmlspecialchars($import[$i][3]) . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_collector") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][4]) . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_series") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][5]) . "</td>";
-                echo "<td>" . $import[$i][6] . "</td>";
+                echo htmlspecialchars($import[$i][4]) . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_collector") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][5]) . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_series") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][6]) . "</td>";
                 echo "<td>" . $import[$i][7] . "</td>";
                 echo "<td>" . $import[$i][8] . "</td>";
                 echo "<td>" . $import[$i][9] . "</td>";
                 echo "<td>" . $import[$i][10] . "</td>";
                 echo "<td>" . $import[$i][11] . "</td>";
                 echo "<td>" . $import[$i][12] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_type") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][13]) . "</td>";
-                echo "<td>" . $import[$i][14] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_nation") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][15]) . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_province") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][16]) . "</td>";
-                echo "<td>" . $import[$i][17] . "</td>";
+                echo "<td>" . $import[$i][13] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_type") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][14]) . "</td>";
+                echo "<td>" . $import[$i][15] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_nation") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][16]) . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_province") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][17]) . "</td>";
                 echo "<td>" . $import[$i][18] . "</td>";
                 echo "<td>" . $import[$i][19] . "</td>";
                 echo "<td>" . $import[$i][20] . "</td>";
@@ -927,20 +932,21 @@ if ($type == 1) {  // file uploaded
                 echo "<td>" . $import[$i][35] . "</td>";
                 echo "<td>" . $import[$i][36] . "</td>";
                 echo "<td>" . $import[$i][37] . "</td>";
+                echo "<td>" . $import[$i][38] . "</td>";
                 echo "</tr>\n";
 
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:yellow\">";
                     if ($block == 1) {
-                        echo "<input type='hidden' name='similarTaxa_${ctr}_orig' value='" . htmlspecialchars($import[$i][3]) . "' />";
+                        echo "<input type='hidden' name='similarTaxa_${ctr}_orig' value='" . htmlspecialchars($import[$i][4]) . "' />";
                         echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"0\" checked>no import<br>";
                         foreach ($taxamatch[$i] as $val) {
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"" . htmlspecialchars($val['taxonID']) . "\">"
                                . $val['taxon'] . "<br>";
                         }
                         if (strpos($status[$i], "no_genus") === false) {
-                            echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"ID" . htmlspecialchars($import[$i][3]) . "\">Import \""
-                               . htmlspecialchars($import[$i][3])
+                            echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"ID" . htmlspecialchars($import[$i][4]) . "\">Import \""
+                               . htmlspecialchars($import[$i][4])
                                . "\" first<br>";
                         }
                     } else {
@@ -952,13 +958,14 @@ if ($type == 1) {  // file uploaded
                 } elseif ($block == 2) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:red\">"
                        . "<input type=\"radio\" name=\"importTaxa_$ctr\" value=\"0\" checked>no import<br>"
-                       . "<input type=\"radio\" name=\"importTaxa_$ctr\" class=\"importTaxaOn\" value=\"" . htmlspecialchars($import[$i][3]) . "\">Import \""
-                       . htmlspecialchars($import[$i][3])
+                       . "<input type=\"radio\" name=\"importTaxa_$ctr\" class=\"importTaxaOn\" value=\"" . htmlspecialchars($import[$i][4]) . "\">Import \""
+                       . htmlspecialchars($import[$i][4])
                        . "\" first</td></tr>\n";
                 }
                 if ($block < 3) {
                     echo "<input type=\"hidden\" name=\"HerbNummer_$ctr\" value=\""    . htmlspecialchars($data[$i]['HerbNummer']) . "\">"
                        . "<input type=\"hidden\" name=\"collectionID_$ctr\" value=\""  . htmlspecialchars($data[$i]['collectionID']) . "\">"
+                       . "<input type=\"hidden\" name=\"CollNummer_$ctr\" value=\""    . htmlspecialchars($data[$i]['CollNummer']) . "\">"
                        . "<input type=\"hidden\" name=\"identstatusID_$ctr\" value=\"" . htmlspecialchars($data[$i]['identstatusID']) . "\">"
                        . "<input type=\"hidden\" name=\"taxonID_$ctr\" value=\""       . htmlspecialchars($data[$i]['taxonID']) . "\">"
                        . "<input type=\"hidden\" name=\"SammlerID_$ctr\" value=\""     . htmlspecialchars($data[$i]['SammlerID']) . "\">"
@@ -1060,6 +1067,7 @@ if ($type == 1) {  // file uploaded
                 $sqlInsert = "INSERT INTO tbl_specimens_import SET
                                HerbNummer = "    . quoteString($data[$i]['HerbNummer'])    . ",
                                collectionID = "  . quoteString($data[$i]['collectionID'])  . ",
+                               CollNummer = "    . quoteString($data[$i]['CollNummer'])    . ",
                                identstatusID = " . quoteString($data[$i]['identstatusID']) . ",
                                taxonID = "       . quoteString($data[$i]['taxonID'])       . ",
                                SammlerID = "     . quoteString($data[$i]['SammlerID'])     . ",
