@@ -51,12 +51,11 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x1800)!=0)) {
         $sql = "";
       }
     } else {
-      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID)
-              VALUES ('
-              " . mysql_escape_string($_POST['Sammler']) . "',
-              " . quoteString($_POST['HUH_ID']) . ",
-              " . quoteString($_POST['VIAF_ID']) . ",
-              " . quoteString($_POST['WIKIDATA_ID']) . ")";
+      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID) "
+           . " VALUES ('" . mysql_escape_string($_POST['Sammler']) . "', "
+           .  quoteString($_POST['HUH_ID']) . ", "
+           .  quoteString($_POST['VIAF_ID']) . ", "
+           .  quoteString($_POST['WIKIDATA_ID']) . ")";
     }
     $result = db_query($sql);
     $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
