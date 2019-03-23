@@ -437,7 +437,7 @@ if (isset($_GET['sel'])) {
                          FROM `tbl_specimens` s, `tbl_management_collections` mc
                          WHERE s.`collectionID` = mc.`collectionID`
                           AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
-                          AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4')
+                          AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4' OR mc.`source_id` = '5')
                           AND mc.`coll_short_prj` = (SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `collectionID` = " . intval($p_collection) .")
                           AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'";
             $dummy = db_query($sqlDummy);
