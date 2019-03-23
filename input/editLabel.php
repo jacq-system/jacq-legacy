@@ -288,11 +288,11 @@ $cf->text(40,27,"&nbsp;".$p_quadrant);
 $cf->text(44,27,"&nbsp;".$p_quadrant_sub);
 
 $cf->label(9,29,"Lat");
-$txt = (strlen(trim($p_lat_deg))) ? sprintf("%d&deg; %02d&prime; %02d&Prime; %s",$p_lat_deg,$p_lat_min,$p_lat_sec,$p_lat) : "";
+$txt = (strlen(trim($p_lat_deg))) ? sprintf("%d&deg; %02d&prime; %02g&Prime; %s",$p_lat_deg,$p_lat_min,$p_lat_sec,$p_lat) : "";
 $cf->text(9,29,"&nbsp;".$txt);
 
 $cf->label(27,29,"Lon");
-$txt = (strlen(trim($p_lon_deg))) ? sprintf("%d&deg; %02d&prime; %02d&Prime; %s",$p_lon_deg,$p_lon_min,$p_lon_sec,$p_lon) : "";
+$txt = (strlen(trim($p_lon_deg))) ? sprintf("%d&deg; %02d&prime; %02g&Prime; %s",$p_lon_deg,$p_lon_min,$p_lon_sec,$p_lon) : "";
 $cf->text(27,29,"&nbsp;".$txt);
 
 $cf->label(48,29,"exactn.");
