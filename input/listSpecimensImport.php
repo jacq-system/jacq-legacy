@@ -410,8 +410,6 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 
 <body>
 
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
-
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm1" id="fm1">
 <table cellspacing="5" cellpadding="0">
 <tr>
@@ -538,7 +536,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <b>Assign Taxon:</b>
     <?php
       $cf = new CSSF();
-      $cf->inputJqAutocomplete(NULL, NULL, 50, "taxon", NULL, NULL, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '', "", FALSE, FALSE, "display_inline");
+      $cf->inputJqAutocomplete(NULL, NULL, 50, "taxon", NULL, NULL, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, '', "", FALSE, FALSE, "display_inline");
     ?>
     <button type="submit" name="taxon_action_do" value="1" >Apply to checked entries</button>
   </div>

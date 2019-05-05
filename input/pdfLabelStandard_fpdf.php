@@ -50,7 +50,7 @@ function makeText($id)  {
     $text['lonlat'] = intval($row['Coord_W']).chr(186);
     if ($row['W_Min'] || $row['W_Sec']) {
       $text['lonlat'] .= intval($row['W_Min'])."'";
-      if ($row['W_Sec']) $text['lonlat'] .= intval($row['W_Sec'])."\"";
+      if ($row['W_Sec']) $text['lonlat'] .= $row['W_Sec']."\"";
     }
     $text['lonlat'] .= "W";
   }
@@ -58,7 +58,7 @@ function makeText($id)  {
     $text['lonlat'] = intval($row['Coord_E']).chr(186);
     if ($row['E_Min'] || $row['E_Sec']) {
       $text['lonlat'] .= intval($row['E_Min'])."'";
-      if ($row['E_Sec']) $text['lonlat'] .= intval($row['E_Sec'])."\"";
+      if ($row['E_Sec']) $text['lonlat'] .= $row['E_Sec']."\"";
     }
     $text['lonlat'] .= "E";
   }
@@ -70,7 +70,7 @@ function makeText($id)  {
     $text['lonlat'] .= intval($row['Coord_S']).chr(186);
     if ($row['S_Min'] || $row['S_Sec']) {
       $text['lonlat'] .= intval($row['S_Min'])."'";
-      if ($row['S_Sec']) $text['lonlat'] .= intval($row['S_Sec'])."\"";
+      if ($row['S_Sec']) $text['lonlat'] .= $row['S_Sec']."\"";
     }
     $text['lonlat'] .= "S";
   }
@@ -79,7 +79,7 @@ function makeText($id)  {
     $text['lonlat'] .= intval($row['Coord_N']).chr(186);
     if ($row['N_Min'] || $row['N_Sec']) {
       $text['lonlat'] .= intval($row['N_Min'])."'";
-      if ($row['N_Sec']) $text['lonlat'] .= intval($row['N_Sec'])."\"";
+      if ($row['N_Sec']) $text['lonlat'] .= $row['N_Sec']."\"";
     }
     $text['lonlat'] .= "N";
   }

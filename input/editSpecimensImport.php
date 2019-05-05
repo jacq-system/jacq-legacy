@@ -413,7 +413,7 @@ if (isset($_GET['sel'])) {
                          FROM tbl_specimens_import, tbl_management_collections
                          WHERE tbl_specimens_import.collectionID = tbl_management_collections.collectionID
                           AND HerbNummer = " . quoteString($p_HerbNummer) . "
-                          AND (source_id = '1' OR source_id = '6' OR source_id = '4')
+                          AND (source_id = '1' OR source_id = '6' OR source_id = '4' OR source_id = '5')
                           AND source_id = '" . $rowCheck['source_id'] . "'
                           AND specimen_ID != '" . intval($_POST['specimen_ID']) . "'";
             $dummy = db_query($sqlDummy);
