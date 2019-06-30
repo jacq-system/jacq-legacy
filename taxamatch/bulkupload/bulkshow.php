@@ -10,13 +10,13 @@ include('inc/connect.php');
 if (empty($_SESSION['uid'])) die();
 
 $result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
-if (mysql_num_rows($result) == 0) die();
-$row = mysql_fetch_array($result);
+if ($result->num_rows == 0) die();
+$row = $result->fetch_array();
 $jobID = $row['jobID'];
 
 $result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($jobID) . "' ");
-if (mysql_num_rows($result) == 0) die();
-$row = mysql_fetch_array($result);
+if ($result->num_rows == 0) die();
+$row = $result->fetch_array();
 echo<<<EOF
 <script>
 var dinit={'AjaxUrl':'bulkshow_ajax.php','jobID':$jobID};
@@ -33,8 +33,8 @@ EOF;
 <link rel="stylesheet" href="css/pagination.css" type="text/css" />
 <script src="js/jquery-1.5.1.min.js" type="text/javascript"></script>
 <script src="js/jquery-ui-1.8.13.custom.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="js/jquery.pagination.js"></script> 
-<script type="text/javascript" src="js/freud_postit.js"></script> 
+<script type="text/javascript" src="js/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/freud_postit.js"></script>
 </head>
 
 <body>
@@ -43,27 +43,27 @@ EOF;
 var ITEMSPERPAGE=20;
 var displayOnlyParts=0;
 $(function() {
-	showResults(0, 0, 1);	
-	
+	showResults(0, 0, 1);
+
 	$('#longButton').click(function() {
-		
+
 		if(displayOnlyParts){
 			displayOnlyParts=0;
 			$('#longButton').val('display only < 100%');
-			
+
 		}else{
 			displayOnlyParts=1;
 			$('#longButton').val('display everything');
 		}
 		showResults(0, 0, 1);
 	});
-	
+
 	$('#ExportButton').click(function() {
 		window.open("bulkexport.php?id=" + dinit['jobID'] + "&short=" + displayOnlyParts, "bulkexport", "width=100, height=100, top=10, left=10");
 		return false;
 	});
-	
-	
+
+
 
 });
 var blocked=false;
@@ -82,13 +82,13 @@ function showResults(page_index, jq, newsearch){
 			blocked=false;
 		}
 	}
-	
+
 	$('#displayResultLoading').css('visibility','visible');
 	PostIt(
 		'x_showResult',
 		{'jobID':dinit['jobID'],'page_index':page_index,'limit':ITEMSPERPAGE,'displayOnlyParts':displayOnlyParts},
 		function(data){
-			
+
 			if(newsearch!=undefined){
 				$("#displayResultPagination").pagination(data.maxc, {
 					num_edge_entries: 2,

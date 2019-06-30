@@ -6,108 +6,99 @@ require_once('inc/variables.php');
 ini_set("max_execution_time", "7200");
 
 //ob_start();
-mysql_connect($options['dbhost'], $options['dbuser'], $options['dbpass']) or die("Database not available!");
-mysql_select_db($options['dbname']) or die ("Access denied!");
-mysql_query("SET character set utf8");
+$dbLink = new mysqli($options['dbhost'], $options['dbuser'], $options['dbpass'], $options['dbname']) or die ("Access denied!");
+$dbLink->set_charset('utf8');
 $error = '';
 
-$result = mysql_query("SELECT jobID FROM tbljobs WHERE start IS NOT NULL AND finish IS NULL");
+$result = $dbLink->query("SELECT jobID FROM tbljobs WHERE start IS NOT NULL AND finish IS NULL");
+if ($result->num_rows > 0) {    // one bulkprocess ist still running
+    die("h1");
+}
 
-if (mysql_num_rows($result) > 0) die("h1");
+$result = $dbLink->query("SELECT scheduleID, jobID FROM tblschedule ORDER BY timestamp LIMIT 1");
+if ($result->num_rows == 0) {   // nothing is scheduled, so nothing to do
+    die("h2");
+}
 
-$result = mysql_query("SELECT scheduleID, jobID FROM tblschedule ORDER BY timestamp LIMIT 1");
-	echo mysql_error();
-if (mysql_num_rows($result) == 0) die("h2");
-
-$row = mysql_fetch_array($result);
+$row = $result->fetch_array();
 $scheduleID = $row['scheduleID'];
 $jobID      = $row['jobID'];
 
+$dbLink->query("UPDATE tbljobs SET start = NOW() WHERE jobID = '$jobID'");
 
-mysql_query("UPDATE tbljobs SET start = NOW() WHERE jobID = '$jobID'");
+$result = $dbLink->query("SELECT db FROM tbljobs WHERE jobID = '$jobID'");
+$row = $result->fetch_array();
 
-
-$result = mysql_query("SELECT db FROM tbljobs WHERE jobID = '$jobID'");
-$row = mysql_fetch_array($result);
-
-
-if(substr($row['db'],0,2)=='s_'){
-	$database=substr($row['db'],2);
-	$withSynonyms=true;
-}else{
-	$database=$row['db'];
-	$withSynonyms=false;
+if (substr($row['db'],0,2)=='s_') {
+    $database     = substr($row['db'],2);
+    $withSynonyms = true;
+} else {
+    $database     = $row['db'];
+    $withSynonyms = false;
 }
 
 
 
  	//db	char(3)
 
-$result = mysql_query("SELECT queryID, query FROM tblqueries WHERE jobID = '$jobID' AND result IS NULL ORDER BY lineNr");
-while ($row = mysql_fetch_array($result)) {
-	
-	
+$result = $dbLink->query("SELECT queryID, query FROM tblqueries WHERE jobID = '$jobID' AND result IS NULL ORDER BY lineNr");
+while ($row = $result->fetch_array()) {
+    $matches = getMatches($database, $row['query'], false, $withSynonyms, false);
 
-	$matches=getMatches($database, $row['query'], false, $withSynonyms,false);
-	
-	if($matches['failure']){
-		$error =  $matches['failure'];
-		break;
-	}
-	$matches=serialize($matches['matches']);
+    if ($matches['failure']) {
+        $error =  $matches['failure'];
+        break;
+    }
+    $matches = serialize($matches['matches']);
 
-    @mysql_query("UPDATE tblqueries SET result = '" . mysql_real_escape_string($matches) . "' 
-	WHERE queryID = '" . $row['queryID'] . "' ");
-
+    $dbLink->query("UPDATE tblqueries SET result = '" . $dbLink->real_escape_string($matches) . "' WHERE queryID = '" . $row['queryID'] . "' ");
 }
 
 
-function getMatches($database, $searchtext, $useNearMatch=false,$showSynonyms=false,$debug=false){
-	global $options;
-	
-	$start = microtime(true);
-	 
-	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
-	$service = new jsonRPCClient($url,$debug);
-	$failure=false;
-	try {
-            $matchesNearMatch = array();
-            $matches=array();
+function getMatches($database, $searchtext, $useNearMatch=false, $showSynonyms=false, $debug=false){
+    global $options;
 
-            $databases = $service->getDatabases();
+    $start = microtime(true);
 
-            if( isset($databases[$database]) ) {
-                $matches = $service->getMatchesService(
+    $service = new jsonRPCClient($options['serviceTaxamatch'], $debug);
+    $failure=false;
+    try {
+        $matchesNearMatch = array();
+        $matches = array();
+
+        $databases = $service->getDatabases();
+
+        if (isset($databases[$database])) {
+            $matches = $service->getMatchesService(
+                    $database,
+                    $searchtext,
+                    array(
+                        'showSyn' => $showSynonyms,
+                        'NearMatch' => false
+                    )
+            );
+
+            if ($useNearMatch) {
+                $matchesNearMatch = $service->getMatchesService(
                         $database,
                         $searchtext,
                         array(
-                            'showSyn' => $showSynonyms,
-                            'NearMatch' => false
+                            'showSyn' => false,
+                            'NearMatch' => true
                         )
                 );
-
-                if( $useNearMatch ) {
-                    $matchesNearMatch = $service->getMatchesService(
-                            $database,
-                            $searchtext,
-                            array(
-                                'showSyn' => false,
-                                'NearMatch' => true
-                            )
-                    );
-                }
             }
-	} catch (Exception $e) {
-		$failure =  "Fehler " . nl2br($e);
-	}
-	$stop = microtime(true);
-	return array('start'=>$start,'stop'=>$stop,'matches'=>$matches,'matchesNearMatch'=>$matchesNearMatch,'failure'=>$failure);
-
+        }
+    } catch (Exception $e) {
+        $failure =  "Error " . nl2br($e);
+    }
+    $stop = microtime(true);
+    return array('start'=>$start, 'stop'=>$stop, 'matches'=>$matches, 'matchesNearMatch'=>$matchesNearMatch, 'failure'=>$failure);
 }
 
 $error .= "\n" . ob_get_clean();
 
-@mysql_query("UPDATE tbljobs SET finish = NOW(), errors = '" . mysql_real_escape_string(trim($error)) . "' WHERE jobID = '$jobID'");
-@mysql_query("DELETE FROM tblschedule WHERE scheduleID = '$scheduleID'");
+$dbLink->query("UPDATE tbljobs SET finish = NOW(), errors = '" . $dbLink->real_escape_string(trim($error)) . "' WHERE jobID = '$jobID'");
+$dbLink->query("DELETE FROM tblschedule WHERE scheduleID = '$scheduleID'");
 
 exec("./bulkprocessCmd.php > /dev/null 2>&1 &");   // to start the next query (if any)

@@ -43,38 +43,38 @@ echo json_encode($ret);
 
 class showResults{
 	private $info=false;
-	
+
 	public function getInfo(){
 		return $this->info;
 	}
 	public function x_showResult($params){
 
 		$jobID=isset($params['jobID'])?intval($params['jobID']):0;
-		
+
 		$start=isset($params['page_index'])?intval($params['page_index']):0;
 		$limit=isset($params['limit'])?intval($params['limit']):20;
 		$displayOnlyParts=isset($params['displayOnlyParts'])?intval($params['displayOnlyParts']):20;
 		$start=$start*$limit;
-		
+
 		$end=$start+$limit;
-		
+
 		//$result = db_query("SELECT * FROM tbljobs WHERE jobID = '{jobID}' AND uid = '" . $_SESSION['uid'] . "'");
 		$result = db_query("SELECT * FROM tbljobs WHERE jobID = '{$jobID}' ");
-		if (mysql_num_rows($result) == 0){
-				return array('html'=>'Not allowed','maxc'=>0);
+		if ($result->num_rows == 0){
+			return array('html'=>'Not allowed','maxc'=>0);
 		}
 
-		
+
 		$result = db_query("SELECT COUNT(*) as 'c' FROM tblqueries WHERE jobID = '$jobID'");
 
-		$row = mysql_fetch_array($result);
+		$row = $result->fetch_array();
 		$maxc=$row['c'];
-		
+
 		$out = "";
 		$correct = 0;
 		$nr = 1;
 		$result = db_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr limit {$start},{$end}");
-		while ($row = mysql_fetch_array($result)) {
+		while ($row = $result->fetch_array()) {
 			$lnr= $row['lineNr'];
 			$matches = @unserialize($row['result']);
 			if ($matches) {
@@ -137,16 +137,16 @@ class showResults{
 		}
 
 		$ret= "
-Searched {$maxc} items for matching results.<br><br>		
+Searched {$maxc} items for matching results.<br><br>
 <table rules='all' border='1'>\n"
 		   . "<tr><th></th><th>&nbsp;search for&nbsp;</th><th>result</th><th>Dist.</th><th>Ratio</th></tr>\n"
 		   . $out;
 		if ($correct > 0) $ret.= "<tr><td colspan='5'>&nbsp;&nbsp;$correct queries had a full hit</td></tr>\n";
 		$ret.=  "</table>\n";
-		
+
 		return array('html'=>$ret,'maxc'=>$maxc);
 	}
-	
+
 
 	// BP, 07.2010: return a pretty print of the synonyms belonging to a species
 	private function prettyPrintSynonyms($synonyms20) {
