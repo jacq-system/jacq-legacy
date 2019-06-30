@@ -10,31 +10,31 @@ if (empty($_SESSION['uid'])) {
     $_SESSION['username'] = '';
 }
 
-$debug=isset($_GET['debug']);
-$databases_cache='databases_cache.inc';
+$debug = isset($_GET['debug']);
+$databases_cache = 'databases_cache.inc';
 
-if(isset($_GET['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ){
-	require_once('inc/jsonRPCClient.php');
+if(isset($_GET['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ) {
+    require_once('inc/jsonRPCClient.php');
 
-	$url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
+    $url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
 
-	try {
-		$service = new jsonRPCClient($url);
-		$services = $service->getDatabases();
-		
-		file_put_contents($databases_cache,serialize($services));
-		
-	}catch (Exception $e) {
-		$out =  "Fehler " . nl2br($e);
-	}
+    try {
+        $service = new jsonRPCClient($url);
+        $services = $service->getDatabases();
+
+        file_put_contents($databases_cache,serialize($services));
+
+    } catch (Exception $e) {
+        $out =  "Error " . nl2br($e);
+    }
 }
 
-$services=unserialize(file_get_contents($databases_cache));
+$services = unserialize(file_get_contents($databases_cache));
 
 if (!empty($_POST['username'])) {
     $result = db_query("SELECT uid, username FROM tbluser WHERE username = " . quoteString($_POST['username']));
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array();
         session_regenerate_id();  // prevent session fixation
         $_SESSION['uid']      = $row['uid'];
         $_SESSION['username'] = $row['username'];
@@ -42,10 +42,11 @@ if (!empty($_POST['username'])) {
         do {
             $user = $_POST['username'] . sprintf("%05d", mt_rand(100, 99999));
             $result = db_query("SELECT uid FROM tbluser WHERE username = " . quoteString($user));
-        } while (mysql_num_rows($result) > 0);
+        } while ($result->num_rows > 0);
         db_query("INSERT INTO tbluser SET username = " . quoteString($user));
-        $id = mysql_insert_id();
-        $row = mysql_fetch_array(db_query("SELECT uid, username FROM tbluser WHERE uid = '$id'"));
+        $id = $dbLink->insert_id;
+        $result = db_query("SELECT uid, username FROM tbluser WHERE uid = '$id'");
+        $row = $result->fetch_array();
         session_regenerate_id();  // prevent session fixation
         $_SESSION['uid']      = $row['uid'];
         $_SESSION['username'] = $row['username'];
@@ -57,23 +58,23 @@ if (!empty($_POST['username'])) {
     $_SESSION['username'] = '';
 } elseif (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name'])) {
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
-    if (mysql_num_rows($result) == 0) {
-		
-		if($_POST['database']=='extern'){
-			$_POST['database']=$_POST['database_extern'];
-		}
-		
-		$database='';
-		if ($_POST['showSyn'] == 'synonyms') {
-			$database='s_';
-		}
-		$database.=$_POST['database'];
-		
+    if ($result->num_rows == 0) {
+
+        if ($_POST['database'] == 'extern') {
+            $_POST['database'] = $_POST['database_extern'];
+        }
+
+        $database='';
+        if ($_POST['showSyn'] == 'synonyms') {
+            $database='s_';
+        }
+        $database.=$_POST['database'];
+
         db_query("INSERT INTO tbljobs SET
                    uid = '" . $_SESSION['uid'] . "',
                    filename = " . quoteString($_FILES['userfile']['name']) . ",
                    db = '$database'");
-        $jobID = mysql_insert_id();
+        $jobID = $dbLink->insert_id;
         $oldIniSetting = ini_get('auto_detect_line_endings');
         ini_set('auto_detect_line_endings', '1');
         $handle = @fopen($_FILES['userfile']['tmp_name'], "r");
@@ -105,7 +106,7 @@ if (!empty($_POST['username'])) {
   <title>herbardb - taxamatch MDLD</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link type="text/css" href="css/screen.css" rel="stylesheet">
-  <link type="text/css" href="css/south-street/jquery-ui-1.8.14.custom.css" rel="stylesheet" />	
+  <link type="text/css" href="css/south-street/jquery-ui-1.8.14.custom.css" rel="stylesheet" />
   <script type="text/javascript" src="js/jquery-1.5.1.min.js"></script>
   <script type="text/javascript" src="js/jquery-ui-1.8.13.custom.min.js"></script>
 
@@ -114,24 +115,24 @@ var tims=0;
 var timid=0;
 
 $(function() {
-	$( "#dialog-about").dialog({
-		autoOpen: false,
-		modal: true,
-		width:700,
-		buttons:{"OK": function() {$( this ).dialog( "close" );}}
-	});
-	$('#aboutb').click(function(){
-		$( "#dialog-about").dialog('open');
-		return false;
-	});
-	$("#database_vienna").change(function(){
-		$("#database_extern").attr('selectedIndex', '-1');
-	});
-	$("#database_extern").change(function () {
-		$('input[name=database][value=extern]').attr('checked','checked');
-	})
+    $( "#dialog-about").dialog({
+        autoOpen: false,
+        modal: true,
+        width:700,
+        buttons:{"OK": function() {$( this ).dialog( "close" );}}
+    });
+    $('#aboutb').click(function(){
+        $( "#dialog-about").dialog('open');
+        return false;
+    });
+    $("#database_vienna").change(function(){
+        $("#database_extern").attr('selectedIndex', '-1');
+    });
+    $("#database_extern").change(function () {
+        $('input[name=database][value=extern]').attr('checked','checked');
+    })
 });
-	</script>
+    </script>
 </head>
 
 <body onload="document.f.searchtext.focus();">
@@ -163,19 +164,19 @@ If you test, please at the moment do not run more than 1000 names at a time - jo
 <p>
 <?PHP
 if (!$_SESSION['uid']) {
-    echo "<form Action='" . $_SERVER['PHP_SELF'] . "' Method='POST' name='f'>\n"
+    echo "<form Action='" . $_SERVER['SCRIPT_NAME'] . "' Method='POST' name='f'>\n"
        . "username: <input type='text' name='username'> \n"
        . "<input type='submit' value='login'>\n"
        . "</form>\n";
-}else{
-	echo "<form enctype='multipart/form-data' Action='" . $_SERVER['PHP_SELF'] . "' Method='POST' name='f'>\n"
+} else {
+    echo "<form enctype='multipart/form-data' Action='" . $_SERVER['SCRIPT_NAME'] . "' Method='POST' name='f'>\n"
        . "<big><b>username: " . $_SESSION['username'] . "</b></big> \n"
        . "<input type='submit' name='logout' value='logout'>\n"
        . "<p>\n";
-	
+
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array();
     } else {
         $row = array();
         echo<<<EOF
@@ -191,20 +192,20 @@ if (!$_SESSION['uid']) {
           <label for="database_vienna">Virtual Herbarium Vienna</label>
           <input type="radio" name="database"  value="extern" >
           <label for="database_col">Extern </label>
-		  <div id="loading" style="text-align:center;margin-top:7px;display:none"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
+          <div id="loading" style="text-align:center;margin-top:7px;display:none"><img src="images/loader.gif" valign="middle"><br><strong>Processing... <span id="tim"></span></strong></div>
 
 </div>
-		  <select name="database_extern" id="database_extern" size="5">
-		  
+          <select name="database_extern" id="database_extern" size="5">
+
 EOF;
 
-foreach($services as $k=>$v){
-	if($k!='vienna'){
-		echo  "<option value=\"{$k}\">{$v['name']}</option>";
-	}
+foreach ($services as $k=>$v){
+    if ($k != 'vienna'){
+        echo  "<option value=\"{$k}\">{$v['name']}</option>";
+    }
 }
-		echo<<<EOF
-			</select>
+        echo<<<EOF
+            </select>
         </td>
       </tr><tr>
         <td>
@@ -220,8 +221,8 @@ foreach($services as $k=>$v){
 </p>
 EOF;
 
-	}
-    
+    }
+
     echo "<div style='font-size:large; font-weight:bold;'><input type='submit' name='refresh' value='refresh list'></div>\n"
        . "</form>\n";
 
@@ -247,8 +248,8 @@ EOF;
     }
 
     $result = db_query("SELECT * FROM tbljobs WHERE finish IS NOT NULL AND uid = '" . $_SESSION['uid'] . "' ORDER by start DESC");
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result->num_rows > 0) {
+        while ($row = $result->fetch_array()) {
             $database = $services[$row['db']]['name'];
             echo "<tr class='out'>"
                . "<td class='outCenter'><a href='bulkshow.php?id=" . $row['jobID'] . "' target='_blank'>" . htmlspecialchars($row['filename']) . "</a></td>"

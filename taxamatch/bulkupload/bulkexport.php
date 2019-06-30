@@ -8,8 +8,8 @@ include('inc/connect.php');
 if (empty($_SESSION['uid'])) die();
 
 $result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
-if (mysql_num_rows($result) == 0) die();
-$row = mysql_fetch_array($result);
+if ($result->num_rows == 0) die();
+$row = $result->fetch_array();
 $jobID = $row['jobID'];
 
 function formatCell($value) {
@@ -59,12 +59,12 @@ function prettyPrintSynonymEntry($synonym,$indent=1) {
 $header = "\"search for\"\t\"result\"\t\"Dist.\"\t\"Ratio\"";
 
 $result = db_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr");
-//$displayOnlyParts = (!empty($_GET['short']) || mysql_num_rows($result) > 50) ? 1 : 0;
+//$displayOnlyParts = (!empty($_GET['short']) || $result->num_rows > 50) ? 1 : 0;
 $displayOnlyParts = (!empty($_GET['short'])) ? 1 : 0;
 
 $out = "";
 $correct = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = $result->fetch_array()) {
     $matches = unserialize($row['result']);
     if ($matches) {
         foreach ($matches['result'] as $match) {

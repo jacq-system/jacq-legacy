@@ -1,22 +1,17 @@
 <?php
-if (!@mysql_connect($options['dbhost'], $options['dbuser'], $options['dbpass'])) {
-    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-       . "<html>\n"
-       . "<head><titel>Sorry, no connection ...</title></head>\n"
-       . "<body><p>Sorry, no connection to database server ...</p></body>\n"
-       . "</html>\n";
-    exit();
-} else if (!@mysql_select_db($options['dbname'])) {
-    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-       . "<html>\n"
-       . "<head><titel>Sorry, no connection ...</title></head>\n"
-       . "<body><p>Sorry, no connection to database ...</p></body>\n"
-       . "</html>\n";
+// Connect to DB
+
+/** @var mysqli $dbLink */
+$dbLink = new mysqli($options['dbhost'], $options['dbuser'], $options['dbpass'], $options['dbname']);
+if ($dbLink->connect_errno) {
+    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
+    "<html>\n" .
+    "<head><titel>Sorry, no connection ...</title></head>\n" .
+    "<body><p>Sorry, no connection to database ...</p></body>\n" .
+    "</html>\n";
     exit();
 }
-
-//mysql_query("SET character_set_results='utf8'");
-mysql_query("SET character set utf8");
+$dbLink->set_charset('utf8');
 
 function no_magic()   // PHP >= 4.1
 {
@@ -28,10 +23,12 @@ function no_magic()   // PHP >= 4.1
 
 function db_query($sql)
 {
-    $result = @mysql_query($sql);
-    if (!$result) {
+    global $dbLink;
+
+    $result = $dbLink->query($sql);
+    if ($dbLink->connect_errno) {
         echo $sql . "<br>\n";
-        echo mysql_error() . "<br>\n";
+        echo $dbLink->error . "<br>\n";
     }
 
     return $result;
@@ -54,8 +51,10 @@ function extractID($text)
 
 function quoteString($text)
 {
+    global $dbLink;
+
     if (strlen($text) > 0) {
-        return "'" . mysql_real_escape_string($text) . "'";
+        return "'" . $dbLink->real_escape_string($text) . "'";
     } else {
         return "NULL";
     }
