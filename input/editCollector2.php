@@ -74,7 +74,7 @@ echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['Sammler_2ID']."\">\n";
 $cf->label(9,0.5,"ID");
 $cf->text(9,0.5,"&nbsp;".(($row['Sammler_2ID'])?$row['Sammler_2ID']:"new"));
 $cf->label(9,2,"add. Collector(s)");
-$cf->inputText(9,2,25,"Sammler_2",$row['Sammler_2'],120);
+$cf->inputText(9,2,25,"Sammler_2",$row['Sammler_2'],250);
 
 if (($_SESSION['editControl'] & 0x1800)!=0) {
   $text = ($row['Sammler_2ID']) ? " Update " : " Insert ";

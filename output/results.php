@@ -6,7 +6,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-require("inc/functions.php");
+require("inc/dev-functions.php");
 
 function collectionItem($coll)
 {
@@ -36,68 +36,22 @@ tbl_tax_systematic_categories
 - tbl_wu_generale
 */
 
-?><html>
-<head>
-    <title>Virtual Herbaria / search results</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="description" content="FW4 DW4 HTML">
-    <!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeuropaeische Normalzeit) 2002-->
-    <meta http-equiv=“cache-control“ content=“no-cache“>
-    <meta http-equiv=“pragma“ content=“no-cache“>
-    <meta http-equiv=“expires“ content=“0″>
-    <link rel="stylesheet" href="css/herbarium.css" type="text/css">
+?>
+<script type="text/javascript" language="javascript"><!--
+  function neuladen(url) {
+    location.replace(url);
+  }
+  function googleMap() {
+    MeinFenster = window.open('google_maps.php','_blank',
+                              'width=820,height=620,top=50,left=50,resizable,scrollbars');
+    MeinFenster.focus();
+  }
+--></script>
 
-    <script type="text/javascript" language="javascript"><!--
-      function neuladen(url) {
-        location.replace(url);
-      }
-      function googleMap() {
-        MeinFenster = window.open('google_maps.php','_blank',
-                                  'width=820,height=620,top=50,left=50,resizable,scrollbars');
-        MeinFenster.focus();
-      }
-      --></script>
-</head>
-<body bgcolor="#ffffff">
+<div class="divider"></div>
+
 <div align="center">
   <table border="0" cellpadding="0" cellspacing="0" width="800">
-    <!-- fwtable fwsrc="databasemenu.png" fwbase="databasemenu.gif" fwstyle="Dreamweaver" fwdocid = "742308039" fwnested="0" -->
-    <tr>
-      <td height="50" valign="top" colspan="9">
-      </td>
-    </tr>
-    <tr>
-      <!-- Shim row, height 1. -->
-      <td><img src="images/spacer.gif" width="198" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="197" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="198" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="200" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="1" height="1" border="0"></td>
-      <td><img src="images/spacer.gif" width="1" height="1" border="0"></td>
-    </tr>
-    <tr>
-      <!-- row 1 -->
-      <td colspan="8"><img name="databasemenu_r1_c1" src="images/databasemenu_r1_c1.gif" width="800" height="93" border="0" alt="virtual herbarium WU"></td>
-      <td><img src="images/spacer.gif" width="1" height="93" border="0"></td>
-    </tr>
-    <tr>
-      <!-- row 2 -->
-      <td><a href="../index.htm"><img name="databasemenu_r2_c1" src="images/databasemenu_r2_c1.gif" width="198" height="37" border="0" alt="home"></a></td>
-      <td><img name="databasemenu_r2_c2" src="images/databasemenu_r2_c2.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
-      <td><a href="index.php"><img name="databasemenu_r2_c3" src="images/databasemenu_r2_c3.gif" width="197" height="37" border="0" alt="general information"></a></td>
-      <td><img name="databasemenu_r2_c4" src="images/databasemenu_r2_c4.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
-      <td><a href="collections.htm"><img name="databasemenu_r2_c5" src="images/databasemenu_r2_c5.gif" width="198" height="37" border="0" alt="collections"></a></td>
-      <td><img name="databasemenu_r2_c6" src="images/databasemenu_r2_c6.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
-      <td><a href="refsystems.htm"><img name="databasemenu_r2_c7" src="images/databasemenu_r2_c7.gif" width="200" height="37" border="0" alt="reference systems"></a></td>
-      <td><img name="databasemenu_r2_c8" src="images/databasemenu_r2_c8.gif" width="1" height="37" border="0" alt="herbarmenu"></td>
-      <td><img src="images/spacer.gif" width="1" height="37" border="0"></td>
-    </tr>
-    <tr>
-      <td height="40" valign="top" colspan="9">&nbsp;</td>
-    </tr>
     <tr>
       <td valign="top" colspan="9">
         <?php
@@ -142,13 +96,14 @@ $b = "";
 foreach ($limits as $f) {
     $b .= "<option value=\"$f\" " . (($f == $_SESSION['ITEMS_PER_PAGE']) ? 'selected' : '') . ">$f</option>";
 }
-$navigation = "<form name='page' action='{$_SERVER['SCRIPT_NAME']}' method='get'>\n"
-            . "<hr size='1'  width='800' noshade>\n"
-            . "<select size='1' name='ITEMS_PER_PAGE' onchange='this.form.submit()' style='float:right;margin-top:-3px'>\n"
+$navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
+            . "<div class='input-field'>"
+            . "<select name='ITEMS_PER_PAGE'>\n"
             . "{$b}\n"
             . "</select>\n"
+            . "<label>Items per Page</label>\n"
+            . "</div>"
             . "{$a}\n"
-            . "<hr size='1'  width='800' noshade>\n"
             . "</form>";
 
 
@@ -159,30 +114,44 @@ echo "<div align='center'><table width='100%'>\n"
 ?>
 <td colspan="7" align="right">
 <form style="display:inline;" action="javascript:googleMap();" method="post">
-  <input type="button" value="Create map" onClick="googleMap()" style="width:120px;">
+   <button class="btn-flat waves-effect waves-green" type="button" name="action" value="Create map" onClick="googleMap()">Create map
+  </button>
 </form>
             <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
-                <input type="submit" value="download KML" style="width:120px;">
+              <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
             </form>
             <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
-                <input type="submit" value="download CSV" style="width:120px;">
+                <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
             </form>
         </td></tr>
 
 <tr><td colspan="9" align="center" valign="center">
 
 <?php
-echo $navigation . "</td></tr>"
-   . "<tr bgcolor=\"#EEEEEE\">"
-   . "<th></th>"
-   . "<th class=\"result\"><a href=\"javascript:neuladen('" . $_SERVER['SCRIPT_NAME'] . "?order=1')\">Taxon</a></th>"
-   . "<th class=\"result\"><a href=\"javascript:neuladen('" . $_SERVER['SCRIPT_NAME'] . "?order=2')\">Collector</a></th>"
-   . "<th class=\"result\">Date</th><th class=\"result\">Location</th>"
-   . "<th class=\"result\">Typus</th><th class=\"result\">Coll.</th>"
-   . "<th class=\"result\">Lat/Lon</th><th class=\"result\">NCBI</th></tr>\n";
-$bgcolor = "#FFFFFF";
+echo $navigation
+   ."<div id='' class='progress progress-paging'>\n"
+   ."<div class='indeterminate'></div>\n"
+   ."</div>\n" 
+   ."</td></tr>\n"
+   . "</tbody>\n"
+   . "</table>\n";
+
+?>
+<table id="result-table" class="striped responsive-table">
+  <tr>
+    <th></th>
+    <th class="result"><a href="javascript:neuladen('<?=$_SERVER['SCRIPT_NAME']?>?order=1')">Taxon</a></th>
+    <th class="result"><a href="javascript:neuladen('<?=$_SERVER['SCRIPT_NAME']?>?order=2')">Collector</a></th>
+    <th class="result">Date</th>
+    <th class="result">Location</th>
+    <th class="result">Typus</th>
+    <th class="result">Coll.</th>
+    <th class="result">Lat/Lon</th>
+    <th class="result">NCBI</th>
+  </tr>
+<?php
 while ($row = $result->fetch_array()) {
-    echo "<tr bgcolor=\"$bgcolor\">\n";
+    echo "<tr>\n";
 
     $link = true;
     if ($row['observation']) {
@@ -209,8 +178,21 @@ while ($row = $result->fetch_array()) {
     if (strlen($image) > 0) {
         echo "<td class=\"result\">";
         if ($link) {
+            if ($row['source_id'] == '48' || $row['source_id'] == '50' ){
+            $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
+                if ($row['source_id'] == '29'){
+                    $iiif='http://iiif.bgbm.org';
+                }else{
+                    $iiif='http://iiif.jacq.org';
+                }
             echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
-               . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
+               . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>&nbsp;
+                   <a href=\"$iiif/?manifest=$manifest\" target=\"_blank\">"
+                . "<img border=\"2\" height=\"15\" src=\"images/logo-iiif.png\" width=\"15\"></a>";
+            } else {
+                echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
+                    . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
+            }
         } else {
             echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
         }
@@ -291,7 +273,6 @@ while ($row = $result->fetch_array()) {
 
 
     echo "</tr>\n";
-    $bgcolor = ($bgcolor=="#FFFFFF") ? "#EEEEEE" : "#FFFFFF";
 }
 echo "</table></div>\n";
 ?>
@@ -302,11 +283,6 @@ echo "</table></div>\n";
 
 
   <?php echo $navigation; ?>
-
-  <p class="normal"><b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo
-          Rainer<br></a><br>
-          <b>php-programming</b> -- <a href="mailto:joschach@ap4net.at">Johannes
-          Schachner</a></p>
         <div class="normal" align="center">
           <!-- #BeginEditable "Datum" -->
           <B>Last modified:</B> <EM>2017-Jul-19, JS</EM>
@@ -316,5 +292,3 @@ echo "</table></div>\n";
     </tr>
   </table>
 </div>
-</body>
-</html>
