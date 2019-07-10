@@ -191,10 +191,10 @@ tbl_tax_status
         </div>
         <div class="nav-content">
             <ul class="tabs">
-                <li class="tab"><a class="active" href="dev.php#home">Home</a></li>
-                <li class="tab"><a href="dev.php#database">Database</a></li>
-                <li class="tab"><a href="dev.php#collections">Collections</a></li>
-                <li class="tab"><a href="dev.php#systems">Reference Systems</a></li>
+                <li class="tab"><a class="active" href="index.php#home">Home</a></li>
+                <li class="tab"><a href="index.php#database">Database</a></li>
+                <li class="tab"><a href="index.php#collections">Collections</a></li>
+                <li class="tab"><a href="index.php#systems">Reference Systems</a></li>
             </ul>
         </div>
     </nav>
