@@ -36,7 +36,7 @@
         <div class="col s12">
           <h5>Welcome!</h5>
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W and WU. We are in the process of digitizing our collections, which enables international users to have quick access to our botanical collections.</p>
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W and WU. We are in the process of digitizing our collections, which allows quick access to our botanical collections.</p>
 
           <h5>Other Herbaria / Botanical Specimen Databases</h5>
           <div class="divider"></div>
@@ -117,14 +117,14 @@
           </div>
         </div>
         <!-- Search Form -->
-        <form id="ajax_f" name="f" class="row" action="index.php" method="post">
-          <!-- Institution -->
-          <div class="input-field col s6">
-            <select name="source_name">
-              <option value="" selected>Choose Institution</option>
-              <?php
+          <form id="ajax_f" name="f" class="row" action="index.php" method="post">
+              <!-- Institution -->
+              <div class="input-field col s6">
+                  <select name="source_name">
+                      <option value="" selected>Search herbarium</option>
+                      <?php
 
-                $result = $dbLink->query("SELECT `source_name`
+                      $result = $dbLink->query("SELECT `source_name`
                                           FROM `meta`
                                           WHERE `source_id`
                                           IN (
@@ -137,68 +137,68 @@
                                             )
                                           )
                                           ORDER BY `source_name`");
-                while ($row = $result->fetch_array()) {
-                      echo "<option value=\"{$row['source_name']}\"";
-                      if ($source_name == $row['source_name']) {
-                          echo " selected";
+                      while ($row = $result->fetch_array()) {
+                          echo "<option value=\"{$row['source_name']}\"";
+                          if ($source_name == $row['source_name']) {
+                              echo " selected";
+                          }
+                          echo ">{$row['source_name']}</option>\n";
                       }
-                      echo ">{$row['source_name']}</option>\n";
-                }
-            ?>
-            </select>
-            <label>Institution</label>
-          </div>
-          <!-- Herbar Number -->
-          <div class="input-field col s6">
-            <input placeholder="Herbar #" name="HerbNummer" type="text">
-            <label for="HerbNummer">Herbar Number</label>
-          </div>
-            <!-- Family -->
-            <div class="input-field col s6">
-                <input placeholder="Family" name="family" type="text">
-                <label for="family">Family</label>
-            </div>
-            <!-- Taxon -->
-            <div class="input-field col s6">
-                <input placeholder="Taxon" name="taxon" type="text">
-                <label for="taxon">Taxon</label>
-            </div>
-            <!-- Collector -->
-            <div class="input-field col s6">
-                <input placeholder="Collector" name="Sammler" type="text">
-                <label for="collector">Collector</label>
-            </div>
-            <!-- Collector Number -->
-            <div class="input-field col s6">
-                <input placeholder="Collector #" name="SammlerNr" type="text">
-                <label for="collector">Collector Number</label>
-            </div>
+                      ?>
+                  </select>
 
-          <!-- Extended Search -->
-          <div class="col s12">
-            <ul class="collapsible">
-              <li>
-                <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Extended Search</div>
-                <div class="collapsible-body">
-                  <div class="flex-wrapper">
-                    <!-- Ident. History -->
-                    <div class="input-field">
-                      <input placeholder="Ident. History" name="taxon_alt" type="text">
-                      <label for="taxon_alt">Identification History</label>
-                    </div>
-                    <!-- Synonym -->
-                    <div class="input-field">
-                      <label>
-                        <input type="checkbox" name="synonym" checked="true">
-                        <span>incl. syn.</span>
-                      </label>
-                    </div>
-                      <!-- Collection -->
-                      <div class="input-field">
-                          <select id="ajax_collection" name="collection">
-                              <option value="" selected>Choose Collection</option>
-                              <?php
-                              $result = $dbLink->query("SELECT `collection`
+              </div>
+              <!-- Herbar Number -->
+              <div class="input-field col s6">
+                  <input class="searchinput" placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>
+
+              </div>
+              <!-- Family -->
+              <div class="input-field col s6">
+                  <input class="searchinput" placeholder="Family" name="family" type="text":not(.browser-default)>
+
+              </div>
+              <!-- Taxon -->
+              <div class="input-field col s6">
+                  <input class="searchinput" placeholder="Taxon" name="taxon" type="text":not(.browser-default)>
+
+              </div>
+              <!-- Collector -->
+              <div class="input-field col s6">
+                  <input class="searchinput" placeholder="Collector" name="Sammler" type="text":not(.browser-default)>
+
+              </div>
+              <!-- Collector Number -->
+              <div class="input-field col s6">
+                  <input class="searchinput" placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>
+
+              </div>
+
+              <!-- Extended Search -->
+              <div class="col s12">
+                  <ul class="collapsible">
+                      <li>
+                          <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Extended Search</div>
+                          <div class="collapsible-body">
+                              <div class="flex-wrapper">
+                                  <!-- Ident. History -->
+                                  <div class="input-field">
+                                      <input class="searchinput" placeholder="Ident. History" name="taxon_alt" type="text">
+
+                                  </div>
+                                  <!-- Synonym -->
+                                  <div class="input-field">
+                                      <label>
+                                          <input type="checkbox" name="synonym" checked="true" class="searchinput">
+                                          <span>incl. syn.</span>
+                                      </label>
+                                  </div>
+                                  <!-- Collection -->
+                                  <div class="input-field">
+                                      <select id="ajax_collection" name="collection">
+                                          <option value="" selected>Search subcollection</option>
+                                          <?php
+                                          $result = $dbLink->query("SELECT `collection`
                                           FROM `tbl_management_collections`
                                           WHERE `collectionID`
                                           IN (
@@ -206,318 +206,318 @@
                                             FROM `tbl_specimens`
                                           )
                                           ORDER BY `collection`");
-                              while ($row = $result->fetch_array()) {
-                                  echo "<option value=\"{$row['collection']}\"";
-                                  if ($collection == $row['collection']) {
-                                      echo " selected";
-                                  }
-                                  echo ">{$row['collection']}</option>\n";
-                              }
-                              ?>
-                          </select>
-                          <label>Collection</label>
-                      </div>
-                      <!-- Collection Number -->
-                      <div class="input-field">
-                          <input placeholder="Collection #" name="CollNummer" type="text">
-                          <label for="CollNummer">Collection Number</label>
-                      </div>
-                    <!-- Series -->
-                    <div class="input-field">
-                      <input placeholder="Series" name="series" type="text">
-                      <label for="series">Series</label>
-                    </div>
-                      <!-- Locality -->
-                      <div class="input-field">
-                          <input placeholder="Locality" name="Fundort" type="text">
-                          <label for="Fundort">Locality</label>
-                      </div>
-                    <!-- Continent -->
-                    <div class="input-field">
-                      <select name="geo_general">
-                        <option value="" selected>Choose Continent</option>
-                        <?php
-                          $result = $dbLink->query("SELECT geo_general
+                                          while ($row = $result->fetch_array()) {
+                                              echo "<option value=\"{$row['collection']}\"";
+                                              if ($collection == $row['collection']) {
+                                                  echo " selected";
+                                              }
+                                              echo ">{$row['collection']}</option>\n";
+                                          }
+                                          ?>
+                                      </select>
+
+                                  </div>
+                                  <!-- Collection Number -->
+                                  <div class="input-field">
+                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text":not(:chekced)>
+
+                                  </div>
+                                  <!-- Series -->
+                                  <div class="input-field">
+                                      <input class="searchinput" placeholder="Series" name="series" type="text":not(:chekced)>
+
+                                  </div>
+                                  <!-- Locality -->
+                                  <div class="input-field">
+                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text":not(:chekced)>
+
+                                  </div>
+                                  <!-- Continent -->
+                                  <div class="input-field">
+                                      <select name="geo_general">
+                                          <option value="" selected>Search continent</option>
+                                          <?php
+                                          $result = $dbLink->query("SELECT geo_general
                                                     FROM tbl_geo_region
                                                     GROUP BY geo_general ORDER BY geo_general");
-                          while ($row = $result->fetch_array()) {
-                              echo "<option value=\"{$row['geo_general']}\"";
-                              if ($geo_general == $row['geo_general']) {
-                                  echo " selected";
-                              }
-                              echo ">{$row['geo_general']}</option>\n";
-                          }
-                        ?>
-                      </select>
-                      <label>Continent</label>
-                    </div>
-                    <!-- Series -->
-                    <div id="ajax_nation_engl" class="input-field">
-                      <input placeholder="Country" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
-                      <label for="nation_engl">Country</label>
-                    </div>
-                    <!-- Region -->
-                    <div class="input-field">
-                      <select name="geo_region">
-                        <option value="" selected>Choose Region</option>
-                        <?php
-                          $result = $dbLink->query("SELECT geo_region
+                                          while ($row = $result->fetch_array()) {
+                                              echo "<option value=\"{$row['geo_general']}\"";
+                                              if ($geo_general == $row['geo_general']) {
+                                                  echo " selected";
+                                              }
+                                              echo ">{$row['geo_general']}</option>\n";
+                                          }
+                                          ?>
+                                      </select>
+
+                                  </div>
+                                  <!-- Series -->
+                                  <div id="ajax_nation_engl" class="input-field">
+                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text":not(:chekced) value="<?php echo htmlspecialchars($nation_engl); ?>">
+
+                                  </div>
+                                  <!-- Region -->
+                                  <div class="input-field">
+                                      <select name="geo_region">
+                                          <option value="" selected>Search region</option>
+                                          <?php
+                                          $result = $dbLink->query("SELECT geo_region
                                                     FROM tbl_geo_region
                                                     ORDER BY geo_region");
-                          while ($row = $result->fetch_array()) {
-                              echo "<option value=\"{$row['geo_region']}\"";
-                              if ($geo_region == $row['geo_region']) {
-                                  echo " selected";
-                              }
-                              echo ">{$row['geo_region']}</option>\n";
-                          }
-                        ?>
-                      </select>
-                      <label>Region</label>
-                    </div>
-                    <!-- State/Province -->
-                    <div id="ajax_provinz" class="input-field">
-                      <input placeholder="State/Province" name="provinz" type="text">
-                      <label for="provinz">State/Province</label>
-                    </div>
-                    <!-- Placeholder -->
-                    <div></div>
+                                          while ($row = $result->fetch_array()) {
+                                              echo "<option value=\"{$row['geo_region']}\"";
+                                              if ($geo_region == $row['geo_region']) {
+                                                  echo " selected";
+                                              }
+                                              echo ">{$row['geo_region']}</option>\n";
+                                          }
+                                          ?>
+                                      </select>
 
+                                  </div>
+                                  <!-- State/Province -->
+                                  <div id="ajax_provinz" class="input-field">
+                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text":not(:chekced)>
+
+                                  </div>
+                                  <!-- Placeholder -->
+                                  <div></div>
+
+                              </div>
+                          </div>
+                      </li>
+                  </ul>
+              </div>
+
+              <!-- All Records/Type Records -->
+              <div class="input-field col s6">
+                  <div class="center-align">
+                      <div class="switch">
+                          <label>
+                              Only display Type Records
+                              <input type="checkbox" id="checkbox_type">
+                              <span class="lever"></span>
+                          </label>
+                      </div>
+                      <input type="hidden" name="type" value="all">
                   </div>
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <!-- All Records/Type Records -->
-          <div class="input-field col s6">
-            <div class="center-align">
-              <div class="switch">
-                <label>
-                  Only display Type Records
-                  <input type="checkbox" id="checkbox_type">
-                  <span class="lever"></span>
-                </label>
               </div>
-              <input type="hidden" name="type" value="all">
-            </div>
-          </div>
-          <!-- Synonym -->
-          <div class="input-field col s6">
-            <div class="center-align">
-              <div class="switch">
-                <label>
-                  Only display Records with Images
-                  <input type="checkbox" id="checkbox_images">
-                  <span class="lever"></span>
-                </label>
+              <!-- Synonym -->
+              <div class="input-field col s6">
+                  <div class="center-align">
+                      <div class="switch">
+                          <label>
+                              Only display Records with Images
+                              <input type="checkbox" id="checkbox_images">
+                              <span class="lever"></span>
+                          </label>
+                      </div>
+                      <input type="hidden" name="images" value="all">
+                  </div>
               </div>
-              <input type="hidden" name="images" value="all">
-            </div>
-          </div>
 
-          <!-- Submission -->
-          <div class="col s12">
-            <div class="center-align">
-              <button id="ajax_f_submit" class="waves-effect waves-green btn-flat" type="submit" name="submit">Search</button>
-              <a id="ajax_f_reset" class="waves-effect waves-green btn-flat">Reset</a>
-            </div>
-          </div>
-        </form>
+              <!-- Submission -->
+              <div class="col s12">
+                  <div class="center-align">
+                      <button id="ajax_f_submit" class="waves-effect waves-green btn-flat" type="submit" name="submit">Search</button>
+                      <a id="ajax_f_reset" class="waves-effect waves-green btn-flat">Reset</a>
+                  </div>
+              </div>
+          </form>
         <div class="progress progress-search">
           <div class="indeterminate"></div>
         </div>
         <div id="results">
         </div>
       </div>
-      <div id="collections" class="row">
-        <div class="col s12">
-          <h5>Participating Collections</h5>
-          <div class="divider"></div>
+        <div id="collections" class="row">
+            <div class="col s12">
+                <h5>Participating Collections</h5>
+                <div class="divider"></div>
+            </div>
+            <div id="jacq-map" class="col s6">
+                <iframe class="center-align pushpin" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg" width="100%" height="300px"></iframe>
+            </div>
+            <div id="institutions" class="col s6">
+                <ul class="collapsible">
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Afghanistan</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=163626">KUFS // Kabul University</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Armenia</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124850">ERE // Institute of Botany of the National Academy of Sciences of Armenia</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Azerbaijan</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=123883">BAK // Academy of Sciences of Azerbaijan</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria (Herbaria)</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039">GZU // Karl Franzes University of Graz</a>
+                                    <ul>
+                                        <li>GZU - general herbarium of phanerogamic plants with important incorporated collections, mostly former private herbaria e.g. Conrath (South Africa, Caucasus and SE-Europe), O. & I. Degener (Hawaii), Ecklon & Zeyher (South Africa), C. v. Ettingshausen, K. Fritsch, D.H.Hoppe, Josef (Anton) Kerner, F. Krašan, Lemperg, Nees ab Esenbeck, Nemetz (Flora Byzantina), M. Salzmann, Schmarda, Thwaites, Wallich, Wight, Woynar, G. Zenker.</li>
+                                        <li>GZU - algae</li>
+                                        <li>GZU - fungi and myxomycetes (single specimens, mainly collected by J. Poelt and his former students, as well as a few full sets and several substantial fragments of important exsiccata series)</li>
+                                        <li>GZU - lichens</li>
+                                        <li>GZU - lichenicolous fungi</li>
+                                        <li>GZU - bryophytes</li>
+                                        <li>GZU - plant fossil collection (former private collection of C. v. Ettingshausen)</li>
+                                    </ul>
+                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050">NBSI // Biologisches Forschungsinstitut für Burgenland,Biologische Station Neusiedler See,Illmitz</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500">W //   Natural history Museum Vienna</a>
+                                    <ul>
+                                        <li>W - the general herbarium of phanerogamic plants</li>
+                                        <li>W-Krypt - the general herbarium of kryptogamic plants</li>
+                                    </ul>
+                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513">WU //   University of Vienna, [former] Institute for Botany</a>
+                                    <ul>
+                                        <li>WU-Generale - the general herbarium of phanerogamic plants</li>
+                                        <li>WU-Halácsy-Europaeum / WU-Halácsy-Graecum - former private European & Greek herbaria of Eugen von Halácsy</li>
+                                        <li>WU-Keck - former private herbarium of Karl Keck</li>
+                                        <li>WU-Kerner - former private herbarium of Anton Kerner von Marilaun</li>
+                                        <li>WU-Melk - incorporated collections of the Monastery of Melk / Lower Austria</li>
+                                        <li>WU-Pteridophytes, WU-Bryophyta-Musci, WU-Bryophyta-Hepaticae, WU-Algae, WU-Lichenes, WU-Mycologicum, WU-Fungi-Generale, WU-Carpologica, WU-Liquor, WU-Xylotheca</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria (Living collections)</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://www.botanik.univie.ac.at/hbv/">HBV // Hortus Boptanicus Vindobonensis</a></li>
+                                <li><a href="https://www.bmlfuw.gv.at/ministerium/bundesgaerten">Bundesgärten Schönbrunn</a></li>
+                                <li><a href="http://uni-salzburg.at/index.php?id=40251">Botanischer Garten der Universität Salzburg</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Czech Republic</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125227">BRNU // Masaryk University; Brno</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124248">PRC // Charles University; Prague</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Georgia</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/ih/herbarium.php?irn=124619">TBI // Georgian Academy of Sciences</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Germany</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591">UBT // University of Bayreuth</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103">B // Botanischer Garten und Botanisches Museum Berlin-Dahlem</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128">DR // Institut für Botanik; Technische Universität Dresden</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869">GAT // Leibniz Institute of Plant Genetics and Crop Plant Research (IPK); Gatersleben</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224">HAL // Martin-Luther-Universität; Halle</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582">JE   //  - Friedrich Schiller University; Jena</a>
+                                    <ul>
+                                        <li>JE - general herbarium</li>
+                                        <li>JE Weigel - collection of Christian Ehrenfried Weigel (1748-1831), stored separately</li>
+                                    </ul>
+                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506">LZ // Universität Leipzig</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020">MJG // Johannes Gutenberg-Universität; Mainz</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507">OLD // Universität Oldenburg</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Iran</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=170152">TMRC   //  Department in Traditional Medicine and Materia Medica research Center affiliated to Shahid Beheshti University of Medical Sciences</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Italy</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Montenegro</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=156228">TGU // University of Montenegro; Podgorica</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Russia</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124398">SARAT // Herbarium Saratov State University</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124746">HERZ // Alexander Herzen Pedagogical University (St. Petersburg)</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125848">KFTA // Saint Petersburg S. M. Kirov Forestry Academy</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125849">LECB // Saint Petersburg University</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124216">NS // Central Siberian Botanical Garden (Novosibirsk)</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125943">NSK // Siberian Central Botanical Garden (Novosibirsk)</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>El Salvador</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=123996">LAGU // Asociación Jardín Botánico La Laguna, Urbanización Plan de La Laguna</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=145204">MHES // Herbarium Botánica, Museo de Historia Natural de El Salvador</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Turkey</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li>University Tunceli</li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Ukraine</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=127094">CHER // Yu. Fedcovich Chernivtsi State University</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124970">LW // Ivan Franko National University of Lviv</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124856">LWKS // Institute of Ecology of the Carpathians; Lviv</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125387">LWS // Museum of Natural History (Lviv)</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
-        <div id="jacq-map" class="col s6">
-          <iframe class="center-align pushpin" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg" width="100%" height="300px"></iframe>
-        </div>
-        <div id="institutions" class="col s6">
-          <ul class="collapsible">
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Afghani Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=163626">KUFS // Kabul University</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Armenian Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124850">ERE // Institute of Botany of the National Academy of Sciences of Armenia</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Azerbaijani Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=123883">BAK // Academy of Sciences of Azerbaijan</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austrian Herbaria</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039">GZU // Karl Franzes University of Graz</a>
-                    <ul>
-                      <li>GZU - general herbarium of phanerogamic plants with important incorporated collections, mostly former private herbaria e.g. Conrath (South Africa, Caucasus and SE-Europe), O. & I. Degener (Hawaii), Ecklon & Zeyher (South Africa), C. v. Ettingshausen, K. Fritsch, D.H.Hoppe, Josef (Anton) Kerner, F. Krašan, Lemperg, Nees ab Esenbeck, Nemetz (Flora Byzantina), M. Salzmann, Schmarda, Thwaites, Wallich, Wight, Woynar, G. Zenker.</li>
-                      <li>GZU - algae</li>
-                      <li>GZU - fungi and myxomycetes (single specimens, mainly collected by J. Poelt and his former students, as well as a few full sets and several substantial fragments of important exsiccata series)</li>
-                      <li>GZU - lichens</li>
-                      <li>GZU - lichenicolous fungi</li>
-                      <li>GZU - bryophytes</li>
-                      <li>GZU - plant fossil collection (former private collection of C. v. Ettingshausen)</li>
-                    </ul>
-                  </li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050">NBSI // Biologisches Forschungsinstitut für Burgenland,Biologische Station Neusiedler See,Illmitz</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500">W //   Natural history Museum Vienna</a>
-                    <ul>
-                      <li>W - the general herbarium of phanerogamic plants</li>
-                      <li>W-Krypt - the general herbarium of kryptogamic plants</li>
-                    </ul>
-                  </li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513">WU //   University of Vienna, [former] Institute for Botany</a>
-                    <ul>
-                      <li>WU-Generale - the general herbarium of phanerogamic plants</li>
-                      <li>WU-Halácsy-Europaeum / WU-Halácsy-Graecum - former private European & Greek herbaria of Eugen von Halácsy</li>
-                      <li>WU-Keck - former private herbarium of Karl Keck</li>
-                      <li>WU-Kerner - former private herbarium of Anton Kerner von Marilaun</li>
-                      <li>WU-Melk - incorporated collections of the Monastery of Melk / Lower Austria</li>
-                      <li>WU-Pteridophytes, WU-Bryophyta-Musci, WU-Bryophyta-Hepaticae, WU-Algae, WU-Lichenes, WU-Mycologicum, WU-Fungi-Generale, WU-Carpologica, WU-Liquor, WU-Xylotheca</li>
-                    </ul>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austrian Livingplants</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://www.botanik.univie.ac.at/hbv/">HBV // Hortus Boptanicus Vindobonensis</a></li>
-                  <li><a href="https://www.bmlfuw.gv.at/ministerium/bundesgaerten">Bundesgärten Schönbrunn</a></li>
-                  <li><a href="http://uni-salzburg.at/index.php?id=40251">Botanischer Garten der Universität Salzburg</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Czech Herbaria</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125227">BRNU // Masaryk University; Brno</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124248">PRC // Charles University; Prague</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Georgian Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/ih/herbarium.php?irn=124619">TBI // Georgian Academy of Sciences</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>German Herbaria</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591">UBT // University of Bayreuth</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103">B // Botanischer Garten und Botanisches Museum Berlin-Dahlem</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128">DR // Institut für Botanik; Technische Universität Dresden</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869">GAT // Leibniz Institute of Plant Genetics and Crop Plant Research (IPK); Gatersleben</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224">HAL // Martin-Luther-Universität; Halle</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582">JE   //  - Friedrich Schiller University; Jena</a>
-                    <ul>
-                      <li>JE - general herbarium</li>
-                      <li>JE Weigel - collection of Christian Ehrenfried Weigel (1748-1831), stored separately</li>
-                    </ul>
-                  </li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506">LZ // Universität Leipzig</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020">MJG // Johannes Gutenberg-Universität; Mainz</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507">OLD // Universität Oldenburg</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Iran Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=170152">TMRC   //  Department in Traditional Medicine and Materia Medica research Center affiliated to Shahid Beheshti University of Medical Sciences</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Italian Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Montenegrinian Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=156228">TGU // University of Montenegro; Podgorica</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Russian Herbaria</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124398">SARAT // Herbarium Saratov State University</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124746">HERZ // Alexander Herzen Pedagogical University (St. Petersburg)</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125848">KFTA // Saint Petersburg S. M. Kirov Forestry Academy</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125849">LECB // Saint Petersburg University</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124216">NS // Central Siberian Botanical Garden (Novosibirsk)</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125943">NSK // Siberian Central Botanical Garden (Novosibirsk)</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Salvadorian Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=123996">LAGU // Asociación Jardín Botánico La Laguna, Urbanización Plan de La Laguna</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=145204">MHES // Herbarium Botánica, Museo de Historia Natural de El Salvador</a></li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Turkish Herbarium</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li>University Tunceli</li>
-                </ul>
-              </div>
-            </li>
-            <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Ukrainian Herbaria</div>
-              <div class="collapsible-body">
-                <ul>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=127094">CHER // Yu. Fedcovich Chernivtsi State University</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124970">LW // Ivan Franko National University of Lviv</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124856">LWKS // Institute of Ecology of the Carpathians; Lviv</a></li>
-                  <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125387">LWS // Museum of Natural History (Lviv)</a></li>
-                </ul>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
       <div id="systems" class="row">
         <div class="col s12">
           <h5>Reference Systems</h5>

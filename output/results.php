@@ -139,15 +139,14 @@ echo $navigation
 ?>
 <table id="result-table" class="striped responsive-table">
   <tr>
-    <th></th>
-    <th class="result"><a href="javascript:neuladen('<?=$_SERVER['SCRIPT_NAME']?>?order=1')">Taxon</a></th>
-    <th class="result"><a href="javascript:neuladen('<?=$_SERVER['SCRIPT_NAME']?>?order=2')">Collector</a></th>
-    <th class="result">Date</th>
-    <th class="result">Location</th>
-    <th class="result">Typus</th>
-    <th class="result">Coll.</th>
-    <th class="result">Lat/Lon</th>
-    <th class="result">NCBI</th>
+      <th></th>
+      <th class="resulttax">Taxon</th>
+      <th class="resultcol">Collector</th>
+      <th class="result">Location</th>
+      <th class="result">Typus</th>
+      <th class="result">Collection Herb.#</th>
+      <th class="result">Lat/Lon</th>
+      <th class="result">NCBI</th>
   </tr>
 <?php
 while ($row = $result->fetch_array()) {
@@ -179,16 +178,16 @@ while ($row = $result->fetch_array()) {
         echo "<td class=\"result\">";
         if ($link) {
             if ($row['source_id'] == '48' || $row['source_id'] == '50' ){
-            $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
+                $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
                 if ($row['source_id'] == '29'){
                     $iiif='http://iiif.bgbm.org';
                 }else{
                     $iiif='http://iiif.jacq.org';
                 }
-            echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
-               . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>&nbsp;
+                echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
+                    . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>&nbsp;
                    <a href=\"$iiif/?manifest=$manifest\" target=\"_blank\">"
-                . "<img border=\"2\" height=\"15\" src=\"images/logo-iiif.png\" width=\"15\"></a>";
+                    . "<img border=\"2\" height=\"15\" src=\"images/logo-iiif.png\" width=\"15\"></a>";
             } else {
                 echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
                     . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
@@ -202,14 +201,13 @@ while ($row = $result->fetch_array()) {
     }
 
     echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=" . $row['specimen_ID'] . "\" target=\"_blank\">"
-       . taxonWithHybrids($row)
-       . "</a></td>";
+        . taxonWithHybrids($row)
+        . "</a></td>";
 
     echo "<td class=\"result\" valign=\"top\">"
-       . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])
-       . "</td>";
+        . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])
+        . "</td>";
 
-    echo "<td class=\"result\" valign=\"top\">" . $row['Datum'] . "</td>";
 
     echo "<td class=\"result\" valign=\"top\">";
     $switch = false;
@@ -226,15 +224,15 @@ while ($row = $result->fetch_array()) {
     }
     echo "</td>";
 
-    echo "<td class=\"result\" style=\"text-align: center\">"
-       . (($row['typusID']) ? "<font color=\"red\"><b>" . $row['typus'] . "</b></font>" : "") . "</td>\n";
+    echo "<td class=\"result\" valign=\"top\">"
+        . (($row['typusID']) ? "<font color=\"red\"><b>" . $row['typus'] . "</b></font>" : "") . "</td>\n";
 
 
     if ($row['source_id'] == '29') {
-        echo "<td class=\"result\" style=\"text-align: center\" title=\"" . htmlspecialchars($row['collection']) . "\">" . htmlspecialchars($row['HerbNummer']) . "</td>";
+        echo "<td class=\"result\" valign=\"top\" title=\"" . htmlspecialchars($row['collection']) . "\">" . htmlspecialchars($row['HerbNummer']) . "</td>";
     } else {
-        echo "<td class=\"result\" style=\"text-align: center\" title=\"" . htmlspecialchars($row['collection']) . "\">"
-           . htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+        echo "<td class=\"result\" valign=\"top\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+            . htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
     }
 
     if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
@@ -253,20 +251,20 @@ while ($row = $result->fetch_array()) {
     }
     if ($lat != 0 || $lon != 0) {
         echo "<td class=\"result\" style=\"text-align: center\" title=\"".round($lat,2)."&deg; / ".round($lon,2)."&deg;\">"
-           . "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
-           .  "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/mapquest.png\" width=\"15\"></a>&nbsp;"
-    //         "<a href=\"http://onearth.jpl.nasa.gov/landsat.cgi?zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin".
-    //          "&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600\" ".
-    //          "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/nasa.png\" width=\"15\"></a>".
-           . "</td>\n";
+            . "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
+            .  "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/mapquest.png\" width=\"15\"></a>&nbsp;"
+            //         "<a href=\"http://onearth.jpl.nasa.gov/landsat.cgi?zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin".
+            //          "&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600\" ".
+            //          "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"images/nasa.png\" width=\"15\"></a>".
+            . "</td>\n";
     } else {
         echo "<td class=\"result\"></td>\n";
     }
 
     if ($row['ncbi_accession']) {
         echo "<td class=\"result\" style=\"text-align: center\" title=\"".$row['ncbi_accession']."\">"
-           . "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" "
-           .  "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
+            . "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" "
+            .  "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
     } else {
         echo "<td class=\"result\"></td>\n";
     }
@@ -283,11 +281,7 @@ echo "</table></div>\n";
 
 
   <?php echo $navigation; ?>
-        <div class="normal" align="center">
-          <!-- #BeginEditable "Datum" -->
-          <B>Last modified:</B> <EM>2017-Jul-19, JS</EM>
-          <!-- #EndEditable -->
-        </div>
+
       </td>
     </tr>
   </table>

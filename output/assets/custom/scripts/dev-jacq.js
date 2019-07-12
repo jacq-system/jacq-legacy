@@ -197,6 +197,34 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
       } 
     });
 
+    $(".resulttax").click(function(){
+      var page = $(this).data('value');
+      if(page !== null){
+        $(".progress-paging").show();
+        $.ajax({
+          url: "/output/dev-results.php?order=1&s=s&page="+page,
+          type: "GET",
+          success: function(result){
+            $('#results').html(result);
+          }
+        });
+      }
+    });
+
+    $(".resultcol").click(function(){
+      var page = $(this).data('value');
+      if(page !== null){
+        $(".progress-paging").show();
+        $.ajax({
+          url: "/output/dev-results.php?order=2&s=s&page="+page,
+          type: "GET",
+          success: function(result){
+            $('#results').html(result);
+          }
+        });
+      }
+    });
+
     $("select[name=ITEMS_PER_PAGE]").change(function(event){
       $('#results').html('');
       $(".progress-search").show();

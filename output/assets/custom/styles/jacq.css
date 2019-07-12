@@ -73,6 +73,14 @@ form {
   margin-left: -35%;
 }
 
+.resulttax {
+  color: #0075ae;
+  text-decoration: underline;
+}
+.resultcol {
+  color: #0075ae;
+  text-decoration: underline;
+}
 
 #footer {
   background-color: #FFF;
@@ -175,6 +183,14 @@ ul.pagination>li.active {
   background-color: rgba(93, 159, 48, 0.6);
 }
 
+#result-table td + td { border-left:2px solid white; }
+
+.select-wrapper input.select-dropdown {
+  height: 1.2rem;
+  color: lightgray;
+}
+
+
 .brand-logo.center,
 .tabs .tab a:hover, 
 .tabs .tab a.active,
@@ -194,10 +210,14 @@ input[type=number]:not(.browser-default):focus:not([readonly])+label,
 input[type=search]:not(.browser-default):focus:not([readonly])+label, 
 textarea.materialize-textarea:focus:not([readonly])+label {
   color: rgba(93, 159, 48, 1);
-}
+ }
 
 .collapsible {
   box-shadow: none;
+}
+
+.searchinput {
+  height: 1rem !important;
 }
 
 .row form {

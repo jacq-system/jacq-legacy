@@ -161,7 +161,7 @@ tbl_tax_status
 ?>
 <html>
 <head>
-<title>JACQ - detail view</title>
+<title>JACQ</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="FW4 DW4 HTML">
     <meta http-equiv="“cache-control“" content="“no-cache“">
@@ -304,7 +304,7 @@ if ($row['ncbi_accession']) {
 <div class="container">
                <table class="striped">
          <tr>
-                  <td align="right" width="30%">Stable Identifier</td>
+                  <td align="right" width="30%">Stable identifier</td>
                   <td><b>
                           <?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?>
                       </b>
@@ -312,7 +312,7 @@ if ($row['ncbi_accession']) {
               </tr>
 
             <tr>
-              <td align="right" width="30%">Collection</td>
+              <td align="right" width="30%">Collection Herb.#</td>
               <td><b>
                 <?php makeCell(collectionID($row)); ?>
                  </b>
@@ -327,7 +327,7 @@ if ($row['ncbi_accession']) {
             </tr>
             <?php if ($accName): ?>
             <tr>
-              <td align="right">Accepted Name</td>
+              <td align="right">Accepted name</td>
               <td><b>
                 <?php makeCell($accName); ?>
                 </b></td>
@@ -340,13 +340,13 @@ if ($row['ncbi_accession']) {
                 </b></td>
             </tr>
            <tr>
-               <td align="right">det./rev./conf./assigned</td>
+               <td align="right">Det./rev./conf./assigned</td>
                <td><b>
                        <?php makeCell($row['det']); ?>
                    </b></td>
            </tr>
            <tr>
-               <td align="right">ident. history</td>
+               <td align="right">Ident. history</td>
                <td><b>
                        <?php makeCell($row['taxon_alt']); ?>
                    </b></td>
@@ -417,7 +417,7 @@ if ($row['ncbi_accession']) {
 
 
             <tr>
-              <td align="right">annotations</td>
+              <td align="right">Annotations</td>
               <td><b>
                         <?php
                                 if ($row['source_id'] == '35'){
