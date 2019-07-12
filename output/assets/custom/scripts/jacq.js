@@ -202,7 +202,7 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
       if(page !== null){
         $(".progress-paging").show();
         $.ajax({
-          url: "/output/results.php?order=1&s=s&page="+page,
+          url: "results.php?order=1&s=s&page="+page,
           type: "GET",
           success: function(result){
             $('#results').html(result);
@@ -216,7 +216,7 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
       if(page !== null){
         $(".progress-paging").show();
         $.ajax({
-          url: "/output/results.php?order=2&s=s&page="+page,
+          url: "results.php?order=2&s=s&page="+page,
           type: "GET",
           success: function(result){
             $('#results').html(result);
