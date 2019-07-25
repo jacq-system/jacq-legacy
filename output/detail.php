@@ -68,7 +68,7 @@ function makeTypus($ID) {
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
              te4.epithet epithet4, te5.epithet epithet5,
-             ts.synID, ts.taxonID, ts.statusID, tst.typified_by_Person, tst.typified_Date
+             ts.synID, ts.taxonID, ts.statusID
             FROM (tbl_specimens_types tst, tbl_typi tt, tbl_tax_species ts)
              LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
              LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
@@ -85,10 +85,10 @@ function makeTypus($ID) {
              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
             WHERE tst.typusID=tt.typusID
              AND tst.taxonID=ts.taxonID
-             AND specimenID=" . intval($ID) . " ORDER by tst.typified_Date DESC";
+             AND specimenID='" . intval($ID) . "'";
     $result = $dbLink->query($sql);
 
-    $text = "";
+    $text = "<table cellspacing=\"0\" cellpadding=\"0\">\n";
     while ($row = $result->fetch_array()) {
         if ($row['synID']) {
             $sql3 = "SELECT ts.statusID, tg.genus,
@@ -127,16 +127,15 @@ function makeTypus($ID) {
                  WHERE ti.taxonID='" . $row['taxonID'] . "'";
         $result2 = $dbLink->query($sql2);
 
-        $text .= "<tr><td nowrap align=\"right\">" . $row['typus_lat'] . " for&nbsp;</td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>";
-        $text .="<tr><td nowrap align=\"right\"></td><td>Typified by:&nbsp;<b>" . $row[typified_by_Person] . "&nbsp;" . $row[typified_Date] ."</b></td></tr>";
+        $text .= "<tr><td nowrap align=\"right\"><b>" . $row['typus_lat'] . " for&nbsp;</b></td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>\n";
         while ($row2 = $result2->fetch_array()) {
-            $text .= "<tr><td></td><td><b>" . protolog($row2) . "</b></td></tr>";
+            $text .= "<tr><td></td><td>" . protolog($row2) . "</td></tr>\n";
         }
         if (strlen($accName) > 0) {
-            $text .= "<tr><td></td><td><b>Current Name: <i>$accName</i></b></td></tr>";
+            $text .= "<tr><td></td><td>Current Name: <i>$accName</i></td></tr>\n";
         }
     }
-    $text .= "";
+    $text .= "</table>\n";
 
     return $text;
 }
@@ -158,20 +157,13 @@ tbl_tax_status
 - tbl_wu_generale
 */
 
-?>
-<html>
+?><html>
 <head>
-<title>JACQ</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="description" content="FW4 DW4 HTML">
-    <meta http-equiv="“cache-control“" content="“no-cache“">
-    <meta http-equiv="“pragma“" content="“no-cache“">
-    <meta http-equiv="“expires“" content="“0″">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen,projection"/>
-    <link href="assets/fontawesome/css/all.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Virtual Herbaria / dataset - detailed view</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="FW4 DW4 HTML">
+<!-- Fireworks 4.0  Dreamweaver 4.0 target.  Created Fri Nov 08 15:05:42 GMT+0100 (Westeurop�ische Normalzeit) 2002-->
+<link rel="stylesheet" href="css/herbarium.css" type="text/css">
   <script type="text/javascript" language="JavaScript"><!--
     function showPicture(url) {
       MeinFenster =
@@ -181,26 +173,49 @@ tbl_tax_status
       MeinFenster.focus();
     }
   --></script>
-
 </head>
-<body>
-<div id="navbar" class="navbar-fixed">
-    <nav class="nav-extended">
-        <div class="nav-wrapper">
-            <a href="#" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
-        </div>
-        <div class="nav-content">
-            <ul class="tabs">
-                <li class="tab"><a class="active" href="index.php#home">Home</a></li>
-                <li class="tab"><a href="index.php#database">Database</a></li>
-                <li class="tab"><a href="index.php#collections">Collections</a></li>
-                <li class="tab"><a href="index.php#systems">Reference Systems</a></li>
-            </ul>
-        </div>
-    </nav>
-</div>
-
-
+<body bgcolor="#ffffff">
+<div align="center">
+  <table border="0" cellpadding="0" cellspacing="0" width="800">
+    <!-- fwtable fwsrc="databasemenu.png" fwbase="databasemenu.gif" fwstyle="Dreamweaver" fwdocid = "742308039" fwnested="0" -->
+    <tr>
+      <td height="50" valign="top" colspan="9">
+      </td>
+    </tr>
+    <tr>
+      <!-- Shim row, height 1. -->
+      <td><img src="images/spacer.gif" width="198" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="197" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="198" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="2" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="200" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="1" height="1" border="0"></td>
+      <td><img src="images/spacer.gif" width="1" height="1" border="0"></td>
+    </tr>
+    <tr>
+      <!-- row 1 -->
+      <td colspan="8"><img name="databasemenu_r1_c1" src="images/databasemenu_r1_c1.gif" width="800" height="93" border="0" alt="virtual herbaria austria"></td>
+      <td><img src="images/spacer.gif" width="1" height="93" border="0"></td>
+    </tr>
+    <tr>
+      <!-- row 2 -->
+      <td><a href="../index.htm"><img name="databasemenu_r2_c1" src="images/databasemenu_r2_c1.gif" width="198" height="37" border="0" alt="home"></a></td>
+      <td><img name="databasemenu_r2_c2" src="images/databasemenu_r2_c2.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
+      <td><a href="index.php"><img name="databasemenu_r2_c3" src="images/databasemenu_r2_c3.gif" width="197" height="37" border="0" alt="general information"></a></td>
+      <td><img name="databasemenu_r2_c4" src="images/databasemenu_r2_c4.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
+      <td><a href="collections.htm"><img name="databasemenu_r2_c5" src="images/databasemenu_r2_c5.gif" width="198" height="37" border="0" alt="collections"></a></td>
+      <td><img name="databasemenu_r2_c6" src="images/databasemenu_r2_c6.gif" width="2" height="37" border="0" alt="herbarmenu"></td>
+      <td><a href="refsystems.htm"><img name="databasemenu_r2_c7" src="images/databasemenu_r2_c7.gif" width="200" height="37" border="0" alt="reference systems"></a></td>
+      <td><img name="databasemenu_r2_c8" src="images/databasemenu_r2_c8.gif" width="1" height="37" border="0" alt="herbarmenu"></td>
+      <td><img src="images/spacer.gif" width="1" height="37" border="0"></td>
+    </tr>
+    <tr>
+      <td height="40" valign="top" colspan="9">&nbsp;</td>
+    </tr>
+    <tr>
+      <td valign="top" colspan="9">
         <?php
 if (isset($_GET['ID'])) {
     $ID = intval($_GET['ID']);
@@ -246,10 +261,10 @@ $query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.
            LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
           WHERE specimen_ID='" . intval($ID) . "'";
 $result = $dbLink->query($query);
-//if ($dbLink->errno) {
-//    echo $query."<br>\n";
-//    echo $dbLink->error . "<br>\n";
-//}
+if ($dbLink->errno) {
+    echo $query."<br>\n";
+    echo $dbLink->error . "<br>\n";
+}
 $row = $result->fetch_array();
 
 $taxon = taxonWithHybrids($row);
@@ -301,10 +316,17 @@ if ($row['ncbi_accession']) {
               .  "<img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a>";
 }
 ?>
-<div class="container">
-               <table class="striped">
+        <div align="center">
+            <table width="80%" border="0">
+                <tr>
+                    <td align="right">
+                        <a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+                    </td>
+                </tr>
+            </table>
+          <table border="2" cellpadding="2" width="80%">
          <tr>
-                  <td align="right" width="30%">Stable identifier</td>
+                  <td align="right" width="30%">Stable Identifier</td>
                   <td><b>
                           <?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?>
                       </b>
@@ -312,22 +334,39 @@ if ($row['ncbi_accession']) {
               </tr>
 
             <tr>
-              <td align="right" width="30%">Collection Herb.#</td>
+              <td align="right" width="30%">Collection</td>
               <td><b>
                 <?php makeCell(collectionID($row)); ?>
                  </b>
                 </td>
             </tr>
+<?php
+$typusText = makeTypus($ID);
+if (strlen($typusText) > 0):
+?>
             <tr>
-              <td align="right">Stored under taxonname</td>
+              <td align="right">Type information</td>
+              <td>
+                <?php makeCell($typusText); ?>
+                </td>
+            </tr>
+            <tr>
+              <td align="right">Typified by</td>
+              <td><b>
+                <?php makeCell($row['typified']); ?>
+                </b></td>
+            </tr>
+<?php endif; ?>
+            <tr>
+              <td align="right">Taxon</td>
               <td><b>
                 <?php makeCell($taxon); ?>
-                </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+                </b>
               </td>
             </tr>
             <?php if ($accName): ?>
             <tr>
-              <td align="right">Accepted name</td>
+              <td align="right">Accepted Name</td>
               <td><b>
                 <?php makeCell($accName); ?>
                 </b></td>
@@ -339,26 +378,6 @@ if ($row['ncbi_accession']) {
                 <?php makeCell($row['family']); ?>
                 </b></td>
             </tr>
-           <tr>
-               <td align="right">Det./rev./conf./assigned</td>
-               <td><b>
-                       <?php makeCell($row['det']); ?>
-                   </b></td>
-           </tr>
-           <tr>
-               <td align="right">Ident. history</td>
-               <td><b>
-                       <?php makeCell($row['taxon_alt']); ?>
-                   </b></td>
-           </tr>
-           <?php
-           $typusText = makeTypus($ID);
-           if (strlen($typusText) > 0):
-               ?>
-
-               <?php makeCell($typusText); ?>
-
-           <?php endif; ?>
             <tr>
               <td align="right">Collector</td>
               <td><b>
@@ -397,7 +416,10 @@ if ($row['ncbi_accession']) {
                       $text .= " &mdash; " . round($lat,2) . "&deg; / " . round($lon,2) . "&deg; "
                              . "<a href='http://www.mapquest.com/maps/map.adp?"
                              .  "latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3' target='_blank'>"
-                             . "<img border='0' height='15' src='images/mapquest.png' width='15'></a>&nbsp;";
+                             . "<img border='0' height='15' src='images/mapquest.png' width='15'></a>&nbsp;"
+                             . "<a href='http://onearth.jpl.nasa.gov/landsat.cgi?"
+                             .  "zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600' target='_blank'>"
+                             . "<img border='0' height='15' src='images/nasa.png' width='15'></a>";
                   }
 
                   if (strlen($text) > 0) {
@@ -414,10 +436,20 @@ if ($row['ncbi_accession']) {
                 <?php makeCell($row['Fundort']); ?>
                 </b></td>
             </tr>
-
-
             <tr>
-              <td align="right">Annotations</td>
+              <td align="right">det./rev./conf./assigned</td>
+              <td><b>
+                <?php makeCell($row['det']); ?>
+                </b></td>
+            </tr>
+            <tr>
+              <td align="right">ident. history</td>
+              <td><b>
+                <?php makeCell($row['taxon_alt']); ?>
+                </b></td>
+            </tr>
+            <tr>
+              <td align="right">annotations</td>
               <td><b>
                         <?php
                                 if ($row['source_id'] == '35'){
@@ -457,10 +489,14 @@ if ($row['ncbi_accession']) {
                     echo "</tr>";
                 }
 			?>
-
+          </table>
+        </div>
+        <div align="center">
+          <table width="80%" border="0">
             <tr>
-
-
+              <td align="left">
+              <table border='0'>
+              <tr>
                 <?php
 if ($row['digital_image'] || $row['digital_image_obs']) {
 /*  $url_base = "http://www.univie.ac.at/herbarium/images/";
@@ -513,23 +549,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 
     if ($picdetails['is_djatoka'] == '2') {
         $file = rawurlencode(basename($picdetails['specimenID']));
-        $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
-        if ($row['source_id'] == '29'){
-            $iiif='http://iiif.bgbm.org';
-        }else{
-            $iiif='http://iiif.jacq.org';
-        }
-       if ($row['source_id'] == '29'){
-           $file = rawurlencode(basename($picdetails['specimenID']));
-           echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
-       } else {
-           echo "<td valign='top' align='center' colspan='2'>
-               
-        <iframe title=\"Mirador\" width=\"100%\" height=\"800px\" src=\"$iiif/?manifest=$manifest\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe>     
-           
-        </td>";
-       }
-
+        echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
     } elseif ($picdetails['is_djatoka'] == '3') {
         $file=rawurlencode(basename($picdetails['specimenID']));
 	    echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)</td>";
@@ -555,19 +575,30 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 }
 ?>
               </tr>
-
+              </table>
+              </td>
+            </tr>
+          </table>
+        </div>
+        </td>
+    </tr>
+    <tr>
+      <td valign="top" colspan="9" align="center">
+        <HR SIZE=1  width="800" NOSHADE>
+        <p class="normal">
+            <b>database management and digitizing</b> -- <a href="mailto:heimo.rainer@univie.ac.at">Heimo Rainer</a>
+            <br />
+            <br />
+            <b>php-programming</b> -- <a href="mailto:joschach@ap4net.at">Johannes Schachner</a>
+        </p>
+        <div class="normal" align="center">
+          <!-- #BeginEditable "Datum" -->
+          <B>Last modified:</B> <EM>2017-Jul-19, JS</EM>
+          <!-- #EndEditable -->
+        </div>
+      </td>
+    </tr>
   </table>
-
 </div>
-<div id="footer-wrapper">
-    <div class="divider"></div>
-    <div id="footer">
-        <a href="https://www.bgbm.org/en/imprint">Imprint</a>
-    </div>
-</div>
-<script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
-<script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
-<script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
 </body>
 </html>
