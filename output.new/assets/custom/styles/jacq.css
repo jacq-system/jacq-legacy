@@ -187,7 +187,7 @@ ul.pagination>li.active {
 
 .select-wrapper input.select-dropdown {
   height: 1.2rem;
-  color: lightgray;
+  color: black;
 }
 
 
@@ -220,6 +220,32 @@ textarea.materialize-textarea:focus:not([readonly])+label {
   height: 1rem !important;
 }
 
+/* do not group these rules */
+*::-webkit-input-placeholder {
+    color: red;
+}
+*:-moz-placeholder {
+    /* FF 4-18 */
+    color: red;
+    opacity: 1;
+}
+*::-moz-placeholder {
+    /* FF 19+ */
+    color: red;
+    opacity: 1;
+}
+*:-ms-input-placeholder {
+    /* IE 10+ */
+    color: red;
+}
+*::-ms-input-placeholder {
+    /* Microsoft Edge */
+    color: red;
+}
+*::placeholder {
+    /* modern browser */
+    color: red;
+}
 .row form {
   display: flex;
   flex-wrap: wrap;
