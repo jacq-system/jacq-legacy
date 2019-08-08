@@ -142,12 +142,12 @@ echo $navigation
       <th></th>
       <th class="resulttax">Taxon</th>
       <th class="resultcol">Collector</th>
+      <th class="result">Date</th>
       <th class="result">Location</th>
       <th class="result">Typus</th>
       <th class="result">Collection Herb.#</th>
       <th class="result">Lat/Lon</th>
-      <th class="result">NCBI</th>
-  </tr>
+ </tr>
 <?php
 while ($row = $result->fetch_array()) {
     echo "<tr>\n";
@@ -205,9 +205,12 @@ while ($row = $result->fetch_array()) {
         . "</a></td>";
 
     echo "<td class=\"result\" valign=\"top\">"
-        . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])
+        . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], '')
         . "</td>";
 
+    echo "<td class=\"result\" valign=\"top\">"
+        . htmlspecialchars($row['Datum'])
+        . "</td>";
 
     echo "<td class=\"result\" valign=\"top\">";
     $switch = false;
@@ -261,13 +264,13 @@ while ($row = $result->fetch_array()) {
         echo "<td class=\"result\"></td>\n";
     }
 
-    if ($row['ncbi_accession']) {
-        echo "<td class=\"result\" style=\"text-align: center\" title=\"".$row['ncbi_accession']."\">"
-            . "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" "
-            .  "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
-    } else {
-        echo "<td class=\"result\"></td>\n";
-    }
+  //  if ($row['ncbi_accession']) {
+     //   echo "<td class=\"result\" style=\"text-align: center\" title=\"".$row['ncbi_accession']."\">"
+    //        . "<a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=".$row['ncbi_accession']."\" "
+   //         .  "target=\"_blank\"><img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a></td>\n";
+   // } else {
+  //      echo "<td class=\"result\"></td>\n";
+  //  }
 
 
     echo "</tr>\n";

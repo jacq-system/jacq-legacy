@@ -430,7 +430,7 @@ if ($row['ncbi_accession']) {
               </b></td>
             </tr>
 			<?php
-				if ($row['source_id'] == '29' || $row['source_id'] == '6' ){
+				if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
                     echo "<tr>";
 					// create new id object
                     $id = new MyTripleID($row['HerbNummer']);

@@ -49,9 +49,9 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
         if ($alt_number) {
             $text .= " " . $alt_number;
         }
-        if (strstr($alt_number, "s.n.")) {
-            $text .= " [" . $Datum . "]";
-        }
+        //if (strstr($alt_number, "s.n.")) {
+          //  $text .= " [" . $Datum . "]";
+        //}
     }
 
     return $text;

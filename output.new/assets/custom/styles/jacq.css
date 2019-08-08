@@ -222,29 +222,29 @@ textarea.materialize-textarea:focus:not([readonly])+label {
 
 /* do not group these rules */
 *::-webkit-input-placeholder {
-    color: red;
+    color: black;
 }
 *:-moz-placeholder {
     /* FF 4-18 */
-    color: red;
+    color: black;
     opacity: 1;
 }
 *::-moz-placeholder {
     /* FF 19+ */
-    color: red;
+    color: black;
     opacity: 1;
 }
 *:-ms-input-placeholder {
     /* IE 10+ */
-    color: red;
+    color: black;
 }
 *::-ms-input-placeholder {
     /* Microsoft Edge */
-    color: red;
+    color: black;
 }
 *::placeholder {
     /* modern browser */
-    color: red;
+    color: black;
 }
 .row form {
   display: flex;

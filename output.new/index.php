@@ -34,9 +34,8 @@
     <div class="container">
       <div id="home" class="row">
         <div class="col s12">
-          <h5>Welcome!</h5>
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W and WU. We are in the process of digitizing our collections, which allows quick access to our botanical collections.</p>
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W, WU and WUP. Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a> . For requests and comments please contact the corresponding Director/Curator listed in the Index Herbariorum  directly.</p>
 
           <h5>Other Herbaria / Botanical Specimen Databases</h5>
           <div class="divider"></div>
@@ -103,10 +102,10 @@
                   <p>Fields are automatically <strong>linked by AND</strong></p>
                   <p>For partial strings the <strong>% sign can be used as a wildcard</strong></p>
                   <p>Queries for a Genus can be sent as "genus name" "blank space" and the "%" sign:
-                  Searchstring "Oncidum %" yields all data for Oncidium plus all data for transferred names, e.g. Cyrtochilum, etc.</p>
+                  Searchstring "Oncidum %" yields all data for Oncidium.</p>
                   <p>Typing the initial Letters for "genus" and "epithet" are sufficient as Search Criteria:
                   "p bad" yields all Taxa where genus starts with "p" and Epithet starts with "bad". Results include e.g. p badia Hepp, Peziza badia Pers. or Poa badensis Haenke ex Willd.</p>
-                  <p>Search on Synonymy has been implemented for nomenclatural and taxonomic Questions. For this Purpose the "incl. syn." Checkbox is activate as a standard; if you want to get data for the exact search string uncheck "incl. syn."</p>
+                  <p>Search on Synonymy has been implemented for nomenclatural and taxonomic questions. If the "incl. syn." checkbox is activated (default), known nomenclatural and taxonomic synonyms will be returned with the search result</p>
                 </blockquote>
               </div>
               <div class="modal-footer">
@@ -121,7 +120,7 @@
               <!-- Institution -->
               <div class="input-field col s6">
                   <select name="source_name">
-                      <option value="" selected>Search herbarium</option>
+                      <option value="" selected>Search all</option>
                       <?php
 
                       $result = $dbLink->query("SELECT `source_name`
@@ -160,7 +159,7 @@
               </div>
               <!-- Taxon -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Taxon" name="taxon" type="text":not(.browser-default)>
+                  <input class="searchinput" placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>
 
               </div>
               <!-- Collector -->
@@ -370,34 +369,11 @@
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039">GZU // Karl Franzes University of Graz</a>
-                                    <ul>
-                                        <li>GZU - general herbarium of phanerogamic plants with important incorporated collections, mostly former private herbaria e.g. Conrath (South Africa, Caucasus and SE-Europe), O. & I. Degener (Hawaii), Ecklon & Zeyher (South Africa), C. v. Ettingshausen, K. Fritsch, D.H.Hoppe, Josef (Anton) Kerner, F. Krašan, Lemperg, Nees ab Esenbeck, Nemetz (Flora Byzantina), M. Salzmann, Schmarda, Thwaites, Wallich, Wight, Woynar, G. Zenker.</li>
-                                        <li>GZU - algae</li>
-                                        <li>GZU - fungi and myxomycetes (single specimens, mainly collected by J. Poelt and his former students, as well as a few full sets and several substantial fragments of important exsiccata series)</li>
-                                        <li>GZU - lichens</li>
-                                        <li>GZU - lichenicolous fungi</li>
-                                        <li>GZU - bryophytes</li>
-                                        <li>GZU - plant fossil collection (former private collection of C. v. Ettingshausen)</li>
-                                    </ul>
-                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039">GZU // Karl Franzes University of Graz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050">NBSI // Biologisches Forschungsinstitut für Burgenland,Biologische Station Neusiedler See,Illmitz</a></li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500">W //   Natural history Museum Vienna</a>
-                                    <ul>
-                                        <li>W - the general herbarium of phanerogamic plants</li>
-                                        <li>W-Krypt - the general herbarium of kryptogamic plants</li>
-                                    </ul>
-                                </li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513">WU //   University of Vienna, [former] Institute for Botany</a>
-                                    <ul>
-                                        <li>WU-Generale - the general herbarium of phanerogamic plants</li>
-                                        <li>WU-Halácsy-Europaeum / WU-Halácsy-Graecum - former private European & Greek herbaria of Eugen von Halácsy</li>
-                                        <li>WU-Keck - former private herbarium of Karl Keck</li>
-                                        <li>WU-Kerner - former private herbarium of Anton Kerner von Marilaun</li>
-                                        <li>WU-Melk - incorporated collections of the Monastery of Melk / Lower Austria</li>
-                                        <li>WU-Pteridophytes, WU-Bryophyta-Musci, WU-Bryophyta-Hepaticae, WU-Algae, WU-Lichenes, WU-Mycologicum, WU-Fungi-Generale, WU-Carpologica, WU-Liquor, WU-Xylotheca</li>
-                                    </ul>
-                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500">W //   Natural history Museum Vienna</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513">WU //   University of Vienna, [former] Institute for Botany</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=151017">WUP // Department of Pharmacognosy, Universität Wien</a></li>
                             </ul>
                         </div>
                     </li>
@@ -437,15 +413,18 @@
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128">DR // Institut für Botanik; Technische Universität Dresden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869">GAT // Leibniz Institute of Plant Genetics and Crop Plant Research (IPK); Gatersleben</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224">HAL // Martin-Luther-Universität; Halle</a></li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582">JE   //  - Friedrich Schiller University; Jena</a>
-                                    <ul>
-                                        <li>JE - general herbarium</li>
-                                        <li>JE Weigel - collection of Christian Ehrenfried Weigel (1748-1831), stored separately</li>
-                                    </ul>
-                                </li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582">JE   //  - Friedrich Schiller University; Jena</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506">LZ // Universität Leipzig</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020">MJG // Johannes Gutenberg-Universität; Mainz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507">OLD // Universität Oldenburg</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Greece</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=255445">CBH // Cephalonia Botanica, Focas Cosmetatos Foundation</a></li>
                             </ul>
                         </div>
                     </li>
@@ -515,10 +494,29 @@
                             </ul>
                         </div>
                     </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Personal herbaria</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li>Herbarium Walter Gutermann (Wien, AT)</li>
+                                <li>Herbarium Peter Pilsl (Salzburg, AT)</li>
+                                <li>Herbarium Norbert Sauberer (Niederösterreich, AT)</li>
+                                <li>Herbarium Eckehard Willing (Brandenburg, DE)</li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Herbaria of Society</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://www.drogistenmuseum.at/">Österreichisches Pharma- und Drogistenmuseum im Stiftungshaus für Drogisten" Herbarium des Drogistenmuseums (Wie, AT)</a></li>
+                            </ul>
+                        </div>
+                    </li>
                 </ul>
             </div>
         </div>
-      <div id="systems" class="row">
+      <div id="systems" class="row"
         <div class="col s12">
           <h5>Reference Systems</h5>
           <div class="divider"></div>
