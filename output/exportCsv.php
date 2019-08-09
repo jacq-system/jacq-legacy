@@ -1,6 +1,7 @@
 <?php
 session_start();
 require("inc/functions.php");
+require("inc/PHPExcel/PHPExcel.php");
 
 function replaceNewline($text) {
 
@@ -119,6 +120,99 @@ function makeTypus($ID)
 
     return $text;
 }
+
+// extend memory and timeout settings
+ini_set("memory_limit", "4096M");
+set_time_limit(0);
+
+// SQLiteCache hält die Cell-Data nicht im Speicher
+if (!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip)) {
+    die('Caching not available!');
+}
+
+// Create new PHPExcel object
+$objPHPExcel = new PHPExcel();
+$objPHPExcelWorksheet = $objPHPExcel->setActiveSheetIndex(0);
+
+// add header info
+$objPHPExcelWorksheet->setCellValue('A1', 'Specimen_ID')
+        ->setCellValue('B1', 'observation')
+        ->setCellValue('C1', 'API')
+        ->setCellValue('D1', 'dig_image')
+        ->setCellValue('E1', 'dig_img_obs')
+        ->setCellValue('F1', 'checked')
+        ->setCellValue('G1', 'accessible')
+        ->setCellValue('H1', 'Institution_Code')
+        ->setCellValue('I1', 'HerbariumNr_BarCode')
+        ->setCellValue('J1', 'institution_subcollection')
+        ->setCellValue('K1', 'Collection_Number')
+        ->setCellValue('L1', 'Type_information')
+        ->setCellValue('M1', 'Typified_by')
+        ->setCellValue('N1', 'Taxon')
+        ->setCellValue('O1', 'status')
+        ->setCellValue('P1', 'Genus')
+        ->setCellValue('Q1', 'Species')
+        ->setCellValue('R1', 'Author')
+        ->setCellValue('S1', 'Rank')
+        ->setCellValue('T1', 'Infra_spec')
+        ->setCellValue('U1', 'Infra_author')
+        ->setCellValue('V1', 'Family')
+        ->setCellValue('W1', 'Garden')
+        ->setCellValue('X1', 'voucher')
+        ->setCellValue('Y1', 'Collection')
+        ->setCellValue('Z1', 'First_collector')
+        ->setCellValue('AA1', 'First_collectors_number')
+        ->setCellValue('AB1', 'Add_collectors')
+        ->setCellValue('AC1', 'Alt_number')
+        ->setCellValue('AD1', 'Series')
+        ->setCellValue('AE1', 'Series_number')
+        ->setCellValue('AF1', 'Coll_Date')
+        ->setCellValue('AG1', 'Coll_Date_2')
+        ->setCellValue('AH1', 'Country')
+        ->setCellValue('AI1', 'Province')
+        ->setCellValue('AJ1', 'geonames')
+        ->setCellValue('AK1', 'Latitude')
+        ->setCellValue('AL1', 'Latitude_DMS')
+        ->setCellValue('AM1', 'Lat_Hemisphere')
+        ->setCellValue('AN1', 'Lat_degree')
+        ->setCellValue('AO1', 'Lat_minute')
+        ->setCellValue('AP1', 'Lat_second')
+        ->setCellValue('AQ1', 'Longitude')
+        ->setCellValue('AR1', 'Longitude_DMS')
+        ->setCellValue('AS1', 'Long_Hemisphere')
+        ->setCellValue('AT1', 'Long_degree')
+        ->setCellValue('AU1', 'Long_minute')
+        ->setCellValue('AV1', 'Long_second')
+        ->setCellValue('AW1', 'exactness')
+        ->setCellValue('AX1', 'Altitude_lower')
+        ->setCellValue('AY1', 'Altitude_higher')
+        ->setCellValue('AZ1', 'Quadrant')
+        ->setCellValue('BA1', 'Quadrant_sub')
+        ->setCellValue('BB1', 'Location')
+        ->setCellValue('BC1', 'det_rev_conf')
+        ->setCellValue('BD1', 'ident_history')
+        ->setCellValue('BE1', 'annotations')
+        ->setCellValue('BF1', 'habitat')
+        ->setCellValue('BG1', 'habitus')
+        ->setCellValue('BH1', 'aktualdatum')
+        ->setCellValue('BI1', 'eingabedatum')
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
