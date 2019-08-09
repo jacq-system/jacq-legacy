@@ -3,22 +3,6 @@ session_start();
 require("inc/functions.php");
 require("inc/PHPExcel/PHPExcel.php");
 
-function replaceNewline($text) {
-
-  return strtr(str_replace("\r\n","\n",$text),"\r\n","  ");  //replaces \r\n with \n and then \r or \n with <space>
-}
-
-function formatCell($value)
-{
-    if(!isset($value) || $value == "") {
-        $value = "<td></td>";
-    } else {
-        //$value = "<td>".str_replace('"', '""', $value); // escape quotes
-        $value = '<td>' . $value . "</td>";
-    }
-    return $value;
-}
-
 function protolog($row)
 {
     $text = "";
@@ -135,85 +119,27 @@ $objPHPExcel = new PHPExcel();
 $objPHPExcelWorksheet = $objPHPExcel->setActiveSheetIndex(0);
 
 // add header info
-$objPHPExcelWorksheet->setCellValue('A1', 'Specimen_ID')
-        ->setCellValue('B1', 'observation')
-        ->setCellValue('C1', 'API')
-        ->setCellValue('D1', 'dig_image')
-        ->setCellValue('E1', 'dig_img_obs')
-        ->setCellValue('F1', 'checked')
-        ->setCellValue('G1', 'accessible')
-        ->setCellValue('H1', 'Institution_Code')
-        ->setCellValue('I1', 'HerbariumNr_BarCode')
-        ->setCellValue('J1', 'institution_subcollection')
-        ->setCellValue('K1', 'Collection_Number')
-        ->setCellValue('L1', 'Type_information')
-        ->setCellValue('M1', 'Typified_by')
-        ->setCellValue('N1', 'Taxon')
-        ->setCellValue('O1', 'status')
-        ->setCellValue('P1', 'Genus')
-        ->setCellValue('Q1', 'Species')
-        ->setCellValue('R1', 'Author')
-        ->setCellValue('S1', 'Rank')
-        ->setCellValue('T1', 'Infra_spec')
-        ->setCellValue('U1', 'Infra_author')
-        ->setCellValue('V1', 'Family')
-        ->setCellValue('W1', 'Garden')
-        ->setCellValue('X1', 'voucher')
-        ->setCellValue('Y1', 'Collection')
-        ->setCellValue('Z1', 'First_collector')
-        ->setCellValue('AA1', 'First_collectors_number')
-        ->setCellValue('AB1', 'Add_collectors')
-        ->setCellValue('AC1', 'Alt_number')
-        ->setCellValue('AD1', 'Series')
-        ->setCellValue('AE1', 'Series_number')
-        ->setCellValue('AF1', 'Coll_Date')
-        ->setCellValue('AG1', 'Coll_Date_2')
-        ->setCellValue('AH1', 'Country')
-        ->setCellValue('AI1', 'Province')
-        ->setCellValue('AJ1', 'geonames')
-        ->setCellValue('AK1', 'Latitude')
-        ->setCellValue('AL1', 'Latitude_DMS')
-        ->setCellValue('AM1', 'Lat_Hemisphere')
-        ->setCellValue('AN1', 'Lat_degree')
-        ->setCellValue('AO1', 'Lat_minute')
-        ->setCellValue('AP1', 'Lat_second')
-        ->setCellValue('AQ1', 'Longitude')
-        ->setCellValue('AR1', 'Longitude_DMS')
-        ->setCellValue('AS1', 'Long_Hemisphere')
-        ->setCellValue('AT1', 'Long_degree')
-        ->setCellValue('AU1', 'Long_minute')
-        ->setCellValue('AV1', 'Long_second')
-        ->setCellValue('AW1', 'exactness')
-        ->setCellValue('AX1', 'Altitude_lower')
-        ->setCellValue('AY1', 'Altitude_higher')
-        ->setCellValue('AZ1', 'Quadrant')
-        ->setCellValue('BA1', 'Quadrant_sub')
-        ->setCellValue('BB1', 'Location')
-        ->setCellValue('BC1', 'det_rev_conf')
-        ->setCellValue('BD1', 'ident_history')
-        ->setCellValue('BE1', 'annotations')
-        ->setCellValue('BF1', 'habitat')
-        ->setCellValue('BG1', 'habitus')
-        ->setCellValue('BH1', 'aktualdatum')
-        ->setCellValue('BI1', 'eingabedatum')
+$objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
+        ->setCellValue('B1', 'Herbarium-Number/BarCode')
+        ->setCellValue('C1', 'Collection')
+        ->setCellValue('D1', 'Collection Number')
+        ->setCellValue('E1', 'Type information')
+        ->setCellValue('F1', 'Typified by')
+        ->setCellValue('G1', 'Taxon')
+        ->setCellValue('H1', 'Family')
+        ->setCellValue('I1', 'Collector')
+        ->setCellValue('J1', 'Date')
+        ->setCellValue('K1', 'Country')
+        ->setCellValue('L1', 'Admin1')
+        ->setCellValue('M1', 'Latitude')
+        ->setCellValue('N1', 'Longitude')
+        ->setCellValue('O1', 'Altitude lower')
+        ->setCellValue('P1', 'Altitude higher')
+        ->setCellValue('Q1', 'Label')
+        ->setCellValue('R1', 'det./rev./conf./assigned')
+        ->setCellValue('S1', 'ident. history')
+        ->setCellValue('T1', 'annotations')
 ;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
 
@@ -223,11 +149,7 @@ if (!$result) {
     echo $dbLink->error . "<br>\n";
 }
 
-$csvHeader = "<tr><td>Specimen ID</td><td>Herbarium-Number/BarCode</td><td>Collection</td><td>Collection Number</td><td>Type information</td>".
-             "<td>Typified by</td><td>Taxon</td><td>Family</td><td>Collector</td><td>Date</td><td>Country</td><td>Admin1</td><td>Latitude</td><td>Longitude</td>".
-             "<td>Altitude lower</td><td>Altitude higher</td>".
-             "<td>Label</td><td>det./rev./conf./assigned</td><td>ident. history</td><td>annotations</td></tr>";
-$csvData = "";
+$i = 2;
 while ($row = $result->fetch_array()) {
     $sql = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
@@ -304,36 +226,55 @@ while ($row = $result->fetch_array()) {
         $lon= "".number_format(round($lon,9), 9)."° ";
     }
 
-    $csvData .= "<tr>".
-                formatCell($rowSpecimen['specimen_ID']).
-                formatCell($rowSpecimen['source_code']." ".$rowSpecimen['HerbNummer']).
-                formatCell($rowSpecimen['coll_short']).
-                formatCell($rowSpecimen['CollNummer']).
-                formatCell(makeTypus(intval($rowSpecimen['specimen_ID']))).
-                formatCell($rowSpecimen['typified']).
-                formatCell(taxonWithHybrids($rowSpecimen)).
-                formatCell($rowSpecimen['family']).
-                formatCell($sammler).
-                formatCell("'".$rowSpecimen['Datum']).
-                formatCell($country).
-                formatCell($province).
-                formatCell($lat).
-                formatCell($lon).
-                formatCell($rowSpecimen['altitude_min']).
-                formatCell($rowSpecimen['altitude_max']).
-                formatCell($rowSpecimen['Fundort']).
-                formatCell($rowSpecimen['det']).
-                formatCell($rowSpecimen['taxon_alt']).
-                formatCell($rowSpecimen['Bemerkungen']).
-                "</tr>";
+    $objPHPExcelWorksheet->fromArray(array(
+        $rowSpecimen['specimen_ID'],
+        $rowSpecimen['source_code'] . " " . $rowSpecimen['HerbNummer'],
+        $rowSpecimen['coll_short'],
+        $rowSpecimen['CollNummer'],
+        makeTypus(intval($rowSpecimen['specimen_ID'])),
+        $rowSpecimen['typified'],
+        taxonWithHybrids($rowSpecimen),
+        $rowSpecimen['family'],
+        $sammler,
+        "'" . $rowSpecimen['Datum'],
+        $country,
+        $province,
+        $lat,
+        $lon,
+        $rowSpecimen['altitude_min'],
+        $rowSpecimen['altitude_max'],
+        $rowSpecimen['Fundort'],
+        $rowSpecimen['det'],
+        $rowSpecimen['taxon_alt'],
+        $rowSpecimen['Bemerkungen']
+    ), null, 'A' . $i);
+
+    $i++;
 }
 
-$csvData = str_replace("\r", "", $csvData); // embedded returns have "\r"
-
-if ($csvData == "") $csvData = "no matching records found\n";
-
-header("Content-type: application/octet-stream charset=utf-8");
-header("Content-Disposition: attachment; filename=results.xls");
-header("Pragma: no-cache");
-header("Expires: 0");
-echo chr(0xef).chr(0xbb).chr(0xbf)."<table>".$csvHeader.$csvData."</table>";
+switch (filter_input(INPUT_GET, 'type')) {
+    case 'csv':
+        // Redirect output to a client’s web browser (CSV)
+        header("Content-type: text/csv; charset=utf-8");
+        header("Content-Disposition: attachment; filename=specimens_download.csv");
+        header('Cache-Control: max-age=0');
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
+        $objWriter->save('php://output');
+        break;
+    case 'ods':
+        // Redirect output to a client’s web browser (OpenDocument)
+        header('Content-Type: application/vnd.oasis.opendocument.spreadsheet');
+        header('Content-Disposition: attachment;filename="specimens_download.ods"');
+        header('Cache-Control: max-age=0');
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'OpenDocument');
+        $objWriter->save('php://output');
+        break;
+    default:
+        // Redirect output to a client’s web browser (Excel2007)
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="specimens_download.xlsx"');
+        header('Cache-Control: max-age=0');
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+        $objWriter->save('php://output');
+}
+exit;
