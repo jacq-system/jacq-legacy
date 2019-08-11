@@ -364,14 +364,6 @@ if (strlen($typusText) > 0):
                 </b>
               </td>
             </tr>
-            <?php if ($accName): ?>
-            <tr>
-              <td align="right">Accepted Name</td>
-              <td><b>
-                <?php makeCell($accName); ?>
-                </b></td>
-            </tr>
-            <?php endif; ?>
             <tr>
               <td align="right">Family</td>
               <td><b>
@@ -462,7 +454,7 @@ if (strlen($typusText) > 0):
               </b></td>
             </tr>
 			<?php
-				if ($row['source_id'] == '29' || $row['source_id'] == '6' ){
+				if (($row['source_id'] == '29' || $row['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
                     echo "<tr>";
 					// create new id object
                     $id = new MyTripleID($row['HerbNummer']);
