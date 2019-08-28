@@ -37,40 +37,53 @@
           <div class="divider"></div>
           <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W, WU and WUP. Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a> . For requests and comments please contact the corresponding Director/Curator listed in the Index Herbariorum  directly.</p>
 
-          <h5>Other Herbaria / Botanical Specimen Databases</h5>
           <div class="divider"></div>
             <ul class="collapsible">
             <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Other Herbaria / Botanical Specimen Databases</div>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Other Virtual Herbaria & Aggregators</div>
               <div class="collapsible-body">
                 <h6><strong>Europe</strong></h6>
                 <ul>
-                  <li>AAU / <a href="http://herbarium.au.dk/database/">Aarhus University - Aarhus, Denmark</a></li>
-                  <li>E / <a href="http://elmer.rbge.org.uk/bgbase/vherb/bgbasevherb.php">Royal Botanic Garden Edinburgh - Edinburgh, Scotland</a></li>
+                  <li>AAU / <a href="https://www.aubot.dk/search_form.php">Aarhus University - Aarhus, Denmark</a></li>
+                  <li>BM / <a href="https://data.nhm.ac.uk/dataset/56e711e6-c847-4f99-915a-6894bb5c5dea/resource/05ff2255-c38a-40c9-b657-4ccb55ab2feb?view_id=6b611d29-1dcf-4c60-b6b5-4cbb69fdf4fe&filters=collectionCode%3ABOT">NHM - London, England</a></li>
+                  <li>BP / <a href="https://gallery.hungaricana.hu/en/Herbarium/">Hungarian Natural History Museum - Budapest, Hungary</a></li>
+                  <li>BR / <a href="http://www.br.fgov.be/research/COLLECTIONS/HERBARIUM/advancedsearch.php">Botanic Garden - Meise, Belgium</a></li> 
+                  <li>E / <a href="https://data.rbge.org.uk/search/herbarium/">Royal Botanic Garden Edinburgh - Edinburgh, Scotland</a></li>
                   <li>K / <a href="http://www.kew.org/herbcat/gotoHomePage.do">Royal Botanic Garden Kew - Richmond, England</a></li>
-                  <li>L, U, WAG / <a href="http://vstbol.leidenuniv.nl/">Nationaal Herbarium Nederland - Universities Leiden, Utrecht, Wageningen, The Netherlands</a></li>
-                  <li>MPU, NCY, P / <a href="http://coldb.mnhn.fr/colweb/form.do?model=SONNERAT.wwwsonnerat.wwwsonnerat.wwwsonnerat">MNHN - Paris, France</a></li>
-                  <li>Z, ZT / <a href="http://www.herbarien.uzh.ch/index.html">Zürcher Herbarien - Zurich, Switzerland</a></li>
+                  <li>L, U, WAG / <a href="https://bioportal.naturalis.nl/">Bioportal Naturalis - The Netherlands</a></li>
+                  <li>P & PC / <a href="https://science.mnhn.fr/institution/mnhn/item/search/form">MNHN - Paris, France</a></li>
+                  <li>Z, ZT / <a href="https://www.herbarien.uzh.ch/de/belegsuche.html">Zürcher Herbarien - Zurich, Switzerland</a></li>
                 </ul>
 
-                <h6><strong>Northamerica</strong></h6>
+                <h6><strong>North America</strong></h6>
                 <ul>
-                  <li>A, ECON, GH / <a href="http://kiki.huh.harvard.edu/databases/specimen_index.html">Harvard University Herbaria - Cambridge, MA</a></li>
-                  <li>F / <a href="http://emuweb.fieldmuseum.org/botany/detailed.php">FMNH Botany Collections - Field Museum, Chicago, IL</a></li>
-                  <li>MO / <a href="http://www.tropicos.org/">Tropicos Specimens Database - Missouri Botanical Garden, St. Louis, MO</a></li>
-                  <li>NY / <a href="http://sciweb.nybg.org/science2/vii2.asp">Virtual Herbarium NY Botanical Garden - New York, NY</a></li>
+                  <li>A, AMES, ECON, GH / <a href="https://kiki.huh.harvard.edu/databases/specimen_index.html">Harvard University Herbaria - Cambridge, MA, USA</a></li>
+                  <li>F / <a href="https://collections-botany.fieldmuseum.org/list">Field Museum - Botany Collections, Chicago, IL, USA</a></li>
+                  <li>MO / <a href="http://www.tropicos.org/SpecimenSearch.aspx">Missouri Botanical Garden, St. Louis, MO, USA</a></li>
+                  <li>NY / <a href="http://sweetgum.nybg.org/science/vh/">New York Botanical Garden - New York, NY, USA</a></li>
+                  <li>US / <a href="http://sweetgum.nybg.org/science/vh/">Smithsonian Institution - Washington, DC, USA</a></li>
+                  <li></li>
                 </ul>
 
-                <h6><strong>Southamerica</strong></h6>
+                <h6><strong>South America</strong></h6>
                 <ul>
-                  <li>COL / <a href="http://www.biovirtual.unal.edu.co/ICN/">Herbario Nacional - Bogota, Colombia</a></li>
-                  <li><a href="http://splink.cria.org.br/">Species link - CRIA, Brasil</a></li>
+                  <li>COL / <a href="http://www.biovirtual.unal.edu.co/en/collections/search/plants/">Herbario Nacional - Bogota, Colombia</a></li>
+                  <li>ALCB, ASE, BRBA, CEN, CEPEC, CESJ, CGMS, COR, CRI, DVPR, EAC, ECT, ESA, EVB, FIG, ECT, ESA, EVB, FIG, FLOR, FUEL, FURB, HACAM, HBR, HCF, HDCF, HEPH, HRCB, HSTM, HTO, HUCO, HUCP, HUEFS, HUEM, HUEMG, HUENF, HUFU, HUNEB, HUPG, HVASF, IBGE, ICN, LUSC, MAC, MBM, MBML, MG, MUFAL, PEL, PMSP, RB, RBR, REAL, RFA, RFFP, RON, SJRP, SPF, UB, UFRN, UNIP, UNOP, UPCB, VIES / <a href="http://reflora.jbrj.gov.br/reflora/herbarioVirtual/ConsultaPublicoHVUC/ConsultaPublicoHVUC.do">REFLORA - JBRJ, Brasil</a></li>
+                  <li><a href="http://inct.splink.org.br/">INCT - Herbário Virtual da Flora e dos Fungos - CRIA, Brasil ←║</a></li>
                 </ul>
 
                 <h6><strong>Asia</strong></h6>
                 <ul>
-                  <li>Chinese Virtual Herbarium / <a href="http://www.cvh.org.cn/">Chinese Academy of Sciences Inst. Botany - Beijing, China</a></li>
-                  <li>PE / <a href="http://pe.ibcas.ac.cn/herbs/herbariumsearch.aspx">Chinese Academy of Sciences Inst. Botany - Beijing, China</a></li>
+                  <li>HK / <a href="https://www.herbarium.gov.hk/search_form.aspx">Hong Kong Agriculture, Fisheries, and Conservation Department - Hong Kong, PR China</a></li>
+                  <li>PE / <a href="http://pe.ibcas.ac.cn/en/">Chinese Academy of Sciences Inst. Botany - Beijing, PR China</a></li>
+                </ul>
+
+                <h6><strong>║→ Aggregators ←║</strong></h6>
+                <ul>
+                  <li>PR China / <a href="http://www.cvh.ac.cn/en">Chinese Virtual Herbarium of China</a></li>
+                  <li>Germany / <a href="http://vh.gbif.de/vh/static/en_startpage.html">Virtual Herbarium Germany</a></li>
+                  <li>Sweden <a href="http://herbarium.emg.umu.se/">Sweden's Virtual Herbarium</a></li>
+                  <li>USA <a href="https://portal.idigbio.org/">Integrated Digitized Biocollections (iDigBio)</a></li>                  
                 </ul>
               </div>
             </li>
@@ -79,13 +92,14 @@
           <h5>Acknowledgements</h5>
           <div class="divider"></div>
           <div id="partners"> 
+            <div class="partnerlogo"><img src="assets/images/biocase.gif" alt="CETAF Logo"></div>
             <div class="partnerlogo"><img src="assets/images/biocase.gif" alt="Biocase Logo"></div>
             <div class="partnerlogo"><img src="assets/images/enbi.gif" alt="ENBI Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/gbif.jpg" alt="GBIF Logo"></div>
+            <div class="partnerlogo"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></div>
             <div class="partnerlogo"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></div>
             <div class="partnerlogo"><img src="assets/images/sp2keur.png" alt="sp2keur Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/tdwg.gif" alt="TDWG Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/synthesys.gif" alt="SYNTHESYS Logo"></div>
+            <div class="partnerlogo"><img src="assets/images/tdwg.png" alt="TDWG Logo"></div>
+            <div class="partnerlogo"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></div>
           </div>
         </div>
       </div>
@@ -364,7 +378,7 @@
                         </div>
                     </li>
                     <li>
-                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria (Herbaria)</div>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria - Herbaria</div>
                         <div class="collapsible-body">
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
@@ -378,7 +392,7 @@
                         </div>
                     </li>
                     <li>
-                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria (Living collections)</div>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Austria - Botanical Gardens</div>
                         <div class="collapsible-body">
                             <ul>
                                 <li><a href="http://www.botanik.univie.ac.at/hbv/">HBV // Hortus Boptanicus Vindobonensis</a></li>
@@ -408,7 +422,6 @@
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Germany</div>
                         <div class="collapsible-body">
                             <ul>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591">UBT // University of Bayreuth</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103">B // Botanischer Garten und Botanisches Museum Berlin-Dahlem</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128">DR // Institut für Botanik; Technische Universität Dresden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869">GAT // Leibniz Institute of Plant Genetics and Crop Plant Research (IPK); Gatersleben</a></li>
@@ -417,6 +430,7 @@
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506">LZ // Universität Leipzig</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020">MJG // Johannes Gutenberg-Universität; Mainz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507">OLD // Universität Oldenburg</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591">UBT // University of Bayreuth</a></li>
                             </ul>
                         </div>
                     </li>
@@ -457,12 +471,12 @@
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Russia</div>
                         <div class="collapsible-body">
                             <ul>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124398">SARAT // Herbarium Saratov State University</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124746">HERZ // Alexander Herzen Pedagogical University (St. Petersburg)</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125848">KFTA // Saint Petersburg S. M. Kirov Forestry Academy</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125849">LECB // Saint Petersburg University</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124216">NS // Central Siberian Botanical Garden (Novosibirsk)</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125943">NSK // Siberian Central Botanical Garden (Novosibirsk)</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124398">SARAT // Herbarium Saratov State University</a></li>
                             </ul>
                         </div>
                     </li>
@@ -522,27 +536,44 @@
           <div class="divider"></div>
           <ul class="collapsible">
             <li>
+              <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Nikolaus Joseph von Jacquin (1727-02-16/1817-10-26)</div>
+              <div class="collapsible-body">
+                <ul>
+                  <li><a href="https://www.ipni.org/a/12576-1">IPNI author</a></li>
+                  <li><a href="http://www.biographien.ac.at/oebl/oebl_J/Jacquin_Nicolaus-Joseph_1727_1817.xml?frames=yes">Österreichisches Biographisches Lexikon</a></li>
+                  <li><a href="https://www.wikidata.org/wiki/Q84497">WIKIDATA Person</a></li>
+                  <li><a href="https://bloodhound-tracker.net/Q84497">Blood Hound Tracker profile</a></li>
+                  <li><a href="http://https://kiki.huh.harvard.edu/databases/botanist_search.php?mode=details&id=4626">HUH Botanist</a></li>
+                  <li><a href="http://d-nb.info/gnd/118556452">GND - Deutsche National Bibliothek Normdatensatz</li>
+                </ul>
+              </div>
               <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Nomenclature / Taxonomy / Phylogeny / Floras</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://www.bgbm.org/iapt/nomenclature/code/default.htm">International Code of Botanical Nomenclature - ICBN</a></li>
-                  <li><a href="http://www.ipni.org/ipni/plantnamesearchpage.do">International Plant Names Index - IPNI</a></li>
-                  <li><a href="http://mobot.mobot.org/W3T/Search/vast.html">Wï¿½Tropicos</a></li>
-                  <li><a href="http://www.rbgkew.org.uk/data/vascplnt.html">Vascular Plant Families and Genera - Brummit</a></li>
-                  <li><a href="http://www.bgbm.fu-berlin.de/iapt/ncu/genera/NCUGQuery.htm">Names in Current Use - NCU</a></li>
-                  <li><a href="http://botany.si.edu/ing/">Index Nominum Genericorum - ING</a> @ <a href="http://www.nmnh.si.edu/botany/">US National Museum of Natural History - Smithsonian Institution - Botany Department</a>; U.S.A.</li>
-                  <li><a href="http://www.nhm.ac.uk/jdsml/research-curation/projects/linnaean-typification/">Linnaean Plant Names DB</a> @ <a href="http://www.nhm.ac.uk/">NHM London, UK</a></li>
+                  <li><a href="https://www.iapt-taxon.org/nomen/main.php">International Code of Nomenclature for algae, fungi, and plants - ICN</a></li>
+                  <li><a href="http://www.ipni.org/">International Plant Names Index - IPNI</a></li>
+                  <li><a href="http://www.tropicos.org/">W³Tropicos</a></li>
+                  <li><a href="http://data.kew.org/vpfg1992/vascplnt.html">Vascular Plant Families and Genera - Brummit</a></li>
+                  <li><a href="https://archive.bgbm.org/iapt/ncu/genera/NCUGQuery.htm">Names in Current Use - NCU</a></li>
+                  <li><a href="https://naturalhistory2.si.edu/botany/ing/">Index Nominum Genericorum - ING</a> @ <a href="http://www.nmnh.si.edu/botany/">US National Museum of Natural History - Smithsonian Institution - Botany Department</a>; U.S.A.</li>
+                  <li><a href="https://www.nhm.ac.uk/our-science/data/linnaean-typification/search/">Linnaean Plant Names DB</a> @ <a href="http://www.nhm.ac.uk/">NHM London, UK</a></li>
                   <li><a href="http://www.algaebase.org/">AlgaeBase</a></li>
-                  <li><a href="http://mobot.mobot.org/W3T/Search/most.html">W³MOST - Index to Mosses</a></li>
-                  <li><a href="http://homepages.caverock.net.nz/~bj/fern/">World Checklist of Ferns</a></li>
-                  <li><a href="http://www.speciesfungorum.org/Names/Names.asp">Index Fungorum - CABI</a></li>
+                  <li><a href="http://worldplants.webarchiv.kit.edu/ferns/index.php">World Ferns</a></li>
+                  <li><a href="http://www.indexfungorum.org/Names/Names.asp">Index Fungorum - CABI / Kew</a></li>
                   <li><a href="http://www.omnisterra.com/bot/pp_home.cgi">Parasitic Plants Database</a></li>
                   <li><a href="http://www.omnisterra.com/bot/cp_home.cgi">Carnivorous Plants Database</a></li>
-                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html">Angiosperm Phylogeny</a> @ <a href="http://www.mobot.org/">MO Botanical Garden</a></li>
+                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
                   <li><a href="http://ww2.bgbm.org/EuroPlusMed/query.asp">Euro+Med PlantBase</a> @ <a href="http://www.bgbm.org/">BG Berlin-Dahlem; Germany</a></li>
-                  <li><a href="http://rbg-web2.rbge.org.uk/FE/fe.html">Flora Europaea</a> @ <a href="http://www.rbge.org.uk/">RBG Edinburgh; UK</a></li>
-                  <li>Standardliste der Farn und Blütenpflanzen Deutschlands - <a href="http://www.ulmer.de/T9pd3GIR3EZJ1G1x0JIB6GIExAH+lCGNBGIExAn6lA+++.HTML">Wisskirchen & Haeupler 1998</a></li>
+                  <li><a href="https://www.kp-buttler.de/florenliste/">Florenliste von Deutschland - K.P. Buttler et al, DE</a></li>
+                  <li><a href="https://www.tela-botanica.org/">Tela Botanica, FR</a></li>
+                  <li><a href="https://www.infoflora.ch/de/">Infoflora, CH</a></li>
+                  <li><a href="https://pladias.cz/">PLADIAS - Flora and Vegetation, CZ</a></li>
+                  <li><a href="http://www.anthos.es/">Anthos, ES & PT</a></li>
+                  <li><a href="https://flora-on.pt/">flora • on, PT</a></li>
+                  <li><a href="https://floraionica.univie.ac.at/">Flora Ionica, GR</a></li>
+                  <li><a href="https://www.greekmountainflora.info/">Mountain Flora of Greece, GR</a></li>                                  
                   <li>Liste der Gefäßpflanzen Mitteleuropas - Ehrendorfer 1973</li>
+                  <li><a href="http://conosur.floraargentina.edu.ar/">Flora del Cono Sur</a></li>
                 </ul>
               </div>
             </li>
@@ -550,11 +581,11 @@
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Authors, Botanists, Collectors</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://www.ipni.org/ipni/authorsearchpage.do">IPNI - Brummitt & Powell / Authors of Plant Names</a></li>
-                  <li><a href="http://asaweb.huh.harvard.edu:8080/databases/botanist_index.html">Index to Botanists</a> @ <a href="http://www.huh.harvard.edu/">Harvard University Herbaria</a>; U.S.A.</li>
-                  <li>Taxonomic Literature ed. 2 - <a href="http://tl2.idcpublishers.info/">online</a> @ <a href="http://www.idc.nl/">IDC Publishers</a></li>
+                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html">Index to Botanists</a> @ <a href="https://huh.harvard.edu/">Harvard University Herbaria</a>; U.S.A.</li>
+                  <li><a href="https://viaf.org/ ">Virtual Authority File - VIAF</a></li>                                  
+                  <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm">online</a></a></li>
                   <li>
-                    <a href="http://www.botanik.univie.ac.at/iapt/s_regnumvegetabile.php">Regnum Vegetabile</a> @ <a href="http://www.iapt-taxon.org/">International Association of Plant Taxonomists</a>
+                    <a href="https://www.iaptglobal.org/regnum-vegetabile">Regnum Vegetabile</a> @ <a href="https://www.iaptglobal.org/">International Association of Plant Taxonomists</a>
                     <br>Stafleu & Cowan 1976 ff. - vols. 94, 98, 105, 110, 112, 115, 116;
                     <br>Stafleu & Mennega 1992 ff. RV vols. 125, 130, 132, 134, 135, 137
                   </li>
@@ -565,13 +596,9 @@
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Literature</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://huntbot.andrew.cmu.edu/HIBD/Publications/HI-Pubs/Pub-BPHS.shtml">Botanico Periodicum Huntianum</a> @ <a href="http://huntbot.andrew.cmu.edu/">Hunt Institute for Botanical Documentation</a>; U.S.A.</li>
-                  <li><a href="http://www.ipni.org/ipni/publicationsearchpage.do">IPNI - Publications</a></li>
-                  <li><a href="http://www.ubka.uni-karlsruhe.de/hylib/en/kvk.html">KVK — Karlsruher Virtueller Katalog</a> @ <a href="http://www.uni-karlsruhe.de/">Karlsruhe Universität</a>; Germany</li>
-                  <li><a href="http://kbd.kew.org/kbd/searchpage.do">KBD - Kew Bibliographic Databases</a> @ <a href="http://www.kew.org/">RBG Kew</a>; UK</li>
-                  <li><a href="http://cameo.library.cmu.edu/">Carnegie Mellon OPAC, incl. Hunt Library</a> @ <a href="http://www.cmu.edu/">Carnegie Mellon University</a>; U.S.A.</li>
-                  <li><a href="http://www.botanicus.org/">Botanicus - digitized botanical literature</a> @ <a href="http://www.mobot.org/">Missouri Botanical Garden</a>; U.S.A.</li>
-                  <li><a href="http://www.biodiversitylibrary.org/">Biodiversity Heritage Library - digitized biodiversity literature</a></li>
+                  <li><a href="https://huntbot.org/bph/">Botanico Periodicum Huntianum</a> @ <a href="http://www.huntbotanical.org">Hunt Institute for Botanical Documentation</a>; U.S.A.</li>
+                  <li><a href="https://kvk.bibliothek.kit.edu/index.html?lang=en">KVK — Karlsruher Virtueller Katalog</a> @ <a href="http://www.kit.edu/">Karlsruher Institut für Technologie</a>; Germany</li>
+                  <li><a href="https://www.biodiversitylibrary.org/">Biodiversity Heritage Library - digitized biodiversity literature</a></li>
                 </ul>
               </div>
             </li>
@@ -579,8 +606,7 @@
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Geography</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://earth-info.nga.mil/gns/html/index.html">GeoNet Names Server</a> - geographical names gazetteer worldwide @ <a href="http://www.usgs.gov/">US Geological Survey</a>; U.S.A.</li>
-                  <li><a href="http://geonames.usgs.gov/pls/gnispublic/">Geographical Names Information System GNIS</a> - geographical gazetteer United States and territories @ <a href="http://www.nga.mil/">National Geospatial-Intelligence Agency</a>; U.S.A.</li>
+                  <li><a href="http://geonames.nga.mil/gns/html/">GeoNet Names Server</a> - geographical names gazetteer worldwide @ <a href="http://www.usgs.gov/">US Geological Survey</a>; U.S.A.</li>
                   <li><a href="http://www.austrianmap.at/">Austrian Map</a> - geographical names of Austria and online map @ <a href="http://www.bev.gv.at/">Bundesamt für Eich- & Vermessungswesen</a>; Austria</li>
                 </ul>
               </div>
@@ -589,7 +615,7 @@
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Herbaria</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://sciweb.nybg.org/science2/IndexHerbariorum.asp">Index Herbariorum</a> @ <a href="http://www.nybg.org/">NY Botanical Garden</a>; U.S.A.</li>
+                  <li><a href="http://sweetgum.nybg.org/science/ih/">Index Herbariorum</a> @ <a href="http://www.nybg.org/">NY Botanical Garden</a>; U.S.A.</li>
                 </ul>
               </div>
             </li>
