@@ -14,8 +14,23 @@
     <link href="assets/fontawesome/css/all.css" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="shortcut icon" href="http://test.jacq.org/output.new.heimo/JACQ_LOGO.png"/>
-  </head>
+    <link rel="shortcut icon" href="JACQ_LOGO.png"/>
+    <!-- Matomo -->
+    <script type="text/javascript">
+      var _paq = window._paq || [];
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//iiif.jacq.org/piwik/matomo/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <!-- End Matomo Code -->
+</head>
   <body>
     <div id="navbar" class="navbar-fixed">
       <nav class="nav-extended">
@@ -50,7 +65,7 @@
                   <li>AAU / <a href="https://www.aubot.dk/search_form.php" target="_blank">Aarhus University - Aarhus, Denmark</a></li>
                   <li>BM / <a href="https://data.nhm.ac.uk/dataset/56e711e6-c847-4f99-915a-6894bb5c5dea/resource/05ff2255-c38a-40c9-b657-4ccb55ab2feb?view_id=6b611d29-1dcf-4c60-b6b5-4cbb69fdf4fe&filters=collectionCode%3ABOT" target="_blank">NHM - London, England</a></li>
                   <li>BP / <a href="https://gallery.hungaricana.hu/en/Herbarium/" target="_blank">Hungarian Natural History Museum - Budapest, Hungary</a></li>
-                  <li>BR / <a href="http://www.br.fgov.be/research/COLLECTIONS/HERBARIUM/advancedsearch.php" target="_blank">Botanic Garden - Meise, Belgium</a></li> 
+                  <li>BR / <a href="http://www.br.fgov.be/research/COLLECTIONS/HERBARIUM/advancedsearch.php" target="_blank">Botanic Garden - Meise, Belgium</a></li>
                   <li>E / <a href="https://data.rbge.org.uk/search/herbarium/" target="_blank">Royal Botanic Garden Edinburgh - Edinburgh, Scotland</a></li>
                   <li>K / <a href="http://apps.kew.org/herbcat/navigator.do" target="_blank">Royal Botanic Garden Kew - Richmond, England</a></li>
                   <li>L, U, WAG / <a href="https://bioportal.naturalis.nl/" target="_blank">Bioportal Naturalis - The Netherlands</a></li>
@@ -81,12 +96,12 @@
 
                 <h6><strong>║→ Aggregators ←║</strong></h6>
                 <ul>
-                  <li>Brasil / <a href="http://reflora.jbrj.gov.br/reflora/herbarioVirtual/ConsultaPublicoHVUC/ConsultaPublicoHVUC.do" target="_blank">REFLORA - JBRJ</a></li>
                   <li>Brasil / <a href="http://inct.splink.org.br/" target="_blank">INCT - Herbário Virtual da Flora e dos Fungos - CRIA</a></li>
+                  <li>Brasil / <a href="http://reflora.jbrj.gov.br/reflora/herbarioVirtual/ConsultaPublicoHVUC/ConsultaPublicoHVUC.do" target="_blank">REFLORA - JBRJ</a></li>
                   <li>PR China / <a href="http://www.cvh.ac.cn/en" target="_blank">Chinese Virtual Herbarium of China</a></li>
                   <li>Germany / <a href="http://vh.gbif.de/vh/static/en_startpage.html" target="_blank">Virtual Herbarium Germany</a></li>
                   <li>Sweden / <a href="http://herbarium.emg.umu.se/" target="_blank">Sweden's Virtual Herbarium</a></li>
-                  <li>USA / <a href="https://portal.idigbio.org/" target="_blank">Integrated Digitized Biocollections (iDigBio)</a></li>                  
+                  <li>USA / <a href="https://portal.idigbio.org/" target="_blank">Integrated Digitized Biocollections (iDigBio)</a></li>
                 </ul>
               </div>
             </li>
@@ -94,39 +109,39 @@
 
           <h5>Acknowledgements</h5>
           <div class="divider"></div>
-          <div id="partners"> 
-            <div class="partnerlogo"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/biocase.gif" alt="Biocase Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/enbi.gif" alt="ENBI Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></div>
+          <div id="partners">
+            <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
           </div>
-          <div id="partners"> 
-            <div class="partnerlogo"><img src="assets/images/tdwg.png" alt="TDWG Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/sp2keur.png" alt="sp2keur Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></div>
-          </div>
-          <div id="partners"> 
-            <div class="partnerlogo"><img src="assets/images/univie.png" alt="UNIVIE Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/oeaw.png" alt="OEAW Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></div>
-            <div class="partnerlogo"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></div>
-          </div>
-          <div id="partners"> 
-            <div class="partnerlogo"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></div>
+          <div id="partners">
+            <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
+            <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
+            <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
+            <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
+            </div>
+          <div id="partners">
+            <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
             <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
+            <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
+            <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
+            <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
           </div>
         </div>
       </div>
       <div id="database">
         <div class="row">
           <div class="col s12">
-            <h5 class="tooltipped" data-position="bottom" data-tooltip="#info">Database Search <a class="modal-trigger" href="#search-info"><i class="far fa-question-circle fa-sm"></i></a></h5>  
+            <h5 class="tooltipped" data-position="bottom" data-tooltip="#info">Database Search <a class="modal-trigger" href="#search-info"><i class="far fa-question-circle fa-sm"></i></a></h5>
             <!-- Search Info Modal -->
             <div id="search-info" class="modal">
               <div class="modal-content">
                 <h4>Search Tips</h4>
-                <blockquote>       
+                <blockquote>
                   <p>The Search is <strong>not case sensitive</strong>.</p>
                   <p>Fields are automatically <strong>linked by AND</strong></p>
                   <p>For partial strings the <strong>% sign can be used as a wildcard</strong></p>
@@ -552,12 +567,13 @@
           <div class="divider"></div>
           <ul class="collapsible">
             <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Nikolaus Joseph von Jacquin (1727-02-16/1817-10-26)</div>
+              <div class="collapsible-header"><i class="fas fa-angle-down fa-sm"></i>Nikolaus Joseph von Jacquin (* 1727-02-16 Leiden / † 1817-10-26 Wien)</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="http://www.biographien.ac.at/oebl/oebl_J/Jacquin_Nicolaus-Joseph_1727_1817.xml?frames=yes" target="_blank">Österreichisches Biographisches Lexikon</a></li>
-                  <li><a href="https://www.ipni.org/a/12576-1" target="_blank">IPNI author</a> / <a href="http://viaf.org/viaf/59120694" target="_blank">VIAF Author</a> / <a href="https://www.wikidata.org/wiki/Q84497" target="_blank">WIKIDATA Person</a> / <a href="http://d-nb.info/gnd/118556452" target="_blank">GND - Deutsche National Bibliothek Normdatensatz</a> / <a href="https://kiki.huh.harvard.edu/databases/botanist_search.php?mode=details&id=4626" target="_blank">HUH Botanist</a></li>
-                  <li><a href="https://bloodhound-tracker.net/Q84497" target="_blank">Blood Hound Tracker profile</a></li>
+                  <li><b><a href="https://www.ipni.org/a/12576-1" target="_blank">IPNI author JACQ.</a></b></li>
+                  <li><a href="http://viaf.org/viaf/59120694" target="_blank">VIAF Author</a> / <a href="https://www.wikidata.org/wiki/Q84497" target="_blank">WIKIDATA Person</a> / <a href="http://d-nb.info/gnd/118556452" target="_blank">GND - Deutsche National Bibliothek Normdatensatz</a> / <a href="https://kiki.huh.harvard.edu/databases/botanist_search.php?mode=details&id=4626" target="_blank">HUH Botanist</a></li>
+                  <li><b><a href="https://bloodhound-tracker.net/Q84497" target="_blank">Blood Hound Tracker profile</a></b></li>
+                  <li><a href="http://www.biographien.ac.at/oebl/oebl_J/Jacquin_Nicolaus-Joseph_1727_1817.xml?frames=yes" target="_blank">Österreichisches Biographisches Lexikon (german)</a> / <a href="https://geschichte.univie.ac.at/en/persons/nikolaus-joseph-freiherr-von-jacquin-dr-med" target="_blank">Biography due to his role as rector of the University of Vienna (german)</a></li>
                 </ul>
               </div>
             </li>
@@ -566,19 +582,21 @@
               <div class="collapsible-body">
                 <ul>
                   <li><a href="https://www.iapt-taxon.org/nomen/main.php" target="_blank">International Code of Nomenclature for algae, fungi, and plants - ICN</a></li>
-                  <li><a href="https://www.ishs.org/scripta-horticulturae/international-code-nomenclature-cultivated-plants-ninth-edition" target="_blank">International Code of Nomenclature for Cultivated Plants (ICNCP), 9th ed., 2016</a></li> 
+                  <li><a href="https://www.ishs.org/scripta-horticulturae/international-code-nomenclature-cultivated-plants-ninth-edition" target="_blank">International Code of Nomenclature for Cultivated Plants (ICNCP), 9th ed., 2016</a></li>
                   <li><a href="http://www.ipni.org/" target="_blank">International Plant Names Index - IPNI</a></li>
+              <div class="divider"></div>
                   <li><a href="http://www.tropicos.org/" target="_blank">W³Tropicos</a></li>
                   <li><a href="http://data.kew.org/vpfg1992/vascplnt.html" target="_blank">Vascular Plant Families and Genera - Brummit</a></li>
-                  <li><a href="https://archive.bgbm.org/iapt/ncu/genera/NCUGQuery.htm" target="_blank">Names in Current Use - NCU</a></li>
                   <li><a href="https://naturalhistory2.si.edu/botany/ing/" target="_blank">Index Nominum Genericorum - ING</a> @ <a href="https://naturalhistory.si.edu/research/botany" target="_blank">US National Museum of Natural History - Smithsonian Institution - Botany Department</a>; U.S.A.</li>
                   <li><a href="https://www.nhm.ac.uk/our-science/data/linnaean-typification/search/" target="_blank">Linnaean Plant Names DB</a> @ <a href="http://www.nhm.ac.uk/" target="_blank">NHM London, UK</a></li>
+              <div class="divider"></div>
                   <li><a href="http://www.algaebase.org/" target="_blank">AlgaeBase</a></li>
                   <li><a href="http://worldplants.webarchiv.kit.edu/ferns/index.php" target="_blank">World Ferns</a></li>
                   <li><a href="http://www.indexfungorum.org/Names/Names.asp" target="_blank">Index Fungorum - CABI / Kew</a></li>
-                  <li><a href="http://www.omnisterra.com/bot/pp_home.cgi" target="_blank">Parasitic Plants Database</a></li>
-                  <li><a href="http://www.omnisterra.com/bot/cp_home.cgi" target="_blank">Carnivorous Plants Database</a></li>
+                  <li><a href="http://www.mycobank.org/" target="_blank">Mycobank</a></li>
+                <div class="divider"></div>
                   <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html" target="_blank">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
+              <div class="divider"></div>
                   <li><a href="http://ww2.bgbm.org/EuroPlusMed/query.asp" target="_blank">Euro+Med PlantBase</a> @ <a href="http://www.bgbm.org/" target="_blank">BG Berlin-Dahlem; Germany</a></li>
                   <li><a href="https://www.kp-buttler.de/florenliste/" target="_blank">Florenliste von Deutschland - K.P. Buttler et al, DE</a></li>
                   <li><a href="https://www.tela-botanica.org/" target="_blank">Tela Botanica, FR</a></li>
@@ -587,7 +605,7 @@
                   <li><a href="http://www.anthos.es/" target="_blank">Anthos, ES & PT</a></li>
                   <li><a href="https://flora-on.pt/" target="_blank">flora • on, PT</a></li>
                   <li><a href="https://floraionica.univie.ac.at/" target="_blank">Flora Ionica, GR</a></li>
-                  <li><a href="https://www.greekmountainflora.info/" target="_blank">Mountain Flora of Greece, GR</a></li>                                  
+                  <li><a href="https://www.greekmountainflora.info/" target="_blank">Mountain Flora of Greece, GR</a></li>
                   <li>Liste der Gefäßpflanzen Mitteleuropas - Ehrendorfer 1973</li>
                   <li><a href="http://conosur.floraargentina.edu.ar/" target="_blank">Flora del Cono Sur</a></li>
                 </ul>
@@ -597,7 +615,7 @@
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Authors, Botanists, Collectors</div>
               <div class="collapsible-body">
                 <ul>
-                  <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>                                  
+                  <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>
                   <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank">Index to Botanists</a> @ <a href="https://huh.harvard.edu/" target="_blank">Harvard University Herbaria</a>; U.S.A.</li>
                   <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></a></li>
                   <li>
@@ -615,6 +633,7 @@
                   <li><a href="https://huntbot.org/bph/" target="_blank">Botanico Periodicum Huntianum</a> @ <a href="http://www.huntbotanical.org" target="_blank">Hunt Institute for Botanical Documentation</a>; U.S.A.</li>
                   <li><a href="https://kvk.bibliothek.kit.edu/index.html?lang=en" target="_blank">KVK — Karlsruher Virtueller Katalog</a> @ <a href="http://www.kit.edu/" target="_blank">Karlsruher Institut für Technologie</a>; Germany</li>
                   <li><a href="https://www.biodiversitylibrary.org/" target="_blank">Biodiversity Heritage Library - digitized biodiversity literature</a></li>
+                  <li><a href="https://bibdigital.rjb.csic.es/" target="_blank">Biblioteca Digital del Real Jardín Botánico Madrid</a></li>
                 </ul>
               </div>
             </li>
@@ -643,7 +662,7 @@
     <div id="footer-wrapper">
       <div class="divider"></div>
       <div id="footer">
-        <a href="https://www.bgbm.org/en/imprint">Imprint</a>
+        <a href="imprint_citation_privacy.htm">Imprint | Citation | Privacy</a>
       </div>
     </div>
     <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
