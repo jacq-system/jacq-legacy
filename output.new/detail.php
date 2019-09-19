@@ -167,20 +167,35 @@ tbl_tax_status
     <meta http-equiv="“cache-control“" content="“no-cache“">
     <meta http-equiv="“pragma“" content="“no-cache“">
     <meta http-equiv="“expires“" content="“0″">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!--    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
     <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen,projection"/>
     <link href="assets/fontawesome/css/all.css" rel="stylesheet">
     <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script type="text/javascript" language="JavaScript"><!--
-    function showPicture(url) {
-      MeinFenster =
-      window.open(url,
-                  "Picture",
-                  "width=700,height=500,top=100,left=100,resizable,scrollbars");
-      MeinFenster.focus();
-    }
-  --></script>
+    <script type="text/javascript" language="JavaScript"><!--
+      function showPicture(url) {
+        MeinFenster =
+        window.open(url,
+                    "Picture",
+                    "width=700,height=500,top=100,left=100,resizable,scrollbars");
+        MeinFenster.focus();
+      }
+    --></script>
+    <!-- Matomo -->
+    <script type="text/javascript">
+      var _paq = window._paq || [];
+      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+      _paq.push(['trackPageView']);
+      _paq.push(['enableLinkTracking']);
+      (function() {
+        var u="//iiif.jacq.org/piwik/matomo/";
+        _paq.push(['setTrackerUrl', u+'matomo.php']);
+        _paq.push(['setSiteId', '1']);
+        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+      })();
+    </script>
+    <!-- End Matomo Code -->
 
 </head>
 <body>
@@ -524,9 +539,9 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
            echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
        } else {
            echo "<td valign='top' align='center' colspan='2'>
-               
-        <iframe title=\"Mirador\" width=\"100%\" height=\"800px\" src=\"$iiif/?manifest=$manifest\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe>     
-           
+
+        <iframe title=\"Mirador\" width=\"100%\" height=\"800px\" src=\"$iiif/?manifest=$manifest\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe>
+
         </td>";
        }
 

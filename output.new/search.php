@@ -291,5 +291,3 @@ if (!empty($_POST['submit']) || !empty($_GET['search'])) {
     if (SID!="") { $location = $location."?".SID; }
     header($location);
 }
-
-?>

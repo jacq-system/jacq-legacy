@@ -172,7 +172,11 @@ function doRedirectShowPic($picdetails) {
         $identifiers = implode($picinfo['pics'], ',');
 
         // Construct URL to viewer
-        $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
+        if (in_array($picdetails['originalFilename'], $identifiers)) {
+            $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
+        } else {
+            $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picinfo['pics'][0] . '&identifiers=' . $identifiers;
+        }
     }
     else if ($picdetails['is_djatoka'] == '2') {
         // Get additional identifiers (if available)
