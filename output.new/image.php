@@ -466,23 +466,13 @@ function getPicDetails($request) {
         }
     }
 
-    $sql = "
-            SELECT
-            id.`imgserver_IP`,
-            id.`img_service_directory`,
-            id.`is_djatoka`,
-            id.`HerbNummerNrDigits`,
-            id.`key`,
-            mc.`coll_short_prj`,
-            s.`HerbNummer`,s.`Bemerkungen`
-            FROM
-            `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-            LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc
-            ON mc.`collectionID` = s.`collectionID`
-            LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_img_definition` id
-            ON id.`source_id_fk` = mc.`source_id`
-            WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'
-            ";
+    $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
+             mc.`coll_short_prj`,
+             s.`HerbNummer`, s.`Bemerkungen`
+            FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
+             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
+            WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'";
 
     if ($debug) {
         print_r($sql);
@@ -496,8 +486,9 @@ function getPicDetails($request) {
             print_r($row);
         }
 
-        $url = 'http://' . $row['imgserver_IP'];
-        $url .= ($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '';
+        $url = ((!empty($row['imgserver_Prot'])) ? $row['imgserver_Prot'] : "http") . '://'
+             . $row['imgserver_IP']
+             . (($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '/');
 
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);

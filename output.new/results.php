@@ -54,7 +54,8 @@ tbl_tax_systematic_categories
   <table border="0" cellpadding="0" cellspacing="0" width="800">
     <tr>
       <td valign="top" colspan="9">
-        <?php
+
+<?php
 if (isset($_GET['order']) && $_GET['order'] == 2) {
     $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer";
 } else {
@@ -108,46 +109,48 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
 
 
 //echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
-echo "<div align='center'><table width='100%'>\n"
-   . "<tr><td colspan='2'><b>" . $nrRows . " record" . (($nrRows > 1) ? "s" : "") . " found</b></td>\n";
-
 ?>
-<td colspan="7" align="right">
-<form style="display:inline;" action="javascript:googleMap();" method="post">
-   <button class="btn-flat waves-effect waves-green" type="button" name="action" value="Create map" onClick="googleMap()">Create map
-  </button>
-</form>
-            <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
-              <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
-            </form>
-            <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
-                <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
-            </form>
-        </td></tr>
+        <div align='center'>
+          <table width='100%'>
+            <tr>
+              <td colspan='2'><b><?php echo $nrRows; ?> record<?php echo ($nrRows > 1) ? "s" : ""; ?> found</b></td>
+              <td colspan="7" align="right">
+                <?php
+                    //<form style="display:inline;" action="javascript:googleMap();" method="post">
+                    //   <button class="btn-flat waves-effect waves-green" type="button" name="action" value="Create map" onClick="googleMap()">Create map
+                    //  </button>
+                    //</form>
+                ?>
+                <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
+                  <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
+                </form>
+                <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
+                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td colspan="9" align="center" valign="center">
+                <?php echo $navigation; ?>
+                <div class='progress progress-paging'>
+                  <div class='indeterminate'></div>
+                </div>
+              </td>
+            </tr>
+          </table>
 
-<tr><td colspan="9" align="center" valign="center">
+          <table id="result-table" class="striped responsive-table">
+            <tr>
+              <th></th>
+              <th class="resulttax">Taxon</th>
+              <th class="resultcol">Collector</th>
+              <th class="result">Date</th>
+              <th class="result">Location</th>
+              <th class="result">Typus</th>
+              <th class="result">Collection Herb.#</th>
+              <th class="result">Lat/Lon</th>
+            </tr>
 
-<?php
-echo $navigation
-   ."<div id='' class='progress progress-paging'>\n"
-   ."<div class='indeterminate'></div>\n"
-   ."</div>\n" 
-   ."</td></tr>\n"
-   . "</tbody>\n"
-   . "</table>\n";
-
-?>
-<table id="result-table" class="striped responsive-table">
-  <tr>
-      <th></th>
-      <th class="resulttax">Taxon</th>
-      <th class="resultcol">Collector</th>
-      <th class="result">Date</th>
-      <th class="result">Location</th>
-      <th class="result">Typus</th>
-      <th class="result">Collection Herb.#</th>
-      <th class="result">Lat/Lon</th>
- </tr>
 <?php
 while ($row = $result->fetch_array()) {
     echo "<tr>\n";
@@ -177,20 +180,12 @@ while ($row = $result->fetch_array()) {
     if (strlen($image) > 0) {
         echo "<td class=\"result\">";
         if ($link) {
-            if ($row['source_id'] == '48' || $row['source_id'] == '50' ){
-                $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
-                if ($row['source_id'] == '29'){
-                    $iiif='http://iiif.bgbm.org';
-                }else{
-                    $iiif='http://iiif.jacq.org';
-                }
-                echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
-                    . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>&nbsp;
-                   <a href=\"$iiif/?manifest=$manifest\" target=\"_blank\">"
-                    . "<img border=\"2\" height=\"15\" src=\"images/logo-iiif.png\" width=\"15\"></a>";
-            } else {
-                echo "<a href=\"image.php?filename={$row['specimen_ID']}&method=show\" target=\"imgBrowser\">"
-                    . "<img border=\"2\" height=\"15\" src=\"images/$image\" width=\"15\"></a>";
+            echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
+               . "<img border='2' height='15' src='images/$image' width='15'></a>";
+            if ($row['iiif_capable']) {
+                $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+                echo "&nbsp;<a href='https://" . $row['iiif_proxy'] . "/" . $row['iiif_dir'] . "?manifest=$manifest' target='_blank'>"
+                   . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
             }
         } else {
             echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
@@ -275,16 +270,14 @@ while ($row = $result->fetch_array()) {
 
     echo "</tr>\n";
 }
-echo "</table></div>\n";
 ?>
+          </table>
+        </div>
       </td>
     </tr>
     <tr>
       <td valign="top" colspan="9" align="center">
-
-
-  <?php echo $navigation; ?>
-
+        <?php echo $navigation; ?>
       </td>
     </tr>
   </table>
