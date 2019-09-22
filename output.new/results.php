@@ -184,7 +184,7 @@ while ($row = $result->fetch_array()) {
                . "<img border='2' height='15' src='images/$image' width='15'></a>";
             if ($row['iiif_capable']) {
                 $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
-                echo "&nbsp;<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
+                echo "&nbsp;<a href='http://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
             }
         } else {
