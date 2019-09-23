@@ -183,8 +183,9 @@ while ($row = $result->fetch_array()) {
             echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
                . "<img border='2' height='15' src='images/$image' width='15'></a>";
             if ($row['iiif_capable']) {
+                $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
                 $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
-                echo "&nbsp;<a href='http://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
+                echo "&nbsp;<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
             }
         } else {

@@ -524,9 +524,10 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     if ($picdetails['is_djatoka'] == '2') {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
+            $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
             $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
             echo "<iframe title='Mirador' width='100%' height='800px' "
-               . "src='http://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
+               . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
         } else {
             $file = rawurlencode(basename($picdetails['specimenID']));
