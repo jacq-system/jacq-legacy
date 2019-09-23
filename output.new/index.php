@@ -166,20 +166,19 @@
                   <select name="source_name">
                       <option value="" selected>Search all</option>
                       <?php
-
                       $result = $dbLink->query("SELECT `source_name`
-                                          FROM `meta`
-                                          WHERE `source_id`
-                                          IN (
-                                            SELECT `source_id`
-                                            FROM `tbl_management_collections`
-                                            WHERE `collectionID`
-                                            IN (
-                                              SELECT DISTINCT `collectionID`
-                                              FROM `tbl_specimens`
-                                            )
-                                          )
-                                          ORDER BY `source_name`");
+                                                FROM `meta`
+                                                WHERE `source_id`
+                                                IN (
+                                                  SELECT `source_id`
+                                                  FROM `tbl_management_collections`
+                                                  WHERE `collectionID`
+                                                  IN (
+                                                    SELECT DISTINCT `collectionID`
+                                                    FROM `tbl_specimens`
+                                                  )
+                                                )
+                                                ORDER BY `source_name`");
                       while ($row = $result->fetch_array()) {
                           echo "<option value=\"{$row['source_name']}\"";
                           if ($source_name == $row['source_name']) {

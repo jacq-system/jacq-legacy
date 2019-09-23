@@ -226,7 +226,7 @@ if (isset($_GET['ID'])) {
 $query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
-           mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, s.typified,
+           mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.typified,
            s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
            s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
@@ -317,166 +317,161 @@ if ($row['ncbi_accession']) {
 }
 ?>
 <div class="container">
-               <table class="striped">
-         <tr>
-                  <td align="right" width="30%">Stable identifier</td>
-                  <td><b>
-                          <?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?>
-                      </b>
-                  </td>
-              </tr>
+  <table class="striped">
+    <tr>
+      <td align="right" width="30%">Stable identifier</td>
+      <td>
+        <b><?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" width="30%">Collection Herb.#</td>
+      <td><b>
+        <?php makeCell(collectionID($row)); ?>
+         </b>
+        </td>
+    </tr>
+    <tr>
+      <td align="right">Stored under taxonname</td>
+      <td><b>
+        <?php makeCell($taxon); ?>
+        </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+      </td>
+    </tr>
+    <?php if ($accName): ?>
+    <tr>
+      <td align="right">Accepted name</td>
+      <td><b>
+        <?php makeCell($accName); ?>
+        </b></td>
+    </tr>
+    <?php endif; ?>
+    <tr>
+      <td align="right">Family</td>
+      <td><b>
+        <?php makeCell($row['family']); ?>
+        </b></td>
+    </tr>
+    <tr>
+      <td align="right">Det./rev./conf./assigned</td>
+      <td>
+        <b><?php makeCell($row['det']); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Ident. history</td>
+      <td>
+          <b><?php makeCell($row['taxon_alt']); ?></b>
+      </td>
+    </tr>
+    <?php
+    $typusText = makeTypus($ID);
+    if (strlen($typusText) > 0) {
+      makeCell($typusText);
+    }
+    ?>
+    <tr>
+      <td align="right">Collector</td>
+      <td>
+        <b><?php makeCell($sammler);?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Date</td>
+      <td align="left">
+        <b><?php makeCell($row['Datum']); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Location</td>
+      <td><b>
+        <?php
+          $text = $row['nation_engl'];
+          if (strlen(trim($row['provinz'])) > 0) {
+              $text .= " / " . trim($row['provinz']);
+          }
+          if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
+              $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
+          } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
+              $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
+          } else {
+              $lat = 0;
+          }
+          if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
+              $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
+          } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
+              $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
+          } else {
+              $lon = 0;
+          }
+          if ($lat != 0 || $lon != 0) {
+              $text .= " &mdash; " . round($lat,2) . "&deg; / " . round($lon,2) . "&deg; "
+                     . "<a href='http://www.mapquest.com/maps/map.adp?"
+                     .  "latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3' target='_blank'>"
+                     . "<img border='0' height='15' src='images/mapquest.png' width='15'></a>&nbsp;";
+          }
 
-            <tr>
-              <td align="right" width="30%">Collection Herb.#</td>
-              <td><b>
-                <?php makeCell(collectionID($row)); ?>
-                 </b>
-                </td>
-            </tr>
-            <tr>
-              <td align="right">Stored under taxonname</td>
-              <td><b>
-                <?php makeCell($taxon); ?>
-                </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
-              </td>
-            </tr>
-            <?php if ($accName): ?>
-            <tr>
-              <td align="right">Accepted name</td>
-              <td><b>
-                <?php makeCell($accName); ?>
-                </b></td>
-            </tr>
-            <?php endif; ?>
-            <tr>
-              <td align="right">Family</td>
-              <td><b>
-                <?php makeCell($row['family']); ?>
-                </b></td>
-            </tr>
-           <tr>
-               <td align="right">Det./rev./conf./assigned</td>
-               <td><b>
-                       <?php makeCell($row['det']); ?>
-                   </b></td>
-           </tr>
-           <tr>
-               <td align="right">Ident. history</td>
-               <td><b>
-                       <?php makeCell($row['taxon_alt']); ?>
-                   </b></td>
-           </tr>
-           <?php
-           $typusText = makeTypus($ID);
-           if (strlen($typusText) > 0):
-               ?>
+          if (strlen($text) > 0) {
+              echo $text;
+          } else {
+              echo "&nbsp;";
+          }
+        ?>
+      </b></td>
+    </tr>
+    <tr>
+      <td align="right">Label</td>
+      <td><b>
+        <?php makeCell($row['Fundort']); ?>
+      </b></td>
+    </tr>
+    <tr>
+      <td align="right">Annotations</td>
+      <td><b>
+        <?php
+            if ($row['source_id'] == '35'){
+                makeCell((preg_replace("#<a .*a>#", "", $row['Bemerkungen'])));
+            } else {
+                makeCell($row['Bemerkungen']);
+            }
+        ?>
+      </b></td>
+    </tr>
+    <?php
+        if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
+            echo "<tr>";
+            // create new id object
+            $id = new MyTripleID($row['HerbNummer']);
+            // create new AnnotationQuery object
+            $query = new AnnotationQuery($serviceUri);
+            // fetch annotation metadata
+            $annotations = $query->getAnnotationMetadata($id);
+            // build URI for new annotation
+            if ($row['source_id'] == '29') {
+                $newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
+            } else { //$row['source_id'] == '6'
+                $newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
+            }
+            echo "<td align='right'>Annosys annotations<br/>"
+               . "<a href='". $newAnnoUri . "' target='_blank'>Add annotation</a>"
+               . "<br/>"
+               . "</td>"
+               . "<td><b>";
+            // generate table
+            $table = generateAnnoTable($annotations);
+            // output
+            echo $table;
+            echo "</b></td>";
+            echo "</tr>";
+        }
+    ?>
 
-               <?php makeCell($typusText); ?>
+    <tr>
+      <td align="left" colspan="2">
+        <table border='0'>
+          <tr>
 
-           <?php endif; ?>
-            <tr>
-              <td align="right">Collector</td>
-              <td><b>
-                <?php makeCell($sammler);?>
-                </b></td>
-            </tr>
-            <tr>
-              <td align="right">Date</td>
-              <td align="left"><b>
-                <?php makeCell($row['Datum']); ?>
-                </b></td>
-            </tr>
-            <tr>
-              <td align="right">Location</td>
-              <td><b>
-                <?php
-                  $text = $row['nation_engl'];
-                  if (strlen(trim($row['provinz'])) > 0) {
-                      $text .= " / " . trim($row['provinz']);
-                  }
-                  if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
-                      $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-                  } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
-                      $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
-                  } else {
-                      $lat = 0;
-                  }
-                  if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
-                      $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-                  } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
-                      $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
-                  } else {
-                      $lon = 0;
-                  }
-                  if ($lat != 0 || $lon != 0) {
-                      $text .= " &mdash; " . round($lat,2) . "&deg; / " . round($lon,2) . "&deg; "
-                             . "<a href='http://www.mapquest.com/maps/map.adp?"
-                             .  "latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3' target='_blank'>"
-                             . "<img border='0' height='15' src='images/mapquest.png' width='15'></a>&nbsp;";
-                  }
-
-                  if (strlen($text) > 0) {
-                      echo $text;
-                  } else {
-                      echo "&nbsp;";
-                  }
-                ?>
-                </b></td>
-            </tr>
-            <tr>
-              <td align="right">Label</td>
-              <td><b>
-                <?php makeCell($row['Fundort']); ?>
-                </b></td>
-            </tr>
-
-
-            <tr>
-              <td align="right">Annotations</td>
-              <td><b>
-                        <?php
-                                if ($row['source_id'] == '35'){
-                                    makeCell((preg_replace("#<a .*a>#", "", $row['Bemerkungen'])));
-                                    }
-                                else {
-                                    makeCell($row['Bemerkungen']);
-                                    }
-                        ?>
-              </b></td>
-            </tr>
-			<?php
-				if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
-                    echo "<tr>";
-					// create new id object
-                    $id = new MyTripleID($row['HerbNummer']);
-					// create new AnnotationQuery object
-					$query = new AnnotationQuery($serviceUri);
-					// fetch annotation metadata
-					$annotations = $query->getAnnotationMetadata($id);
-					// build URI for new annotation
-					if ($row['source_id'] == '29') {
-                        $newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
-                    } else { //$row['source_id'] == '6'
-                        $newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
-                    }
-                    echo "<td align='right'>Annosys annotations<br/>"
-                       . "<a href='". $newAnnoUri . "' target='_blank'>Add annotation</a>"
-					   . "<br/>"
-                       . "</td>"
-                       . "<td><b>";
-					// generate table
-					$table = generateAnnoTable($annotations);
-					// output
-					echo $table;
-                    echo "</b></td>";
-                    echo "</tr>";
-                }
-			?>
-
-            <tr>
-
-
-                <?php
+<?php
 if ($row['digital_image'] || $row['digital_image_obs']) {
 /*  $url_base = "http://www.univie.ac.at/herbarium/images/";
   $url_pict = sprintf("%s_%07d",$row['coll_short'],$row['herbNummer']);
@@ -527,27 +522,25 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     $transfer = getPicInfo($picdetails);
 
     if ($picdetails['is_djatoka'] == '2') {
-        $file = rawurlencode(basename($picdetails['specimenID']));
-        $manifest = StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],false).'/manifest.json';
-        if ($row['source_id'] == '29'){
-            $iiif='http://iiif.bgbm.org';
-        }else{
-            $iiif='http://iiif.jacq.org';
+        echo "<td valign='top' align='center'>\n";
+        if ($row['iiif_capable']) {
+            $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
+            $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+            echo "<iframe title='Mirador' width='100%' height='800px' "
+               . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
+               . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
+        } else {
+            $file = rawurlencode(basename($picdetails['specimenID']));
+            echo "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
+               . "(<a href='image.php?filename={$file}&method=show'>Open viewer</a>)";
         }
-       if ($row['source_id'] == '29'){
-           $file = rawurlencode(basename($picdetails['specimenID']));
-           echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show'>Open viewer</a>)</td>";
-       } else {
-           echo "<td valign='top' align='center' colspan='2'>
-
-        <iframe title=\"Mirador\" width=\"100%\" height=\"800px\" src=\"$iiif/?manifest=$manifest\" allowfullscreen=\"true\" webkitallowfullscreen=\"true\" mozallowfullscreen=\"true\"></iframe>
-
-        </td>";
-       }
-
+        echo "</td>\n";
     } elseif ($picdetails['is_djatoka'] == '3') {
         $file=rawurlencode(basename($picdetails['specimenID']));
-	    echo "<td valign='top' align='center'><a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a> <br>( <a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)</td>";
+	    echo "<td valign='top' align='center'>"
+           . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
+           . "(<a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)"
+           . "</td>";
     } elseif ($transfer) {
         if (count($transfer['pics'])>0) {
             foreach ($transfer['pics'] as $v) {
@@ -555,7 +548,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
                 echo "<td valign='top' align='center'>\n"
                    . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb' border='2'></a>\n"
                    . "<br>\n"
-                   . "( <a href='image.php?filename={$file}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?filename={$file}&method=download&format=tiff'>TIFF</a> )\n"
+                   . "(<a href='image.php?filename={$file}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?filename={$file}&method=download&format=tiff'>TIFF</a>)\n"
                    . "</td>\n";
             }
         } else {
@@ -569,16 +562,17 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     }
 }
 ?>
-              </tr>
-
+          </tr>
+        </table>
+      </td>
+    </tr>
   </table>
-
 </div>
 <div id="footer-wrapper">
-    <div class="divider"></div>
-    <div id="footer">
-        <a href="https://www.bgbm.org/en/imprint">Imprint</a>
-    </div>
+  <div class="divider"></div>
+  <div id="footer">
+    <a href="https://www.bgbm.org/en/imprint">Imprint</a>
+  </div>
 </div>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
