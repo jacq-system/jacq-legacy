@@ -355,12 +355,20 @@ function collectionItem($coll)
 
 <p>
 <form action="pdfLabelBarcode.php" target="_blank" method="POST" name="f2">
-<table cellspacing="0" cellpadding="0"><tr><td>
-  <b>Institution:</b> <?php makeDropdownInstitution(); ?>&nbsp;
-  <b>start number:</b> <input type="text" name="start">&nbsp;
-  <b>end number:</b> <input type="text" name="stop">&nbsp;
-  <input class="button" type="submit" name="select" value=" make standard barcode Labels ">
-</td></tr></table>
+  <table cellspacing="0" cellpadding="0"><tr><td>
+    <b>Institution:</b> <?php makeDropdownInstitution(); ?>&nbsp;
+    <b>start number:</b> <input type="text" name="start">&nbsp;
+    <b>end number:</b> <input type="text" name="stop">&nbsp;
+    <input class="button" type="submit" name="select" value=" make standard barcode Labels ">
+  </td></tr></table>
+</form>
+<form action="pdfLabelQRCode.php" target="_blank" method="POST" name="f2">
+  <table cellspacing="0" cellpadding="0"><tr><td>
+    <b>Institution:</b> <?php makeDropdownInstitution(); ?>&nbsp;
+    <b>start number:</b> <input type="text" name="start">&nbsp;
+    <b>end number:</b> <input type="text" name="stop">&nbsp;
+    <input class="button" type="submit" name="select_qr" value=" make standard QR-Code Labels ">
+  </td></tr></table>
 </form>
 
 <p>
