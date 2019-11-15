@@ -78,6 +78,21 @@ function db_query($sql,$debug=false){
   return $res;
 }
 
+/**
+ * wrapper for the depricated mysql interface
+ *
+ * @param resource $result
+ */
+function mysql_fetch_all ($result)
+{
+    $rows = array();
+    while ($row = mysql_fetch_assoc($result)) {
+        $rows[] = $row;
+    }
+
+    return $rows;
+}
+
 
 function quoteString($text)
 {
