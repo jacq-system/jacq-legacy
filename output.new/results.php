@@ -177,7 +177,7 @@ while ($row = $result->fetch_array()) {
             $link = false;
         }
     }
-    if (strlen($image) > 0) {
+     if (strlen($image) > 0) {
         echo "<td class=\"result\">";
         if ($link) {
             if ($row['iiif_capable']) {
@@ -187,15 +187,17 @@ while ($row = $result->fetch_array()) {
                		. "<img border='2' height='15' src='images/$image' width='15'></a>";
                 echo "&nbsp;<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
-            } 
-		} else {
+            } else {
+				echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
+               		. "<img border='2' height='15' src='images/$image' width='15'></a>";
+           		}
+        } else {
             echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
         }
         echo "</td>\n";
     } else {
         echo "<td class=\"result\"></td>\n";
     }
-
     echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=" . $row['specimen_ID'] . "\" target=\"_blank\">"
         . taxonWithHybrids($row)
         . "</a></td>";
