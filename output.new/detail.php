@@ -571,7 +571,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 <div id="footer-wrapper">
   <div class="divider"></div>
   <div id="footer">
-    <a href="https://www.bgbm.org/en/imprint">Imprint</a>
+    <a href="imprint_citation_privacy.htm">Imprint | Citation | Privacy</a>
   </div>
 </div>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
