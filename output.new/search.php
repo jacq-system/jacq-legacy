@@ -100,7 +100,7 @@ if (!empty($_POST['submit']) || !empty($_GET['search'])) {
     $_SESSION['o_series']      = $_POST['series'];
 
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
-                  c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+                  c.Sammler, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID, c2.Sammler_2, ss.series, s.series_number,
                   s.Nummer, s.alt_number, s.Datum, mc.collection, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
                   n.nation_engl, n.iso_alpha_2_code, p.provinz, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
