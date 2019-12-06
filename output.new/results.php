@@ -187,7 +187,8 @@ while ($row = $result->fetch_array()) {
                		. "<img border='2' height='15' src='images/$image' width='15'></a>";
                 echo "&nbsp;<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
-            } else {
+            } 
+		} else {
             echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
         }
         echo "</td>\n";
