@@ -56,7 +56,59 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
 
     return $text;
 }
+function rdfcollection($row) {
 
+    if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID']){
+        $text = "";
+        if ($row['WIKIDATA_ID']) {
+           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/wikidata.png" width="20px"</a>&nbsp;';
+        }
+        if ($row['HUH_ID']) {
+           $text .= "<a href=\"" . $row['HUH_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/huh.png" height="20px"</a>&nbsp;';
+        }
+        if ($row['VIAF_ID']) {
+           $text .= "<a href=\"" . $row['VIAF_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/viaf.png" width="20px"</a>&nbsp;';
+        }
+        $text .= "<a href=\"https://ww2.bgbm.org/herbarium/sparql.cfm?uri=" . $row['VIAF_ID'] . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+    }
+    else {
+        $text = $row['Sammler'];
+    }
+    if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
+        $text .= " et al.";
+    }
+    else if ($row['Sammler_2']) {
+        $text .= " & " . $row['Sammler_2'];
+    }
+    if ($row['series_number']) {
+        if ($row['Nummer']) {
+            $text .= " " . strstr($row['Nummer']);
+        }
+        if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
+            $text .= " " . $row['alt_number'];
+        }
+        if ($row['series']) {
+            $text .= " " . $row['series'];
+        }
+        $text .= " " . $row['series_number'];
+    }
+    else {
+        if ($row['series']) {
+            $text .= " " . $row['series'];
+        }
+        if ($row['Nummer']) {
+            $text .= " " . $row['Nummer'];
+        }
+        if ($row['alt_number']) {
+            $text .= " " . $row['alt_number'];
+        }
+        //if (strstr($alt_number, "s.n.")) {
+        //  $text .= " [" . $Datum . "]";
+        //}
+    }
+
+    return $text;
+}
 // new triple id class
 class MyTripleID extends TripleID {
 

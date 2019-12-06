@@ -438,7 +438,7 @@ if ($row['ncbi_accession']) {
       </b></td>
     </tr>
     <?php
-        if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
+    if (($row['source_id'] == '29' || $row['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
             echo "<tr>";
             // create new id object
             $id = new MyTripleID($row['HerbNummer']);
@@ -571,7 +571,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
 <div id="footer-wrapper">
   <div class="divider"></div>
   <div id="footer">
-    <a href="https://www.bgbm.org/en/imprint">Imprint</a>
+    <a href="imprint_citation_privacy.htm">Imprint | Citation | Privacy</a>
   </div>
 </div>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
