@@ -1,16 +1,13 @@
 <?php
 ini_set('memory_limit', '32M');
 $check = $_SERVER['HTTP_USER_AGENT'];
-if (strpos($check,"MSIE") && strrpos($check,")")==strlen($check)-1)
+if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
   session_cache_limiter('none');
+}
 
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-
-require_once("inc/variables.php");      // BP, 08/2010
-global $_OPTIONS;
-
 no_magic();
 
 define('TCPDF','1');
@@ -50,17 +47,34 @@ function makePreText($sourceID, $number)
 
 class LABEL extends TCPDF
 {
-    //number of colums
-    protected $ncols = 3;
+    // size of QRCode
+    protected $QRsize = 20;
+
+    // border around QRCode
+    protected $QRborder = 3;
+
+    // number of colums
+    protected $ncols = 2;
 
     // columns width
-    protected $colwidth = 57;
+    protected $colwidth = 90;
 
-    //Current column
+    // current column
     protected $col = 0;
 
-    //Ordinate of column start
-    protected $y0;
+    // max y
+    protected $ymax = 0;
+
+    // set style for barcode
+    protected $style = array(
+                            'border' => 2,
+                            'vpadding' => 'auto',
+                            'hpadding' => 'auto',
+                            'fgcolor' => array(0,0,0),
+                            'bgcolor' => false, //array(255,255,255)
+                            'module_width' => 1, // width of a single module in points
+                            'module_height' => 1 // height of a single module in points
+                            );
 
     //Set position at a given column
     public function SetCol($col)
@@ -84,20 +98,35 @@ class LABEL extends TCPDF
         }
     }
 
-    //Method accepting or not automatic page break
-    public function AcceptPageBreak() {
-        if($this->col < ($this->ncols - 1)) {
-            //Go to next column
-            $this->SetCol($this->col + 1);
-            //Keep on page
-            return false;
-        } else {
-            $this->AddPage();
-            //Go back to first column
-            $this->SetCol(0);
-            //Page break
-            return false;
+    public function AddPage($orientation = '', $format = '', $keepmargins = false, $tocpage = false)
+    {
+        parent::AddPage($orientation, $format, $keepmargins, $tocpage);
+        $this->ymax = $this->getPageHeight() - $this->QRsize - $this->QRborder;
+    }
+
+    /**
+     * makes a Label at current position
+     *
+     * @param array $labelText Label test (abbr, Herbarium, UnitID)
+     */
+    public function makeLabel ($labelText)
+    {
+        if ($this->GetY() > $this->ymax) {
+            if($this->col < ($this->ncols - 1)) {
+                $this->SetCol($this->col + 1);  //Go to next column
+            } else {
+                $this->AddPage();
+                $this->SetCol(0);               //Go back to first column
+            }
         }
+        $x = $this->GetX();
+        $y = $this->GetY();
+        $this->write2DBarcode($labelText['UnitID'], 'QRCODE,H', '', '', $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->SetY($y);
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['abbr'], 1, 1, 'L');
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['Herbarium'], 1, 1, 'L');
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['UnitID'], 1, 1, 'L');
+        $this->SetY($y + $this->QRsize + $this->QRborder);
     }
 }
 
@@ -105,12 +134,7 @@ class LABEL extends TCPDF
 $pdf = new LABEL();
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
-
-//set margins
-$pdf->SetMargins(10, PDF_MARGIN_TOP, 10);
-
-//set auto page breaks
-$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+$pdf->SetAutoPageBreak(false);
 
 // set some language-dependent strings (optional)
 if (file_exists(dirname(__FILE__) . '/lang/eng.php')) {
@@ -121,17 +145,6 @@ if (file_exists(dirname(__FILE__) . '/lang/eng.php')) {
 $pdf->AddPage();
 
 $pdf->SetFont('helvetica', '', 8);
-
-// set style for barcode
-$style = array(
-    'border' => 2,
-    'vpadding' => 'auto',
-    'hpadding' => 'auto',
-    'fgcolor' => array(0,0,0),
-    'bgcolor' => false, //array(255,255,255)
-    'module_width' => 1, // width of a single module in points
-    'module_height' => 1 // height of a single module in points
-);
 
 if (empty($_POST['collection'])) {
     $sql = "SELECT s.specimen_ID, l.label
@@ -153,10 +166,7 @@ if (empty($_POST['collection'])) {
     while ($row_ID=mysql_fetch_array($result_ID)) {
         $labelText = makeText($row_ID['specimen_ID']);
         if (count($labelText)>0) {
-            $pdf->Cell(55, 0, $labelText['abbr'], 0, 1, 'C');
-            $pdf->Cell(55, 0, $labelText['Herbarium'], 0, 1, 'C');
-            $pdf->Cell(55, 0, $labelText['UnitID'], 0, 1, 'C');
-            $pdf->write2DBarcode($labelText['UnitID'], 'QRCODE,H', '', '', 50, 50, $style, 'N');
+            $pdf->makeLabel($labelText);
         }
     }
 } else {
@@ -165,11 +175,8 @@ if (empty($_POST['collection'])) {
     $numberEnd   = intval($_POST['stop']);
     for ($i = $numberStart; $i <= $numberEnd; $i++) {
         $labelText = makePreText($sourceID, $i);
-        if (count($labelText)>0) {
-            $pdf->Cell(55, 0, $labelText['abbr'], 0, 1, 'C');
-            $pdf->Cell(55, 0, $labelText['Herbarium'], 0, 1, 'C');
-            $pdf->Cell(55, 0, $labelText['UnitID'], 0, 1, 'C');
-            $pdf->write2DBarcode($labelText['UnitID'], 'QRCODE,H', '', '', 50, 50, $style, 'N');
+        if (count($labelText) > 0) {
+            $pdf->makeLabel($labelText);
         }
     }
 }
