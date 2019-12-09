@@ -136,12 +136,6 @@ $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false);
 
-// set some language-dependent strings (optional)
-if (file_exists(dirname(__FILE__) . '/lang/eng.php')) {
-    require_once(dirname(__FILE__) . '/lang/eng.php');
-    $pdf->setLanguageArray($l);
-}
-
 $pdf->AddPage();
 
 $pdf->SetFont('helvetica', '', 8);
