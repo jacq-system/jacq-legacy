@@ -8,11 +8,19 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
+require_once 'inc/stableIdentifierFunctions.php';
 no_magic();
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
 
+/**
+ * make the text elements to show on the QR-Code label
+ * if there is a stable identifier, get it as UnitID
+ *
+ * @param int $id the specimen-ID
+ * @return array the three lines of text (abbr, Herbarium, UnitID)
+ */
 function makeText($id)
 {
     $sql = "SELECT s.specimen_ID, m.source_code, m.source_abbr_engl
@@ -23,13 +31,21 @@ function makeText($id)
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
-    $text['UnitID'] = formatUnitID($row['specimen_ID']);   // needs connect.php
     $text['abbr'] = $row['source_abbr_engl'];
     $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
+    $stblid = getStableIdentifier($row['specimen_ID']);
+    $text['UnitID'] = ($stblid) ? $stblid : formatUnitID($row['specimen_ID']);   // needs connect.php
 
     return $text;
 }
 
+/**
+ * make the text elements for a standard QR-Code label
+ *
+ * @param int $sourceID the source_id
+ * @param int $number the number used for the UnitID
+ * @return array the three lines of text (abbr, Herbarium, UnitID)
+ */
 function makePreText($sourceID, $number)
 {
     $sql = "SELECT source_code, source_abbr_engl
@@ -38,9 +54,9 @@ function makePreText($sourceID, $number)
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
-    $text['UnitID'] = formatPreUnitID($sourceID, $number);   // needs connect.php
     $text['abbr'] = $row['source_abbr_engl'];
     $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
+    $text['UnitID'] = formatPreUnitID($sourceID, $number);   // needs connect.php
 
     return $text;
 }
@@ -51,7 +67,7 @@ class LABEL extends TCPDF
     protected $QRsize = 20;
 
     // border around QRCode
-    protected $QRborder = 3;
+    protected $QRborder = 2;
 
     // number of colums
     protected $ncols = 2;
@@ -67,7 +83,7 @@ class LABEL extends TCPDF
 
     // set style for barcode
     protected $style = array(
-                            'border' => 2,
+                            'border' => 1,
                             'vpadding' => 'auto',
                             'hpadding' => 'auto',
                             'fgcolor' => array(0,0,0),
@@ -76,7 +92,11 @@ class LABEL extends TCPDF
                             'module_height' => 1 // height of a single module in points
                             );
 
-    //Set position at a given column
+    /**
+     * Set position at a given column
+     *
+     * @param int $col the column (starting at 0)
+     */
     public function SetCol($col)
     {
         $this->col = $col;
@@ -98,6 +118,14 @@ class LABEL extends TCPDF
         }
     }
 
+    /**
+     * overloaded function to fill 'ymax'
+     *
+     * @param string $orientation
+     * @param mixed $format
+     * @param bool $keepmargins
+     * @param bool $tocpage
+     */
     public function AddPage($orientation = '', $format = '', $keepmargins = false, $tocpage = false)
     {
         parent::AddPage($orientation, $format, $keepmargins, $tocpage);
@@ -123,9 +151,9 @@ class LABEL extends TCPDF
         $y = $this->GetY();
         $this->write2DBarcode($labelText['UnitID'], 'QRCODE,H', '', '', $this->QRsize, $this->QRsize, $this->style, 'N');
         $this->SetY($y);
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['abbr'], 1, 1, 'L');
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['Herbarium'], 1, 1, 'L');
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(65, 0, $labelText['UnitID'], 1, 1, 'L');
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['abbr'], 1, 1, 'L');
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['Herbarium'], 1, 1, 'L');
+        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['UnitID'], 1, 1, 'L');
         $this->SetY($y + $this->QRsize + $this->QRborder);
     }
 }
@@ -157,9 +185,9 @@ if (empty($_POST['collection'])) {
              ORDER BY " . $_SESSION['labelOrder'];
     $result_ID = mysql_query($sql);
     //$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
-    while ($row_ID=mysql_fetch_array($result_ID)) {
+    while ($row_ID = mysql_fetch_array($result_ID)) {
         $labelText = makeText($row_ID['specimen_ID']);
-        if (count($labelText)>0) {
+        if (count($labelText) > 0) {
             $pdf->makeLabel($labelText);
         }
     }
