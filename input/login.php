@@ -105,7 +105,8 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 mysql_query("SET character set utf8");
                 session_regenerate_id();  // prevent session fixation
                 $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
-                        login=NOW()
+                         login=NOW(),
+                         pw = '" . password_hash(trim($_POST['password']), PASSWORD_DEFAULT) . "'
                         WHERE username='".mysql_escape_string($_POST['username'])."'";
                 mysql_query($sql);
                 $sql = "SELECT *

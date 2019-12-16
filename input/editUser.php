@@ -76,7 +76,8 @@ if (isset($_GET['sel'])) {
 
             $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
                      iv = " . quoteString(base64_encode($iv)) . ",
-                     secret = " . quoteString(base64_encode($encrypted_data)) . "
+                     secret = " . quoteString(base64_encode($encrypted_data)) . ",
+                     pw='" . password_hash(trim($_POST['password_1']), PASSWORD_DEFAULT) . "'
                     WHERE username = " . quoteString($p_username);
             db_query($sql);
         }
