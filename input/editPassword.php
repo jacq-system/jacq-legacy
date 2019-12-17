@@ -2,6 +2,7 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require_once 'inc/password_compat/lib/password.php';
 no_magic();
 
 $error = "";

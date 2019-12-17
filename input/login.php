@@ -1,5 +1,6 @@
 <?php
 require_once( 'inc/variables.php' );
+require_once 'inc/password_compat/lib/password.php';
 
 $secure = $_CONFIG['CONNECTION']['secure'];  // set to false if no secure server available
 
