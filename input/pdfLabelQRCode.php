@@ -23,7 +23,7 @@ require_once('inc/tcpdf_6_3_2/tcpdf.php');
  */
 function makeText($id)
 {
-    $sql = "SELECT s.specimen_ID, m.source_code, m.source_abbr_engl
+    $sql = "SELECT s.specimen_ID, m.source_code, m.source_abbr_engl, mc.collection
             FROM tbl_specimens s, tbl_management_collections mc, herbarinput.meta m
             WHERE s.collectionID = mc.collectionID
              AND mc.source_id = m.source_id
@@ -31,10 +31,9 @@ function makeText($id)
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
-    $text['abbr'] = $row['source_abbr_engl'];
     $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
-    $stblid = getStableIdentifier($row['specimen_ID']);
-    $text['UnitID'] = ($stblid) ? $stblid : formatUnitID($row['specimen_ID']);   // needs connect.php
+    $text['Collection'] = ($row['collection']) ? 'Collection ' . $row['collection'] : "";
+    $text['UnitID'] = getStableIdentifier($row['specimen_ID']);
 
     return $text;
 }
@@ -43,20 +42,21 @@ function makeText($id)
  * make the text elements for a standard QR-Code label
  *
  * @param int $sourceID the source_id
+ * @param int $collectionID the collectionID
  * @param int $number the number used for the UnitID
  * @return array the three lines of text (abbr, Herbarium, UnitID)
  */
-function makePreText($sourceID, $number)
+function makePreText($sourceID, $collectionID, $number)
 {
-    $sql = "SELECT source_code, source_abbr_engl
-            FROM herbarinput.meta
-            WHERE source_id = '" . intval($sourceID) . "'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result_source = db_query("SELECT source_code FROM herbarinput.meta WHERE source_id = '$sourceID'");
+    $row_source = mysql_fetch_array($result_source);
+    $text['Herbarium'] = 'Herbarium ' . $row_source['source_code'];
 
-    $text['abbr'] = $row['source_abbr_engl'];
-    $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
-    $text['UnitID'] = formatPreUnitID($sourceID, $number);   // needs connect.php
+    $result_coll = db_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'");
+    $row_coll = mysql_fetch_array($result_coll);
+    $text['Collection'] = ($row_coll['collection']) ? 'Collection ' . $row_coll['collection'] : "";
+
+    $text['UnitID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);
 
     return $text;
 }
@@ -64,7 +64,7 @@ function makePreText($sourceID, $number)
 class LABEL extends TCPDF
 {
     // size of QRCode
-    protected $QRsize = 20;
+    protected $QRsize = 12;
 
     // border around QRCode
     protected $QRborder = 2;
@@ -129,13 +129,13 @@ class LABEL extends TCPDF
     public function AddPage($orientation = '', $format = '', $keepmargins = false, $tocpage = false)
     {
         parent::AddPage($orientation, $format, $keepmargins, $tocpage);
-        $this->ymax = $this->getPageHeight() - $this->QRsize - $this->QRborder;
+        $this->ymax = $this->getPageHeight() - $this->QRsize - 2 * $this->QRborder;
     }
 
     /**
      * makes a Label at current position
      *
-     * @param array $labelText Label test (abbr, Herbarium, UnitID)
+     * @param array $labelText Label test (Herbarium, Collection, UnitID)
      */
     public function makeLabel ($labelText)
     {
@@ -147,14 +147,13 @@ class LABEL extends TCPDF
                 $this->SetCol(0);               //Go back to first column
             }
         }
-        $x = $this->GetX();
-        $y = $this->GetY();
-        $this->write2DBarcode($labelText['UnitID'], 'QRCODE,H', '', '', $this->QRsize, $this->QRsize, $this->style, 'N');
-        $this->SetY($y);
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['abbr'], 1, 1, 'L');
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['Herbarium'], 1, 1, 'L');
-        $this->SetX($x + $this->QRsize + $this->QRborder); $this->Cell(70, 0, $labelText['UnitID'], 1, 1, 'L');
-        $this->SetY($y + $this->QRsize + $this->QRborder);
+        $x_top = $this->GetX();
+        $y_top = $this->GetY();
+        $this->Cell(74, 0, $labelText['Herbarium'], 0, 1, 'L');
+        $this->Cell(74, 0, $labelText['Collection'], 0, 1, 'L');
+        $this->Cell(74, 0, $labelText['UnitID'], 0, 1, 'L');
+        $this->write2DBarcode($labelText['UnitID'], 'QRCODE,H', $x_top + 74 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->Ln();
     }
 }
 
@@ -166,9 +165,9 @@ $pdf->SetAutoPageBreak(false);
 
 $pdf->AddPage();
 
-$pdf->SetFont('helvetica', '', 8);
+$pdf->SetFont('helvetica', '', 9);
 
-if (empty($_POST['collection'])) {
+if (empty($_POST['institution_QR'])) {
     $sql = "SELECT s.specimen_ID, l.label
             FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
              LEFT JOIN tbl_labels l ON (s.specimen_ID = l.specimen_ID AND l.userID = '".intval($_SESSION['uid'])."')
@@ -192,11 +191,37 @@ if (empty($_POST['collection'])) {
         }
     }
 } else {
-    $sourceID    = intval(abs($_POST['collection']));
-    $numberStart = intval($_POST['start']);
-    $numberEnd   = intval($_POST['stop']);
+    $sourceID     = intval(abs($_POST['institution_QR']));
+    $collectionID = intval($_POST['collection_QR']);
+
+    $sql = "SELECT digits
+            FROM tbl_labels_numbering
+            WHERE replace_char IS NULL
+             AND collectionID_fk IS NULL
+             AND sourceID_fk = '$sourceID'";
+    $result = db_query($sql);
+    if (mysql_num_rows($result) > 0) {
+        $row = mysql_fetch_array($result);
+        $digits = $row['digits'];
+    } else {
+        $digits = 0;
+    }
+
+    preg_match('/\D/', strrev($_POST['start']), $matches, PREG_OFFSET_CAPTURE);
+    if ($matches) {
+        $preamble    = substr($_POST['start'], 0, -$matches[0][1]);
+        $numberStart = substr($_POST['start'], -$matches[0][1]);
+        $numberEnd   = substr($_POST['stop'], strlen($_POST['start']) - $matches[0][1]);
+        $digits      = ($digits) ? $digits : $matches[0][1];
+    } else {
+        $preamble    = "";
+        $numberStart = intval($_POST['start']);
+        $numberEnd   = intval($_POST['stop']);
+        $digits      = ($digits) ? $digits : strlen($_POST['start']);
+    }
+
     for ($i = $numberStart; $i <= $numberEnd; $i++) {
-        $labelText = makePreText($sourceID, $i);
+        $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $i));
         if (count($labelText) > 0) {
             $pdf->makeLabel($labelText);
         }

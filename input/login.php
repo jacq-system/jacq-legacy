@@ -50,8 +50,8 @@ function show_page($text)
 {
     $username = (isset($_POST['username'])) ? $_POST['username'] : '';
 
-?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+       "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
   <title>HerbarDB - login</title>
