@@ -1,15 +1,13 @@
 <?php
+ini_set('memory_limit', '32M');
 $check = $_SERVER['HTTP_USER_AGENT'];
-if (strpos($check,"MSIE") && strrpos($check,")")==strlen($check)-1)
+if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
   session_cache_limiter('none');
+}
 
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-
-require_once("inc/variables.php");      // BP, 08/2010
-global $_OPTIONS;
-
 no_magic();
 
 // BP, 08/2010: replace fpdf with tcpdf (PHP 5)
@@ -17,16 +15,17 @@ no_magic();
 require('inc/fpdf/fpdf.php');
 require('inc/tagfpdf.php');*/
 define('TCPDF','1');
+require_once('inc/tcpdf_6_3_2/tcpdf.php');
 // BP, 08/2010
-if ($_OPTIONS['tcpdf_5_8']) {
-    require_once('inc/tcpdf_5_8_001/config/lang/eng.php');
-    require_once('inc/tcpdf_5_8_001/tcpdf.php');
-    //error_log("TCPDF 5.8",0);
-} else {
-    require_once('inc/tcpdf/config/lang/eng.php');
-    require_once('inc/tcpdf/tcpdf.php');
-    //error_log("TCPDF 4.5",0);
-}
+//if ($_OPTIONS['tcpdf_5_8']) {
+//    require_once('inc/tcpdf_5_8_001/config/lang/eng.php');
+//    require_once('inc/tcpdf_5_8_001/tcpdf.php');
+//    //error_log("TCPDF 5.8",0);
+//} else {
+//    require_once('inc/tcpdf/config/lang/eng.php');
+//    require_once('inc/tcpdf/tcpdf.php');
+//    //error_log("TCPDF 4.5",0);
+//}
 
 function makeText($id, $sub)  {
 
@@ -232,7 +231,7 @@ class LABEL extends TCPDF {
     $this->HLineOff(0,138.5,15);
     $this->HLineOff(0,138.5,70);
   }
-  
+
   // BP, 08/2010:
   function MultiCell($w, $h, $txt, $border=0, $align='L', $fill=false, $ln=1) {
       // $autopadding needs to be false (default=true if $isHtml is false)

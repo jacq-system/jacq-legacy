@@ -41,8 +41,8 @@ tbl_tax_systematic_categories
   function neuladen(url) {
     location.replace(url);
   }
-  function googleMap() {
-    MeinFenster = window.open('google_maps.php','_blank',
+  function osMap() {
+    MeinFenster = window.open('os_maps.php','_blank',
                               'width=820,height=620,top=50,left=50,resizable,scrollbars');
     MeinFenster.focus();
   }
@@ -115,12 +115,10 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
             <tr>
               <td colspan='2'><b><?php echo $nrRows; ?> record<?php echo ($nrRows > 1) ? "s" : ""; ?> found</b></td>
               <td colspan="7" align="right">
-                <?php
-                    //<form style="display:inline;" action="javascript:googleMap();" method="post">
-                    //   <button class="btn-flat waves-effect waves-green" type="button" name="action" value="Create map" onClick="googleMap()">Create map
-                    //  </button>
-                    //</form>
-                ?>
+                <form style="display:inline;" action="javascript:osMap();" method="post">
+                   <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map" onClick="osMap()">Create map
+                  </button>
+                </form>
                 <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
                   <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
                 </form>
@@ -177,17 +175,20 @@ while ($row = $result->fetch_array()) {
             $link = false;
         }
     }
-    if (strlen($image) > 0) {
+     if (strlen($image) > 0) {
         echo "<td class=\"result\">";
         if ($link) {
-            echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
-               . "<img border='2' height='15' src='images/$image' width='15'></a>";
             if ($row['iiif_capable']) {
-                $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
+			    $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
                 $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+            	echo "<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
+               		. "<img border='2' height='15' src='images/$image' width='15'></a>";
                 echo "&nbsp;<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
-            }
+            } else {
+				echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
+               		. "<img border='2' height='15' src='images/$image' width='15'></a>";
+           		}
         } else {
             echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
         }
@@ -195,7 +196,6 @@ while ($row = $result->fetch_array()) {
     } else {
         echo "<td class=\"result\"></td>\n";
     }
-
     echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=" . $row['specimen_ID'] . "\" target=\"_blank\">"
         . taxonWithHybrids($row)
         . "</a></td>";

@@ -108,7 +108,7 @@ function taxon ($row, $withNl = false)
 
 function taxonWithHybrids ($row, $withNl = false)
 {
-    if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
+    if (isset($row['statusID']) && $row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
         $sql = "SELECT parent_1_ID, parent_2_ID
                 FROM tbl_tax_hybrids
                 WHERE taxon_ID_fk = '" . $row['taxonID'] . "'";

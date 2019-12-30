@@ -46,6 +46,24 @@ function makeDropdownCollection() {
   return $objResponse;
 }
 
+function changeDropdownCollectionQR($source_id) {
+
+  $selectData = "  <option value=\"0\"></option>\n";
+
+  $sql = "SELECT collectionID, collection
+          FROM tbl_management_collections
+          WHERE source_id = '" . abs(intval($source_id)) . "'
+          ORDER BY collection";
+  $result = db_query($sql);
+  while($row=mysql_fetch_array($result)) {
+    $selectData .= "  <option value='" . htmlspecialchars($row['collectionID']) . "'>" . htmlspecialchars($row['collection']) . "</option>\n";
+  }
+
+  $objResponse = new xajaxResponse();
+  $objResponse->assign("collection_QR", "innerHTML", $selectData);
+  return $objResponse;
+}
+
 /**
  * xajax-function toggleTypeLabelMap
  *
@@ -449,6 +467,7 @@ function clearAll() {
 $xajax = new xajax();
 $xajax->registerFunction("makeDropdownInstitution");
 $xajax->registerFunction("makeDropdownCollection");
+$xajax->registerFunction("changeDropdownCollectionQR");
 $xajax->registerFunction("toggleTypeLabelMap");
 $xajax->registerFunction("toggleTypeLabelSpec");
 $xajax->registerFunction("toggleBarcodeLabel");

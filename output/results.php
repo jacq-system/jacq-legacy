@@ -51,8 +51,8 @@ tbl_tax_systematic_categories
       function neuladen(url) {
         location.replace(url);
       }
-      function googleMap() {
-        MeinFenster = window.open('google_maps.php','_blank',
+      function osMap() {
+        MeinFenster = window.open('os_maps.php','_blank',
                                   'width=820,height=620,top=50,left=50,resizable,scrollbars');
         MeinFenster.focus();
       }
@@ -158,9 +158,9 @@ echo "<div align='center'><table width='100%'>\n"
 
 ?>
 <td colspan="7" align="right">
-<form style="display:inline;" action="javascript:googleMap();" method="post">
-  <input type="button" value="Create map" onClick="googleMap()" style="width:120px;">
-</form>
+            <form style="display:inline;" action="javascript:osMap();" method="post">
+              <input type="button" value="Create map" onClick="osMap()" style="width:120px;">
+            </form>
             <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
                 <input type="submit" value="download KML" style="width:120px;">
             </form>
