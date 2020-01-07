@@ -1,5 +1,5 @@
 <?php
-ini_set('memory_limit', '32M');
+//ini_set('memory_limit', '32M');
 $check = $_SERVER['HTTP_USER_AGENT'];
 if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
   session_cache_limiter('none');
