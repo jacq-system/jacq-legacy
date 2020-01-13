@@ -72,10 +72,10 @@ class LABEL extends TCPDF
     protected $QRborder = 2;
 
     // number of colums
-    protected $ncols = 2;
+    protected $ncols = 3;
 
     // columns width
-    protected $colwidth = 90;
+    protected $colwidth = 60;
 
     // current column
     protected $col = 0;
@@ -151,10 +151,10 @@ class LABEL extends TCPDF
         }
         $x_top = $this->GetX();
         $y_top = $this->GetY();
-        $this->Cell(74, 0, $labelText['Herbarium'], 0, 1, 'L');
-        $this->Cell(74, 0, $labelText['Collection'], 0, 1, 'L');
-        $this->Cell(74, 0, $labelText['UnitID'], 0, 1, 'L');
-        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 74 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->Cell(48, 0, $labelText['Herbarium'], 0, 1, 'L');
+        $this->Cell(48, 0, $labelText['Collection'], 0, 1, 'L');
+        $this->Cell(48, 0, $labelText['UnitID'], 0, 1, 'L');
+        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 46 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
         $this->Ln();
     }
 }
@@ -164,6 +164,7 @@ $pdf = new LABEL();
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false);
+$pdf->SetMargins(5, 5);
 
 $pdf->AddPage();
 
