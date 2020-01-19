@@ -23,17 +23,18 @@ require_once('inc/tcpdf_6_3_2/tcpdf.php');
  */
 function makeText($id)
 {
-    $sql = "SELECT s.specimen_ID, m.source_code, m.source_abbr_engl, mc.collection
-            FROM tbl_specimens s, tbl_management_collections mc, herbarinput.meta m
+    $sql = "SELECT s.specimen_ID, s.HerbNummer, m.QR_code_header, mc.collection
+            FROM tbl_specimens s, tbl_management_collections mc, herbarinput.metadata m
             WHERE s.collectionID = mc.collectionID
-             AND mc.source_id = m.source_id
+             AND mc.source_id = m.MetadataID
              AND s.specimen_ID = '$id'";
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
-    $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
-    $text['Collection'] = ($row['collection']) ? 'Collection ' . $row['collection'] : "";
-    $text['UnitID'] = getStableIdentifier($row['specimen_ID']);
+    $text['Herbarium']  = $row['QR_code_header'];
+    $text['Collection'] = ($row['collection']) ? 'Herbarium ' . $row['collection'] : "";
+    $text['UnitID']     = $row['HerbNummer'];
+    $text['StblID']     = getStableIdentifier($row['specimen_ID']);
 
     return $text;
 }
@@ -48,15 +49,16 @@ function makeText($id)
  */
 function makePreText($sourceID, $collectionID, $number)
 {
-    $result_source = db_query("SELECT source_code FROM herbarinput.meta WHERE source_id = '$sourceID'");
+    $result_source = db_query("SELECT QR_code_header FROM herbarinput.metadata WHERE MetadataID = '$sourceID'");
     $row_source = mysql_fetch_array($result_source);
-    $text['Herbarium'] = 'Herbarium ' . $row_source['source_code'];
+    $text['Herbarium'] = $row_source['QR_code_header'];
 
     $result_coll = db_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'");
     $row_coll = mysql_fetch_array($result_coll);
-    $text['Collection'] = ($row_coll['collection']) ? 'Collection ' . $row_coll['collection'] : "";
+    $text['Collection'] = ($row_coll['collection']) ? 'Herbarium ' . $row_coll['collection'] : "";
 
-    $text['UnitID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);
+    $text['UnitID'] = $number;
+    $text['StblID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);
 
     return $text;
 }
@@ -70,10 +72,10 @@ class LABEL extends TCPDF
     protected $QRborder = 2;
 
     // number of colums
-    protected $ncols = 2;
+    protected $ncols = 3;
 
     // columns width
-    protected $colwidth = 90;
+    protected $colwidth = 60;
 
     // current column
     protected $col = 0;
@@ -149,10 +151,10 @@ class LABEL extends TCPDF
         }
         $x_top = $this->GetX();
         $y_top = $this->GetY();
-        $this->Cell(74, 0, $labelText['Herbarium'], 0, 1, 'L');
-        $this->Cell(74, 0, $labelText['Collection'], 0, 1, 'L');
-        $this->Cell(74, 0, $labelText['UnitID'], 0, 1, 'L');
-        $this->write2DBarcode($labelText['UnitID'], 'QRCODE,H', $x_top + 74 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->Cell(48, 0, $labelText['Herbarium'], 0, 1, 'L');
+        $this->Cell(48, 0, $labelText['Collection'], 0, 1, 'L');
+        $this->Cell(48, 0, $labelText['UnitID'], 0, 1, 'L');
+        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 46 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
         $this->Ln();
     }
 }
@@ -162,6 +164,7 @@ $pdf = new LABEL();
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false);
+$pdf->SetMargins(5, 5);
 
 $pdf->AddPage();
 
