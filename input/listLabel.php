@@ -10,6 +10,7 @@ $xajax->setRequestURI("ajax/listLabelServer.php");
 
 $xajax->registerFunction("makeDropdownInstitution");
 $xajax->registerFunction("makeDropdownCollection");
+$xajax->registerFunction("changeDropdownCollectionQR");
 $xajax->registerFunction("toggleTypeLabelMap");
 $xajax->registerFunction("toggleTypeLabelSpec");
 $xajax->registerFunction("toggleBarcodeLabel");
@@ -122,32 +123,13 @@ if (!empty($_POST['search'])) {
 
 function makeDropdownInstitution()
 {
-    echo "<select size=\"1\" name=\"collection\">\n";
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
     $result = db_query($sql);
     while($row = mysql_fetch_array($result)) {
-        echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
-        if (-$_SESSION['labelCollection'] == $row['source_id']) echo " selected";
-        echo ">" . htmlspecialchars($row['source_code']) . "</option>\n";
+        echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\">" . htmlspecialchars($row['source_code']) . "</option>\n";
     }
-
-    echo "  </select>\n";
-}
-
-function makeDropdownCollection()
-{
-    $sql =  "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = db_query($sql);
-    echo "<select size=\"1\" name=\"collection\">\n";
-    echo "  <option value=\"0\"></option>\n";
-    while ($row = mysql_fetch_array($result)) {
-        echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
-        if ($_SESSION['labelCollection'] == $row['collectionID']) echo " selected";
-        echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
-    }
-    echo "  </select>\n";
 }
 
 function collectorItem($row)
@@ -215,6 +197,14 @@ function collectionItem($coll)
   <script type="text/javascript" language="JavaScript">
     var swInstitutionCollection = <?php echo ($_SESSION['labelCollection'] > 0) ? 1 : 0; ?>;
 
+    function initInstitutionCollection() {
+        if (swInstitutionCollection) {
+            xajax_makeDropdownCollection();
+        } else {
+            xajax_makeDropdownInstitution();
+        }
+    }
+
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
@@ -248,10 +238,11 @@ function collectionItem($coll)
     }
     function showPDF(sel) {
       switch (sel) {
-        case 'typeMap':  target = "pdfLabelTypesMap.php"; label = "labelTypesMap"; break;
+        case 'typeMap':  target = "pdfLabelTypesMap.php";  label = "labelTypesMap"; break;
         case 'typeSpec': target = "pdfLabelTypesSpec.php"; label = "labelTypesSpec"; break;
-        case 'std':      target = "pdfLabelStandard.php"; label = "labelStandard"; break;
-        case 'barcode':  target = "pdfLabelBarcode.php"; label = "labelBarcode"; break;
+        case 'std':      target = "pdfLabelStandard.php";  label = "labelStandard"; break;
+        case 'barcode':  target = "pdfLabelBarcode.php";   label = "labelBarcode"; break;
+        case 'QRCode':   target = "pdfLabelQRCode.php";    label = "labelQRCode"; break;
       }
       MeinFenster = window.open(target, label);
       MeinFenster.focus();
@@ -264,16 +255,13 @@ function collectionItem($coll)
   </script>
 </head>
 
-<body>
-
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
+<body onload="initInstitutionCollection()">
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f1">
 <table cellspacing="5" cellpadding="0">
 <tr>
-  <td align="right">&nbsp;<b><a href="#" id="lblInstitutionCollection" onclick="toggleInstitutionCollection();"><?php echo ($_SESSION['labelCollection'] > 0) ? 'Collection:' : 'Institution:'; ?></a></b>
-    </td>
-    <td id="drpInstitutionCollection"><?php ($_SESSION['labelCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
+  <td align="right">&nbsp;<b><a href="#" id="lblInstitutionCollection" onclick="toggleInstitutionCollection();"></a></b></td>
+    <td id="drpInstitutionCollection"></td>
   <td align="right">&nbsp;<b>Collection Nr.:</b></td>
     <td><input type="text" name="number" value="<?php echo $_SESSION['labelNumber']; ?>"></td>
   <td align="right">&nbsp;<b>Series:</b></td>
@@ -355,18 +343,21 @@ function collectionItem($coll)
 
 <p>
 <form action="pdfLabelBarcode.php" target="_blank" method="POST" name="f2">
-  <table cellspacing="0" cellpadding="0"><tr><td>
-    <b>Institution:</b> <?php makeDropdownInstitution(); ?>&nbsp;
-    <b>start number:</b> <input type="text" name="start">&nbsp;
-    <b>end number:</b> <input type="text" name="stop">&nbsp;
+  <table cellspacing="2" cellpadding="0"><tr><td>
+    <b>Institution:</b> <select size="1" name="collection"><?php makeDropdownInstitution(); ?></select>&nbsp;
+    <b>start number:</b> <input type="text" name="start" size="10">&nbsp;
+    <b>end number:</b> <input type="text" name="stop" size="10">&nbsp;
     <input class="button" type="submit" name="select" value=" make standard barcode Labels ">
   </td></tr></table>
 </form>
 <form action="pdfLabelQRCode.php" target="_blank" method="POST" name="f2">
-  <table cellspacing="0" cellpadding="0"><tr><td>
-    <b>Institution:</b> <?php makeDropdownInstitution(); ?>&nbsp;
-    <b>start number:</b> <input type="text" name="start">&nbsp;
-    <b>end number:</b> <input type="text" name="stop">&nbsp;
+  <table cellspacing="2" cellpadding="0"><tr><td>
+    <b>Institution:</b>
+        <select size="1" name="institution_QR" id="institution_QR" onchange="xajax_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
+        <?php makeDropdownInstitution(); ?></select>&nbsp;
+    <b>Collection:</b> <select size="1" name="collection_QR" id="collection_QR"><option value="0"></option></select>&nbsp;
+    <b>start number:</b> <input type="text" name="start" size="10">&nbsp;
+    <b>end number:</b> <input type="text" name="stop" size="10">&nbsp;
     <input class="button" type="submit" name="select_qr" value=" make standard QR-Code Labels ">
   </td></tr></table>
 </form>
@@ -381,32 +372,31 @@ function collectionItem($coll)
 </tr></table>
 </form>
 
+<hr>
+<b>Labels</b>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
 <p>
 <?php
-if ($_SESSION['labelType'] == 1) {
-    echo "<table cellpadding=\"0\" cellspacing=\"0\"><tr><td>"
-       . "<input type=\"button\" class=\"button\" value=\" set all \" onclick=\"xajax_setAll()\"> "
-       . "<input type=\"button\" class=\"button\" value=\" clear all \" onclick=\"xajax_clearAll()\"> "
-       . "</td><td>"
-       . "<input type=\"button\" class=\"button\" value=\"make PDF (Type map Labels)\" id=\"btMakeTypeLabelMapPdf\" onClick=\"showPDF('typeMap')\"> "
-       . "</td><td>"
-       . "<input type=\"button\" class=\"button\" value=\"make PDF (Type spec Labels)\" id=\"btMakeTypeLabelSpecPdf\" onClick=\"showPDF('typeSpec')\"> "
-       . "</td><td>"
-       . "<input type=\"button\" class=\"button\" value=\"make PDF (barcode Labels)\" id=\"btMakeBarcodeLabelPdf\" onClick=\"showPDF('barcode')\" >"
-       . "</td><td>"
-       . "<input type=\"button\" class=\"button\" value=\"make PDF (standard Labels)\" id=\"btMakeStandardLabelPdf\" onClick=\"showPDF('std')\">\n"
-       . "</td></tr><tr><td></td><td align=\"center\">"
-       . "<input type=\"button\" class=\"button\" value=\"clear all Type map Labels\" id=\"btClearTypeMapLabels\" onClick=\"xajax_clearTypeLabelsMap(); return false;\"> "
-       . "</td><td align=\"center\">"
-       . "<input type=\"button\" class=\"button\" value=\"clear all Type spec Labels\" id=\"btClearTypeSpecLabels\" onClick=\"xajax_clearTypeLabelsSpec(); return false;\"> "
-       . "</td><td align=\"center\">"
-       . "<input type=\"button\" class=\"button\" value=\"clear all Barcode Labels\" id=\"btClearBarcodeLabels\" onClick=\"xajax_clearBarcodeLabels(); return false;\" >"
-       . "</td><td align=\"center\">"
-       . "<input type=\"button\" class=\"button\" value=\"clear all standard Labels\" id=\"btClearStandardLabels\" onClick=\"xajax_clearStandardLabels(); return false;\">\n"
-       . "</td></tr></table>\n";
-    echo "<p>\n";
-
+if ($_SESSION['labelType'] == 1) { ?>
+  <table cellpadding="0" cellspacing="4">
+    <tr>
+      <td align="center"><input type="button" class="button" value=" set all " onclick="xajax_setAll()"></td>
+      <td><input type="button" class="button" value="make PDF (Type map)" id="btMakeTypeLabelMapPdf" onClick="showPDF('typeMap')"></td>
+      <td><input type="button" class="button" value="make PDF (Type spec)" id="btMakeTypeLabelSpecPdf" onClick="showPDF('typeSpec')"></td>
+      <td><input type="button" class="button" value="make PDF (barcode)" id="btMakeBarcodeLabelPdf" onClick="showPDF('barcode')"></td>
+      <td><input type="button" class="button" value="make PDF (QRCode)" id="btMakeQRCodeLabelPdf" onClick="showPDF('QRCode')"></td>
+      <td><input type="button" class="button" value="make PDF (standard)" id="btMakeStandardLabelPdf" onClick="showPDF('std')"></td>
+    </tr>
+    <tr>
+      <td><input type="button" class="button" value=" clear all " onclick="xajax_clearAll()"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type map" id="btClearTypeMapLabels" onClick="xajax_clearTypeLabelsMap(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type spec" id="btClearTypeSpecLabels" onClick="xajax_clearTypeLabelsSpec(); return false;"></td>
+      <td align="center" colspan="2"><input type="button" class="button" value="clear all Barcode" id="btClearBarcodeLabels" onClick="xajax_clearBarcodeLabels(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="xajax_clearStandardLabels(); return false;"></td>
+    </tr>
+  </table>
+  <p>
+<?php
     $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.typusID, l.label,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
@@ -509,25 +499,25 @@ if ($_SESSION['labelType'] == 1) {
 
     $result = db_query($sql);
     if (mysql_num_rows($result) > 0) {
-        echo "<table class=\"out\" cellspacing=\"0\">\n";
-        echo "<tr class=\"out\">";
-        echo "<th class=\"out\"></th>";
-        echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['labelOrTyp'], 1) . "</th>";
-        echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['labelOrTyp'], 2) . "</th>";
-        echo "<th class=\"out\">Date</th>";
-        echo "<th class=\"out\">X/Y</th>";
-        echo "<th class=\"out\">Location</th>";
-        echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['labelOrTyp'], 4) . "</th>";
-        echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['labelOrTyp'], 5) . "</th>";
-        echo "<th class=\"out\">Type map Label</th>";
-        echo "<th class=\"out\">Type spec Label</th>";
-        echo "<th class=\"out\">Barcode Label</th>";
-        echo "<th class=\"out\">Standard Label</th>";
-        echo "</tr>\n";
+        echo "<table class='out' cellspacing='0'>\n"
+           . "<tr class='out'>"
+           . "<th class='out'></th>"
+           . "<th class='out'>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=a'>Taxon</a>" . sortItem($_SESSION['labelOrTyp'], 1) . "</th>"
+           . "<th class='out'>"
+           . "<a href'" . $_SERVER['PHP_SELF'] . "?order=b'>Collector</a>" . sortItem($_SESSION['labelOrTyp'], 2) . "</th>"
+           . "<th class='out'>Date</th>"
+           . "<th class='out'>X/Y</th>"
+           . "<th class='out'>Location</th>"
+           . "<th class='out'>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=d'>Typus</a>" . sortItem($_SESSION['labelOrTyp'], 4) . "</th>"
+           . "<th class='out'>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=e'>Coll.</a>" . sortItem($_SESSION['labelOrTyp'], 5) . "</th>"
+           . "<th class='out'>Type map Label</th>"
+           . "<th class='out'>Type spec Label</th>"
+           . "<th class='out'>Barcode Label</th>"
+           . "<th class='out'>Standard Label</th>"
+           . "</tr>\n";
         $nr = 1;
         while ($row = mysql_fetch_array($result)) {
             $linkList[$nr] = $id = $row['specimen_ID'];

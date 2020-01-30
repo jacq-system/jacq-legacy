@@ -1,29 +1,27 @@
 <?php
+//ini_set('memory_limit', '32M');
 $check = $_SERVER['HTTP_USER_AGENT'];
-if (strpos($check,"MSIE") && strrpos($check,")") == strlen($check)-1) {
-    session_cache_limiter('none');
+if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
+  session_cache_limiter('none');
 }
 
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-
-require_once("inc/variables.php");      // BP, 08/2010
-global $_OPTIONS;
-
 no_magic();
 
 define('TCPDF','1');
-// BP, 08/2010
-if ($_OPTIONS['tcpdf_5_8']) {
-    require_once('inc/tcpdf_5_8_001/config/lang/eng.php');
-    require_once('inc/tcpdf_5_8_001/tcpdf.php');
-    //error_log("TCPDF 5.8",0);
-} else {
-    require_once('inc/tcpdf/config/lang/eng.php');
-    require_once('inc/tcpdf/tcpdf.php');
-    //error_log("TCPDF 4.5",0);
-}
+require_once('inc/tcpdf_6_3_2/tcpdf.php');
+//// BP, 08/2010
+//if ($_OPTIONS['tcpdf_5_8']) {
+//    require_once('inc/tcpdf_5_8_001/config/lang/eng.php');
+//    require_once('inc/tcpdf_5_8_001/tcpdf.php');
+//    //error_log("TCPDF 5.8",0);
+//} else {
+//    require_once('inc/tcpdf/config/lang/eng.php');
+//    require_once('inc/tcpdf/tcpdf.php');
+//    //error_log("TCPDF 4.5",0);
+//}
 
 /**
  * Checks if a value exists in a multidimensional array
@@ -273,7 +271,7 @@ class LABEL extends TCPDF
 
     // BP, 08/2010: changes for TCPDF PHP 5
     //function LABEL($orient='P')
-    public function __construct($orient='P') 
+    public function __construct($orient='P')
     {
         $this->offset = 5;
         $this->pageX = 210;

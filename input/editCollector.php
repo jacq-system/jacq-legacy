@@ -45,17 +45,19 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x1800)!=0)) {
                  Sammler = '" . mysql_escape_string($_POST['Sammler']) . "',
                  HUH_ID = " . quoteString($_POST['HUH_ID']) . ",
                  VIAF_ID = " . quoteString($_POST['VIAF_ID']) . ",
-                 WIKIDATA_ID = " . quoteString($_POST['WIKIDATA_ID']) . "
+                 WIKIDATA_ID = " . quoteString($_POST['WIKIDATA_ID']) . ",
+                 ORCID = " . quoteString($_POST['ORCID']) . "
                 WHERE SammlerID = '" . intval($_POST['ID']) . "'";
       } else {
         $sql = "";
       }
     } else {
-      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID) "
+      $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID) "
            . " VALUES ('" . mysql_escape_string($_POST['Sammler']) . "', "
            .  quoteString($_POST['HUH_ID']) . ", "
            .  quoteString($_POST['VIAF_ID']) . ", "
-           .  quoteString($_POST['WIKIDATA_ID']) . ")";
+           .  quoteString($_POST['WIKIDATA_ID']) . ", "
+           .  quoteString($_POST['ORCID']) . ")";
     }
     $result = db_query($sql);
     $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
@@ -77,7 +79,7 @@ else {
 
 echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\n";
 
-$sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID
+$sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID
         FROM tbl_collector WHERE SammlerID = '" . mysql_escape_string($id) . "'";
 $result = db_query($sql);
 $row = mysql_fetch_array($result);
@@ -95,11 +97,13 @@ $cf->label(7,6.5,"VIAF","javascript:showExternal(document.f.VIAF_ID)");
 $cf->inputText(7,6.5,50,"VIAF_ID",$row['VIAF_ID'],200);
 $cf->label(7,8.5,"WIKIDATA","javascript:showExternal(document.f.WIKIDATA_ID)");
 $cf->inputText(7,8.5,50,"WIKIDATA_ID",$row['WIKIDATA_ID'],200);
+$cf->label(7,10.5,"ORCID","javascript:showExternal(document.f.ORCID)");
+$cf->inputText(7,10.5,50,"ORCID",$row['ORCID'],200);
 
 if (($_SESSION['editControl'] & 0x1800)!=0) {
   $text = ($row['SammlerID']) ? " Update " : " Insert ";
-  $cf->buttonSubmit(2,12,"submitUpdate",$text);
-  $cf->buttonJavaScript(12,12," New ","self.location.href='editCollector.php?sel=<0>'");
+  $cf->buttonSubmit(2,14,"submitUpdate",$text);
+  $cf->buttonJavaScript(12,14," New ","self.location.href='editCollector.php?sel=<0>'");
 }
 
 echo "</form>\n";

@@ -1,5 +1,6 @@
 <?php
 require_once( 'inc/variables.php' );
+require_once 'inc/password_compat/lib/password.php';
 
 $secure = $_CONFIG['CONNECTION']['secure'];  // set to false if no secure server available
 
@@ -49,8 +50,8 @@ function show_page($text)
 {
     $username = (isset($_POST['username'])) ? $_POST['username'] : '';
 
-?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
-
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+       "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
   <title>HerbarDB - login</title>
@@ -105,7 +106,8 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 mysql_query("SET character set utf8");
                 session_regenerate_id();  // prevent session fixation
                 $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
-                        login=NOW()
+                         login=NOW(),
+                         pw = '" . password_hash(trim($_POST['password']), PASSWORD_DEFAULT) . "'
                         WHERE username='".mysql_escape_string($_POST['username'])."'";
                 mysql_query($sql);
                 $sql = "SELECT *

@@ -312,11 +312,40 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
 <?php
 $blocked = false;  // for now, anybody may insert anything   TODO: check the access rights!
 
+?>
+
+<?php if ($blocked): ?>
+<script type="text/javascript" language="JavaScript">
+  alert('You have no sufficient rights for the desired operation');
+</script>
+<?php endif; ?>
+
+<h1>Import Specimens - <?php
 if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name'])) {
     /**
      * a file was uploaded and is ready to be parsed
      */
-    $type = 1; // file uploaded
+    $run = 2; // file uploaded => 2nd run
+    echo "2nd run";
+} elseif (!empty($_POST['import_data'])) {
+    /**
+     * data is ready to be inserted into the database
+     */
+    $run = 3;  // insert data => 3rd run
+    echo "3rd run";
+} else {
+    /**
+     *  do nothing special, just show the basic form.
+     */
+    $run = 1; // 1st run
+    echo "1st run";
+}
+?></h1>
+
+<form enctype="multipart/form-data" Action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']);?>" Method="POST" name="f">
+
+<?php
+if ($run == 2) {  // file uploaded
     $import = array();
     $handle = @fopen($_FILES['userfile']['tmp_name'], "r");
     if ($handle) {
@@ -749,105 +778,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
             $position[$i] = 3;
         }
     }
-} elseif (!empty($_POST['import_data'])) {
-    /**
-     * data is ready to be inserted into the database
-     */
-    $type = 2;  // insert data
-    $data = array();
-    foreach ($_POST as $k => $v) {
-        $pieces = explode('_', $k);
-        if ($pieces[0] == 'position') {
-            $data[intval($pieces[1])]['position'] = $v;
-        } elseif ($pieces[0] == 'similarTaxa') {
-            if (substr($v, 0, 2) == 'ID') {
-                $data[intval($pieces[1])]['importTaxa'] = substr($v, 2);
-            } else {
-                $data[intval($pieces[1])]['similarID'] = $v;
-            }
-        } elseif ($pieces[0] == 'Sammler2ID') {
-            $data[intval($pieces[1])]['Sammler_2ID'] = $v;
-        } elseif ($pieces[0] == 'seriesnumber') {
-            $data[intval($pieces[1])]['series_number'] = $v;
-        } elseif ($pieces[0] == 'altnumber') {
-            $data[intval($pieces[1])]['alt_number'] = $v;
-        } elseif ($pieces[0] == 'taxonalt') {
-            $data[intval($pieces[1])]['taxon_alt'] = $v;
-        } elseif ($pieces[0] == 'CoordN') {
-            $data[intval($pieces[1])]['Coord_N'] = $v;
-        } elseif ($pieces[0] == 'NMin') {
-            $data[intval($pieces[1])]['N_Min'] = $v;
-        } elseif ($pieces[0] == 'NSec') {
-            $data[intval($pieces[1])]['N_Sec'] = $v;
-        } elseif ($pieces[0] == 'CoordS') {
-            $data[intval($pieces[1])]['Coord_S'] = $v;
-        } elseif ($pieces[0] == 'SMin') {
-            $data[intval($pieces[1])]['S_Min'] = $v;
-        } elseif ($pieces[0] == 'SSec') {
-            $data[intval($pieces[1])]['S_Sec'] = $v;
-        } elseif ($pieces[0] == 'CoordW') {
-            $data[intval($pieces[1])]['Coord_W'] = $v;
-        } elseif ($pieces[0] == 'WMin') {
-            $data[intval($pieces[1])]['W_Min'] = $v;
-        } elseif ($pieces[0] == 'WSec') {
-            $data[intval($pieces[1])]['W_Sec'] = $v;
-        } elseif ($pieces[0] == 'CoordE') {
-            $data[intval($pieces[1])]['Coord_E'] = $v;
-        } elseif ($pieces[0] == 'EMin') {
-            $data[intval($pieces[1])]['E_Min'] = $v;
-        } elseif ($pieces[0] == 'ESec') {
-            $data[intval($pieces[1])]['E_Sec'] = $v;
-        } elseif ($pieces[0] == 'altitudemin') {
-            $data[intval($pieces[1])]['altitude_min'] = $v;
-        } elseif ($pieces[0] == 'altitudemax') {
-            $data[intval($pieces[1])]['altitude_max'] = $v;
-        } elseif ($pieces[0] == 'digitalimage') {
-            $data[intval($pieces[1])]['digital_image'] = $v;
-        } elseif ($pieces[0] == 'digitalimageobs') {
-            $data[intval($pieces[1])]['digital_image_obs'] = $v;
-        } elseif ($pieces[0] == 'observation') {
-            $data[intval($pieces[1])]['observation'] = $v;
-        } elseif ($pieces[0] == 'Fundortengl') {
-            $data[intval($pieces[1])]['Fundort_engl'] = $v;
-        } elseif ($pieces[0] == 'quadrantsub') {
-            $data[intval($pieces[1])]['quadrant_sub'] = $v;
-        } elseif (    $pieces[0] == 'HerbNummer'    || $pieces[0] == 'seriesID'   || $pieces[0] == 'taxonID' || $pieces[0] == 'SammlerID'
-                   || $pieces[0] == 'CollNummer'
-                   || $pieces[0] == 'collectionID'  || $pieces[0] == 'Nummer'     || $pieces[0] == 'Datum'   || $pieces[0] == 'Datum2'
-                   || $pieces[0] == 'Bemerkungen'   || $pieces[0] == 'typified'   || $pieces[0] == 'typusID' || $pieces[0] == 'NationID'
-                   || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'det'
-                   || $pieces[0] == 'exactness'     || $pieces[0] == 'Habitat'    || $pieces[0] == 'Habitus' || $pieces[0] == 'quadrant'
-                   || $pieces[0] == 'identstatusID' || $pieces[0] == 'importTaxa' || $pieces[0] == 'contentid') {
-            $data[intval($pieces[1])][$pieces[0]] = $v;
-        }
-    }
 
-    // the real database-insert happens down below to show what the DB returns
-} else {
-    /**
-     *  do nothing special, just show the basic form.
-     */
-    $type = 0;
-}
-?>
-
-<?php if ($blocked): ?>
-<script type="text/javascript" language="JavaScript">
-  alert('You have no sufficient rights for the desired operation');
-</script>
-<?php endif; ?>
-
-<h1>Import Specimens</h1>
-
-<form enctype="multipart/form-data" Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
-
-<input type="hidden" name="MAX_FILE_SIZE" value="8000000" />
-Import this file: <input name="userfile" type="file" />
-<input type="submit" value="check Import" />
-<p>
-
-<?php
-if ($type == 1) {  // file uploaded
     if ($importableTaxaPresent) {
         echo "If taxa will be imported use this external-ID: "
            . "<select name='externalID'>\n"
@@ -1017,7 +948,77 @@ if ($type == 1) {  // file uploaded
         }
         echo "</table>\n";
     }
-} elseif ($type ==2) {  // insert data
+} elseif ($run == 3) {  // insert data
+    $data = array();
+    foreach ($_POST as $k => $v) {
+        $pieces = explode('_', $k);
+        if ($pieces[0] == 'position') {
+            $data[intval($pieces[1])]['position'] = $v;
+        } elseif ($pieces[0] == 'similarTaxa') {
+            if (substr($v, 0, 2) == 'ID') {
+                $data[intval($pieces[1])]['importTaxa'] = substr($v, 2);
+            } else {
+                $data[intval($pieces[1])]['similarID'] = $v;
+            }
+        } elseif ($pieces[0] == 'Sammler2ID') {
+            $data[intval($pieces[1])]['Sammler_2ID'] = $v;
+        } elseif ($pieces[0] == 'seriesnumber') {
+            $data[intval($pieces[1])]['series_number'] = $v;
+        } elseif ($pieces[0] == 'altnumber') {
+            $data[intval($pieces[1])]['alt_number'] = $v;
+        } elseif ($pieces[0] == 'taxonalt') {
+            $data[intval($pieces[1])]['taxon_alt'] = $v;
+        } elseif ($pieces[0] == 'CoordN') {
+            $data[intval($pieces[1])]['Coord_N'] = $v;
+        } elseif ($pieces[0] == 'NMin') {
+            $data[intval($pieces[1])]['N_Min'] = $v;
+        } elseif ($pieces[0] == 'NSec') {
+            $data[intval($pieces[1])]['N_Sec'] = $v;
+        } elseif ($pieces[0] == 'CoordS') {
+            $data[intval($pieces[1])]['Coord_S'] = $v;
+        } elseif ($pieces[0] == 'SMin') {
+            $data[intval($pieces[1])]['S_Min'] = $v;
+        } elseif ($pieces[0] == 'SSec') {
+            $data[intval($pieces[1])]['S_Sec'] = $v;
+        } elseif ($pieces[0] == 'CoordW') {
+            $data[intval($pieces[1])]['Coord_W'] = $v;
+        } elseif ($pieces[0] == 'WMin') {
+            $data[intval($pieces[1])]['W_Min'] = $v;
+        } elseif ($pieces[0] == 'WSec') {
+            $data[intval($pieces[1])]['W_Sec'] = $v;
+        } elseif ($pieces[0] == 'CoordE') {
+            $data[intval($pieces[1])]['Coord_E'] = $v;
+        } elseif ($pieces[0] == 'EMin') {
+            $data[intval($pieces[1])]['E_Min'] = $v;
+        } elseif ($pieces[0] == 'ESec') {
+            $data[intval($pieces[1])]['E_Sec'] = $v;
+        } elseif ($pieces[0] == 'altitudemin') {
+            $data[intval($pieces[1])]['altitude_min'] = $v;
+        } elseif ($pieces[0] == 'altitudemax') {
+            $data[intval($pieces[1])]['altitude_max'] = $v;
+        } elseif ($pieces[0] == 'digitalimage') {
+            $data[intval($pieces[1])]['digital_image'] = $v;
+        } elseif ($pieces[0] == 'digitalimageobs') {
+            $data[intval($pieces[1])]['digital_image_obs'] = $v;
+        } elseif ($pieces[0] == 'observation') {
+            $data[intval($pieces[1])]['observation'] = $v;
+        } elseif ($pieces[0] == 'Fundortengl') {
+            $data[intval($pieces[1])]['Fundort_engl'] = $v;
+        } elseif ($pieces[0] == 'quadrantsub') {
+            $data[intval($pieces[1])]['quadrant_sub'] = $v;
+        } elseif (    $pieces[0] == 'HerbNummer'    || $pieces[0] == 'seriesID'   || $pieces[0] == 'taxonID' || $pieces[0] == 'SammlerID'
+                   || $pieces[0] == 'CollNummer'
+                   || $pieces[0] == 'collectionID'  || $pieces[0] == 'Nummer'     || $pieces[0] == 'Datum'   || $pieces[0] == 'Datum2'
+                   || $pieces[0] == 'Bemerkungen'   || $pieces[0] == 'typified'   || $pieces[0] == 'typusID' || $pieces[0] == 'NationID'
+                   || $pieces[0] == 'provinceID'    || $pieces[0] == 'Fundort'    || $pieces[0] == 'det'
+                   || $pieces[0] == 'exactness'     || $pieces[0] == 'Habitat'    || $pieces[0] == 'Habitus' || $pieces[0] == 'quadrant'
+                   || $pieces[0] == 'identstatusID' || $pieces[0] == 'importTaxa' || $pieces[0] == 'contentid') {
+            $data[intval($pieces[1])][$pieces[0]] = $v;
+        }
+    }
+
+    // the real database-insert happens down below to show what the DB returns
+
     echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
     echo '<div id="import_errors" class="error">' . "\n";
 
@@ -1123,6 +1124,10 @@ if ($type == 1) {  // file uploaded
     }
     echo "</div>\n";
     echo '<div id="import_success">' . $imported . (($imported > 1) ? " entries have" : " entry has") . " been imported </div>\n";
+} else {    // show upload form
+    echo "<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />\n"
+       . "Import this file: <input name='userfile' type='file' />\n"
+       . "<input type='submit' value='check Import' />\n";
 }
 
 ?></form>
