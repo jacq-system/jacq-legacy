@@ -82,7 +82,7 @@ function getPicInfo($picdetails) {
 
     if ($picdetails['is_djatoka'] == '1') {
         // Construct URL to servlet
-        $url = $picdetails['url'] . '/jacq-servlet/ImageServer';
+        $url = cleanURL($picdetails['url'] . '/jacq-servlet/ImageServer');
 
         // Prepare json-rpc conform request structure
         $jsonrpc_request = json_encode(array(
@@ -173,9 +173,14 @@ function doRedirectShowPic($picdetails) {
 
         // Construct URL to viewer
         if (in_array($picdetails['originalFilename'], $identifiers)) {
+            // the filename is in the list returend by the picture-server
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
-        } else {
+        } elseif (!empty ($identifiers)) {
+            // the filename is not in the list, but there is a list
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picinfo['pics'][0] . '&identifiers=' . $identifiers;
+        } else {
+            // the picture-server didn't respond or the returned list is empty, so we guess a name...
+            $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $picdetails['originalFilename'];
         }
     }
     else if ($picdetails['is_djatoka'] == '2') {
