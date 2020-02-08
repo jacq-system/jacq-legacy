@@ -1,6 +1,5 @@
 <?php
-
-@session_start();
+session_start();
 require_once("./inc/functions.php");
 require_once('inc/imageFunctions.php');
 
@@ -8,15 +7,10 @@ require_once('inc/imageFunctions.php');
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
  */
 
-//isIncluded: set in detail.php
-if (!isset($image_isIncluded)) {
-    #if($_SERVER['PATH_INFO'][0]=='/')$_SERVER['PATH_INFO']=substr($_SERVER['PATH_INFO'],1);
-    #@list($filename,$method,$format)=explode('/',$_SERVER['PATH_INFO']);
-    $filename = isset($_GET['filename']) ? $_GET['filename'] : '';
-    $method = isset($_GET['method']) ? $_GET['method'] : '';
-    $format = isset($_GET['format']) ? $_GET['format'] : '';
-    getResult($filename, $method, $format);
-}
+$filename = isset($_GET['filename']) ? $_GET['filename'] : '';
+$method = isset($_GET['method']) ? $_GET['method'] : '';
+$format = isset($_GET['format']) ? $_GET['format'] : '';
+getResult($filename, $method, $format);
 
 function getResult($filename, $method, $format) {
     $picdetails = getPicDetails($filename);
