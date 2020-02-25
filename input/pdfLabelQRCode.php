@@ -14,6 +14,24 @@ no_magic();
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
 
+
+/**
+ * if a HerbNumber starts with the source-code of the institution, leave it there, otherwise add it
+ * delete all spaces berofe returning
+ *
+ * @param string HerbNumber
+ * @param string source-code of institution
+ * @return string generated Unit-ID
+ */
+function makeUnitID($HerbNummer, $SourceInstitutionID)
+{
+    if (substr($HerbNummer, 0, strlen($SourceInstitutionID)) == $SourceInstitutionID) {
+        return preg_replace("/\s+/", '', $HerbNummer);
+    } else {
+        return preg_replace("/\s+/", '', $SourceInstitutionID . $HerbNummer);
+    }
+}
+
 /**
  * make the text elements to show on the QR-Code label
  * if there is a stable identifier, get it as UnitID
@@ -23,7 +41,7 @@ require_once('inc/tcpdf_6_3_2/tcpdf.php');
  */
 function makeText($id)
 {
-    $sql = "SELECT s.specimen_ID, s.HerbNummer, m.QR_code_header, mc.collection
+    $sql = "SELECT s.specimen_ID, s.HerbNummer, m.QR_code_header, mc.collection, m.SourceInstitutionID
             FROM tbl_specimens s, tbl_management_collections mc, herbarinput.metadata m
             WHERE s.collectionID = mc.collectionID
              AND mc.source_id = m.MetadataID
@@ -31,9 +49,12 @@ function makeText($id)
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
 
+    preg_replace($row_meta_stblid['pattern'], $row_meta_stblid['replacement'], $row[$column]);
+
+
     $text['Herbarium']  = $row['QR_code_header'];
     $text['Collection'] = ($row['collection']) ? 'Herbarium ' . $row['collection'] : "";
-    $text['UnitID']     = $row['HerbNummer'];
+    $text['UnitID']     = makeUnitID($row['HerbNummer'], $row['SourceInstitutionID']);
     $text['StblID']     = getStableIdentifier($row['specimen_ID']);
 
     return $text;
@@ -49,7 +70,7 @@ function makeText($id)
  */
 function makePreText($sourceID, $collectionID, $number)
 {
-    $result_source = db_query("SELECT QR_code_header FROM herbarinput.metadata WHERE MetadataID = '$sourceID'");
+    $result_source = db_query("SELECT QR_code_header, SourceInstitutionID FROM herbarinput.metadata WHERE MetadataID = '$sourceID'");
     $row_source = mysql_fetch_array($result_source);
     $text['Herbarium'] = $row_source['QR_code_header'];
 
@@ -57,7 +78,7 @@ function makePreText($sourceID, $collectionID, $number)
     $row_coll = mysql_fetch_array($result_coll);
     $text['Collection'] = ($row_coll['collection']) ? 'Herbarium ' . $row_coll['collection'] : "";
 
-    $text['UnitID'] = $number;
+    $text['UnitID'] = makeUnitID($number, $row_source['SourceInstitutionID']);
     $text['StblID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);
 
     return $text;
