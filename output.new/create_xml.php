@@ -3,7 +3,8 @@ ini_set( 'error_reporting', 'E_NONE' );
 ini_set( 'display_errors', Off );
 
 session_start();
-require("inc/functions.php");
+require_once("inc/functions.php");
+require_once('inc/imageFunctions.php');
 
 function protolog($row)
 {
@@ -158,9 +159,6 @@ $data_result = $dbLink->query($query);
 $num_rows = $data_result->num_rows;
 $curr_row = 0;
 
-$image_isIncluded=true;
-require_once('image.php');
-
 while( $data_row = $data_result->fetch_array() ) {
     $curr_row++;
 
@@ -223,7 +221,7 @@ while( $data_row = $data_result->fetch_array() ) {
 
 
         $picdetails = getPicDetails($row['specimen_ID']);
-        $transfer = getPicInfo($picdetails);
+        $transfer   = getPicInfo($picdetails);
 
         if( count($transfer['pics']) > 0 ) {
             // Correct the name if necessary

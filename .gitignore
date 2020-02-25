@@ -3,3 +3,4 @@ variables.php
 /annonaceae/inc/connect.php
 .idea
 input/install.php
+/output.new/testJsonRPC.php

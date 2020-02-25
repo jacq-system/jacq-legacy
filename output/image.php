@@ -2,6 +2,7 @@
 
 @session_start();
 require_once("./inc/functions.php");
+require_once("./inc/jsonRPCClient.php");
 
 /*
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
@@ -84,6 +85,26 @@ function getPicInfo($picdetails) {
         // Construct URL to servlet
         $url = cleanURL($picdetails['url'] . '/jacq-servlet/ImageServer');
 
+        // Create a service instance and send requests to jacq-servlet
+        try {
+            $service = new jsonRPCClient($url);
+            $response = array(
+                'output' => '',
+                'pics'   => $service->listResources($picdetails['key'],
+                                                      array($picdetails['filename'],
+                                                            $picdetails['filename'] . "\_%",
+                                                            $picdetails['filename'] . "A",
+                                                            $picdetails['filename'] . "B",
+                                                            "tab_" . $picdetails['specimenID'],
+                                                            "obs_" . $picdetails['specimenID'],
+                                                            "tab\_" . $picdetails['specimenID'] . "\_%",
+                                                            "obs\_" . $picdetails['specimenID'] . "\_%")));
+        }
+        catch( Exception $e ) {
+            return jsonError('Unable to connect to ' . $url . " with Error: " . $e->getMessage());
+        }
+
+        /*
         // Prepare json-rpc conform request structure
         $jsonrpc_request = json_encode(array(
             'id' => 1234,
@@ -117,6 +138,7 @@ function getPicInfo($picdetails) {
         else {
             return jsonError('Unable to connect to ' . $url);
         }
+        */
     }
     else if ($picdetails['is_djatoka'] == '2') {
         // Construct URL to servlet
