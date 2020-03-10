@@ -1,5 +1,6 @@
 <?php
 //ini_set('memory_limit', '32M');
+ini_set("max_execution_time","3600");
 $check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
 if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
   session_cache_limiter('none');
@@ -258,16 +259,10 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     $labels = array();
     $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->labelsPerPage);
     $page = 0;
-    $line = 0;
     for ($i = $numberStart; $i <= $numberEnd; $i++) {
-        $labels[$page][] = $i;
-        $line++;
-        if ($line >= $pdf->rowsPerPage) {
-            $page++;
-            $line = 0;
-            if ($page >= $nrOfPages) {
-                $page = 0;
-            }
+        $labels[$page++][] = $i;
+        if ($page >= $nrOfPages) {
+            $page = 0;
         }
     }
 
