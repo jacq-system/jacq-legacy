@@ -4,3 +4,4 @@ variables.php
 .idea
 input/install.php
 /output.new/testJsonRPC.php
+/input/checkSpecimensStblid.php
