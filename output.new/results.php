@@ -58,8 +58,10 @@ tbl_tax_systematic_categories
 <?php
 if (isset($_GET['order']) && $_GET['order'] == 2) {
     $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer";
+    $moinorder = 2;
 } else {
     $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer";
+    $moinorder = 1;
 }
 
 /**
@@ -92,7 +94,7 @@ if ($res_count) {
     $nrRows = 0;
 }
 
-$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2);
+$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2, 2);
 $b = "";
 foreach ($limits as $f) {
     $b .= "<option value=\"$f\" " . (($f == $_SESSION['ITEMS_PER_PAGE']) ? 'selected' : '') . ">$f</option>";

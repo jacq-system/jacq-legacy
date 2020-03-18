@@ -58,18 +58,21 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
 }
 function rdfcollection($row) {
 
-    if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID']){
+    if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID'] || $row['ORCID']){
         $text = "";
         if ($row['WIKIDATA_ID']) {
-           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/wikidata.png" width="20px"</a>&nbsp;';
+           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" width="20px"</a>&nbsp;';
         }
         if ($row['HUH_ID']) {
-           $text .= "<a href=\"" . $row['HUH_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/huh.png" height="20px"</a>&nbsp;';
+           $text .= "<a href=\"" . $row['HUH_ID'] . '" target="_blank" class="leftnavi"><img src="assets/images/huh.png" height="20px"</a>&nbsp;';
         }
         if ($row['VIAF_ID']) {
-           $text .= "<a href=\"" . $row['VIAF_ID'] . '" target="_blank" class="leftnavi"><img src="/output.new/assets/images/viaf.png" width="20px"</a>&nbsp;';
+           $text .= "<a href=\"" . $row['VIAF_ID'] . '" target="_blank" class="leftnavi"><img src="assets/images/viaf.png" width="20px"</a>&nbsp;';
         }
-        $text .= "<a href=\"https://ww2.bgbm.org/herbarium/sparql.cfm?uri=" . $row['VIAF_ID'] . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+        if ($row['ORCID']) {
+           $text .= "<a href=\"" . $row['ORCID'] . '" target="_blank" class="leftnavi"><img src="assets/images/orcid.logo.icon.svg" width="20px"</a>&nbsp;';
+        }
+        $text .= "<a href=\"https://ww3.bgbm.org/php/rdf2/examples/bt/main.php?q=" . basename($row['WIKIDATA_ID']) . '&v=' . basename($row['VIAF_ID']) . '&h=' . basename($row['HUH_ID']) . '&o=' . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
     }
     else {
         $text = $row['Sammler'];
@@ -254,6 +257,32 @@ function taxonWithHybrids($row) {
     }
 }
 
+function getTaxonAuth($taxid) {
+    global $dbLink;
+    $sql = "SELECT hyper FROM lagu_pilot.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
+    $result = $dbLink->query($sql);
+
+    if ($result->num_rows > 0) {
+    // output data of each row
+        while($row = $result->fetch_assoc()) {
+            echo "<br> Reference in: " . $row["hyper"]. "; ";
+        }
+    }
+}
+
+function getGeonamesID($HerbNummer) {
+    global $dbLink;
+    $sql = "SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode like '" . ($HerbNummer) . "';";
+    $result = $dbLink->query($sql);
+
+    if ($result->num_rows > 0) {
+    // output data of each row
+        while($row = $result->fetch_assoc()) {
+         echo "<br> Reference in: <a href='" . $row["GeonamesID"]. "'>Geonames</a>; ";
+        }
+    } 
+}
+
 /* * ***********************************************************************
   php easy :: pagination scripts set - Version Three
   ==========================================================================
@@ -262,7 +291,7 @@ function taxonWithHybrids($row) {
   Contact:     webmaster@phpeasycode.com
  * *********************************************************************** */
 
-function paginate_three($reload, $page, $tpages, $adjacents) {
+function paginate_three($reload, $page, $tpages, $adjacents, $order) {
     $prevlabel = "<i class='material-icons'>chevron_left</i>";
     $nextlabel = "<i class='material-icons'>chevron_right</i>";
 

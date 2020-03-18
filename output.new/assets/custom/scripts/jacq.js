@@ -185,10 +185,11 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
   if ( settings.url === "index.php" || settings.url.includes("results.php") ) {
     $(".pagination>li").click(function(){
       var page = $(this).data('value');
+     // var orderCol = $order;
       if(page !== null){
         $(".progress-paging").show();
         $.ajax({
-          url: "results.php?s=s&page="+page,
+          url: "results.php?s=s&page="+page+"&order=" ,
           type: "GET", 
           success: function(result){
             $('#results').html(result);

@@ -218,6 +218,7 @@ textarea.materialize-textarea:focus:not([readonly])+label {
 
 .searchinput {
   height: 1rem !important;
+  font-size: 15px !important;
 }
 
 /* do not group these rules */
