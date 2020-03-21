@@ -64,17 +64,23 @@ while ($row_sources = $result_sources->fetch_array()) {
                                   LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                                  WHERE mc.source_id = " . $row_sources['source_id'] . "
                                   AND s.HerbNummer IS NOT NULL
-                                  AND s.HerbNummer != 0");
+                                  AND s.HerbNummer != 0
+                                  AND s.specimen_ID NOT IN (SELECT specimen_ID FROM tbl_specimens_stblid)
+                                 ORDER BY mc.collectionID, s.specimen_ID");
     while ($row_specimen = $result_specimen->fetch_array()) {
-        /** @var mysqli_result $result_test */
-        $result_test = db_query("SELECT id FROM tbl_specimens_stblid WHERE specimen_ID = '" . $row_specimen['specimen_ID'] . "'");
-        if ($result_test->num_rows == 0) {
-            $missing[$row_sources['source_id']][] = array('specimen_ID' => $row_specimen['specimen_ID'], 'HerbNummer' => $row_specimen['HerbNummer']);
-        }
+        $result_number = db_query("SELECT count(s.HerbNummer) AS number
+                                   FROM tbl_specimens s
+                                    LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                   WHERE HerbNummer = '" . $row_specimen['HerbNummer'] . "'
+                                    AND mc.source_id = "  . $row_specimen['source_id'] . "
+                                   GROUP BY HerbNummer");
+        $row_number = $result_number->fetch_array();
+        $missing[$row_sources['source_id']][] = array('specimen_ID'  => $row_specimen['specimen_ID'],
+                                                      'collectionID' => $row_specimen['collectionID'],
+                                                      'HerbNummer'   => $row_specimen['HerbNummer'],
+                                                      'count'        => $row_number['number']);
     }
 }
-
-
 
 //SELECT  specimen_ID, COUNT(`specimen_ID`) as cnt
 //FROM `tbl_specimens_stblid`
@@ -94,15 +100,17 @@ while ($row_sources = $result_sources->fetch_array()) {
 ?>
         </p>
         <table>
-            <tr><th>source-ID&nbsp;</th><th>specimen-ID&nbsp;</th><th>HerbNummer</th></tr>
+            <tr><th>source-ID&nbsp;</th><th>collection-ID</th><th>specimen-ID&nbsp;</th><th>HerbNummer</th><th></th></tr>
 <?php
     foreach ($missing as $source_id => $missing_block) {
         $anchor = "<a name='$source_id'>$source_id</a>";
         foreach($missing_block as $row) {
             echo "<tr>"
                . "<td align='center'>$anchor</td>"
+               . "<td align='center'>" . $row['collectionID'] . "</td>"
                . "<td align='center'>" . $row['specimen_ID'] . "</td>"
                . "<td align='center'>" . $row['HerbNummer'] . "</td>"
+               . "<td align='center'>(" . $row['count'] . ")</td>"
                . "</tr>\n";
             $anchor = $source_id;
         }
