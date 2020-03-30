@@ -1,6 +1,6 @@
 <?php
 session_start();
-require("inc/functions.php");
+require("inc/dev-functions.php");
 require_once('inc/imageFunctions.php');
 
 function protolog($row)
@@ -224,9 +224,9 @@ if (isset($_GET['ID'])) {
     $ID = 0;
 }
 
-$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
+           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,s.taxonID taxid,
            mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.typified,
            s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -270,7 +270,9 @@ $row = $result->fetch_array();
 
 $taxon = taxonWithHybrids($row);
 
-$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
+//$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
+$sammler = rdfcollection($row);
+
 if ($row['ncbi_accession']) {
     $sammler .=  " &mdash; " . $row['ncbi_accession']
               .  " <a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term="
@@ -298,6 +300,7 @@ if ($row['ncbi_accession']) {
       <td><b>
         <?php makeCell($taxon); ?>
         </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+        <?php getTaxonAuth($row['taxid']); ?>
       </td>
     </tr>
     <?php if ($accName): ?>
@@ -378,8 +381,9 @@ if ($row['ncbi_accession']) {
           } else {
               echo "&nbsp;";
           }
-        ?>
-      </b></td>
+        ?></b>
+        <?php getGeonamesID($row['HerbNummer']);?>
+      </td>
     </tr>
     <tr>
       <td align="right">Label</td>
@@ -400,7 +404,7 @@ if ($row['ncbi_accession']) {
       </b></td>
     </tr>
     <?php
-        if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
+        if (($row['source_id'] == '29' || $row['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
             echo "<tr>";
             // create new id object
             $id = new MyTripleID($row['HerbNummer']);
@@ -454,7 +458,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
         echo "</td>\n";
     } elseif ($picdetails['imgserver_type'] == 'baku') {
         $file=rawurlencode(basename($picdetails['specimenID']));
-	    echo "<td valign='top' align='center'>"
+      echo "<td valign='top' align='center'>"
            . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
            . "(<a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)"
            . "</td>";
