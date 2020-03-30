@@ -259,8 +259,8 @@ foreach ($tbls as $tbl) {
          * image_url
          */
         if ($row['digital_image'] || $row['digital_image_obs']) {
-            $image_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=show";
-            $thumb_url = "http://herbarium.univie.ac.at/database/image.php?filename=" . $row['specimen_ID'] . "&method=europeana";
+            $image_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=show";
+            $thumb_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=europeana";
         }
         else {
             $image_url = "";

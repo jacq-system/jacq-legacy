@@ -2,6 +2,7 @@
 
 @session_start();
 require_once("./inc/functions.php");
+require_once("./inc/jsonRPCClient.php");
 
 /*
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
@@ -82,8 +83,28 @@ function getPicInfo($picdetails) {
 
     if ($picdetails['is_djatoka'] == '1') {
         // Construct URL to servlet
-        $url = $picdetails['url'] . '/jacq-servlet/ImageServer';
+        $url = cleanURL($picdetails['url'] . '/jacq-servlet/ImageServer');
 
+        // Create a service instance and send requests to jacq-servlet
+        try {
+            $service = new jsonRPCClient($url);
+            $response = array(
+                'output' => '',
+                'pics'   => $service->listResources($picdetails['key'],
+                                                      array($picdetails['filename'],
+                                                            $picdetails['filename'] . "\_%",
+                                                            $picdetails['filename'] . "A",
+                                                            $picdetails['filename'] . "B",
+                                                            "tab_" . $picdetails['specimenID'],
+                                                            "obs_" . $picdetails['specimenID'],
+                                                            "tab\_" . $picdetails['specimenID'] . "\_%",
+                                                            "obs\_" . $picdetails['specimenID'] . "\_%")));
+        }
+        catch( Exception $e ) {
+            return jsonError('Unable to connect to ' . $url . " with Error: " . $e->getMessage());
+        }
+
+        /*
         // Prepare json-rpc conform request structure
         $jsonrpc_request = json_encode(array(
             'id' => 1234,
@@ -117,6 +138,7 @@ function getPicInfo($picdetails) {
         else {
             return jsonError('Unable to connect to ' . $url);
         }
+        */
     }
     else if ($picdetails['is_djatoka'] == '2') {
         // Construct URL to servlet
@@ -173,9 +195,14 @@ function doRedirectShowPic($picdetails) {
 
         // Construct URL to viewer
         if (in_array($picdetails['originalFilename'], $identifiers)) {
+            // the filename is in the list returend by the picture-server
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
-        } else {
+        } elseif (!empty ($identifiers)) {
+            // the filename is not in the list, but there is a list
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picinfo['pics'][0] . '&identifiers=' . $identifiers;
+        } else {
+            // the picture-server didn't respond or the returned list is empty, so we guess a name...
+            $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $picdetails['originalFilename'];
         }
     }
     else if ($picdetails['is_djatoka'] == '2') {
