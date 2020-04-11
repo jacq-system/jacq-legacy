@@ -66,8 +66,8 @@ $dbLink2->query("INSERT $dbt.tbl_specimens_types_mv
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
-                            (NameAuthorYearString,                        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   PrimaryCollector, IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det)
-                      SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID, s.Bemerkungen,   mc.source_id, s.det
+                            (NameAuthorYearString,                        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, habitat,   habitus,   CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   PrimaryCollector, CollectorTeam, IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det,   RecordBasis)
+                      SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        s.habitat, s.habitus, gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        ' ',           s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID, s.Bemerkungen,   mc.source_id, s.det, ' '
                       FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                        LEFT JOIN tbl_tax_epithets te  ON te.epithetID  = ts.speciesID
                        LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
@@ -301,14 +301,14 @@ foreach ($tbls as $tbl) {
                  SecondEpithet = " . $dbLink2->quoteString($SecondEpithet) . ",
                  HybridFlag = " . (($row['statusID'] == 1) ? "1" : "NULL") . ",
                  ISODateTimeBegin = " . $dbLink2->quoteString((trim($row['Datum']) == "s.d.") ? "" : $row['Datum']) . ",
-                 NamedAreaName = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? substr($row['provinz'], 0, 2) : $row['provinz']) . ",
+                 NamedAreaName = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? mb_substr($row['provinz'], 0, 2) : $row['provinz']) . ",
                  NamedAreaClass = " . (($row['nation_engl'] == "Austria") ? "'Bundesland'" : "NULL") . ",
                  LatitudeDecimal = " . $dbLink2->quoteString($LatitudeDecimal) . ",
                  LongitudeDecimal = " . $dbLink2->quoteString($LongitudeDecimal) . ",
                  SpatialDatum = " . $dbLink2->quoteString($SpatialDatum) . ",
                  CollectorsFieldNumber = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
                  GatheringAgentsText = " . $dbLink2->quoteString($GatheringAgentsText) . ",
-                 CollectorTeam = " . $dbLink2->quoteString($CollectorTeam) . ",
+                 CollectorTeam = '" . $dbLink2->real_escape_string($CollectorTeam) . "',
                  IdentificationDate = " . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url = " . $dbLink2->quoteString($image_url) . ",
                  thumb_url = " . $dbLink2->quoteString($thumb_url) . ",
