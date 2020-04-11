@@ -1,6 +1,7 @@
 <?php
 //ini_set('memory_limit', '32M');
-$check = $_SERVER['HTTP_USER_AGENT'];
+ini_set("max_execution_time","3600");
+$check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
 if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
   session_cache_limiter('none');
 }
@@ -17,7 +18,7 @@ require_once('inc/tcpdf_6_3_2/tcpdf.php');
 
 /**
  * if a HerbNumber starts with the source-code of the institution, leave it there, otherwise add it
- * delete all spaces berofe returning
+ * delete all spaces before returning
  *
  * @param string HerbNumber
  * @param string source-code of institution
@@ -33,11 +34,11 @@ function makeUnitID($HerbNummer, $SourceInstitutionID)
 }
 
 /**
- * make the text elements to show on the QR-Code label
- * if there is a stable identifier, get it as UnitID
+ * make the text elements to show on the QR-Code label of a given specimen
+ * if there is a stable identifier, get it as StblID
  *
  * @param int $id the specimen-ID
- * @return array the three lines of text (abbr, Herbarium, UnitID)
+ * @return array the three lines of text (Herbarium, Collection, UnitID) and the stable identifier
  */
 function makeText($id)
 {
@@ -48,9 +49,6 @@ function makeText($id)
              AND s.specimen_ID = '$id'";
     $result = db_query($sql);
     $row = mysql_fetch_array($result);
-
-    preg_replace($row_meta_stblid['pattern'], $row_meta_stblid['replacement'], $row[$column]);
-
 
     $text['Herbarium']  = $row['QR_code_header'];
     $text['Collection'] = ($row['collection']) ? 'Herbarium ' . $row['collection'] : "";
@@ -66,7 +64,7 @@ function makeText($id)
  * @param int $sourceID the source_id
  * @param int $collectionID the collectionID
  * @param int $number the number used for the UnitID
- * @return array the three lines of text (abbr, Herbarium, UnitID)
+ * @return array the three lines of text (Herbarium, Collection, UnitID) and the stable identifier
  */
 function makePreText($sourceID, $collectionID, $number)
 {
@@ -86,6 +84,12 @@ function makePreText($sourceID, $collectionID, $number)
 
 class LABEL extends TCPDF
 {
+    // label rows per page
+    public $rowsPerPage = 18;
+
+    // labels per page
+    public $labelsPerPage = 18 * 3;  // $this->rowsPerPage * $this->ncols
+
     // size of QRCode
     protected $QRsize = 12;
 
@@ -178,6 +182,12 @@ class LABEL extends TCPDF
         $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 46 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
         $this->Ln();
     }
+
+    public function startNewPage ()
+    {
+        $this->AddPage();
+        $this->SetCol(0);               //Go back to first column
+    }
 }
 
 
@@ -191,7 +201,7 @@ $pdf->AddPage();
 
 $pdf->SetFont('helvetica', '', 9);
 
-if (empty($_POST['institution_QR'])) {
+if (empty($_POST['institution_QR'])) {  // make labels for a list of given specimens
     $sql = "SELECT s.specimen_ID, l.label
             FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
              LEFT JOIN tbl_labels l ON (s.specimen_ID = l.specimen_ID AND l.userID = '".intval($_SESSION['uid'])."')
@@ -214,9 +224,9 @@ if (empty($_POST['institution_QR'])) {
             $pdf->makeLabel($labelText);
         }
     }
-} else {
-    $sourceID     = intval(abs($_POST['institution_QR']));
-    $collectionID = intval($_POST['collection_QR']);
+} else {    // make standard-labels to stick on the herbarium specimen
+    $sourceID     = intval(abs(filter_input(INPUT_POST, 'institution_QR', FILTER_SANITIZE_NUMBER_INT)));
+    $collectionID = intval(filter_input(INPUT_POST, 'collection_QR', FILTER_SANITIZE_NUMBER_INT));
 
     $sql = "SELECT digits
             FROM tbl_labels_numbering
@@ -231,23 +241,44 @@ if (empty($_POST['institution_QR'])) {
         $digits = 0;
     }
 
-    preg_match('/\D/', strrev($_POST['start']), $matches, PREG_OFFSET_CAPTURE);
+    $input_start = filter_input(INPUT_POST, 'start', FILTER_SANITIZE_STRING);   // holds the content of the input-field "start" of listLabel.php
+    $input_stop  = filter_input(INPUT_POST, 'stop', FILTER_SANITIZE_STRING);    // holds the content of the input-field "stop" of listLabel.php
+    preg_match('/\D/', strrev($input_start), $matches, PREG_OFFSET_CAPTURE);
     if ($matches) {
-        $preamble    = substr($_POST['start'], 0, -$matches[0][1]);
-        $numberStart = substr($_POST['start'], -$matches[0][1]);
-        $numberEnd   = substr($_POST['stop'], strlen($_POST['start']) - $matches[0][1]);
+        $preamble    = substr($input_start, 0, -$matches[0][1]);
+        $numberStart = substr($input_start, -$matches[0][1]);
+        $numberEnd   = substr($input_stop, strlen($input_start) - $matches[0][1]);
         $digits      = ($digits) ? $digits : $matches[0][1];
     } else {
         $preamble    = "";
-        $numberStart = intval($_POST['start']);
-        $numberEnd   = intval($_POST['stop']);
-        $digits      = ($digits) ? $digits : strlen($_POST['start']);
+        $numberStart = intval($input_start);
+        $numberEnd   = intval($input_stop);
+        $digits      = ($digits) ? $digits : strlen($input_start);
     }
 
+    $labels = array();
+    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->labelsPerPage);
+    $page = 0;
     for ($i = $numberStart; $i <= $numberEnd; $i++) {
-        $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $i));
-        if (count($labelText) > 0) {
-            $pdf->makeLabel($labelText);
+        $labels[$page++][] = $i;
+        if ($page >= $nrOfPages) {
+            $page = 0;
+        }
+    }
+
+    for ($page = 0; $page < $nrOfPages; $page++) {
+        for ($i = 0; $i < $pdf->labelsPerPage; $i++) {
+            if (!empty($labels[$page][$i])) {
+                $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
+                if (count($labelText) > 0) {
+                    $pdf->makeLabel($labelText);
+                }
+            } else {
+                if ($page < $nrOfPages - 1) {
+                    $pdf->startNewPage();
+                }
+                break;
+            }
         }
     }
 }
