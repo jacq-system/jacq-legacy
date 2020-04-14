@@ -224,7 +224,7 @@ if (isset($_GET['ID'])) {
     $ID = 0;
 }
 
-$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
+$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
            n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,s.taxonID taxid,
            mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.typified,
@@ -300,7 +300,7 @@ if ($row['ncbi_accession']) {
       <td><b>
         <?php makeCell($taxon); ?>
         </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
-        <?php getTaxonAuth($row['taxid']); ?>
+        <?php makeCell(getTaxonAuth($row['taxid'])); ?>
       </td>
     </tr>
     <?php if ($accName): ?>
@@ -382,7 +382,7 @@ if ($row['ncbi_accession']) {
               echo "&nbsp;";
           }
         ?></b>
-        <?php getGeonamesID($row['HerbNummer']);?>
+        <?php makeCell(getGeonamesID($row['HerbNummer']));?>
       </td>
     </tr>
     <tr>

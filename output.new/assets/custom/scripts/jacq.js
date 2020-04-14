@@ -150,7 +150,7 @@ $(document).ready(function(){
       $('#results').html('');
       $(".progress-search").show();
       var form_data = $('#ajax_f').serialize();
-      form_data +="&submit=Search";
+      form_data +="&submit=Search&requestType=ajax";
       $.ajax({
         url: "index.php",
         type: "POST",
@@ -164,6 +164,32 @@ $(document).ready(function(){
   });
 });
 
+/**
+ * Requests results.php with the given parameters
+ * @param settings
+ */
+function reloadTable(settings) {
+  let params = 'requestType=ajax';
+  if(settings.order !== undefined) {
+    params += '&order=' + settings.order;
+  }
+  if(settings.page !== undefined) {
+    params += '&page=' + settings.page;
+  }
+
+  if(settings.ITEMS_PER_PAGE !== undefined) {
+    params += '&ITEMS_PER_PAGE=' + settings.ITEMS_PER_PAGE;
+  }
+
+  $(".progress-paging").show();
+  $.ajax({
+    url: "results.php?" + params,
+    type: "GET",
+    success: function(result){
+      $('#results').html(result);
+    }
+  });
+}
 
 /**
 *   Ajax Complete (Notice: Xajax does not trigger this event.)
@@ -185,29 +211,19 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
   if ( settings.url === "index.php" || settings.url.includes("results.php") ) {
     $(".pagination>li").click(function(){
       var page = $(this).data('value');
-     // var orderCol = $order;
       if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?s=s&page="+page+"&order=" ,
-          type: "GET", 
-          success: function(result){
-            $('#results').html(result);
-          }
+        reloadTable({
+          page: page
         });
       } 
     });
 
     $(".resulttax").click(function(){
       var page = $(this).data('value');
-      if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?order=1&s=s&page="+page,
-          type: "GET",
-          success: function(result){
-            $('#results').html(result);
-          }
+      if(page !== null) {
+        reloadTable({
+          page: page,
+          order: 1
         });
       }
     });
@@ -215,25 +231,17 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
     $(".resultcol").click(function(){
       var page = $(this).data('value');
       if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?order=2&s=s&page="+page,
-          type: "GET",
-          success: function(result){
-            $('#results').html(result);
-          }
+        reloadTable({
+          page: page,
+          order: 2
         });
       }
     });
     $("select[name=ITEMS_PER_PAGE]").change(function(event){
       $('#results').html('');
-      $(".progress-search").show();
-      $.ajax({
-        url: "results.php?ITEMS_PER_PAGE="+$(this).val(),
-        type: "GET",
-        success: function(result){
-          $('#results').html(result);
-        }
+
+      reloadTable({
+        'ITEMS_PER_PAGE': $(this).val()
       });
     });
   }

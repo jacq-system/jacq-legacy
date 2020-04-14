@@ -1,4 +1,10 @@
 <?php
+
+if(!defined("INDEX_START")) {
+    header("Location: index.php?". $_SERVER['QUERY_STRING']);
+    die();
+}
+
 session_start();
 require("inc/dev-functions.php");
 require_once ("inc/xajax/xajax.inc.php");
