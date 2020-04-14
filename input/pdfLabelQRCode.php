@@ -88,7 +88,7 @@ class LABEL extends TCPDF
     public $rowsPerPage = 18;
 
     // labels per page
-    public $labelsPerPage = 18 * 3;  // $this->rowsPerPage * $this->ncols
+    public $labelsPerPage = 54;  // $this->rowsPerPage * $this->ncols
 
     // size of QRCode
     protected $QRsize = 12;
