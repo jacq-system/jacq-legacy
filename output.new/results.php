@@ -95,7 +95,7 @@ if ($page < 1) {
 }
 
 $sql .= " LIMIT " . ($_SESSION['ITEMS_PER_PAGE'] * ($page - 1)) . ", " . $_SESSION['ITEMS_PER_PAGE'];
-echo $sql;
+//echo $sql;
 $result = $dbLink->query($sql);
 if ($dbLink->errno) {
     echo $sql . "<br>\n";
