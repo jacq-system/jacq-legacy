@@ -1,4 +1,18 @@
-<?php include 'search.php'; ?>
+<?php
+    define('INDEX_START', true);
+    unset($_POST['requestType']);
+    if(!empty($_GET)) {
+        if (!empty($_GET['requestType']) && $_GET['requestType'] === 'ajax') {
+            unset($_GET['requestType']);
+        } else {
+            unset($_GET['search']);
+            session_start();
+            unset($_SESSION);
+            define('START_SEARCH', true);
+        }
+    }
+    include 'search.php';
+?>
 
 <!DOCTYPE html>
 <html>
@@ -192,28 +206,39 @@
               </div>
               <!-- Herbar Number -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>
+                  <?php
+                  echo '<input class="searchinput" value="' . (isset($_GET['HerbNummer']) ? $_GET['HerbNummer'] : '') . '"
+                         placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
+                  ?>
 
               </div>
               <!-- Family -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Family" name="family" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . (isset($_GET['family']) ? $_GET['family'] : '') . '"
+                         placeholder="Family" name="family" type="text":not(.browser-default)>';
+                  ?>
               </div>
               <!-- Taxon -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . (isset($_GET['taxon']) ? $_GET['taxon'] : '') . '"
+                         placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
+                  ?>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Collector" name="Sammler" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . (isset($_GET['Sammler']) ? $_GET['Sammler'] : '') . '"
+                         placeholder="Collector" name="Sammler" type="text":not(.browser-default)>';
+                  ?>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . (isset($_GET['SammlerNr']) ? $_GET['SammlerNr'] : '') . '"
+                         placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>';
+                  ?>
               </div>
 
               <!-- Extended Search -->
@@ -668,5 +693,19 @@
     <script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
     <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
     <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
+
+    <?php
+    if(defined('START_SEARCH') && START_SEARCH === true) {
+        ?>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#ajax_f').trigger('submit');
+                $('.tabs').tabs('select', 'database');
+            });
+        </script>
+        <?php
+    }
+    ?>
+
   </body>
 </html>

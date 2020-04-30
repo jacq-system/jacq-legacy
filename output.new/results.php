@@ -56,11 +56,28 @@ tbl_tax_systematic_categories
       <td valign="top" colspan="9">
 
 <?php
-if (isset($_GET['order']) && $_GET['order'] == 2) {
-    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer";
-} else {
-    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer";
+//Default Value setzen
+if(!isset($_SESSION['order'])) {
+    $_SESSION['order'] = 1;
 }
+
+//Wenn Order gesendet wird ggf. Updaten
+if(isset($_GET['order'])) {
+    if($_GET['order'] == 2) {
+        $_SESSION['order'] = 2;
+    }
+    else {
+        $_SESSION['order'] = 1;
+    }
+}
+
+//Übernommen aus altem Code und GET durch SESSION ersetzt 
+if ($_SESSION['order'] == 2) {
+    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer"; } 
+else {
+    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer"; 
+}
+
 
 /**
  * pagination
@@ -78,7 +95,7 @@ if ($page < 1) {
 }
 
 $sql .= " LIMIT " . ($_SESSION['ITEMS_PER_PAGE'] * ($page - 1)) . ", " . $_SESSION['ITEMS_PER_PAGE'];
-
+//echo $sql;
 $result = $dbLink->query($sql);
 if ($dbLink->errno) {
     echo $sql . "<br>\n";
@@ -92,7 +109,7 @@ if ($res_count) {
     $nrRows = 0;
 }
 
-$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s', $page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2);
+$a = paginate_three($_SERVER['SCRIPT_NAME'].'?s=s&order=2', $page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2, 2);
 $b = "";
 foreach ($limits as $f) {
     $b .= "<option value=\"$f\" " . (($f == $_SESSION['ITEMS_PER_PAGE']) ? 'selected' : '') . ">$f</option>";
@@ -198,10 +215,10 @@ while ($row = $result->fetch_array()) {
     }
     echo "<td class=\"result\" valign=\"top\"><a href=\"detail.php?ID=" . $row['specimen_ID'] . "\" target=\"_blank\">"
         . taxonWithHybrids($row)
-        . "</a></td>";
+        . "</a>". getTaxonAuth($row['taxid']) ."</td>";
 
     echo "<td class=\"result\" valign=\"top\">"
-        . collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], '')
+        . rdfcollection($row) 
         . "</td>";
 
     echo "<td class=\"result\" valign=\"top\">"
