@@ -62,7 +62,7 @@ function rdfcollection($row) {
         $text = "";
         if ($row['WIKIDATA_ID']) {
            $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" alt="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" width="20px"></a>&nbsp;';
-        }
+        } 
         if ($row['HUH_ID']) {
            $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" alt="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" height="20px"></a>&nbsp;';
         }
@@ -75,15 +75,22 @@ function rdfcollection($row) {
 
         if (getBloodhoundID($row)) {
         $text .= getBloodhoundID($row);
-        $text .= "<a href=\"https://ww3.bgbm.org/php/rdf2/examples/bt/main.php?&b=1&q=" . basename($row['WIKIDATA_ID']) . '&v=' . basename($row['VIAF_ID']) . '&h=' . basename($row['HUH_ID']) . '&o=' . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
         }
-        else {
-        $text .= "<a href=\"https://ww3.bgbm.org/php/rdf2/examples/bt/main.php?&b=0&q=" . basename($row['WIKIDATA_ID']) . '&v=' . basename($row['VIAF_ID']) . '&h=' . basename($row['HUH_ID']) . '&o=' . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-        }
+       
+       // if ($row['WIKIDATA_ID']) {
+       //     $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+      //  } elseif ($row['HUH_ID']) {
+      //      $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+       // } elseif ($row['VIAF_ID']) {
+      //       $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+      //  } elseif ($row['ORCID']) {
+      //      $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
+     //   }   
+      $text .= $row['Sammler'];
     }
     else {
-        $text = $row['Sammler'];
-    }
+             $text = $row['Sammler'];
+        }
     if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
         $text .= " et al.";
     }
@@ -266,15 +273,15 @@ function taxonWithHybrids($row) {
 
 function getTaxonAuth($taxid) {
     global $dbLink;
-    $sql = "SELECT serviceID, hyper FROM lagu_pilot.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
+    $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
     $result = $dbLink->query($sql);
     $text = '';
     if ($result->num_rows > 0) {
     // output data of each row
         while($rowtax = $result->fetch_assoc()) {
-            $text='<br/>Reference in: ';
+            $text='<br/>';
             if ($rowtax['serviceID'] == 1) {
-                $text .=  $rowtax["hyper"];
+                $text .=  $rowtax["hyper"]."&nbsp;";
                 $text .= str_replace("IPNI (K)","Plants of the World Online / POWO (K)",str_replace("serviceID1_logo","serviceID49_logo",str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
             }
             else {
@@ -295,18 +302,19 @@ function getGeonamesID($HerbNummer) {
         while($row = $result->fetch_assoc()) {
          $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
         }
+        $text = '';
     } 
     return $text;
 }
 function getBloodhoundID($row) {
     global $dbLink;
-    $sql = "SELECT bloodhoundURL FROM lagu_pilot.ttUnionSammlerteam WHERE bloodhoundURL like 'h%' AND DB like 'JACQ' AND SammlerteamID like '" . ($row['SammlerID']) . "';";
+    $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "';";
     $result = $dbLink->query($sql);
      $text = '';
     if ($result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-         $text = "<a href='" . $row["bloodhoundURL"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'</a>&nbsp;";
+         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'></a>&nbsp;";
         }
     }
     return $text;
