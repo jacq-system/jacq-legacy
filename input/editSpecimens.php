@@ -1149,5 +1149,37 @@ if ($updateBlocked) {
 }
 ?>
 
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $('[name="HerbNummer"]').blur(function() {
+            this.value = this.value.trim();
+
+            var HerbNummer = this.value;
+            var institutionNr = $('[name="institution"]').val();
+            var institutionName = $('[name="institution"] option:selected').text();
+
+//http://jacq.bgbm.org/jacq/input/index_jq_autocomplete.php?field=checkHerbNrExist&HerbNr=B%2013%200002791&institutionID=29&term=1
+
+            $.ajax({
+              method: "GET",
+              url: "index_jq_autocomplete.php",
+              data: { 
+                field: "checkHerbNrExist",
+                institutionID: institutionNr, 
+                HerbNr: encodeURIComponent(HerbNummer), 
+                term: "1"
+              }
+            })
+            .done(function( data ) {
+                if(data == "true") {
+                    alert("The HerbarNr '" + HerbNummer + "' already exists for Institution '" + institutionName + "'!");
+                }
+            });
+        });
+    });
+    
+</script>
+
 </body>
 </html>
