@@ -1150,18 +1150,14 @@ if ($updateBlocked) {
 ?>
 
 <script type="text/javascript">
+    // added trim for HerbNummer to prevent spaces and tabs; added check if HerbNummer already exists in this institution
     $(document).ready(function() {
-
         $('[name="HerbNummer"]').blur(function() {
             this.value = this.value.trim();
-
             var HerbNummer = this.value;
             var institutionNr = $('[name="institution"]').val();
             var institutionName = $('[name="institution"] option:selected').text();
-
-//http://jacq.bgbm.org/jacq/input/index_jq_autocomplete.php?field=checkHerbNrExist&HerbNr=B%2013%200002791&institutionID=29&term=1
-
-            $.ajax({
+	       $.ajax({
               method: "GET",
               url: "index_jq_autocomplete.php",
               data: { 
