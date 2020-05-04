@@ -62,7 +62,7 @@ function rdfcollection($row) {
         $text = "";
         if ($row['WIKIDATA_ID']) {
            $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" alt="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" width="20px"></a>&nbsp;';
-        } 
+        }
         if ($row['HUH_ID']) {
            $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" alt="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" height="20px"></a>&nbsp;';
         }
@@ -76,7 +76,7 @@ function rdfcollection($row) {
         if (getBloodhoundID($row)) {
         $text .= getBloodhoundID($row);
         }
-       
+
        // if ($row['WIKIDATA_ID']) {
        //     $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
       //  } elseif ($row['HUH_ID']) {
@@ -85,7 +85,7 @@ function rdfcollection($row) {
       //       $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
       //  } elseif ($row['ORCID']) {
       //      $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-     //   }   
+     //   }
       $text .= $row['Sammler'];
     }
     else {
@@ -276,7 +276,7 @@ function getTaxonAuth($taxid) {
     $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
     $result = $dbLink->query($sql);
     $text = '';
-    if ($result->num_rows > 0) {
+    if ($result && $result->num_rows > 0) {
     // output data of each row
         while($rowtax = $result->fetch_assoc()) {
             $text='<br/>';
@@ -297,13 +297,13 @@ function getGeonamesID($HerbNummer) {
     $sql = "SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode like '" . ($HerbNummer) . "';";
     $result = $dbLink->query($sql);
      $text = '';
-    if ($result->num_rows > 0) {
+    if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
          $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
         }
         $text = '';
-    } 
+    }
     return $text;
 }
 function getBloodhoundID($row) {
@@ -311,7 +311,7 @@ function getBloodhoundID($row) {
     $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "';";
     $result = $dbLink->query($sql);
      $text = '';
-    if ($result->num_rows > 0) {
+    if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
          $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'></a>&nbsp;";

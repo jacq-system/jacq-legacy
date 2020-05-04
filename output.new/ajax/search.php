@@ -1,118 +1,7 @@
 <?php
-// somebody used the old entry point for external links, so redirect to the proper location
-// using search.php as an entry point is depricated
-header("Location: index.php?". $_SERVER['QUERY_STRING']);
+require_once 'inc/dev-functions.php';
 
-die();
-// don't use the rest of the file, as it is depricated
-// will be erased in the future
-// joschach@ap4net.at  4.5.2020
-
-if(!defined("INDEX_START")) {
-    header("Location: index.php?". $_SERVER['QUERY_STRING']);
-    die();
-}
-
-session_start();
-require("inc/dev-functions.php");
-require_once ("inc/xajax/xajax.inc.php");
-$xajax = new xajax("ajax/dev-searchServer.php");
-$xajax->registerFunction("getCollection");
-$xajax->registerFunction("getCountry");
-$xajax->registerFunction("getProvince");
-
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Pragma: no-cache");
-header("Cache-Control: post-check=0, pre-check=0", false);
-
-if (!empty($_POST['reset'])) {
-    $family      = '';
-    $taxon       = '';
-    $HerbNummer  = '';
-    $Sammler     = '';
-    $SammlerNr   = '';
-    $geo_general = '';
-    $geo_region  = '';
-    $nation_engl = '';
-    $provinz     = '';
-    $fundort     = '';
-    $source_name = '';
-    $collection  = '';
-    $taxon_alt   = '';
-    $CollNummer  = '';
-    $series      = '';
-} else {
-    $family      = (!empty($_SESSION['o_family']))      ? $_SESSION['o_family']      : ((!empty($_POST['family']))      ? $_POST['family']      : ((isset($_GET['family']))      ? $_GET['family'] : ''));
-    $taxon       = (!empty($_SESSION['o_taxon']))       ? $_SESSION['o_taxon']       : ((!empty($_POST['taxon']))       ? $_POST['taxon']       : ((isset($_GET['taxon']))       ? $_GET['taxon'] : ''));
-    $HerbNummer  = (!empty($_SESSION['o_HerbNummer']))  ? $_SESSION['o_HerbNummer']  : ((!empty($_POST['HerbNummer']))  ? $_POST['HerbNummer']  : ((isset($_GET['HerbNummer']))  ? $_GET['HerbNummer'] : ''));
-    $Sammler     = (!empty($_SESSION['o_Sammler']))     ? $_SESSION['o_Sammler']     : ((!empty($_POST['Sammler']))     ? $_POST['Sammler']     : ((isset($_GET['Sammler']))     ? $_GET['Sammler'] : ''));
-    $SammlerNr   = (!empty($_SESSION['o_SammlerNr']))   ? $_SESSION['o_SammlerNr']   : ((!empty($_POST['SammlerNr']))   ? $_POST['SammlerNr']   : ((isset($_GET['SammlerNr']))   ? $_GET['SammlerNr'] : ''));
-    $geo_general = (!empty($_SESSION['o_geo_general'])) ? $_SESSION['o_geo_general'] : ((!empty($_POST['geo_general'])) ? $_POST['geo_general'] : ((isset($_GET['geo_general'])) ? $_GET['geo_general'] : ''));
-    $geo_region  = (!empty($_SESSION['o_geo_region']))  ? $_SESSION['o_geo_region']  : ((!empty($_POST['geo_region']))  ? $_POST['geo_region']  : ((isset($_GET['geo_region']))  ? $_GET['geo_region'] : ''));
-    $nation_engl = (!empty($_SESSION['o_nation_engl'])) ? $_SESSION['o_nation_engl'] : ((!empty($_POST['nation_engl'])) ? $_POST['nation_engl'] : ((isset($_GET['nation_engl'])) ? $_GET['nation_engl'] : ''));
-    $provinz     = (!empty($_SESSION['o_provinz']))     ? $_SESSION['o_provinz']     : ((!empty($_POST['provinz']))     ? $_POST['provinz']     : ((isset($_GET['provinz']))     ? $_GET['provinz'] : ''));
-    $fundort     = (!empty($_SESSION['o_Fundort']))     ? $_SESSION['o_Fundort']     : ((!empty($_POST['Fundort']))     ? $_POST['Fundort']     : ((isset($_GET['Fundort']))     ? $_GET['Fundort'] : ''));
-    $source_name = (!empty($_SESSION['o_source_name'])) ? $_SESSION['o_source_name'] : ((!empty($_POST['source_name'])) ? $_POST['source_name'] : ((isset($_GET['source_name'])) ? $_GET['source_name'] : ''));
-    $collection  = (!empty($_SESSION['o_collection']))  ? $_SESSION['o_collection']  : ((!empty($_POST['collection']))  ? $_POST['collection']  : ((isset($_GET['collection']))  ? $_GET['collection'] : ''));
-    $taxon_alt   = (!empty($_SESSION['o_taxon_alt']))   ? $_SESSION['o_taxon_alt']   : ((!empty($_POST['taxon_alt']))   ? $_POST['taxon_alt']   : ((isset($_GET['taxon_alt']))   ? $_GET['taxon_alt'] : ''));
-    $CollNummer  = (!empty($_SESSION['o_CollNummer']))  ? $_SESSION['o_CollNummer']  : ((!empty($_POST['CollNummer']))  ? $_POST['CollNummer']  : ((isset($_GET['CollNummer']))  ? $_GET['CollNummer'] : ''));
-    $series      = (!empty($_SESSION['o_series']))      ? $_SESSION['o_series']      : ((!empty($_POST['series']))      ? $_POST['series']      : ((isset($_GET['series']))      ? $_GET['series'] : ''));
-}
-
-$_SESSION['o_family']      = $family;
-$_SESSION['o_taxon']       = $taxon;
-$_SESSION['o_HerbNummer']  = $HerbNummer;
-$_SESSION['o_Sammler']     = $Sammler;
-$_SESSION['o_SammlerNr']   = $SammlerNr;
-$_SESSION['o_geo_general'] = $geo_general;
-$_SESSION['o_geo_region']  = $geo_region;
-$_SESSION['o_nation_engl'] = $nation_engl;
-$_SESSION['o_provinz']     = $provinz;
-$_SESSION['o_Fundort']     = $fundort;
-$_SESSION['o_source_name'] = $source_name;
-$_SESSION['o_collection']  = $collection;
-$_SESSION['o_taxon_alt']   = $taxon_alt;
-$_SESSION['o_CollNummer']  = $CollNummer;
-$_SESSION['o_series']      = $series;
-
-$result = $dbLink->query("SELECT DATE_FORMAT(Eingabedatum,'%Y-%m-%d') AS date FROM tbl_specimens ORDER BY DATE DESC");
-$row = $result->fetch_array();
-$lastUpdate = $row['date'];
-
-if (!empty($_POST['submit']) || !empty($_GET['search'])) {
-    if (!empty($_GET['search'])) {
-        $_POST['taxon'] = (!empty($_GET['taxon'])) ? $_GET['taxon'] : '';
-
-        if (!empty($_GET['source_id']))  { $_POST['source_id']   = $_GET['source_id']; }
-        if (!empty($_GET['collector']))  { $_POST['Sammler']     = $_GET['collector']; }
-        if (!empty($_GET['SammlerNr']))  { $_POST['SammlerNr']   = $_GET['SammlerNr']; }
-        if (!empty($_GET['family']))     { $_POST['family']      = $_GET['family']; }
-        if (!empty($_GET['HerbNummer'])) { $_POST['HerbNummer']  = $_GET['HerbNummer']; }
-        if (!empty($_GET['synonym']))    { $_POST['synonym']     = $_GET['synonym']; }
-        if (!empty($_GET['obs']))        { $_POST['obs']         = $_GET['obs']; }
-        if (!empty($_GET['country']))    { $_POST['nation_engl'] = $_GET['country']; }
-        if (!empty($_GET['province']))   { $_POST['provinz']     = $_GET['province']; }
-        if (!empty($_GET['location']))   { $_POST['Fundort']     = $_GET['location']; }
-        if (!empty($_GET['collection'])) { $_POST['collection']  = $_GET['collection']; }
-        if (!empty($_GET['source_name'])){ $_POST['source_name'] = $_GET['source_name']; }
-        if (!empty($_GET['taxon_alt']))  { $_POST['taxon_alt']   = $_GET['taxon_alt']; }
-    }
-    $_SESSION['o_family']      = $_POST['family'];
-    $_SESSION['o_taxon']       = $_POST['taxon'];
-    $_SESSION['o_HerbNummer']  = $_POST['HerbNummer'];
-    $_SESSION['o_Sammler']     = $_POST['Sammler'];
-    $_SESSION['o_SammlerNr']   = $_POST['SammlerNr'];
-    $_SESSION['o_geo_general'] = $_POST['geo_general'];
-    $_SESSION['o_geo_region']  = $_POST['geo_region'];
-    $_SESSION['o_nation_engl'] = $_POST['nation_engl'];
-    $_SESSION['o_provinz']     = $_POST['provinz'];
-    $_SESSION['o_Fundort']     = $_POST['Fundort'];
-    $_SESSION['o_source_name'] = $_POST['source_name'];
-    $_SESSION['o_collection']  = $_POST['collection'];
-    $_SESSION['o_taxon_alt']   = $_POST['taxon_alt'];
-    $_SESSION['o_CollNummer']  = $_POST['CollNummer'];
-    $_SESSION['o_series']      = $_POST['series'];
-
+if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
                   c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
                   s.Nummer, s.alt_number, s.Datum, mc.collection, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
@@ -146,7 +35,7 @@ if (!empty($_POST['submit']) || !empty($_GET['search'])) {
                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                     LEFT JOIN tbl_tax_species ts2 ON ts2.taxonID = tst.taxonID
-                    WHERE ts.taxonID = s.taxonID
+                   WHERE ts.taxonID = s.taxonID
                     AND tg.genID = ts.genID
                     AND tf.familyID = tg.familyID
                     AND mc.collectionID = s.collectionID
@@ -301,7 +190,4 @@ if (!empty($_POST['submit']) || !empty($_GET['search'])) {
                                     GROUP BY specimen_ID ";
         }
     }
-    $location="Location: results.php";
-    if (SID!="") { $location = $location."?".SID; }
-    header($location);
 }

@@ -1,17 +1,7 @@
 <?php
-die();
-// don't use this file, as it is depricated
-// will be erased in the future
-// joschach@ap4net.at  4.5.2020
+if (empty($_SESSION['s_query'])) { die(); } // nothing to do
 
-session_start();
-if (empty($_SESSION['s_query'])) { header("location:search.php"); } // if no sessions -> forward to search page
-
-header("Cache-Control: no-store, no-cache, must-revalidate");
-header("Pragma: no-cache");
-header("Cache-Control: post-check=0, pre-check=0", false);
-
-require("inc/dev-functions.php");
+require_once 'inc/dev-functions.php';
 
 function collectionItem($coll)
 {
@@ -43,9 +33,6 @@ tbl_tax_systematic_categories
 
 ?>
 <script type="text/javascript" language="javascript"><!--
-  function neuladen(url) {
-    location.replace(url);
-  }
   function osMap() {
     MeinFenster = window.open('os_maps.php','_blank',
                               'width=820,height=620,top=50,left=50,resizable,scrollbars');
@@ -61,11 +48,6 @@ tbl_tax_systematic_categories
       <td valign="top" colspan="9">
 
 <?php
-//Default Value setzen
-if(!isset($_SESSION['order'])) {
-    $_SESSION['order'] = 1;
-}
-
 //Wenn Order gesendet wird ggf. Updaten
 if(isset($_GET['order'])) {
     if($_GET['order'] == 2) {
@@ -87,9 +69,6 @@ else {
 /**
  * pagination
  */
-if (empty($_SESSION['ITEMS_PER_PAGE'])) {
-    $_SESSION['ITEMS_PER_PAGE'] = 10;
-}
 $limits=array(10, 30, 50, 100);
 if (!empty($_GET['ITEMS_PER_PAGE']) && intval($_GET['ITEMS_PER_PAGE']) != 0 && in_array(intval($_GET['ITEMS_PER_PAGE']), $limits) ){
 	$_SESSION['ITEMS_PER_PAGE'] = intval($_GET['ITEMS_PER_PAGE']);

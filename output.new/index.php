@@ -1,32 +1,47 @@
 <?php
-    define('INDEX_START', true);
-    unset($_POST['requestType']);
-    if(!empty($_GET)) {
-        if (!empty($_GET['requestType']) && $_GET['requestType'] === 'ajax') {
-            unset($_GET['requestType']);
-        } else {
-            unset($_GET['search']);
-            session_start();
-            unset($_SESSION);
-            define('START_SEARCH', true);
-        }
-    }
-    include 'search.php';
-?>
+define('INDEX_START', true);
+if(!empty($_GET)) {
+    // someone followed an external link to a direct search, so let the script click the search button automatically
+    unset($_GET['search']);
+    define('START_SEARCH', true);
+}
 
-<!DOCTYPE html>
+session_start();
+require("inc/dev-functions.php");
+require_once ("inc/xajax/xajax.inc.php");
+$xajax = new xajax("ajax/dev-searchServer.php");
+$xajax->registerFunction("getCollection");
+$xajax->registerFunction("getCountry");
+$xajax->registerFunction("getProvince");
+
+// if script was called from the outside with some search parameters already in place, put the in variables
+// else leave these variables empty
+$family      = (isset($_GET['family']))      ? $_GET['family'] : '';
+$taxon       = (isset($_GET['taxon']))       ? $_GET['taxon'] : '';
+$HerbNummer  = (isset($_GET['HerbNummer']))  ? $_GET['HerbNummer'] : '';
+$Sammler     = (isset($_GET['Sammler']))     ? $_GET['Sammler'] : '';
+$SammlerNr   = (isset($_GET['SammlerNr']))   ? $_GET['SammlerNr'] : '';
+$geo_general = (isset($_GET['geo_general'])) ? $_GET['geo_general'] : '';
+$geo_region  = (isset($_GET['geo_region']))  ? $_GET['geo_region'] : '';
+$nation_engl = (isset($_GET['nation_engl'])) ? $_GET['nation_engl'] : '';
+$source_name = (isset($_GET['source_name'])) ? $_GET['source_name'] : '';
+$collection  = (isset($_GET['collection']))  ? $_GET['collection'] : '';
+
+
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Cache-Control: post-check=0, pre-check=0", false);
+
+?><!DOCTYPE html>
 <html>
   <head>
     <title>JACQ - Virtual Herbaria</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="FW4 DW4 HTML">
-    <meta http-equiv="“cache-control“" content="“no-cache“">
-    <meta http-equiv="“pragma“" content="“no-cache“">
-    <meta http-equiv="“expires“" content="“0″">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen,projection"/>
-    <link href="assets/fontawesome/css/all.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
+    <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
+    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="shortcut icon" href="JACQ_LOGO.png"/>
     <!-- Matomo -->
@@ -174,26 +189,26 @@
           </div>
         </div>
         <!-- Search Form -->
-          <form id="ajax_f" name="f" class="row" action="index.php" method="post">
+          <form id="ajax_f" name="f" class="row">
               <!-- Institution -->
               <div class="input-field col s6">
                   <select name="source_name">
                       <option value="" selected>Search all</option>
                       <?php
-                      $result = $dbLink->query("SELECT `source_name`
-                                                FROM `meta`
-                                                WHERE `source_id`
-                                                IN (
-                                                  SELECT `source_id`
-                                                  FROM `tbl_management_collections`
-                                                  WHERE `collectionID`
-                                                  IN (
-                                                    SELECT DISTINCT `collectionID`
-                                                    FROM `tbl_specimens`
-                                                  )
-                                                )
-                                                ORDER BY `source_name`");
-                      while ($row = $result->fetch_array()) {
+                      $result_source_name = $dbLink->query("SELECT `source_name`
+                                                            FROM `meta`
+                                                            WHERE `source_id`
+                                                            IN (
+                                                              SELECT `source_id`
+                                                              FROM `tbl_management_collections`
+                                                              WHERE `collectionID`
+                                                              IN (
+                                                                SELECT DISTINCT `collectionID`
+                                                                FROM `tbl_specimens`
+                                                              )
+                                                            )
+                                                            ORDER BY `source_name`");
+                      while ($row = $result_source_name->fetch_array()) {
                           echo "<option value=\"{$row['source_name']}\"";
                           if ($source_name == $row['source_name']) {
                               echo " selected";
@@ -207,7 +222,7 @@
               <!-- Herbar Number -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . (isset($_GET['HerbNummer']) ? $_GET['HerbNummer'] : '') . '"
+                  echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
                          placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
                   ?>
 
@@ -215,28 +230,28 @@
               <!-- Family -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . (isset($_GET['family']) ? $_GET['family'] : '') . '"
+                  echo '<input class="searchinput" value="' . htmlspecialchars($family) . '"
                          placeholder="Family" name="family" type="text":not(.browser-default)>';
                   ?>
               </div>
               <!-- Taxon -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . (isset($_GET['taxon']) ? $_GET['taxon'] : '') . '"
+                  echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
                          placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
                   ?>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . (isset($_GET['Sammler']) ? $_GET['Sammler'] : '') . '"
+                  echo '<input class="searchinput" value="' . htmlspecialchars($Sammler) . '"
                          placeholder="Collector" name="Sammler" type="text":not(.browser-default)>';
                   ?>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . (isset($_GET['SammlerNr']) ? $_GET['SammlerNr'] : '') . '"
+                  echo '<input class="searchinput" value="' . htmlspecialchars($SammlerNr) . '"
                          placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>';
                   ?>
               </div>
@@ -256,7 +271,7 @@
                                   <!-- Synonym -->
                                   <div class="input-field">
                                       <label>
-                                          <input type="checkbox" name="synonym" checked="true" class="searchinput">
+                                          <input type="checkbox" name="synonym" checked class="searchinput">
                                           <span>incl. syn.</span>
                                       </label>
                                   </div>
@@ -585,7 +600,7 @@
                 </ul>
             </div>
         </div>
-      <div id="systems" class="row"
+      <div id="systems" class="row">
         <div class="col s12">
           <h5>Reference Systems</h5>
           <div class="divider"></div>
@@ -608,19 +623,27 @@
                   <li><a href="https://www.iapt-taxon.org/nomen/main.php" target="_blank">International Code of Nomenclature for algae, fungi, and plants - ICN</a></li>
                   <li><a href="https://www.ishs.org/scripta-horticulturae/international-code-nomenclature-cultivated-plants-ninth-edition" target="_blank">International Code of Nomenclature for Cultivated Plants (ICNCP), 9th ed., 2016</a></li>
                   <li><a href="http://www.ipni.org/" target="_blank">International Plant Names Index - IPNI</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
                   <li><a href="http://www.tropicos.org/" target="_blank">W³Tropicos</a></li>
                   <li><a href="http://data.kew.org/vpfg1992/vascplnt.html" target="_blank">Vascular Plant Families and Genera - Brummit</a></li>
                   <li><a href="https://naturalhistory2.si.edu/botany/ing/" target="_blank">Index Nominum Genericorum - ING</a> @ <a href="https://naturalhistory.si.edu/research/botany" target="_blank">US National Museum of Natural History - Smithsonian Institution - Botany Department</a>; U.S.A.</li>
                   <li><a href="https://www.nhm.ac.uk/our-science/data/linnaean-typification/search/" target="_blank">Linnaean Plant Names DB</a> @ <a href="http://www.nhm.ac.uk/" target="_blank">NHM London, UK</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
                   <li><a href="http://www.algaebase.org/" target="_blank">AlgaeBase</a></li>
                   <li><a href="http://worldplants.webarchiv.kit.edu/ferns/index.php" target="_blank">World Ferns</a></li>
                   <li><a href="http://www.indexfungorum.org/Names/Names.asp" target="_blank">Index Fungorum - CABI / Kew</a></li>
                   <li><a href="http://www.mycobank.org/" target="_blank">Mycobank</a></li>
-                <div class="divider"></div>
-                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html" target="_blank">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
+                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html" target="_blank">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
+                </ul>
+              <div class="divider"></div>
+                <ul>
                   <li><a href="http://ww2.bgbm.org/EuroPlusMed/query.asp" target="_blank">Euro+Med PlantBase</a> @ <a href="http://www.bgbm.org/" target="_blank">BG Berlin-Dahlem; Germany</a></li>
                   <li><a href="https://www.kp-buttler.de/florenliste/" target="_blank">Florenliste von Deutschland - K.P. Buttler et al, DE</a></li>
                   <li><a href="https://www.tela-botanica.org/" target="_blank">Tela Botanica, FR</a></li>
@@ -641,7 +664,7 @@
                 <ul>
                   <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>
                   <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank">Index to Botanists</a> @ <a href="https://huh.harvard.edu/" target="_blank">Harvard University Herbaria</a>; U.S.A.</li>
-                  <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></a></li>
+                  <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></li>
                   <li>
                     <a href="https://www.iaptglobal.org/regnum-vegetabile" target="_blank">Regnum Vegetabile</a> @ <a href="https://www.iaptglobal.org/" target="_blank">International Association of Plant Taxonomists</a>
                     <br>Stafleu & Cowan 1976 ff. - vols. 94, 98, 105, 110, 112, 115, 116;

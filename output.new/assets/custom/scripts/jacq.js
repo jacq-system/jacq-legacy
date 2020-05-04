@@ -68,7 +68,7 @@ $(document).ready(function(){
   *   Progress bars
   **/
   $(".progress").hide();
-  
+
   /**
   *   Search Form Handling
   **/
@@ -150,11 +150,11 @@ $(document).ready(function(){
       $('#results').html('');
       $(".progress-search").show();
       var form_data = $('#ajax_f').serialize();
-      form_data +="&submit=Search&requestType=ajax";
+      form_data +="&submit=Search";
       $.ajax({
-        url: "index.php",
+        url: "ajax_lp.php?type=search",
         type: "POST",
-        data: form_data, 
+        data: form_data,
         success: function(result){
           $(".progress-search").hide();
           $('#results').html(result);
@@ -169,7 +169,7 @@ $(document).ready(function(){
  * @param settings
  */
 function reloadTable(settings) {
-  let params = 'requestType=ajax';
+  let params = '';
   if(settings.order !== undefined) {
     params += '&order=' + settings.order;
   }
@@ -183,7 +183,7 @@ function reloadTable(settings) {
 
   $(".progress-paging").show();
   $.ajax({
-    url: "results.php?" + params,
+    url: "ajax_lp.php?type=results" + params,
     type: "GET",
     success: function(result){
       $('#results').html(result);
@@ -208,14 +208,14 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
   /**
   *   Register events for added elements
   **/
-  if ( settings.url === "index.php" || settings.url.includes("results.php") ) {
+  if ( settings.url.includes("ajax_lp.php") ) {
     $(".pagination>li").click(function(){
       var page = $(this).data('value');
       if(page !== null){
         reloadTable({
           page: page
         });
-      } 
+      }
     });
 
     $(".resulttax").click(function(){
@@ -246,4 +246,3 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
     });
   }
 });
-    
