@@ -16,17 +16,16 @@ $xajax->registerFunction("getProvince");
 
 // if script was called from the outside with some search parameters already in place, put the in variables
 // else leave these variables empty
-$family      = (isset($_GET['family']))      ? $_GET['family'] : '';
-$taxon       = (isset($_GET['taxon']))       ? $_GET['taxon'] : '';
-$HerbNummer  = (isset($_GET['HerbNummer']))  ? $_GET['HerbNummer'] : '';
-$Sammler     = (isset($_GET['Sammler']))     ? $_GET['Sammler'] : '';
-$SammlerNr   = (isset($_GET['SammlerNr']))   ? $_GET['SammlerNr'] : '';
-$geo_general = (isset($_GET['geo_general'])) ? $_GET['geo_general'] : '';
-$geo_region  = (isset($_GET['geo_region']))  ? $_GET['geo_region'] : '';
-$nation_engl = (isset($_GET['nation_engl'])) ? $_GET['nation_engl'] : '';
-$source_name = (isset($_GET['source_name'])) ? $_GET['source_name'] : '';
-$collection  = (isset($_GET['collection']))  ? $_GET['collection'] : '';
-
+$family      = (isset($_GET['family']))      ? filter_input(INPUT_GET, 'family',      FILTER_SANITIZE_STRING) : '';
+$taxon       = (isset($_GET['taxon']))       ? filter_input(INPUT_GET, 'taxon',       FILTER_SANITIZE_STRING) : '';
+$HerbNummer  = (isset($_GET['HerbNummer']))  ? filter_input(INPUT_GET, 'HerbNummer',  FILTER_SANITIZE_STRING) : '';
+$Sammler     = (isset($_GET['Sammler']))     ? filter_input(INPUT_GET, 'Sammler',     FILTER_SANITIZE_STRING) : '';
+$SammlerNr   = (isset($_GET['SammlerNr']))   ? filter_input(INPUT_GET, 'SammlerNr',   FILTER_SANITIZE_STRING) : '';
+$geo_general = (isset($_GET['geo_general'])) ? filter_input(INPUT_GET, 'geo_general', FILTER_SANITIZE_STRING) : '';
+$geo_region  = (isset($_GET['geo_region']))  ? filter_input(INPUT_GET, 'geo_region',  FILTER_SANITIZE_STRING) : '';
+$nation_engl = (isset($_GET['nation_engl'])) ? filter_input(INPUT_GET, 'nation_engl', FILTER_SANITIZE_STRING) : '';
+$source_name = (isset($_GET['source_name'])) ? filter_input(INPUT_GET, 'source_name', FILTER_SANITIZE_STRING) : '';
+$collection  = (isset($_GET['collection']))  ? filter_input(INPUT_GET, 'collection',  FILTER_SANITIZE_STRING) : '';
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
@@ -59,7 +58,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
       })();
     </script>
     <!-- End Matomo Code -->
-</head>
+  </head>
   <body>
     <div id="navbar" class="navbar-fixed">
       <nav class="nav-extended">
@@ -280,15 +279,15 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       <select id="ajax_collection" name="collection">
                                           <option value="" selected>Search subcollection</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT `collection`
-                                          FROM `tbl_management_collections`
-                                          WHERE `collectionID`
-                                          IN (
-                                            SELECT DISTINCT `collectionID`
-                                            FROM `tbl_specimens`
-                                          )
-                                          ORDER BY `collection`");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_collection = $dbLink->query("SELECT `collection`
+                                                                               FROM `tbl_management_collections`
+                                                                               WHERE `collectionID`
+                                                                               IN (
+                                                                                 SELECT DISTINCT `collectionID`
+                                                                                 FROM `tbl_specimens`
+                                                                               )
+                                                                               ORDER BY `collection`");
+                                          while ($row = $result_collection->fetch_array()) {
                                               echo "<option value=\"{$row['collection']}\"";
                                               if ($collection == $row['collection']) {
                                                   echo " selected";
@@ -301,17 +300,17 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                   </div>
                                   <!-- Collection Number -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text":not(:chekced)>
+                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text">
 
                                   </div>
                                   <!-- Series -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Series" name="series" type="text":not(:chekced)>
+                                      <input class="searchinput" placeholder="Series" name="series" type="text">
 
                                   </div>
                                   <!-- Locality -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text":not(:chekced)>
+                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text">
 
                                   </div>
                                   <!-- Continent -->
@@ -319,10 +318,11 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       <select name="geo_general">
                                           <option value="" selected>Search continent</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT geo_general
-                                                    FROM tbl_geo_region
-                                                    GROUP BY geo_general ORDER BY geo_general");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_geo_general = $dbLink->query("SELECT geo_general
+                                                                                FROM tbl_geo_region
+                                                                                GROUP BY geo_general
+                                                                                ORDER BY geo_general");
+                                          while ($row = $result_geo_general->fetch_array()) {
                                               echo "<option value=\"{$row['geo_general']}\"";
                                               if ($geo_general == $row['geo_general']) {
                                                   echo " selected";
@@ -335,7 +335,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                   </div>
                                   <!-- Series -->
                                   <div id="ajax_nation_engl" class="input-field">
-                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text":not(:chekced) value="<?php echo htmlspecialchars($nation_engl); ?>">
+                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
 
                                   </div>
                                   <!-- Region -->
@@ -343,10 +343,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       <select name="geo_region">
                                           <option value="" selected>Search region</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT geo_region
-                                                    FROM tbl_geo_region
-                                                    ORDER BY geo_region");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_geo_region = $dbLink->query("SELECT geo_region
+                                                                               FROM tbl_geo_region
+                                                                               ORDER BY geo_region");
+                                          while ($row = $result_geo_region->fetch_array()) {
                                               echo "<option value=\"{$row['geo_region']}\"";
                                               if ($geo_region == $row['geo_region']) {
                                                   echo " selected";
@@ -359,7 +359,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                   </div>
                                   <!-- State/Province -->
                                   <div id="ajax_provinz" class="input-field">
-                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text":not(:chekced)>
+                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text">
 
                                   </div>
                                   <!-- Placeholder -->

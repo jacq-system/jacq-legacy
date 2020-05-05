@@ -320,15 +320,15 @@ function getBloodhoundID($row) {
     return $text;
 }
 
-/* * ***********************************************************************
-  php easy :: pagination scripts set - Version Three
-  ==========================================================================
+/* * ********************************************************************************
+  php easy :: pagination scripts set - Version Three, changed by Dominik and Johannes
+  ===================================================================================
   Author:      php easy code, www.phpeasycode.com
   Web Site:    http://www.phpeasycode.com
   Contact:     webmaster@phpeasycode.com
- * *********************************************************************** */
+ * ******************************************************************************** */
 
-function paginate_three($reload, $page, $tpages, $adjacents, $order) {
+function paginate_three($page, $tpages, $adjacents) {
     $prevlabel = "<i class='material-icons'>chevron_left</i>";
     $nextlabel = "<i class='material-icons'>chevron_right</i>";
 
@@ -337,12 +337,8 @@ function paginate_three($reload, $page, $tpages, $adjacents, $order) {
     // previous
     if ($page == 1) {
         $out .= "<li><a>$prevlabel</a></li>\n";
-    }
-    else if ($page == 2) {
-        $out .= "<li><a>$prevlabel</a></li>\n";
-    }
-    else {
-        $out .= "<li class='waves-effect' data-value='".($page-1)."'><a>$prevlabel</a></li>\n";
+    } else {
+        $out .= "<li class='waves-effect' data-value='" . ($page - 1) . "'><a>$prevlabel</a></li>\n";
     }
 
     if ($tpages < 4 + $adjacents * 2 + 2) {

@@ -20,7 +20,9 @@ switch ($_GET['type']) {
         // set any default values
         $_SESSION['s_query'] = '';
         $_SESSION['order'] = 1;
-        $_SESSION['ITEMS_PER_PAGE'] = 10;
+        if (!isset($_SESSION['ITEMS_PER_PAGE'])) {
+            $_SESSION['ITEMS_PER_PAGE'] = 10;
+        }
 
         require("inc/dev-functions.php");
         include 'ajax/search.php';
