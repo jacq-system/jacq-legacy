@@ -1,4 +1,9 @@
 <?php
+die();
+// don't use this file, as it is depricated
+// will be erased in the future
+// joschach@ap4net.at  4.5.2020
+
 session_start();
 if (empty($_SESSION['s_query'])) { header("location:search.php"); } // if no sessions -> forward to search page
 
@@ -71,11 +76,11 @@ if(isset($_GET['order'])) {
     }
 }
 
-//Übernommen aus altem Code und GET durch SESSION ersetzt 
+//Übernommen aus altem Code und GET durch SESSION ersetzt
 if ($_SESSION['order'] == 2) {
-    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer"; } 
+    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer"; }
 else {
-    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer"; 
+    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer";
 }
 
 
@@ -218,7 +223,7 @@ while ($row = $result->fetch_array()) {
         . "</a>". getTaxonAuth($row['taxid']) ."</td>";
 
     echo "<td class=\"result\" valign=\"top\">"
-        . rdfcollection($row) 
+        . rdfcollection($row)
         . "</td>";
 
     echo "<td class=\"result\" valign=\"top\">"
