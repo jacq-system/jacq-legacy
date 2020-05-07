@@ -25,6 +25,7 @@ function check() {
       isEmpty(document.f.HerbNummer.value) &&
       isEmpty(document.f.Sammler.value) &&
       isEmpty(document.f.SammlerNr.value) &&
+      isEmpty(document.f.CollDate.value) &&
       isEmpty(document.f.source_name.value) &&
       isEmpty(document.f.collection.value) &&
       isEmpty(document.f.taxon_alt.value) &&

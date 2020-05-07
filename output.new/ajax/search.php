@@ -70,6 +70,8 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_specimen .= "AND " . $var . " = '$valueE' ";
                 } elseif ($var == "SammlerNr") {
                     $sql_restrict_specimen .= "AND (s.Nummer='$valueE' OR s.alt_number LIKE '%$valueE%' OR s.series_number LIKE '%$valueE%') ";
+                } elseif ($var == "CollDate") {
+                    $sql_restrict_specimen .= "AND (s.Datum LIKE '%$valueE%') ";
                 } elseif ($var == "Sammler") {
                     $sql_restrict_specimen .= "AND (Sammler LIKE '$valueE%' OR Sammler_2 LIKE '%$valueE%') ";
                 } elseif ($var == "Fundort") {

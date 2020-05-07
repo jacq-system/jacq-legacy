@@ -189,42 +189,12 @@ header("Cache-Control: post-check=0, pre-check=0", false);
         </div>
         <!-- Search Form -->
           <form id="ajax_f" name="f" class="row">
-              <!-- Institution -->
-              <div class="input-field col s6">
-                  <select name="source_name">
-                      <option value="" selected>Search all</option>
-                      <?php
-                      $result_source_name = $dbLink->query("SELECT `source_name`
-                                                            FROM `meta`
-                                                            WHERE `source_id`
-                                                            IN (
-                                                              SELECT `source_id`
-                                                              FROM `tbl_management_collections`
-                                                              WHERE `collectionID`
-                                                              IN (
-                                                                SELECT DISTINCT `collectionID`
-                                                                FROM `tbl_specimens`
-                                                              )
-                                                            )
-                                                            ORDER BY `source_name`");
-                      while ($row = $result_source_name->fetch_array()) {
-                          echo "<option value=\"{$row['source_name']}\"";
-                          if ($source_name == $row['source_name']) {
-                              echo " selected";
-                          }
-                          echo ">{$row['source_name']}</option>\n";
-                      }
-                      ?>
-                  </select>
-
-              </div>
-              <!-- Herbar Number -->
+               <!-- Taxon -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
-                         placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
+                  echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
+                         placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
                   ?>
-
               </div>
               <!-- Family -->
               <div class="input-field col s6">
@@ -233,11 +203,39 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                          placeholder="Family" name="family" type="text":not(.browser-default)>';
                   ?>
               </div>
-              <!-- Taxon -->
+              <!-- Institution -->
+              <div class="input-field col s6">
+                  <select name="source_name">
+                      <option value="" selected>Search all</option>
+                      <?php
+                      $result = $dbLink->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
+                                                FROM `meta`
+                                                WHERE `source_id`
+                                                IN (
+                                                  SELECT `source_id`
+                                                  FROM `tbl_management_collections`
+                                                  WHERE `collectionID`
+                                                  IN (
+                                                    SELECT DISTINCT `collectionID`
+                                                    FROM `tbl_specimens`
+                                                  )
+                                                )
+                                                ORDER BY herbname");
+                      while ($row = $result->fetch_array()) {
+                          echo "<option value=\"{$row['source_name']}\"";
+                          if ($source_name == $row['source_name']) {
+                              echo " selected";
+                          }
+                          echo ">{$row['herbname']}</option>\n";
+                      }
+                      ?>
+                  </select>
+              </div>
+              <!-- Herbar Number -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
-                         placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
+                  echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
+                         placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
                   ?>
               </div>
               <!-- Collector -->
@@ -265,14 +263,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                   <!-- Ident. History -->
                                   <div class="input-field">
                                       <input class="searchinput" placeholder="Ident. History" name="taxon_alt" type="text">
-
                                   </div>
-                                  <!-- Synonym -->
+                                  <!-- CollectionDate -->
                                   <div class="input-field">
-                                      <label>
-                                          <input type="checkbox" name="synonym" checked class="searchinput">
-                                          <span>incl. syn.</span>
-                                      </label>
+                                      <input class="searchinput" placeholder="Collection date" name="CollDate" type="text">
                                   </div>
                                   <!-- Collection -->
                                   <div class="input-field">
@@ -296,22 +290,18 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- Collection Number -->
                                   <div class="input-field">
                                       <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text">
-
                                   </div>
                                   <!-- Series -->
                                   <div class="input-field">
                                       <input class="searchinput" placeholder="Series" name="series" type="text">
-
                                   </div>
                                   <!-- Locality -->
                                   <div class="input-field">
                                       <input class="searchinput" placeholder="Locality" name="Fundort" type="text">
-
                                   </div>
                                   <!-- Continent -->
                                   <div class="input-field">
@@ -331,12 +321,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- Series -->
                                   <div id="ajax_nation_engl" class="input-field">
                                       <input class="searchinput" placeholder="Country" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
-
                                   </div>
                                   <!-- Region -->
                                   <div class="input-field">
@@ -355,24 +343,20 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- State/Province -->
                                   <div id="ajax_provinz" class="input-field">
                                       <input class="searchinput" placeholder="State/Province" name="provinz" type="text">
-
                                   </div>
                                   <!-- Placeholder -->
                                   <div></div>
-
                               </div>
                           </div>
                       </li>
                   </ul>
               </div>
-
               <!-- All Records/Type Records -->
-              <div class="input-field col s6">
+              <div class="input-field col s4">
                   <div class="center-align">
                       <div class="switch">
                           <label>
@@ -384,8 +368,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                       <input type="hidden" name="type" value="all">
                   </div>
               </div>
-              <!-- Synonym -->
-              <div class="input-field col s6">
+              <!-- Images -->
+              <div class="input-field col s4">
                   <div class="center-align">
                       <div class="switch">
                           <label>
@@ -397,7 +381,19 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                       <input type="hidden" name="images" value="all">
                   </div>
               </div>
-
+             <!-- Synonym -->
+              <div class="input-field col s4">
+                  <div class="center-align">
+                      <div class="switch">
+                          <label>
+                              Incl. synonym search
+                              <input type="checkbox" id="checkbox_synoynm">
+                              <span class="lever"></span>
+                          </label>
+                      </div>
+                      <input type="hidden" name="synonym" value="all">
+                  </div>
+              </div>
               <!-- Submission -->
               <div class="col s12">
                   <div class="center-align">
