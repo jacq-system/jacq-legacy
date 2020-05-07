@@ -177,13 +177,13 @@ function getPicInfo($picdetails)
             $service = new jsonRPCClient($url);
             $return['pics'] = $service->listResources($picdetails['key'],
                                                       array($picdetails['filename'],
-                                                            $picdetails['filename'] . "\_%",
+                                                            $picdetails['filename'] . "_%",
                                                             $picdetails['filename'] . "A",
                                                             $picdetails['filename'] . "B",
                                                             "tab_" . $picdetails['specimenID'],
                                                             "obs_" . $picdetails['specimenID'],
-                                                            "tab\_" . $picdetails['specimenID'] . "\_%",
-                                                            "obs\_" . $picdetails['specimenID'] . "\_%"));
+                                                            "tab_" . $picdetails['specimenID'] . "_%",
+                                                            "obs_" . $picdetails['specimenID'] . "_%"));
         }
         catch( Exception $e ) {
             $return['error'] = 'Unable to connect to ' . $url . " with Error: " . $e->getMessage();
