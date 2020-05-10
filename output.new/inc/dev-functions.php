@@ -279,12 +279,11 @@ function getTaxonAuth($taxid) {
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($rowtax = $result->fetch_assoc()) {
-            $text='<br/>';
+            $text .= '<br/>';
             if ($rowtax['serviceID'] == 1) {
                 $text .=  $rowtax["hyper"]."&nbsp;";
                 $text .= str_replace("IPNI (K)","Plants of the World Online / POWO (K)",str_replace("serviceID1_logo","serviceID49_logo",str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
-            }
-            else {
+            } else {
                 $text .= $rowtax["hyper"];
             }
         }
@@ -300,7 +299,7 @@ function getGeonamesID($HerbNummer) {
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-         $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
+            $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
         }
         $text = '';
     }

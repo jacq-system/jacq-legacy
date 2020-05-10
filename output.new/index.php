@@ -193,14 +193,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
-                         placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
+                         placeholder="Scientific name" name="taxon" type="text">';
                   ?>
               </div>
               <!-- Family -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($family) . '"
-                         placeholder="Family" name="family" type="text":not(.browser-default)>';
+                         placeholder="Family" name="family" type="text">';
                   ?>
               </div>
               <!-- Institution -->
@@ -235,21 +235,21 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
-                         placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
+                         placeholder="Herbar #" name="HerbNummer" type="text">';
                   ?>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($Sammler) . '"
-                         placeholder="Collector" name="Sammler" type="text":not(.browser-default)>';
+                         placeholder="Collector" name="Sammler" type="text">';
                   ?>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($SammlerNr) . '"
-                         placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>';
+                         placeholder="Collector #" name="SammlerNr" type="text">';
                   ?>
               </div>
 
