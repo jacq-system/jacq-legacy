@@ -21,10 +21,12 @@ function collectionItem($coll)
 
 
 // user wants to change order
-if (isset($_GET['order']) && intval($_GET['order']) == 2) {
-    $_SESSION['order'] = 2;
-} else {
-    $_SESSION['order'] = 1;
+if (isset($_GET['order'])) {
+    if (intval($_GET['order']) == 2) {
+        $_SESSION['order'] = 2;
+    } else {
+        $_SESSION['order'] = 1;
+    }
 }
 
 // user wants to change items per page

@@ -79,11 +79,41 @@ header("Cache-Control: post-check=0, pre-check=0", false);
       <div id="home" class="row">
         <div class="col s12">
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W, WU and WUP.</p>
-          <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>.</p>
-          <p>For requests and comments please contact the corresponding Director/Curator listed in the Index Herbariorum  directly.</p>
-
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
+          <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
+          
+          
           <div class="divider"></div>
+            <ul class="collapsible">
+            <li>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i><h5>External Resources Identifiers and Links</h5></div>
+              <div class="collapsible-body">
+                <p>The JACQ system has been populated with identifiers from external resources for people and scientific names. On the basis of these identifiers external portals can be reached directly by clicking on the respective icon(s) for a given entity.</p>
+                <h6><b>Scientific Names</b></h6>
+                <ul>
+                  <li><a href="https://ipni.org/" target="_blank"><img src="assets/images/serviceID1_logo.png" height="20px" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
+                  <li><a href="http://powo.science.kew.org/" target="_blank"><img src="assets/images/serviceID49_logo.png" height="20px" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img src="assets/images/serviceID3_logo.png" height="20px" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="https://www.europlusmed.org/" target="_blank"><img src="assets/images/serviceID10_logo.png" height="20px" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img src="assets/images/serviceID2_logo.png" height="20px" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
+                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img src="assets/images/serviceID21_logo.png" height="20px" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
+                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img src="assets/images/serviceID51_logo.png" height="20px" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
+                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img src="assets/images/serviceID45_logo.png" height="20px" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img src="assets/images/serviceID11_logo.png" height="20px" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
+                </ul>
+
+                <h6><b>Persons</b></h6>
+                <ul>
+                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img src="assets/images/wikidata.png" width="20px" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
+                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20px"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
+                  <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20px" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
+                  <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20px" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
+                  <li><a href="https://bloodhound-tracker.net/" target="_blank"><img src="assets/images/bloodhound_logo.png" width="20px" alt="Bloodhound Logo"></a> Bloodhound / David Shorthouse - Ottawa, ON, Canada</li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+
             <ul class="collapsible">
             <li>
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Other Virtual Herbaria & Aggregators</div>
@@ -106,7 +136,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <li>A, AMES, ECON, GH / <a href="https://kiki.huh.harvard.edu/databases/specimen_index.html" target="_blank">Harvard University Herbaria - Cambridge, MA, USA</a></li>
                   <li>F / <a href="https://collections-botany.fieldmuseum.org/list" target="_blank">Field Museum - Botany Collections, Chicago, IL, USA</a></li>
                   <li>MO / <a href="http://www.tropicos.org/SpecimenSearch.aspx" target="_blank">Missouri Botanical Garden, St. Louis, MO, USA</a></li>
-                  <li>NY / <a href="http://sweetgum.nybg.org/science/vh/" target="_blank">New York Botanical Garden - New York, NY, USA</a></li>
+                  <li>NY / <a href="http://sweetgum.nybg.org/science/vh/" target="_blank">New York Botanical Gardens - New York, NY, USA</a></li>
                   <li>US / <a href="https://collections.nmnh.si.edu/search/botany/" target="_blank">Smithsonian Institution - Washington, DC, USA</a></li>
                   <li></li>
                 </ul>
@@ -158,6 +188,11 @@ header("Cache-Control: post-check=0, pre-check=0", false);
             <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
             <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
             <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
+          </div>
+          <div id="partners">
+            <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
+            <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
           </div>
         </div>
       </div>
@@ -479,6 +514,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Georgia</div>
                         <div class="collapsible-body">
                             <ul>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124020" target="_blank">BATU // Batumi Botanical Garden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124619" target="_blank">TBI // Georgian Academy of Sciences</a></li>
                             </ul>
                         </div>
@@ -496,6 +532,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506" target="_blank">LZ // Universität Leipzig</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020" target="_blank">MJG // Johannes-Gutenberg-Universität Mainz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
                             </ul>
                         </div>
@@ -505,6 +542,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         <div class="collapsible-body">
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=255445" target="_blank">CBH // Cephalonia Botanica, Focas Cosmetatos Foundation</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126785" target="_blank">UPA // Βοτανικό Μουσείο Τμήματος Βιολογίας, University of Patras</a></li>
                             </ul>
                         </div>
                     </li>
@@ -522,6 +560,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484" target="_blank">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
                             </ul>
                         </div>
                     </li>
