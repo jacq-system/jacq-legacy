@@ -56,7 +56,7 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
 
     return $text;
 }
-function rdfcollection($row) {
+function rdfcollection($row, $isBotanyPilot = false) {
 
     if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID'] || $row['ORCID']){
         $text = "";
@@ -76,20 +76,10 @@ function rdfcollection($row) {
         if (getBloodhoundID($row)) {
         $text .= getBloodhoundID($row);
         }
-
-       // if ($row['WIKIDATA_ID']) {
-       //     $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-      //  } elseif ($row['HUH_ID']) {
-      //      $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-       // } elseif ($row['VIAF_ID']) {
-      //       $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-      //  } elseif ($row['ORCID']) {
-      //      $text .= "<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">'. $row['Sammler'] . '</a>&nbsp;';
-     //   }
-      $text .= $row['Sammler'];
+        $text .=  $row['Sammler'];
     }
     else {
-             $text = $row['Sammler'];
+             $text =  $row['Sammler'];
         }
     if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
         $text .= " et al.";
@@ -123,7 +113,17 @@ function rdfcollection($row) {
         //  $text .= " [" . $Datum . "]";
         //}
     }
-
+    if ($isBotanyPilot){
+            if ($row['WIKIDATA_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['HUH_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['VIAF_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['ORCID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            }
+         }
     return $text;
 }
 // new triple id class
@@ -301,7 +301,7 @@ function getGeonamesID($HerbNummer) {
         while($row = $result->fetch_assoc()) {
             $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
         }
-        $text = '';
+       // $text = '';
     }
     return $text;
 }
