@@ -86,7 +86,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
           <div class="divider"></div>
             <ul class="collapsible">
             <li>
-              <div class="collapsible-header"><i class="fas fa-angle-down"></i><h5>External Resources Identifiers and Links</h5></div>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i>External Resources Identifiers and Links</div>
               <div class="collapsible-body">
                 <p>The JACQ system has been populated with identifiers from external resources for people and scientific names. On the basis of these identifiers external portals can be reached directly by clicking on the respective icon(s) for a given entity.</p>
                 <h6><b>Scientific Names</b></h6>
@@ -165,37 +165,42 @@ header("Cache-Control: post-check=0, pre-check=0", false);
             </li>
           </ul>
 
-          <h5>Acknowledgements</h5>
-          <div class="divider"></div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
-          </div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
-            </div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
-            <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
-            <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
-            <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
-            <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
-          </div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
-          </div>
-        </div>
+            <ul class="collapsible">
+            <li>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Acknowledgements</div>
+              <div class="collapsible-body">
+                  <div id="partners">
+                  <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
+                </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
+                  </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
+                  <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
+                  <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
+                  <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
+                  <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
+                </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
+                </div>
+           </div>
+          </li>
+        </ul>
       </div>
+    </div>
       <div id="database">
         <div class="row">
           <div class="col s12">
