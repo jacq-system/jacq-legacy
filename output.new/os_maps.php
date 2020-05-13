@@ -69,7 +69,7 @@ while ($row = $result->fetch_array()) {
         $point['lat'] = $lat;
         $point['lng'] = $lng;
 
-        $url = "http://herbarium.univie.ac.at/database/detail.php?ID=" . $row['specimen_ID'];
+        $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
              . htmlspecialchars(taxonWithHybrids($row))
