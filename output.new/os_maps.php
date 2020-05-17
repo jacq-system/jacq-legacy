@@ -75,7 +75,7 @@ while ($row = $result->fetch_array()) {
              . htmlspecialchars(taxonWithHybrids($row))
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
-             . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])) . " / "
+             . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']), ENT_QUOTES | ENT_HTML401) . " / "
              . $row['Datum'] . " / ";
         if ($row['typusID']) {
             $txt .= htmlspecialchars($row['typusID']) . " / ";
