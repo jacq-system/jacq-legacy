@@ -81,8 +81,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
           <div class="divider"></div>
           <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
           <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
-          
-          
+
+
           <div class="divider"></div>
             <ul class="collapsible">
             <li>
@@ -91,24 +91,24 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 <p>The JACQ system has been populated with identifiers from external resources for people and scientific names. On the basis of these identifiers external portals can be reached directly by clicking on the respective icon(s) for a given entity.</p>
                 <h6><b>Scientific Names</b></h6>
                 <ul>
-                  <li><a href="https://ipni.org/" target="_blank"><img src="assets/images/serviceID1_logo.png" height="20px" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
-                  <li><a href="http://powo.science.kew.org/" target="_blank"><img src="assets/images/serviceID49_logo.png" height="20px" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
-                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img src="assets/images/serviceID3_logo.png" height="20px" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
-                  <li><a href="https://www.europlusmed.org/" target="_blank"><img src="assets/images/serviceID10_logo.png" height="20px" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
-                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img src="assets/images/serviceID2_logo.png" height="20px" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
-                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img src="assets/images/serviceID21_logo.png" height="20px" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
-                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img src="assets/images/serviceID51_logo.png" height="20px" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
-                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img src="assets/images/serviceID45_logo.png" height="20px" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
-                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img src="assets/images/serviceID11_logo.png" height="20px" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
+                  <li><a href="https://ipni.org/" target="_blank"><img src="assets/images/serviceID1_logo.png" height="20" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
+                  <li><a href="http://powo.science.kew.org/" target="_blank"><img src="assets/images/serviceID49_logo.png" height="20" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img src="assets/images/serviceID3_logo.png" height="20" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="https://www.europlusmed.org/" target="_blank"><img src="assets/images/serviceID10_logo.png" height="20" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img src="assets/images/serviceID2_logo.png" height="20" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
+                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img src="assets/images/serviceID21_logo.png" height="20" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
+                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img src="assets/images/serviceID51_logo.png" height="20" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
+                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img src="assets/images/serviceID45_logo.png" height="20" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img src="assets/images/serviceID11_logo.png" height="20" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
                 </ul>
 
                 <h6><b>Persons</b></h6>
                 <ul>
-                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img src="assets/images/wikidata.png" width="20px" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
-                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20px"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
-                  <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20px" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
-                  <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20px" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
-                  <li><a href="https://bloodhound-tracker.net/" target="_blank"><img src="assets/images/bloodhound_logo.png" width="20px" alt="Bloodhound Logo"></a> Bloodhound / David Shorthouse - Ottawa, ON, Canada</li>
+                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img src="assets/images/wikidata.png" width="20" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
+                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
+                  <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
+                  <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
+                  <li><a href="https://bloodhound-tracker.net/" target="_blank"><img src="assets/images/bloodhound_logo.png" width="20" alt="Bloodhound Logo"></a> Bloodhound / David Shorthouse - Ottawa, ON, Canada</li>
                 </ul>
               </div>
             </li>
@@ -233,14 +233,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
-                         placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>';
+                         placeholder="Scientific name" name="taxon" type="text">';
                   ?>
               </div>
               <!-- Family -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($family) . '"
-                         placeholder="Family" name="family" type="text":not(.browser-default)>';
+                         placeholder="Family" name="family" type="text">';
                   ?>
               </div>
               <!-- Institution -->
@@ -275,21 +275,21 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
-                         placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>';
+                         placeholder="Herbar #" name="HerbNummer" type="text">';
                   ?>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($Sammler) . '"
-                         placeholder="Collector" name="Sammler" type="text":not(.browser-default)>';
+                         placeholder="Collector" name="Sammler" type="text">';
                   ?>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
                   <?php
                   echo '<input class="searchinput" value="' . htmlspecialchars($SammlerNr) . '"
-                         placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>';
+                         placeholder="Collector #" name="SammlerNr" type="text">';
                   ?>
               </div>
 
@@ -454,7 +454,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 <div class="divider"></div>
             </div>
             <div id="jacq-map" class="col s6">
-                <iframe class="center-align pushpin" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg" width="100%" height="300px"></iframe>
+                <iframe class="center-align pushpin" style="width:100%; height: 300px" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg"></iframe>
             </div>
             <div id="institutions" class="col s6">
                 <ul class="collapsible">
