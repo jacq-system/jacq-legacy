@@ -1,5 +1,4 @@
 <?php
-
 require_once('variables.php');
 require_once('AnnotationQuery.inc.php');
 require_once('ImagePreview.inc.php');
@@ -19,7 +18,8 @@ if ($dbLink->connect_errno) {
 }
 $dbLink->set_charset('utf8');
 
-function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
+function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
+{
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
         $text .= " et al.";
@@ -56,10 +56,76 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
 
     return $text;
 }
+function rdfcollection($row, $isBotanyPilot = false) {
 
+    if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID'] || $row['ORCID']){
+        $text = "";
+        if ($row['WIKIDATA_ID']) {
+           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" alt="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" width="20px"></a>&nbsp;';
+        }
+        if ($row['HUH_ID']) {
+           $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" alt="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" height="20px"></a>&nbsp;';
+        }
+        if ($row['VIAF_ID']) {
+           $text .= "<a href=\"" . $row['VIAF_ID'] . '" title="VIAF" alt="VIAF" target="_blank" class="leftnavi"><img src="assets/images/viaf.png" width="20px"></a>&nbsp;';
+        }
+        if ($row['ORCID']) {
+           $text .= "<a href=\"" . $row['ORCID'] . '" title="ORCID" alt="ORCID" target="_blank" class="leftnavi"><img src="assets/images/orcid.logo.icon.svg" width="20px"></a>&nbsp;';
+        }
+
+        if (getBloodhoundID($row)) {
+        $text .= getBloodhoundID($row);
+        }
+        $text .=  $row['Sammler'];
+    }
+    else {
+             $text =  $row['Sammler'];
+        }
+    if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
+        $text .= " et al.";
+    }
+    else if ($row['Sammler_2']) {
+        $text .= " & " . $row['Sammler_2'];
+    }
+    if ($row['series_number']) {
+        if ($row['Nummer']) {
+            $text .= " " . $row['Nummer'];
+        }
+        if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
+            $text .= " " . $row['alt_number'];
+        }
+        if ($row['series']) {
+            $text .= " " . $row['series'];
+        }
+        $text .= " " . $row['series_number'];
+    }
+    else {
+        if ($row['series']) {
+            $text .= " " . $row['series'];
+        }
+        if ($row['Nummer']) {
+            $text .= " " . $row['Nummer'];
+        }
+        if ($row['alt_number']) {
+            $text .= " " . $row['alt_number'];
+        }
+    }
+    if ($isBotanyPilot){
+            if ($row['WIKIDATA_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['HUH_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['VIAF_ID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            } elseif ($row['ORCID']) {
+                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+            }
+         }
+    return $text;
+}
 // new triple id class
-class MyTripleID extends TripleID {
-
+class MyTripleID extends TripleID
+{
     public function __construct($id) {
         global $dbLink;
         // do some conversion stuff
@@ -79,9 +145,7 @@ class MyTripleID extends TripleID {
             echo $dbLink->error . "<br>\n";
         }
         $row = $result->fetch_array();
-        $this->institutionID = $row['SourceInstitutionID'];
-        $this->sourceID = $row['SourceID'];
-        $this->objectID = $row['HerbNummer'];
+        parent::__construct($row['SourceInstitutionID'], $row['SourceID'], $row['HerbNummer']);
     }
 }
 
@@ -148,52 +212,52 @@ function taxonWithHybrids($row) {
     global $dbLink;
 
     if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
-        $result = $dbLink->query("SELECT parent_1_ID, parent_2_ID
-                                                    FROM tbl_tax_hybrids
-                                                    WHERE taxon_ID_fk = '" . $row['taxonID'] . "'");
-        $rowHybrid = $result->fetch_array(MYSQLI_ASSOC);
-        $result = $dbLink->query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'");
-        $row1 = $result->fetch_array(MYSQLI_ASSOC);
-        $result = $dbLink->query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'");
-        $row2 = $result->fetch_array(MYSQLI_ASSOC);
+        $resultHybrid = $dbLink->query("SELECT parent_1_ID, parent_2_ID
+                                        FROM tbl_tax_hybrids
+                                        WHERE taxon_ID_fk = '" . $row['taxonID'] . "'");
+        $rowHybrid = $resultHybrid->fetch_array(MYSQLI_ASSOC);
+        $result1 = $dbLink->query("SELECT tg.genus,
+                                    ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                    ta4.author author4, ta5.author author5,
+                                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                    te4.epithet epithet4, te5.epithet epithet5
+                                   FROM tbl_tax_species ts
+                                    LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                    LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                    LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                    LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                    LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                    LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                    LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                    LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                    LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                    LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                    LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                    LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                    LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                   WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'");
+        $row1 = $result1->fetch_array(MYSQLI_ASSOC);
+        $result2 = $dbLink->query("SELECT tg.genus,
+                                    ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                    ta4.author author4, ta5.author author5,
+                                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                    te4.epithet epithet4, te5.epithet epithet5
+                                   FROM tbl_tax_species ts
+                                    LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                    LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                    LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                    LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                    LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                    LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                    LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                    LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                    LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                    LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                    LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                    LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                    LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                   WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'");
+        $row2 = $result2->fetch_array(MYSQLI_ASSOC);
 
         return taxon($row1) . " x " . taxon($row2);
     }
@@ -202,15 +266,63 @@ function taxonWithHybrids($row) {
     }
 }
 
-/* * ***********************************************************************
-  php easy :: pagination scripts set - Version Three
-  ==========================================================================
+function getTaxonAuth($taxid) {
+    global $dbLink;
+    $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
+    $result = $dbLink->query($sql);
+    $text = '';
+    if ($result && $result->num_rows > 0) {
+    // output data of each row
+        while($rowtax = $result->fetch_assoc()) {
+            $text .= '<br/>';
+            if ($rowtax['serviceID'] == 1) {
+                $text .=  $rowtax["hyper"]."&nbsp;";
+                $text .= str_replace("IPNI (K)","Plants of the World Online / POWO (K)",str_replace("serviceID1_logo","serviceID49_logo",str_replace("http://ipni.org/ipni/idPlantNameSearch.do?id=", "http://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:", $rowtax["hyper"])));
+            } else {
+                $text .= $rowtax["hyper"];
+            }
+        }
+    }
+    return $text;
+}
+
+function getGeonamesID($HerbNummer) {
+    global $dbLink;
+    $sql = "SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode like '" . ($HerbNummer) . "';";
+    $result = $dbLink->query($sql);
+     $text = '';
+    if ($result && $result->num_rows > 0) {
+    // output data of each row
+        while($row = $result->fetch_assoc()) {
+            $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
+        }
+       // $text = '';
+    }
+    return $text;
+}
+function getBloodhoundID($row) {
+    global $dbLink;
+    $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "';";
+    $result = $dbLink->query($sql);
+     $text = '';
+    if ($result && $result->num_rows > 0) {
+    // output data of each row
+        while($row = $result->fetch_assoc()) {
+         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'></a>&nbsp;";
+        }
+    }
+    return $text;
+}
+
+/* * ********************************************************************************
+  php easy :: pagination scripts set - Version Three, changed by Dominik and Johannes
+  ===================================================================================
   Author:      php easy code, www.phpeasycode.com
   Web Site:    http://www.phpeasycode.com
   Contact:     webmaster@phpeasycode.com
- * *********************************************************************** */
+ * ******************************************************************************** */
 
-function paginate_three($reload, $page, $tpages, $adjacents) {
+function paginate_three($page, $tpages, $adjacents) {
     $prevlabel = "<i class='material-icons'>chevron_left</i>";
     $nextlabel = "<i class='material-icons'>chevron_right</i>";
 
@@ -219,12 +331,8 @@ function paginate_three($reload, $page, $tpages, $adjacents) {
     // previous
     if ($page == 1) {
         $out .= "<li><a>$prevlabel</a></li>\n";
-    }
-    else if ($page == 2) {
-        $out .= "<li><a>$prevlabel</a></li>\n";
-    }
-    else {
-        $out .= "<li class='waves-effect' data-value='".($page-1)."'><a>$prevlabel</a></li>\n";
+    } else {
+        $out .= "<li class='waves-effect' data-value='" . ($page - 1) . "'><a>$prevlabel</a></li>\n";
     }
 
     if ($tpages < 4 + $adjacents * 2 + 2) {

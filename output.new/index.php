@@ -1,18 +1,46 @@
-<?php include 'search.php'; ?>
+<?php
+define('INDEX_START', true);
+if(!empty($_GET)) {
+    // someone followed an external link to a direct search, so let the script click the search button automatically
+    unset($_GET['search']);
+    define('START_SEARCH', true);
+}
 
-<!DOCTYPE html>
+session_start();
+require("inc/dev-functions.php");
+require_once ("inc/xajax/xajax.inc.php");
+$xajax = new xajax("ajax/dev-searchServer.php");
+$xajax->registerFunction("getCollection");
+$xajax->registerFunction("getCountry");
+$xajax->registerFunction("getProvince");
+
+// if script was called from the outside with some search parameters already in place, put the in variables
+// else leave these variables empty
+$family      = (isset($_GET['family']))      ? filter_input(INPUT_GET, 'family',      FILTER_SANITIZE_STRING) : '';
+$taxon       = (isset($_GET['taxon']))       ? filter_input(INPUT_GET, 'taxon',       FILTER_SANITIZE_STRING) : '';
+$HerbNummer  = (isset($_GET['HerbNummer']))  ? filter_input(INPUT_GET, 'HerbNummer',  FILTER_SANITIZE_STRING) : '';
+$Sammler     = (isset($_GET['Sammler']))     ? filter_input(INPUT_GET, 'Sammler',     FILTER_SANITIZE_STRING) : '';
+$SammlerNr   = (isset($_GET['SammlerNr']))   ? filter_input(INPUT_GET, 'SammlerNr',   FILTER_SANITIZE_STRING) : '';
+$geo_general = (isset($_GET['geo_general'])) ? filter_input(INPUT_GET, 'geo_general', FILTER_SANITIZE_STRING) : '';
+$geo_region  = (isset($_GET['geo_region']))  ? filter_input(INPUT_GET, 'geo_region',  FILTER_SANITIZE_STRING) : '';
+$nation_engl = (isset($_GET['nation_engl'])) ? filter_input(INPUT_GET, 'nation_engl', FILTER_SANITIZE_STRING) : '';
+$source_name = (isset($_GET['source_name'])) ? filter_input(INPUT_GET, 'source_name', FILTER_SANITIZE_STRING) : '';
+$collection  = (isset($_GET['collection']))  ? filter_input(INPUT_GET, 'collection',  FILTER_SANITIZE_STRING) : '';
+
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Cache-Control: post-check=0, pre-check=0", false);
+
+?><!DOCTYPE html>
 <html>
   <head>
     <title>JACQ - Virtual Herbaria</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="FW4 DW4 HTML">
-    <meta http-equiv="“cache-control“" content="“no-cache“">
-    <meta http-equiv="“pragma“" content="“no-cache“">
-    <meta http-equiv="“expires“" content="“0″">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen,projection"/>
-    <link href="assets/fontawesome/css/all.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
+    <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
+    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="shortcut icon" href="JACQ_LOGO.png"/>
     <!-- Matomo -->
@@ -30,7 +58,7 @@
       })();
     </script>
     <!-- End Matomo Code -->
-</head>
+  </head>
   <body>
     <div id="navbar" class="navbar-fixed">
       <nav class="nav-extended">
@@ -51,11 +79,41 @@
       <div id="home" class="row">
         <div class="col s12">
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PRC, TBI, TGU, TMRC, UBT, W, WU and WUP.</p>
-          <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>.</p>
-          <p>For requests and comments please contact the corresponding Director/Curator listed in the Index Herbariorum  directly.</p>
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
+          <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
+
 
           <div class="divider"></div>
+            <ul class="collapsible">
+            <li>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i>External Resources Identifiers and Links</div>
+              <div class="collapsible-body">
+                <p>The JACQ system has been populated with identifiers from external resources for people and scientific names. On the basis of these identifiers external portals can be reached directly by clicking on the respective icon(s) for a given entity.</p>
+                <h6><b>Scientific Names</b></h6>
+                <ul>
+                  <li><a href="https://ipni.org/" target="_blank"><img src="assets/images/serviceID1_logo.png" height="20" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
+                  <li><a href="http://powo.science.kew.org/" target="_blank"><img src="assets/images/serviceID49_logo.png" height="20" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img src="assets/images/serviceID3_logo.png" height="20" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="https://www.europlusmed.org/" target="_blank"><img src="assets/images/serviceID10_logo.png" height="20" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img src="assets/images/serviceID2_logo.png" height="20" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
+                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img src="assets/images/serviceID21_logo.png" height="20" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
+                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img src="assets/images/serviceID51_logo.png" height="20" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
+                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img src="assets/images/serviceID45_logo.png" height="20" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img src="assets/images/serviceID11_logo.png" height="20" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
+                </ul>
+
+                <h6><b>Persons</b></h6>
+                <ul>
+                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img src="assets/images/wikidata.png" width="20" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
+                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
+                  <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
+                  <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
+                  <li><a href="https://bloodhound-tracker.net/" target="_blank"><img src="assets/images/bloodhound_logo.png" width="20" alt="Bloodhound Logo"></a> Bloodhound / David Shorthouse - Ottawa, ON, Canada</li>
+                </ul>
+              </div>
+            </li>
+          </ul>
+
             <ul class="collapsible">
             <li>
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Other Virtual Herbaria & Aggregators</div>
@@ -78,7 +136,7 @@
                   <li>A, AMES, ECON, GH / <a href="https://kiki.huh.harvard.edu/databases/specimen_index.html" target="_blank">Harvard University Herbaria - Cambridge, MA, USA</a></li>
                   <li>F / <a href="https://collections-botany.fieldmuseum.org/list" target="_blank">Field Museum - Botany Collections, Chicago, IL, USA</a></li>
                   <li>MO / <a href="http://www.tropicos.org/SpecimenSearch.aspx" target="_blank">Missouri Botanical Garden, St. Louis, MO, USA</a></li>
-                  <li>NY / <a href="http://sweetgum.nybg.org/science/vh/" target="_blank">New York Botanical Garden - New York, NY, USA</a></li>
+                  <li>NY / <a href="http://sweetgum.nybg.org/science/vh/" target="_blank">New York Botanical Gardens - New York, NY, USA</a></li>
                   <li>US / <a href="https://collections.nmnh.si.edu/search/botany/" target="_blank">Smithsonian Institution - Washington, DC, USA</a></li>
                   <li></li>
                 </ul>
@@ -107,32 +165,42 @@
             </li>
           </ul>
 
-          <h5>Acknowledgements</h5>
-          <div class="divider"></div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
-          </div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
-            <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
-            </div>
-          <div id="partners">
-            <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
-            <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
-            <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
-            <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
-            <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
-            <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
-          </div>
-        </div>
+            <ul class="collapsible">
+            <li>
+              <div class="collapsible-header"><i class="fas fa-angle-down"></i>Acknowledgements</div>
+              <div class="collapsible-body">
+                  <div id="partners">
+                  <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
+                </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
+                  </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
+                  <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
+                  <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
+                  <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
+                  <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
+                </div>
+                <div id="partners">
+                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
+                </div>
+           </div>
+          </li>
+        </ul>
       </div>
+    </div>
       <div id="database">
         <div class="row">
           <div class="col s12">
@@ -160,13 +228,27 @@
           </div>
         </div>
         <!-- Search Form -->
-          <form id="ajax_f" name="f" class="row" action="index.php" method="post">
+          <form id="ajax_f" name="f" class="row">
+               <!-- Taxon -->
+              <div class="input-field col s6">
+                  <?php
+                  echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
+                         placeholder="Scientific name" name="taxon" type="text">';
+                  ?>
+              </div>
+              <!-- Family -->
+              <div class="input-field col s6">
+                  <?php
+                  echo '<input class="searchinput" value="' . htmlspecialchars($family) . '"
+                         placeholder="Family" name="family" type="text">';
+                  ?>
+              </div>
               <!-- Institution -->
               <div class="input-field col s6">
                   <select name="source_name">
                       <option value="" selected>Search all</option>
                       <?php
-                      $result = $dbLink->query("SELECT `source_name`
+                      $result = $dbLink->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
                                                 FROM `meta`
                                                 WHERE `source_id`
                                                 IN (
@@ -178,42 +260,37 @@
                                                     FROM `tbl_specimens`
                                                   )
                                                 )
-                                                ORDER BY `source_name`");
+                                                ORDER BY herbname");
                       while ($row = $result->fetch_array()) {
                           echo "<option value=\"{$row['source_name']}\"";
                           if ($source_name == $row['source_name']) {
                               echo " selected";
                           }
-                          echo ">{$row['source_name']}</option>\n";
+                          echo ">{$row['herbname']}</option>\n";
                       }
                       ?>
                   </select>
-
               </div>
               <!-- Herbar Number -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Herbar #" name="HerbNummer" type="text":not(.browser-default)>
-
-              </div>
-              <!-- Family -->
-              <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Family" name="family" type="text":not(.browser-default)>
-
-              </div>
-              <!-- Taxon -->
-              <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Scientific name" name="taxon" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
+                         placeholder="Herbar #" name="HerbNummer" type="text">';
+                  ?>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Collector" name="Sammler" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . htmlspecialchars($Sammler) . '"
+                         placeholder="Collector" name="Sammler" type="text">';
+                  ?>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
-                  <input class="searchinput" placeholder="Collector #" name="SammlerNr" type="text":not(.browser-default)>
-
+                  <?php
+                  echo '<input class="searchinput" value="' . htmlspecialchars($SammlerNr) . '"
+                         placeholder="Collector #" name="SammlerNr" type="text">';
+                  ?>
               </div>
 
               <!-- Extended Search -->
@@ -226,29 +303,25 @@
                                   <!-- Ident. History -->
                                   <div class="input-field">
                                       <input class="searchinput" placeholder="Ident. History" name="taxon_alt" type="text">
-
                                   </div>
-                                  <!-- Synonym -->
+                                  <!-- CollectionDate -->
                                   <div class="input-field">
-                                      <label>
-                                          <input type="checkbox" name="synonym" checked="true" class="searchinput">
-                                          <span>incl. syn.</span>
-                                      </label>
+                                      <input class="searchinput" placeholder="Collection date" name="CollDate" type="text">
                                   </div>
                                   <!-- Collection -->
                                   <div class="input-field">
                                       <select id="ajax_collection" name="collection">
                                           <option value="" selected>Search subcollection</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT `collection`
-                                          FROM `tbl_management_collections`
-                                          WHERE `collectionID`
-                                          IN (
-                                            SELECT DISTINCT `collectionID`
-                                            FROM `tbl_specimens`
-                                          )
-                                          ORDER BY `collection`");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_collection = $dbLink->query("SELECT `collection`
+                                                                               FROM `tbl_management_collections`
+                                                                               WHERE `collectionID`
+                                                                               IN (
+                                                                                 SELECT DISTINCT `collectionID`
+                                                                                 FROM `tbl_specimens`
+                                                                               )
+                                                                               ORDER BY `collection`");
+                                          while ($row = $result_collection->fetch_array()) {
                                               echo "<option value=\"{$row['collection']}\"";
                                               if ($collection == $row['collection']) {
                                                   echo " selected";
@@ -257,32 +330,29 @@
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- Collection Number -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text":not(:chekced)>
-
+                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text">
                                   </div>
                                   <!-- Series -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Series" name="series" type="text":not(:chekced)>
-
+                                      <input class="searchinput" placeholder="Series" name="series" type="text">
                                   </div>
                                   <!-- Locality -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text":not(:chekced)>
-
+                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text">
                                   </div>
                                   <!-- Continent -->
                                   <div class="input-field">
                                       <select name="geo_general">
                                           <option value="" selected>Search continent</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT geo_general
-                                                    FROM tbl_geo_region
-                                                    GROUP BY geo_general ORDER BY geo_general");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_geo_general = $dbLink->query("SELECT geo_general
+                                                                                FROM tbl_geo_region
+                                                                                GROUP BY geo_general
+                                                                                ORDER BY geo_general");
+                                          while ($row = $result_geo_general->fetch_array()) {
                                               echo "<option value=\"{$row['geo_general']}\"";
                                               if ($geo_general == $row['geo_general']) {
                                                   echo " selected";
@@ -291,22 +361,20 @@
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- Series -->
                                   <div id="ajax_nation_engl" class="input-field">
-                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text":not(:chekced) value="<?php echo htmlspecialchars($nation_engl); ?>">
-
+                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
                                   </div>
                                   <!-- Region -->
                                   <div class="input-field">
                                       <select name="geo_region">
                                           <option value="" selected>Search region</option>
                                           <?php
-                                          $result = $dbLink->query("SELECT geo_region
-                                                    FROM tbl_geo_region
-                                                    ORDER BY geo_region");
-                                          while ($row = $result->fetch_array()) {
+                                          $result_geo_region = $dbLink->query("SELECT geo_region
+                                                                               FROM tbl_geo_region
+                                                                               ORDER BY geo_region");
+                                          while ($row = $result_geo_region->fetch_array()) {
                                               echo "<option value=\"{$row['geo_region']}\"";
                                               if ($geo_region == $row['geo_region']) {
                                                   echo " selected";
@@ -315,24 +383,20 @@
                                           }
                                           ?>
                                       </select>
-
                                   </div>
                                   <!-- State/Province -->
                                   <div id="ajax_provinz" class="input-field">
-                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text":not(:chekced)>
-
+                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text">
                                   </div>
                                   <!-- Placeholder -->
                                   <div></div>
-
                               </div>
                           </div>
                       </li>
                   </ul>
               </div>
-
               <!-- All Records/Type Records -->
-              <div class="input-field col s6">
+              <div class="input-field col s4">
                   <div class="center-align">
                       <div class="switch">
                           <label>
@@ -344,8 +408,8 @@
                       <input type="hidden" name="type" value="all">
                   </div>
               </div>
-              <!-- Synonym -->
-              <div class="input-field col s6">
+              <!-- Images -->
+              <div class="input-field col s4">
                   <div class="center-align">
                       <div class="switch">
                           <label>
@@ -357,7 +421,19 @@
                       <input type="hidden" name="images" value="all">
                   </div>
               </div>
-
+             <!-- Synonym -->
+              <div class="input-field col s4">
+                  <div class="center-align">
+                      <div class="switch">
+                          <label>
+                              Incl. synonym search
+                              <input type="checkbox" id="checkbox_synoynm">
+                              <span class="lever"></span>
+                          </label>
+                      </div>
+                      <input type="hidden" name="synonym" value="all">
+                  </div>
+              </div>
               <!-- Submission -->
               <div class="col s12">
                   <div class="center-align">
@@ -378,7 +454,7 @@
                 <div class="divider"></div>
             </div>
             <div id="jacq-map" class="col s6">
-                <iframe class="center-align pushpin" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg" width="100%" height="300px"></iframe>
+                <iframe class="center-align pushpin" style="width:100%; height: 300px" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg"></iframe>
             </div>
             <div id="institutions" class="col s6">
                 <ul class="collapsible">
@@ -443,6 +519,7 @@
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Georgia</div>
                         <div class="collapsible-body">
                             <ul>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124020" target="_blank">BATU // Batumi Botanical Garden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124619" target="_blank">TBI // Georgian Academy of Sciences</a></li>
                             </ul>
                         </div>
@@ -460,6 +537,7 @@
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506" target="_blank">LZ // Universität Leipzig</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020" target="_blank">MJG // Johannes-Gutenberg-Universität Mainz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
                             </ul>
                         </div>
@@ -469,6 +547,7 @@
                         <div class="collapsible-body">
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=255445" target="_blank">CBH // Cephalonia Botanica, Focas Cosmetatos Foundation</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126785" target="_blank">UPA // Βοτανικό Μουσείο Τμήματος Βιολογίας, University of Patras</a></li>
                             </ul>
                         </div>
                     </li>
@@ -486,6 +565,7 @@
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484" target="_blank">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
                             </ul>
                         </div>
                     </li>
@@ -560,7 +640,7 @@
                 </ul>
             </div>
         </div>
-      <div id="systems" class="row"
+      <div id="systems" class="row">
         <div class="col s12">
           <h5>Reference Systems</h5>
           <div class="divider"></div>
@@ -583,19 +663,27 @@
                   <li><a href="https://www.iapt-taxon.org/nomen/main.php" target="_blank">International Code of Nomenclature for algae, fungi, and plants - ICN</a></li>
                   <li><a href="https://www.ishs.org/scripta-horticulturae/international-code-nomenclature-cultivated-plants-ninth-edition" target="_blank">International Code of Nomenclature for Cultivated Plants (ICNCP), 9th ed., 2016</a></li>
                   <li><a href="http://www.ipni.org/" target="_blank">International Plant Names Index - IPNI</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
                   <li><a href="http://www.tropicos.org/" target="_blank">W³Tropicos</a></li>
                   <li><a href="http://data.kew.org/vpfg1992/vascplnt.html" target="_blank">Vascular Plant Families and Genera - Brummit</a></li>
                   <li><a href="https://naturalhistory2.si.edu/botany/ing/" target="_blank">Index Nominum Genericorum - ING</a> @ <a href="https://naturalhistory.si.edu/research/botany" target="_blank">US National Museum of Natural History - Smithsonian Institution - Botany Department</a>; U.S.A.</li>
                   <li><a href="https://www.nhm.ac.uk/our-science/data/linnaean-typification/search/" target="_blank">Linnaean Plant Names DB</a> @ <a href="http://www.nhm.ac.uk/" target="_blank">NHM London, UK</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
                   <li><a href="http://www.algaebase.org/" target="_blank">AlgaeBase</a></li>
                   <li><a href="http://worldplants.webarchiv.kit.edu/ferns/index.php" target="_blank">World Ferns</a></li>
                   <li><a href="http://www.indexfungorum.org/Names/Names.asp" target="_blank">Index Fungorum - CABI / Kew</a></li>
                   <li><a href="http://www.mycobank.org/" target="_blank">Mycobank</a></li>
-                <div class="divider"></div>
-                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html" target="_blank">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
+                </ul>
               <div class="divider"></div>
+                <ul>
+                  <li><a href="http://www.mobot.org/MOBOT/Research/APweb/welcome.html" target="_blank">Angiosperm Phylogeny</a> @ <a href="http://www.missouribotanicalgarden.org/">MO Botanical Garden</a></li>
+                </ul>
+              <div class="divider"></div>
+                <ul>
                   <li><a href="http://ww2.bgbm.org/EuroPlusMed/query.asp" target="_blank">Euro+Med PlantBase</a> @ <a href="http://www.bgbm.org/" target="_blank">BG Berlin-Dahlem; Germany</a></li>
                   <li><a href="https://www.kp-buttler.de/florenliste/" target="_blank">Florenliste von Deutschland - K.P. Buttler et al, DE</a></li>
                   <li><a href="https://www.tela-botanica.org/" target="_blank">Tela Botanica, FR</a></li>
@@ -616,7 +704,7 @@
                 <ul>
                   <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>
                   <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank">Index to Botanists</a> @ <a href="https://huh.harvard.edu/" target="_blank">Harvard University Herbaria</a>; U.S.A.</li>
-                  <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></a></li>
+                  <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></li>
                   <li>
                     <a href="https://www.iaptglobal.org/regnum-vegetabile" target="_blank">Regnum Vegetabile</a> @ <a href="https://www.iaptglobal.org/" target="_blank">International Association of Plant Taxonomists</a>
                     <br>Stafleu & Cowan 1976 ff. - vols. 94, 98, 105, 110, 112, 115, 116;
@@ -668,5 +756,19 @@
     <script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
     <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
     <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
+
+    <?php
+    if(defined('START_SEARCH') && START_SEARCH === true) {
+        ?>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $('#ajax_f').trigger('submit');
+                $('.tabs').tabs('select', 'database');
+            });
+        </script>
+        <?php
+    }
+    ?>
+
   </body>
 </html>

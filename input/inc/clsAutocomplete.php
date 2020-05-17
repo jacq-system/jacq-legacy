@@ -1160,6 +1160,31 @@ class clsAutocomplete {
         return $results;
     }
 
+
+    public function checkHerbNrExist($value) {
+        // Escape search string
+
+        $value['HerbNr'] = mysql_escape_string(urldecode($_GET['HerbNr']));
+        $value['institutionID'] = mysql_escape_string($_GET['institutionID']);
+
+
+        try {
+            $db = clsDbAccess::Connect('INPUT');
+            $sql = "SELECT COUNT(herbnummer) as Anzahl FROM tbl_specimens LEFT JOIN tbl_management_collections ON (tbl_specimens.collectionID = tbl_management_collections.collectionID) WHERE tbl_specimens.HerbNummer LIKE TRIM('" .$value['HerbNr'] ;
+            $sql .= "') AND tbl_management_collections.source_id = " . $value['institutionID'];
+
+            $dbst = $db->query($sql);
+            $row = $dbst->fetch();
+
+            return $row['Anzahl'] == '0' ? false : true;
+
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+
+        return false;
+    }
+
     /*     * *********************\
       |			|
       |  protected functions  |

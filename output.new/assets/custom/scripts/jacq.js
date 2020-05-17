@@ -25,6 +25,7 @@ function check() {
       isEmpty(document.f.HerbNummer.value) &&
       isEmpty(document.f.Sammler.value) &&
       isEmpty(document.f.SammlerNr.value) &&
+      isEmpty(document.f.CollDate.value) &&
       isEmpty(document.f.source_name.value) &&
       isEmpty(document.f.collection.value) &&
       isEmpty(document.f.taxon_alt.value) &&
@@ -68,7 +69,7 @@ $(document).ready(function(){
   *   Progress bars
   **/
   $(".progress").hide();
-  
+
   /**
   *   Search Form Handling
   **/
@@ -152,9 +153,9 @@ $(document).ready(function(){
       var form_data = $('#ajax_f').serialize();
       form_data +="&submit=Search";
       $.ajax({
-        url: "index.php",
+        url: "ajax_lp.php?type=search",
         type: "POST",
-        data: form_data, 
+        data: form_data,
         success: function(result){
           $(".progress-search").hide();
           $('#results').html(result);
@@ -164,6 +165,32 @@ $(document).ready(function(){
   });
 });
 
+/**
+ * Requests results.php with the given parameters
+ * @param settings
+ */
+function reloadTable(settings) {
+  let params = '';
+  if(settings.order !== undefined) {
+    params += '&order=' + settings.order;
+  }
+  if(settings.page !== undefined) {
+    params += '&page=' + settings.page;
+  }
+
+  if(settings.ITEMS_PER_PAGE !== undefined) {
+    params += '&ITEMS_PER_PAGE=' + settings.ITEMS_PER_PAGE;
+  }
+
+  $(".progress-paging").show();
+  $.ajax({
+    url: "ajax_lp.php?type=results" + params,
+    type: "GET",
+    success: function(result){
+      $('#results').html(result);
+    }
+  });
+}
 
 /**
 *   Ajax Complete (Notice: Xajax does not trigger this event.)
@@ -182,31 +209,22 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
   /**
   *   Register events for added elements
   **/
-  if ( settings.url === "index.php" || settings.url.includes("results.php") ) {
+  if ( settings.url.includes("ajax_lp.php") ) {
     $(".pagination>li").click(function(){
       var page = $(this).data('value');
       if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?s=s&page="+page,
-          type: "GET", 
-          success: function(result){
-            $('#results').html(result);
-          }
+        reloadTable({
+          page: page
         });
-      } 
+      }
     });
 
     $(".resulttax").click(function(){
       var page = $(this).data('value');
-      if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?order=1&s=s&page="+page,
-          type: "GET",
-          success: function(result){
-            $('#results').html(result);
-          }
+      if(page !== null) {
+        reloadTable({
+          page: page,
+          order: 1
         });
       }
     });
@@ -214,27 +232,18 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
     $(".resultcol").click(function(){
       var page = $(this).data('value');
       if(page !== null){
-        $(".progress-paging").show();
-        $.ajax({
-          url: "results.php?order=2&s=s&page="+page,
-          type: "GET",
-          success: function(result){
-            $('#results').html(result);
-          }
+        reloadTable({
+          page: page,
+          order: 2
         });
       }
     });
     $("select[name=ITEMS_PER_PAGE]").change(function(event){
       $('#results').html('');
-      $(".progress-search").show();
-      $.ajax({
-        url: "results.php?ITEMS_PER_PAGE="+$(this).val(),
-        type: "GET",
-        success: function(result){
-          $('#results').html(result);
-        }
+
+      reloadTable({
+        'ITEMS_PER_PAGE': $(this).val()
       });
     });
   }
 });
-    

@@ -1,7 +1,18 @@
 <?php
 session_start();
-require("inc/functions.php");
+
+header("Cache-Control: no-store, no-cache, must-revalidate");
+header("Pragma: no-cache");
+header("Cache-Control: post-check=0, pre-check=0", false);
+
+require("inc/dev-functions.php");
 require_once('inc/imageFunctions.php');
+
+if (isset($_GET['ID'])) {
+    $ID = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
+} else {
+    $ID = 0;
+}
 
 function protolog($row)
 {
@@ -129,7 +140,7 @@ function makeTypus($ID) {
         $result2 = $dbLink->query($sql2);
 
         $text .= "<tr><td nowrap align=\"right\">" . $row['typus_lat'] . " for&nbsp;</td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>";
-        $text .="<tr><td nowrap align=\"right\"></td><td>Typified by:&nbsp;<b>" . $row[typified_by_Person] . "&nbsp;" . $row[typified_Date] ."</b></td></tr>";
+        $text .="<tr><td nowrap align=\"right\"></td><td>Typified by:&nbsp;<b>" . $row['typified_by_Person'] . "&nbsp;" . $row['typified_Date'] ."</b></td></tr>";
         while ($row2 = $result2->fetch_array()) {
             $text .= "<tr><td></td><td><b>" . protolog($row2) . "</b></td></tr>";
         }
@@ -141,92 +152,62 @@ function makeTypus($ID) {
 
     return $text;
 }
-/*
-Fuer die Webabfrage brauchen wir nur(!!) die folgenden Tabellen:
-- tbl_collector
-- tbl_collector_2
-- tbl_management_collections
-- tbl_nation
-tbl_province
-tbl_tax_authors
-tbl_tax_epithets
-- tbl_tax_families
-- tbl_tax_genera
-- tbl_tax_species
-tbl_tax_status
-- tbl_tax_systematic_categories
-- tbl_typi
-- tbl_wu_generale
-*/
 
-?>
+?><!DOCTYPE html>
 <html>
 <head>
-<title>JACQ</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="description" content="FW4 DW4 HTML">
-    <meta http-equiv="“cache-control“" content="“no-cache“">
-    <meta http-equiv="“pragma“" content="“no-cache“">
-    <meta http-equiv="“expires“" content="“0″">
-<!--    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">-->
-    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen,projection"/>
-    <link href="assets/fontawesome/css/all.css" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen,projection"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <script type="text/javascript" language="JavaScript"><!--
-      function showPicture(url) {
-        MeinFenster =
-        window.open(url,
-                    "Picture",
-                    "width=700,height=500,top=100,left=100,resizable,scrollbars");
-        MeinFenster.focus();
-      }
-    --></script>
-    <!-- Matomo -->
-    <script type="text/javascript">
-      var _paq = window._paq || [];
-      /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-      _paq.push(['trackPageView']);
-      _paq.push(['enableLinkTracking']);
-      (function() {
-        var u="//iiif.jacq.org/piwik/matomo/";
-        _paq.push(['setTrackerUrl', u+'matomo.php']);
-        _paq.push(['setSiteId', '1']);
-        var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-        g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-      })();
-    </script>
-    <!-- End Matomo Code -->
-
+  <title>JACQ - Virtual Herbaria</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="description" content="FW4 DW4 HTML">
+  <!--<link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">-->
+  <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
+  <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
+  <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="shortcut icon" href="JACQ_LOGO.png"/>
+  <script type="text/javascript">
+    function showPicture(url) {
+      MeinFenster =
+      window.open(url,
+                  "Picture",
+                  "width=700,height=500,top=100,left=100,resizable,scrollbars");
+      MeinFenster.focus();
+    }
+  </script>
+  <!-- Matomo -->
+  <script type="text/javascript">
+    var _paq = window._paq || [];
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//iiif.jacq.org/piwik/matomo/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo Code -->
 </head>
 <body>
 <div id="navbar" class="navbar-fixed">
-    <nav class="nav-extended">
-        <div class="nav-wrapper">
-            <a href="#" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
-        </div>
-        <div class="nav-content">
-            <ul class="tabs">
-                <li class="tab"><a class="active" href="index.php#home">Home</a></li>
-                <li class="tab"><a href="index.php#database">Database</a></li>
-                <li class="tab"><a href="index.php#collections">Collections</a></li>
-                <li class="tab"><a href="index.php#systems">Reference Systems</a></li>
-            </ul>
-        </div>
-    </nav>
+  <nav class="nav-extended">
+    <div class="nav-wrapper">
+      <a href="#" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
+    </div>
+    <div class="nav-content">
+      <ul class="tabs">
+        <li class="tab"><a class="active" href="detail.php?ID=<?php echo $ID; ?>">Detail</a></li>
+      </ul>
+    </div>
+  </nav>
 </div>
 
-
-        <?php
-if (isset($_GET['ID'])) {
-    $ID = intval($_GET['ID']);
-} else {
-    $ID = 0;
-}
-
-$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
+<?php
+$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
            s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,
+           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,s.taxonID taxid,
            mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.typified,
            s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
            s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -262,20 +243,17 @@ $query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.
            LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
           WHERE specimen_ID='" . intval($ID) . "'";
 $result = $dbLink->query($query);
-//if ($dbLink->errno) {
-//    echo $query."<br>\n";
-//    echo $dbLink->error . "<br>\n";
-//}
 $row = $result->fetch_array();
 
 $taxon = taxonWithHybrids($row);
 
-$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
+//$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
+$sammler = rdfcollection($row);
+
 if ($row['ncbi_accession']) {
     $sammler .=  " &mdash; " . $row['ncbi_accession']
-              .  " <a href=\"http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term="
-              .  $row['ncbi_accession'] . "\" target=\"_blank\">"
-              .  "<img border=\"0\" height=\"16\" src=\"images/ncbi.gif\" width=\"14\"></a>";
+              .  " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" .  $row['ncbi_accession'] . "' target='_blank'>"
+              .  "<img border='0' height='16' src='images/ncbi.gif' width='14'></a>";
 }
 ?>
 <div class="container">
@@ -298,16 +276,9 @@ if ($row['ncbi_accession']) {
       <td><b>
         <?php makeCell($taxon); ?>
         </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+        <?php makeCell(getTaxonAuth($row['taxid'])); ?>
       </td>
     </tr>
-    <?php if ($accName): ?>
-    <tr>
-      <td align="right">Accepted name</td>
-      <td><b>
-        <?php makeCell($accName); ?>
-        </b></td>
-    </tr>
-    <?php endif; ?>
     <tr>
       <td align="right">Family</td>
       <td><b>
@@ -378,8 +349,9 @@ if ($row['ncbi_accession']) {
           } else {
               echo "&nbsp;";
           }
-        ?>
-      </b></td>
+        ?></b>
+        <?php makeCell(getGeonamesID($row['HerbNummer']));?>
+      </td>
     </tr>
     <tr>
       <td align="right">Label</td>
@@ -400,7 +372,7 @@ if ($row['ncbi_accession']) {
       </b></td>
     </tr>
     <?php
-        if ($row['source_id'] == '88' || $row['source_id'] == '55' ){
+        if (($row['source_id'] == '29' || $row['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
             echo "<tr>";
             // create new id object
             $id = new MyTripleID($row['HerbNummer']);
@@ -441,7 +413,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     if ($picdetails['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
-            $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
+            $protocol = (!empty($_SERVER['HTTPS'])) ? "https://" : "http://";
             $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
             echo "<iframe title='Mirador' width='100%' height='800px' "
                . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
@@ -453,15 +425,15 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
         }
         echo "</td>\n";
     } elseif ($picdetails['imgserver_type'] == 'baku') {
-        $file=rawurlencode(basename($picdetails['specimenID']));
-	    echo "<td valign='top' align='center'>"
+        $file = rawurlencode(basename($picdetails['specimenID']));
+        echo "<td valign='top' align='center'>"
            . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
            . "(<a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)"
            . "</td>";
     } elseif ($transfer) {
         if (count($transfer['pics']) > 0) {
             foreach ($transfer['pics'] as $v) {
-                $file=rawurlencode(basename($v));//?='+sel+"&method=show
+                $file = rawurlencode(basename($v));//?='+sel+"&method=show
                 echo "<td valign='top' align='center'>\n"
                    . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb' border='2'></a>\n"
                    . "<br>\n"

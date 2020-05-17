@@ -93,7 +93,7 @@ class jsonRPCClient {
 	 */
 	public function __call($method,$params) {
 		$debug='';
-		
+
 		// check
 		if (!is_scalar($method)) {
 			throw new Exception('Method name has no scalar value');
@@ -156,7 +156,7 @@ class jsonRPCClient {
 			if ($response['id'] != $currentId) {
 				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
 			}
-			if (!is_null($response['error'])) {
+			if (isset($response['error']) && !is_null($response['error'])) {
 				throw new Exception('Request error: '.$response['error']);
 			}
 

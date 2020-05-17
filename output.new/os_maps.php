@@ -31,7 +31,9 @@ function max2 ($a, $key)
 {
     $m = $a[0][$key];
     foreach ($a as $val) {
-        if ($m < $val[$key]) $m = $val[$key];
+        if ($m < $val[$key]) {
+            $m = $val[$key];
+        }
     }
     return $m;
 }
@@ -41,7 +43,9 @@ function min2 ($a, $key)
 {
     $m = $a[0][$key];
     foreach ($a as $val) {
-        if ($m > $val[$key]) $m = $val[$key];
+        if ($m > $val[$key]) {
+            $m = $val[$key];
+        }
     }
     return $m;
 }
@@ -60,7 +64,7 @@ function contains ($points, $point, $limit = 6)
 }
 
 
-unset($points);
+$points = null;
 $result = $dbLink->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
 while ($row = $result->fetch_array()) {
     $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']);
@@ -69,13 +73,13 @@ while ($row = $result->fetch_array()) {
         $point['lat'] = $lat;
         $point['lng'] = $lng;
 
-        $url = "http://herbarium.univie.ac.at/database/detail.php?ID=" . $row['specimen_ID'];
+        $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
              . htmlspecialchars(taxonWithHybrids($row))
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
-             . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum'])) . " / "
+             . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']), ENT_QUOTES | ENT_HTML401) . " / "
              . $row['Datum'] . " / ";
         if ($row['typusID']) {
             $txt .= htmlspecialchars($row['typusID']) . " / ";
@@ -119,7 +123,7 @@ $mean_lng = ($max_lng + $min_lng) / 2.0;
     </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
         integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
-        accesskey=""crossorigin=""/>
+        accesskey="" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""></script>
@@ -149,7 +153,7 @@ $mean_lng = ($max_lng + $min_lng) / 2.0;
       var baseMaps = {
             "OpenTopoMap": topo,
             "OpenStreetMap": osm
-          }
+          };
       jacq_map.addLayer(topo);
       var layersControl = new L.Control.Layers(baseMaps);
       jacq_map.addControl(layersControl);
