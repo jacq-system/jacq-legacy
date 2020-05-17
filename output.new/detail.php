@@ -413,7 +413,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     if ($picdetails['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
-            $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
+            $protocol = (!empty($_SERVER['HTTPS'])) ? "https://" : "http://";
             $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
             echo "<iframe title='Mirador' width='100%' height='800px' "
                . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "

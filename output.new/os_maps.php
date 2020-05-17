@@ -31,7 +31,9 @@ function max2 ($a, $key)
 {
     $m = $a[0][$key];
     foreach ($a as $val) {
-        if ($m < $val[$key]) $m = $val[$key];
+        if ($m < $val[$key]) {
+            $m = $val[$key];
+        }
     }
     return $m;
 }
@@ -41,7 +43,9 @@ function min2 ($a, $key)
 {
     $m = $a[0][$key];
     foreach ($a as $val) {
-        if ($m > $val[$key]) $m = $val[$key];
+        if ($m > $val[$key]) {
+            $m = $val[$key];
+        }
     }
     return $m;
 }
@@ -149,7 +153,7 @@ $mean_lng = ($max_lng + $min_lng) / 2.0;
       var baseMaps = {
             "OpenTopoMap": topo,
             "OpenStreetMap": osm
-          }
+          };
       jacq_map.addLayer(topo);
       var layersControl = new L.Control.Layers(baseMaps);
       jacq_map.addControl(layersControl);
