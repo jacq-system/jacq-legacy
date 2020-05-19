@@ -66,8 +66,24 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_species .= "AND (tf.family LIKE '$valueE%' OR tf.family_alt LIKE '$valueE%') ";
                 } elseif ($var == "series" || $var == "taxon_alt") {
                     $sql_restrict_specimen .= "AND " . $var . " LIKE '%$valueE%' ";
-                } elseif ($var == "collection" || $var == "source_name" || $var == "HerbNummber" || $var == "CollNummer") {
+                } elseif ($var == "collection" || $var == "source_name" || $var == "CollNummer") {
                     $sql_restrict_specimen .= "AND " . $var . " = '$valueE' ";
+                } elseif ($var == "HerbNummer") {
+                    if (ctype_alpha(substr($value, 0, 1))) {
+                        $source_code = "";
+                        for ($i = 0; $i < strlen($value); $i++) {
+                            $next_character = substr($value, $i, 1);
+                            if (ctype_alpha($next_character)) {
+                                $source_code .= $next_character;
+                            } else {
+                                break;
+                            }
+                        }
+                        $sql_restrict_specimen .= "AND source_code = '" . strtoupper($source_code) . "'
+                                                   AND HerbNummer LIKE '%" . sprintf("%06d", intval(substr($value, $i))) . "' ";
+                    } else {
+                        $sql_restrict_specimen .= "AND HerbNummer LIKE '%" . sprintf("%06d", intval($value)) . "' ";
+                    }
                 } elseif ($var == "SammlerNr") {
                     $sql_restrict_specimen .= "AND (s.Nummer='$valueE' OR s.alt_number LIKE '%$valueE%' OR s.series_number LIKE '%$valueE%') ";
                 } elseif ($var == "CollDate") {
