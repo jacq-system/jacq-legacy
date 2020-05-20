@@ -2,6 +2,41 @@
 session_start();
 require("inc/dev-functions.php");
 
+function max2 ($a, $key)
+{
+    $m = $a[0][$key];
+    foreach ($a as $val) {
+        if ($m < $val[$key]) {
+            $m = $val[$key];
+        }
+    }
+    return $m;
+}
+
+function min2 ($a, $key)
+{
+    $m = $a[0][$key];
+    foreach ($a as $val) {
+        if ($m > $val[$key]) {
+            $m = $val[$key];
+        }
+    }
+    return $m;
+}
+
+function contains ($points, $point, $limit = 6)
+{
+    if (is_array($points)) {
+        foreach ($points as $key => $val) {
+            if (abs($val['lat'] - $point['lat']) < $limit && abs($val['lng'] - $point['lng']) < $limit) {
+                return $key;
+            }
+        }
+    }
+    return false;
+}
+
+
 $points = null;
 $result = $dbLink->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
 while ($row = $result->fetch_array()) {

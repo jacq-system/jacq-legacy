@@ -335,37 +335,6 @@ function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP) {
     return $sec;
 }
 
-function max2 ($a, $key) {
-    $m = $a[0][$key];
-    foreach ($a as $val) {
-        if ($m < $val[$key]) {
-            $m = $val[$key];
-        }
-    }
-    return $m;
-}
-
-function min2 ($a, $key) {
-    $m = $a[0][$key];
-    foreach ($a as $val) {
-        if ($m > $val[$key]) {
-            $m = $val[$key];
-        }
-    }
-    return $m;
-}
-
-function contains ($points, $point, $limit = 6) {
-    if (is_array($points)) {
-        foreach ($points as $key => $val) {
-            if (abs($val['lat'] - $point['lat']) < $limit && abs($val['lng'] - $point['lng']) < $limit) {
-                return $key;
-            }
-        }
-    }
-    return false;
-}
-
 /* * ********************************************************************************
   php easy :: pagination scripts set - Version Three, changed by Dominik and Johannes
   ===================================================================================
