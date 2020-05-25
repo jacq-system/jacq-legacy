@@ -3,23 +3,6 @@ if (empty($_SESSION['s_query'])) { die(); } // nothing to do
 
 require_once 'inc/dev-functions.php';
 
-/**
- * format a found collection item for output
- * @param string $coll
- * @return string formatted string
- */
-function collectionItem($coll)
-{
-    if (strpos($coll, "-") !== false) {
-        return substr($coll, 0, strpos($coll, "-"));
-    } elseif (strpos($coll, " ") !== false) {
-        return substr($coll, 0, strpos($coll, " "));
-    } else {
-        return($coll);
-    }
-}
-
-
 // user wants to change order
 if (isset($_GET['order'])) {
     if (intval($_GET['order']) == 2) {
@@ -90,15 +73,15 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
             . "</div>"
             . "{$a}\n"
             . "</form>";
-
-?><script type="text/javascript" language="javascript"><!--
+?>
+<script type="text/javascript" language="javascript">
   function osMap() {
-    MeinFenster = window.open('os_maps.php','_blank',
+    var url = 'os_maps.php'
+    MeinFenster = window.open(url,'_blank',
                               'width=820,height=620,top=50,left=50,resizable,scrollbars');
     MeinFenster.focus();
   }
---></script>
-
+</script>
 <div class="divider"></div>
 
 <div align="center">
@@ -243,11 +226,8 @@ while ($row = $result->fetch_array()) {
     }
     if ($lat != 0 || $lon != 0) {
         echo "<td class='result' style='text-align: center' title='" . round($lat, 2) . "&deg; / " . round($lon,2) . "&deg;'>"
-            . "<a href='http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3' target='_blank'>"
-            . "<img border='0' height='15' src='images/mapquest.png' width='15'></a>&nbsp;"
-//            . "<a href='http://onearth.jpl.nasa.gov/landsat.cgi?zoom=0.0005556&x0=$lon&y0=$lat&action=zoomin&layer=modis%252Cglobal_mosaic&pwidth=800&pheight=600' target='_blank'>"
-//            . <img border='0' height='15' src='images/nasa.png' width='15'></a>"
-            . "</td>\n";
+            . "<a href='https://opentopomap.org/#marker=12/$lat/$lon' target='_blank'>"
+            . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
     } else {
         echo "<td class='result'></td>\n";
     }

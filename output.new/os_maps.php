@@ -1,31 +1,6 @@
 <?php
 session_start();
-require("inc/functions.php");
-
-function collectionItem ($coll)
-{
-    if (strpos($coll, "-") !== false) {
-        return substr($coll, 0, strpos($coll, "-"));
-    } elseif (strpos($coll, " ") !== false) {
-        return substr($coll, 0, strpos($coll, " "));
-    } else {
-        return $coll;
-    }
-}
-
-
-function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP)
-{
-    if ($degN > 0 || $minN > 0 || $secN > 0) {
-        $sec = -($degN * 3600 + $minN * 60 + $secN);
-    } else if ($degP > 0 || $minP > 0 || $secP > 0) {
-        $sec = $degP * 3600 + $minP * 60 + $secP;
-    } else {
-        $sec = 0;
-    }
-    return $sec;
-}
-
+require("inc/dev-functions.php");
 
 function max2 ($a, $key)
 {
@@ -38,7 +13,6 @@ function max2 ($a, $key)
     return $m;
 }
 
-
 function min2 ($a, $key)
 {
     $m = $a[0][$key];
@@ -49,7 +23,6 @@ function min2 ($a, $key)
     }
     return $m;
 }
-
 
 function contains ($points, $point, $limit = 6)
 {
@@ -128,44 +101,47 @@ $mean_lng = ($max_lng + $min_lng) / 2.0;
         integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew=="
         crossorigin=""></script>
   </head>
-  <body>
+  <body onload="domap()">
     <div id="map"></div>
     <script type="text/javascript">
-      // initialize Leaflet
-      var jacq_map = L.map('map').setView({lon: <?php echo $mean_lng; ?>, lat: <?php echo $mean_lat; ?>}, 1);
+      function domap()
+      {
+        // initialize Leaflet
+        var jacq_map = L.map('map').setView({lon: <?php echo $mean_lng; ?>, lat: <?php echo $mean_lat; ?>}, 1);
 
-      var corner1 = L.latLng(<?php echo $min_lat ?>, <?php echo $min_lng ?>),
-          corner2 = L.latLng(<?php echo $max_lat ?>, <?php echo $max_lng ?>),
-          bounds = L.latLngBounds(corner1, corner2);
-      var bestLevel = jacq_map.getBoundsZoom(bounds);
-      if (bestLevel>12) bestLevel = 12;
-      jacq_map.setZoom(bestLevel);
+        var corner1 = L.latLng(<?php echo $min_lat ?>, <?php echo $min_lng ?>),
+            corner2 = L.latLng(<?php echo $max_lat ?>, <?php echo $max_lng ?>),
+            bounds = L.latLngBounds(corner1, corner2);
+        var bestLevel = jacq_map.getBoundsZoom(bounds);
+        if (bestLevel>12) bestLevel = 12;
+        jacq_map.setZoom(bestLevel);
 
-      // add the OpenTopoMap tiles
-      var topoUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-          topoAttribution = 'Map data: &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map display: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
-          topo = new L.TileLayer(topoUrl, {minZoom: 1, maxZoom: 17, detectRetina: false, attribution: topoAttribution});
+        // add the OpenTopoMap tiles
+        var topoUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+            topoAttribution = 'Map data: &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>-contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map display: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            topo = new L.TileLayer(topoUrl, {minZoom: 1, maxZoom: 17, detectRetina: false, attribution: topoAttribution});
 
-      // add the OpenStreetMap tiles
-      var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-          osm = new L.TileLayer(osmUrl, {maxZoom: 19, detectRetina: false, attribution: osmAttribution});
-      var baseMaps = {
-            "OpenTopoMap": topo,
-            "OpenStreetMap": osm
-          };
-      jacq_map.addLayer(topo);
-      var layersControl = new L.Control.Layers(baseMaps);
-      jacq_map.addControl(layersControl);
+        // add the OpenStreetMap tiles
+        var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            osmAttribution = 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+            osm = new L.TileLayer(osmUrl, {maxZoom: 19, detectRetina: false, attribution: osmAttribution});
+        var baseMaps = {
+              "OpenTopoMap": topo,
+              "OpenStreetMap": osm
+            };
+        jacq_map.addLayer(topo);
+        var layersControl = new L.Control.Layers(baseMaps);
+        jacq_map.addControl(layersControl);
 
-      // show the scale bar on the lower left corner
-      L.control.scale().addTo(jacq_map);
-      // show the markers on the map
-      <?php
-        for ($i = 0; $i < count($points); $i++) {
-            echo "L.marker({lon: " . ($points[$i]['lng'] / 3600.0) . ", lat: " . ($points[$i]['lat'] / 3600.0) . "}).bindPopup('" . $points[$i]['txt'] . "').addTo(jacq_map);\n";
-        }
-      ?>
+        // show the scale bar on the lower left corner
+        L.control.scale().addTo(jacq_map);
+        // show the markers on the map
+        <?php
+          for ($i = 0; $i < count($points); $i++) {
+              echo "L.marker({lon: " . ($points[$i]['lng'] / 3600.0) . ", lat: " . ($points[$i]['lat'] / 3600.0) . "}).bindPopup('" . $points[$i]['txt'] . "').addTo(jacq_map);\n";
+          }
+        ?>
+      }
     </script>
   </body>
 </html>

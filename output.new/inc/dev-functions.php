@@ -314,6 +314,27 @@ function getBloodhoundID($row) {
     return $text;
 }
 
+function collectionItem ($coll) {
+    if (strpos($coll, "-") !== false) {
+        return substr($coll, 0, strpos($coll, "-"));
+    } elseif (strpos($coll, " ") !== false) {
+        return substr($coll, 0, strpos($coll, " "));
+    } else {
+        return $coll;
+    }
+}
+
+function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP) {
+    if ($degN > 0 || $minN > 0 || $secN > 0) {
+        $sec = -($degN * 3600 + $minN * 60 + $secN);
+    } else if ($degP > 0 || $minP > 0 || $secP > 0) {
+        $sec = $degP * 3600 + $minP * 60 + $secP;
+    } else {
+        $sec = 0;
+    }
+    return $sec;
+}
+
 /* * ********************************************************************************
   php easy :: pagination scripts set - Version Three, changed by Dominik and Johannes
   ===================================================================================

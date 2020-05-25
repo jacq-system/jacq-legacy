@@ -286,6 +286,11 @@ ul.dropdown-content {
   top: 120px;
 }
 
+#map {
+     height: 250px;
+        width: 80%;
+}
+
 /* RESPONSIVE */
 @media (max-width: 450px) {
   .tabs .tab a {
