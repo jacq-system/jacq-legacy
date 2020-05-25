@@ -1148,34 +1148,5 @@ if ($updateBlocked) {
     }
 }
 ?>
-
-<script type="text/javascript">
-    // added trim for HerbNummer to prevent spaces and tabs; added check if HerbNummer already exists in this institution
-    $(document).ready(function() {
-        $('[name="HerbNummer"]').blur(function() {
-            this.value = this.value.trim();
-            var HerbNummer = this.value;
-            var institutionNr = $('[name="institution"]').val();
-            var institutionName = $('[name="institution"] option:selected').text();
-	       $.ajax({
-              method: "GET",
-              url: "index_jq_autocomplete.php",
-              data: { 
-                field: "checkHerbNrExist",
-                institutionID: institutionNr, 
-                HerbNr: encodeURIComponent(HerbNummer), 
-                term: "1"
-              }
-            })
-            .done(function( data ) {
-                if(data == "true") {
-                     alert("Update/Insert blocked. '" + HerbNummer + "' Number already in database with specimenID <?php echo $blockSource; ?>The HerbarNr '" + HerbNummer + "' already exists for Institution '" + institutionName + "'!");
-                }
-            });
-        });
-    });
-    
-</script>
-
 </body>
 </html>
