@@ -363,7 +363,6 @@ if ($row['ncbi_accession']) {
             $txt = strtr($txt, array("\r" => '', "\n" => ''));
             $point['txt'] = "<a href=\"$url\" target=\"_blank\">$txt</a>";
             echo "<div id='map'></div>";
-            // TODO: change to onload-event
             ?>
             <script type="text/javascript">
               function domap()
