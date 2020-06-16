@@ -134,12 +134,12 @@ while ($row = $res_scname->fetch_array()) {
 $res_citation = db_query("SELECT citationID
                           FROM herbarinput.tbl_lit
                           WHERE citationID NOT IN (SELECT internal_id FROM srvc_uuid_minter WHERE uuid_minter_type_id = 2)");
-while ($row = $res_scname->fetch_array()) {
+while ($row = $res_citation->fetch_array()) {
     mint(2, $row['citationID']);
 }
 $res_specimen = db_query("SELECT specimen_ID
                           FROM herbarinput.tbl_specimens
                           WHERE specimen_ID NOT IN (SELECT internal_id FROM srvc_uuid_minter WHERE uuid_minter_type_id = 3)");
-while ($row = $res_scname->fetch_array()) {
+while ($row = $res_specimen->fetch_array()) {
     mint(3, $row['specimen_ID']);
 }
