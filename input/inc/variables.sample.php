@@ -40,6 +40,16 @@ $_CONFIG['DATABASE'] = array(
     'VIEWS' => array(
         'name' => 'view',
     ),
+
+    // New database containing data
+    'INPUT' => array(
+        'host' => 'localhost',
+        'name' => 'jacq_input',
+        'readonly' => array(
+            'user' => '',
+            'pass' => ''
+        )
+    ),
 );
 
 // Force HTTPS
