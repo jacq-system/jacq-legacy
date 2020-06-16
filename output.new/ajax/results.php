@@ -75,11 +75,16 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
             . "</form>";
 ?>
 <script type="text/javascript" language="javascript">
-  function osMap() {
-    var url = 'os_maps.php'
-    MeinFenster = window.open(url,'_blank',
-                              'width=820,height=620,top=50,left=50,resizable,scrollbars');
-    MeinFenster.focus();
+  function osMap(sid) {
+    if (sid > 0) {
+      MeinFenster = window.open('os_maps.php?sid=' + sid,'_blank',
+                                'width=820,height=620,top=50,left=50,resizable,scrollbars');
+      MeinFenster.focus();
+    } else {
+      MeinFenster = window.open('os_maps.php','_blank',
+                                'width=820,height=620,top=50,left=50,resizable,scrollbars');
+      MeinFenster.focus();
+    }
   }
 </script>
 <div class="divider"></div>
@@ -94,7 +99,7 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
               <td colspan='2'><b><?php echo $nrRows; ?> record<?php echo ($nrRows > 1) ? "s" : ""; ?> found</b></td>
               <td colspan="7" align="right">
                 <form style="display:inline;" action="javascript:osMap();" method="post">
-                   <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map" onClick="osMap()">Create map
+                   <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map" onClick="osMap(-1)">Create map
                   </button>
                 </form>
                 <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
@@ -226,8 +231,9 @@ while ($row = $result->fetch_array()) {
     }
     if ($lat != 0 || $lon != 0) {
         echo "<td class='result' style='text-align: center' title='" . round($lat, 2) . "&deg; / " . round($lon,2) . "&deg;'>"
-            . "<a href='https://opentopomap.org/#marker=12/$lat/$lon' target='_blank'>"
-            . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
+//            . "<a href='https://opentopomap.org/#marker=12/$lat/$lon' target='_blank'>"
+           . "<a href='#' onClick='osMap(" . $row['specimen_ID'] . "); return false;'>"
+           . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
     } else {
         echo "<td class='result'></td>\n";
     }

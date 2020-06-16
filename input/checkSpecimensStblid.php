@@ -2,7 +2,6 @@
 require_once './inc/variables.php';
 
 /** @var mysqli $dbLink */
-$dbLink = new mysqli($host, $user, $pass, $db);
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
                      $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
                      $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],

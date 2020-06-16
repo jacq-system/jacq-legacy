@@ -197,7 +197,7 @@ function makeTypus($ID) {
   </script>
   <!-- End Matomo Code -->
 </head>
-<body>
+<body onload="domap()">
 <div id="navbar" class="navbar-fixed">
   <nav class="nav-extended">
     <div class="nav-wrapper">
@@ -365,6 +365,8 @@ if ($row['ncbi_accession']) {
             echo "<div id='map'></div>";
             ?>
             <script type="text/javascript">
+              function domap()
+              {
                 // initialize Leaflet
                 var jacq_map = L.map('map').setView({lon: <?php echo $point['lng']; ?>, lat: <?php echo $point['lat']; ?>}, 1);
 
@@ -391,6 +393,7 @@ if ($row['ncbi_accession']) {
                 L.control.scale().addTo(jacq_map);
                 // show the markers on the map
                 L.marker({lon: <?php echo $point['lng']; ?> , lat: <?php echo $point['lat']; ?>}).bindPopup('<?php echo $point['txt']; ?>').addTo(jacq_map);
+              }
             </script>
             <?php
         }
