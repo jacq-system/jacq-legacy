@@ -1,5 +1,4 @@
 <?php
-
 require_once('variables.php');
 require_once('AnnotationQuery.inc.php');
 require_once('ImagePreview.inc.php');
@@ -19,7 +18,8 @@ if ($dbLink->connect_errno) {
 }
 $dbLink->set_charset('utf8');
 
-function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
+function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
+{
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
         $text .= " et al.";
@@ -89,7 +89,7 @@ function rdfcollection($row, $isBotanyPilot = false) {
     }
     if ($row['series_number']) {
         if ($row['Nummer']) {
-            $text .= " " . strstr($row['Nummer']);
+            $text .= " " . $row['Nummer'];
         }
         if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
             $text .= " " . $row['alt_number'];
@@ -109,9 +109,6 @@ function rdfcollection($row, $isBotanyPilot = false) {
         if ($row['alt_number']) {
             $text .= " " . $row['alt_number'];
         }
-        //if (strstr($alt_number, "s.n.")) {
-        //  $text .= " [" . $Datum . "]";
-        //}
     }
     if ($isBotanyPilot){
             if ($row['WIKIDATA_ID']) {
@@ -127,8 +124,8 @@ function rdfcollection($row, $isBotanyPilot = false) {
     return $text;
 }
 // new triple id class
-class MyTripleID extends TripleID {
-
+class MyTripleID extends TripleID
+{
     public function __construct($id) {
         global $dbLink;
         // do some conversion stuff
@@ -148,9 +145,7 @@ class MyTripleID extends TripleID {
             echo $dbLink->error . "<br>\n";
         }
         $row = $result->fetch_array();
-        $this->institutionID = $row['SourceInstitutionID'];
-        $this->sourceID = $row['SourceID'];
-        $this->objectID = $row['HerbNummer'];
+        parent::__construct($row['SourceInstitutionID'], $row['SourceID'], $row['HerbNummer']);
     }
 }
 
@@ -217,52 +212,52 @@ function taxonWithHybrids($row) {
     global $dbLink;
 
     if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
-        $result = $dbLink->query("SELECT parent_1_ID, parent_2_ID
-                                                    FROM tbl_tax_hybrids
-                                                    WHERE taxon_ID_fk = '" . $row['taxonID'] . "'");
-        $rowHybrid = $result->fetch_array(MYSQLI_ASSOC);
-        $result = $dbLink->query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'");
-        $row1 = $result->fetch_array(MYSQLI_ASSOC);
-        $result = $dbLink->query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'");
-        $row2 = $result->fetch_array(MYSQLI_ASSOC);
+        $resultHybrid = $dbLink->query("SELECT parent_1_ID, parent_2_ID
+                                        FROM tbl_tax_hybrids
+                                        WHERE taxon_ID_fk = '" . $row['taxonID'] . "'");
+        $rowHybrid = $resultHybrid->fetch_array(MYSQLI_ASSOC);
+        $result1 = $dbLink->query("SELECT tg.genus,
+                                    ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                    ta4.author author4, ta5.author author5,
+                                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                    te4.epithet epithet4, te5.epithet epithet5
+                                   FROM tbl_tax_species ts
+                                    LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                    LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                    LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                    LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                    LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                    LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                    LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                    LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                    LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                    LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                    LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                    LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                    LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                   WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'");
+        $row1 = $result1->fetch_array(MYSQLI_ASSOC);
+        $result2 = $dbLink->query("SELECT tg.genus,
+                                    ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                    ta4.author author4, ta5.author author5,
+                                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                    te4.epithet epithet4, te5.epithet epithet5
+                                   FROM tbl_tax_species ts
+                                    LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                    LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                    LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                    LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                    LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                    LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                    LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                    LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                    LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                    LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                    LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                    LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                    LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                   WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'");
+        $row2 = $result2->fetch_array(MYSQLI_ASSOC);
 
         return taxon($row1) . " x " . taxon($row2);
     }
@@ -313,10 +308,31 @@ function getBloodhoundID($row) {
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'></a>&nbsp;";
+         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia' alt='Bionomia'><img src='assets/images/bionomia_logo.png' width='20px'></a>&nbsp;";
         }
     }
     return $text;
+}
+
+function collectionItem ($coll) {
+    if (strpos($coll, "-") !== false) {
+        return substr($coll, 0, strpos($coll, "-"));
+    } elseif (strpos($coll, " ") !== false) {
+        return substr($coll, 0, strpos($coll, " "));
+    } else {
+        return $coll;
+    }
+}
+
+function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP) {
+    if ($degN > 0 || $minN > 0 || $secN > 0) {
+        $sec = -($degN * 3600 + $minN * 60 + $secN);
+    } else if ($degP > 0 || $minP > 0 || $secP > 0) {
+        $sec = $degP * 3600 + $minP * 60 + $secP;
+    } else {
+        $sec = 0;
+    }
+    return $sec;
 }
 
 /* * ********************************************************************************

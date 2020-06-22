@@ -66,8 +66,47 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_species .= "AND (tf.family LIKE '$valueE%' OR tf.family_alt LIKE '$valueE%') ";
                 } elseif ($var == "series" || $var == "taxon_alt") {
                     $sql_restrict_specimen .= "AND " . $var . " LIKE '%$valueE%' ";
-                } elseif ($var == "collection" || $var == "source_name" || $var == "HerbNummber" || $var == "CollNummer") {
+                } elseif ($var == "collection" || $var == "source_name" || $var == "CollNummer") {
                     $sql_restrict_specimen .= "AND " . $var . " = '$valueE' ";
+                } elseif ($var == "HerbNummer") {
+                    // search for source-code at the beginning
+                    if (ctype_alpha(substr($value, 0, 1))) {
+                        $source_code = "";
+                        for ($i = 0; $i < strlen($value); $i++) {
+                            $next_character = substr($value, $i, 1);
+                            if (ctype_alpha($next_character)) {
+                                $source_code .= $next_character;
+                            } else {
+                                break;
+                            }
+                        }
+                        $sql_restrict_specimen .= "AND source_code = '" . strtoupper($source_code) . "' ";
+                        $remaining = trim(substr($value, $i));
+                    } else {
+                        $remaining = trim($value);
+                    }
+                    // is there still a number left?
+                    if (strlen($remaining) > 0) {
+                        // search for trailing alphameric characters
+                        if (ctype_alpha(substr($remaining, -1))) {
+                            for ($i = strlen($remaining) - 2; $i >= 0; $i--) {
+                                $check_char = substr($remaining, $i, 1);
+                                if (!ctype_alpha($check_char) && $check_char !== "-") {
+                                    break;
+                                }
+                            }
+                            $trailing = substr($remaining, $i + 1);
+                            $remaining = substr($remaining, 0, $i + 1);
+                        } else {
+                            $trailing = ""; // no trailing chars
+                        }
+                        if (strlen($remaining) >= 6) {
+                            $number = $remaining;   // at least 6 digits, so no padding with zeros
+                        } else {
+                            $number = sprintf("%06d", intval($remaining));
+                        }
+                        $sql_restrict_specimen .= "AND HerbNummer LIKE '%$number$trailing' ";
+                    }
                 } elseif ($var == "SammlerNr") {
                     $sql_restrict_specimen .= "AND (s.Nummer='$valueE' OR s.alt_number LIKE '%$valueE%' OR s.series_number LIKE '%$valueE%') ";
                 } elseif ($var == "CollDate") {

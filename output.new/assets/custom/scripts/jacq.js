@@ -239,8 +239,6 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
       }
     });
     $("select[name=ITEMS_PER_PAGE]").change(function(event){
-      $('#results').html('');
-
       reloadTable({
         'ITEMS_PER_PAGE': $(this).val()
       });

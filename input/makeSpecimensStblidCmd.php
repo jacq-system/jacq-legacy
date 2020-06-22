@@ -1,14 +1,11 @@
 #!/usr/bin/php -qC
 <?php
-$host = "localhost";      // hostname
-$user = "herbdbinput";    // username
-$pass = "hZ!6cgL9";       // password
-$db   = "herbarinput";    // database
+require_once './inc/variables.php';
 
 ini_set("max_execution_time","3600");
 
-mysql_connect($host,$user,$pass) or die("Database not available!");
-mysql_select_db($db) or die ("Access denied!");
+mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) or die("Database not available!");
+mysql_select_db($_CONFIG['DATABASE']['INPUT']['name']) or die ("Access denied!");
 mysql_query("SET character set utf8");
 
 function db_query($sql) {
@@ -105,9 +102,10 @@ require_once 'inc/stableIdentifierFunctions.php';
 ob_start();
 
 $numStblIds = 0;
-$result_specimen = db_query("SELECT mc.collectionID, mc.source_id, s.specimen_ID
+$result_specimen = db_query("SELECT mc.`collectionID`, mc.`source_id`, s.`specimen_ID`
                              FROM tbl_specimens s
-                              LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID");
+                              LEFT JOIN tbl_management_collections mc USING (`collectionID`)
+                             WHERE s.`specimen_ID` NOT IN (SELECT `specimen_ID` FROM `tbl_specimens_stblid`)"); // fast version
 while ($row_specimen = mysql_fetch_array($result_specimen)) {
     $stblid = makeStableIdentifier($row_specimen['source_id'], array('specimen_ID' => $row_specimen['specimen_ID']), $row_specimen['collectionID']);
     if ($stblid) {
