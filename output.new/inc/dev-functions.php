@@ -308,7 +308,7 @@ function getBloodhoundID($row) {
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bloodhound' alt='Bloodhound'><img src='assets/images/bloodhound_logo.png' width='20px'></a>&nbsp;";
+         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia' alt='Bionomia'><img src='assets/images/bionomia_logo.png' width='20px'></a>&nbsp;";
         }
     }
     return $text;

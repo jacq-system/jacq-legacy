@@ -108,7 +108,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
                   <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
                   <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
-                  <li><a href="https://bloodhound-tracker.net/" target="_blank"><img src="assets/images/bloodhound_logo.png" width="20" alt="Bloodhound Logo"></a> Bloodhound / David Shorthouse - Ottawa, ON, Canada</li>
+                  <li><a href="https://bionomia.net.net/" target="_blank"><img src="assets/images/bionomia_logo.png" width="20" alt="Bionomia Logo"></a> Bionomia / David Shorthouse - Ottawa, ON, Canada</li>
                 </ul>
               </div>
             </li>
