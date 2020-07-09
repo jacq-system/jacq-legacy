@@ -84,40 +84,78 @@ function makePreText($sourceID, $collectionID, $number)
 
 class LABEL extends TCPDF
 {
-    // label rows per page
-    public $rowsPerPage = 18;
+    private $rowsPerPage;   // label rows per page
+    private $colsPerPage;   // label colums per page
+    private $labelsPerPage; // labels per page = $this->rowsPerPage * $this->colsPerPage
+    private $colwidth;      // columns width
 
-    // labels per page
-    public $labelsPerPage = 54;  // $this->rowsPerPage * $this->ncols
+    private $QRsize;        // size of QRCode
+    private $QRborder;      // border around QRCode
+    private $QRstyle;       // style for QRCode
 
-    // size of QRCode
-    protected $QRsize = 12;
+    private $col;           // current column
+    private $ymax;          // max y
 
-    // border around QRCode
-    protected $QRborder = 2;
+    /**
+     * class constructor
+     */
+    public function __construct()
+    {
+        $this->setQRLabelSettings();
+        $this->setQRStyle();
 
-    // number of colums
-    protected $ncols = 3;
+        parent::__construct();
+    }
 
-    // columns width
-    protected $colwidth = 60;
+    /**
+     * setter function for label page settings
+     *
+     * @param int $rowsPerPage label rows per page (default 18)
+     * @param int $colsPerPage number of columns (default 3)
+     * @param int $colwidth columns width (default 60)
+     * @param int $QRsize size of QRCode (default 12)
+     * @param int $QRborder border around QRCode (default 2)
+     */
+    public function setQRLabelSettings($rowsPerPage = 18, $colsPerPage = 3, $colwidth = 60, $QRsize = 12, $QRborder = 2)
+    {
+        $this->rowsPerPage   = $rowsPerPage;
+        $this->colsPerPage   = $colsPerPage;
+        $this->labelsPerPage = $this->rowsPerPage * $this->colsPerPage;
+        $this->colwidth      = $colwidth;
+        $this->QRsize        = $QRsize;
+        $this->QRborder      = $QRborder;
+    }
 
-    // current column
-    protected $col = 0;
+    /**
+     * setter function for QRCode style attribute
+     *
+     * @param array $newstyle style for QRCode
+     */
+    public function setQRStyle($newstyle = null)
+    {
+        if (!empty($newstyle)) {
+            $this->QRstyle = $newstyle;
+        } else {
+            $this->QRstyle = array('border' => 1,
+                                   'vpadding' => 'auto',
+                                   'hpadding' => 'auto',
+                                   'fgcolor' => array(0,0,0),    //array(255,255,255)
+                                   'bgcolor' => false,
+                                   'module_width' => 1,          // width of a single module in points
+                                   'module_height' => 1          // height of a single module in points
+                                  );
+        }
+    }
 
-    // max y
-    protected $ymax = 0;
-
-    // set style for barcode
-    protected $style = array(
-                            'border' => 1,
-                            'vpadding' => 'auto',
-                            'hpadding' => 'auto',
-                            'fgcolor' => array(0,0,0),
-                            'bgcolor' => false, //array(255,255,255)
-                            'module_width' => 1, // width of a single module in points
-                            'module_height' => 1 // height of a single module in points
-                            );
+    /**
+     * getter function for labelsPerPage
+     *
+     * @return int labels per page
+     */
+    public function getLabelsPerPage()
+    {
+        return $this->labelsPerPage;
+    }
 
     /**
      * Set position at a given column
@@ -128,8 +166,8 @@ class LABEL extends TCPDF
     {
         $this->col = $col;
         // space between columns
-        if ($this->ncols > 1) {
-            $column_space = round((float)($this->w - $this->original_lMargin - $this->original_rMargin - ($this->ncols * $this->colwidth)) / ($this->ncols - 1));
+        if ($this->colsPerPage > 1) {
+            $column_space = round((float)($this->w - $this->original_lMargin - $this->original_rMargin - ($this->colsPerPage * $this->colwidth)) / ($this->colsPerPage - 1));
         } else {
             $column_space = 0;
         }
@@ -146,7 +184,7 @@ class LABEL extends TCPDF
     }
 
     /**
-     * overloaded function to fill 'ymax'
+     * overloaded function to fill 'ymax' and start with leftmost column
      *
      * @param string $orientation
      * @param mixed $format
@@ -157,6 +195,7 @@ class LABEL extends TCPDF
     {
         parent::AddPage($orientation, $format, $keepmargins, $tocpage);
         $this->ymax = $this->getPageHeight() - $this->QRsize - 2 * $this->QRborder;
+        $this->SetCol(0);   //start at first column
     }
 
     /**
@@ -167,11 +206,10 @@ class LABEL extends TCPDF
     public function makeLabel ($labelText)
     {
         if ($this->GetY() > $this->ymax) {
-            if($this->col < ($this->ncols - 1)) {
+            if($this->col < ($this->colsPerPage - 1)) {
                 $this->SetCol($this->col + 1);  //Go to next column
             } else {
                 $this->AddPage();
-                $this->SetCol(0);               //Go back to first column
             }
         }
         $x_top = $this->GetX();
@@ -183,10 +221,25 @@ class LABEL extends TCPDF
         $this->Ln();
     }
 
-    public function startNewPage ()
+    /**
+     * makes a small Label at current position
+     *
+     * @param array $labelText Label test (Herbarium, Collection, UnitID)
+     */
+    public function makeSmallLabel ($labelText)
     {
-        $this->AddPage();
-        $this->SetCol(0);               //Go back to first column
+        if ($this->GetY() > $this->ymax) {
+            if($this->col < ($this->colsPerPage - 1)) {
+                $this->SetCol($this->col + 1);  //Go to next column
+            } else {
+                $this->AddPage();
+            }
+        }
+        $x_top = $this->GetX();
+        $y_top = $this->GetY();
+        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 2 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->Cell(16, 0, $labelText['UnitID'], 0, 1, 'C');
+        $this->Ln();
     }
 }
 
@@ -224,6 +277,17 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
             $pdf->makeLabel($labelText);
         }
     }
+    // make small labels
+    $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
+    $pdf->AddPage();
+    $pdf->SetFont('helvetica', '', 8);
+    mysql_data_seek($result_ID, 0);
+    while ($row_ID = mysql_fetch_array($result_ID)) {
+        $labelText = makeText($row_ID['specimen_ID']);
+        if (count($labelText) > 0) {
+            $pdf->makeSmallLabel($labelText);
+        }
+    }
 } else {    // make standard-labels to stick on the herbarium specimen
     $sourceID     = intval(abs(filter_input(INPUT_POST, 'institution_QR', FILTER_SANITIZE_NUMBER_INT)));
     $collectionID = intval(filter_input(INPUT_POST, 'collection_QR', FILTER_SANITIZE_NUMBER_INT));
@@ -256,8 +320,9 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
         $digits      = ($digits) ? $digits : strlen($input_start);
     }
 
+    // make large labels
     $labels = array();
-    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->labelsPerPage);
+    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
     $page = 0;
     for ($i = $numberStart; $i <= $numberEnd; $i++) {
         $labels[$page++][] = $i;
@@ -267,7 +332,7 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     }
 
     for ($page = 0; $page < $nrOfPages; $page++) {
-        for ($i = 0; $i < $pdf->labelsPerPage; $i++) {
+        for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
             if (!empty($labels[$page][$i])) {
                 $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
                 if (count($labelText) > 0) {
@@ -275,7 +340,37 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
                 }
             } else {
                 if ($page < $nrOfPages - 1) {
-                    $pdf->startNewPage();
+                    $pdf->AddPage();
+                }
+                break;
+            }
+        }
+    }
+
+    // make small labels
+    $pdf->setQRLabelSettings(20, 9, 20, 8, 2);
+    $pdf->AddPage();
+    $pdf->SetFont('helvetica', '', 7);
+    $labels = array();
+    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
+    $page = 0;
+    for ($i = $numberStart; $i <= $numberEnd; $i++) {
+        $labels[$page++][] = $i;
+        if ($page >= $nrOfPages) {
+            $page = 0;
+        }
+    }
+
+    for ($page = 0; $page < $nrOfPages; $page++) {
+        for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
+            if (!empty($labels[$page][$i])) {
+                $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
+                if (count($labelText) > 0) {
+                    $pdf->makeSmallLabel($labelText);
+                }
+            } else {
+                if ($page < $nrOfPages - 1) {
+                    $pdf->AddPage();
                 }
                 break;
             }
