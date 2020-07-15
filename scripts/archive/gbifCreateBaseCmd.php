@@ -39,6 +39,7 @@ class DB extends mysqli {
 
 }
 
+$dbLink  = new DB($host, $user, $pass, $db);
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
