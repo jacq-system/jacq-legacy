@@ -467,7 +467,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
             $protocol = (!empty($_SERVER['HTTPS'])) ? "https://" : "http://";
-            $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+            $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false, true) . '/manifest.json';
             echo "<iframe title='Mirador' width='100%' height='800px' "
                . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";

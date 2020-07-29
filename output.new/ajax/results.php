@@ -163,7 +163,7 @@ while ($row = $result->fetch_array()) {
         if ($link) {
             if ($row['iiif_capable']) {
 			    $protocol = ($_SERVER['HTTPS']) ? "https://" : "http://";
-                $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+                $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false, true) . '/manifest.json';
             	echo "<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
                    . "<img border='2' height='15' src='images/$image' width='15'></a>"
                    . "&nbsp;<a href='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"

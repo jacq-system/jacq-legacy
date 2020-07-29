@@ -1,5 +1,5 @@
 <?php
-function StableIdentifier($source_id, $HerbNummer, $specimen_ID, $addHtmlTags = true)
+function StableIdentifier($source_id, $HerbNummer, $specimen_ID, $addHtmlTags = true, $forceHTTPS = false)
 {
     $text = getStableIdentifier($specimen_ID);
     if (empty($text)) {
@@ -33,6 +33,9 @@ function StableIdentifier($source_id, $HerbNummer, $specimen_ID, $addHtmlTags = 
         }
     }
 
+    if ($forceHTTPS && $text) {
+        $text = str_replace('http:','https:',$text);
+    }
     if ($addHtmlTags && $text) {
         $text = "<a href=\"" . $text . '" target="_blank">' . $text . '</a><br/>';
     }
