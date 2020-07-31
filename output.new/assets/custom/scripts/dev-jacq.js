@@ -1,4 +1,4 @@
-var xajaxRequestUri="ajax/dev-searchServer.php";
+var xajaxRequestUri="ajax/searchServer.php";
 var xajaxDebug=false;
 var xajaxStatusMessages=false;
 var xajaxWaitCursor=true;
@@ -68,7 +68,7 @@ $(document).ready(function(){
   *   Progress bars
   **/
   $(".progress").hide();
-  
+
   /**
   *   Search Form Handling
   **/
@@ -154,7 +154,7 @@ $(document).ready(function(){
       $.ajax({
         url: "dev.php",
         type: "POST",
-        data: form_data, 
+        data: form_data,
         success: function(result){
           $(".progress-search").hide();
           $('#results').html(result);
@@ -189,12 +189,12 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
         $(".progress-paging").show();
         $.ajax({
           url: "/output/dev-results.php?s=s&page="+page,
-          type: "GET", 
+          type: "GET",
           success: function(result){
             $('#results').html(result);
           }
         });
-      } 
+      }
     });
 
     $(".resulttax").click(function(){
@@ -238,4 +238,3 @@ $(document).ajaxComplete(function( event, xhr, settings ) {
     });
   }
 });
-    

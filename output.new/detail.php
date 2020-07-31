@@ -5,7 +5,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-require("inc/dev-functions.php");
+require("inc/functions.php");
 require_once('inc/imageFunctions.php');
 
 if (isset($_GET['ID'])) {

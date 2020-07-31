@@ -38,12 +38,10 @@ function getCollection($data)
                 ORDER BY `collection`";
     }
     $result = $dbLink->query($sql);
-    $selectData = "<select size=\"1\" name=\"collection\">\n" .
-            "<option value=\"\"></option>\n";
+    $selectData = "<option value=\"\">Choose Collection</option>\n";
     while ($row = $result->fetch_array()) {
         $selectData .= "<option value=\"" . htmlspecialchars($row['collection']) . "\">" . htmlspecialchars($row['collection']) . "</option>\n";
     }
-    $selectData .= "</select>\n";
 
     $objResponse = new xajaxResponse();
     $objResponse->addAssign("ajax_collection", "innerHTML", $selectData);
@@ -73,15 +71,16 @@ function getCountry($data) {
         }
         $sql .= "ORDER BY nation_engl";
         $result = $dbLink->query($sql);
-        $selectData = "<select size=\"1\" name=\"nation_engl\" onchange=\"xajax_getProvince(xajax.getFormValues('ajax_f',0,'nation_engl'))\">\n".
-                      "<option value=\"\"></option>\n";
+        $selectData = "<select size=\"1\" name=\"nation_engl\">\n".
+                      "<option value=\"\">Choose Country</option>\n";
         while ($row = $result->fetch_array()) {
             $selectData .= "<option value=\"" . htmlspecialchars($row['nation_engl']) . "\">".htmlspecialchars($row['nation_engl']) . "</option>\n";
         }
         $selectData .= "</select>\n";
+        $selectData .= "<label for=\"nation_engl\">Country</label>\n";
     }
     else {
-        $selectData = "<input type=\"text\" name=\"nation_engl\" size=\"26\">";
+        $selectData = "<input placeholder=\"Country\" type=\"text\" name=\"nation_engl\">\n<label for=\"nation_engl\">Country</label>";
     }
 
     $objResponse = new xajaxResponse();
@@ -107,14 +106,16 @@ function getProvince($data) {
                  AND nation_engl='".$dbLink->real_escape_string($data['nation_engl'])."'
                 ORDER BY provinz";
         $result = $dbLink->query($sql);
-        $selectData = "<select size=\"1\" name=\"provinz\">\n<option value=\"\"></option>\n";
+        $selectData = "<select placeholder=\"State/Province\" name=\"provinz\">\n<option value=\"\">Choose State/Province</option>\n";
         while ($row = $result->fetch_array()) {
             $selectData .= "<option value=\"" . htmlspecialchars($row['provinz']) . "\">" . htmlspecialchars($row['provinz']) . "</option>\n";
         }
         $selectData .= "</select>\n";
+        $selectData .= "<label for=\"provinz\">State/Province</label>";
     }
     else {
-        $selectData = "<input type=\"text\" name=\"provinz\" size=\"26\">";
+        $selectData = "<input placeholder=\"State/Province\" type=\"text\" name=\"provinz\">";
+        $selectData .= "<label for=\"provinz\">State/Province</label>";
     }
 
     $objResponse = new xajaxResponse();

@@ -1,7 +1,7 @@
 <?php
 if (empty($_SESSION['s_query'])) { die(); } // nothing to do
 
-require_once 'inc/dev-functions.php';
+require_once 'inc/functions.php';
 
 // user wants to change order
 if (isset($_GET['order'])) {
