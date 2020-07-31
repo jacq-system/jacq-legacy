@@ -273,7 +273,7 @@ foreach ($tbls as $tbl) {
         /**
          * recordURI
          */
-        $recordURI = StableIdentifier($tbl['source_id'],$row['HerbNummer'],$row['specimen_ID'],false);
+        $recordURI = StableIdentifier($tbl['source_id'], $row['HerbNummer'], $row['specimen_ID']);
         /**
          * LastEditor
          * DateLastEdited
