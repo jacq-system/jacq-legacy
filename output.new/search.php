@@ -14,9 +14,9 @@ if(!defined("INDEX_START")) {
 }
 
 session_start();
-require("inc/dev-functions.php");
+require("inc/functions.php");
 require_once ("inc/xajax/xajax.inc.php");
-$xajax = new xajax("ajax/dev-searchServer.php");
+$xajax = new xajax("ajax/searchServer.php");
 $xajax->registerFunction("getCollection");
 $xajax->registerFunction("getCountry");
 $xajax->registerFunction("getProvince");

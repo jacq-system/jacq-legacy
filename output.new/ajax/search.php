@@ -1,5 +1,5 @@
 <?php
-require_once 'inc/dev-functions.php';
+require_once 'inc/functions.php';
 
 if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
