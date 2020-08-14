@@ -1,6 +1,6 @@
 <?php
 session_start();
-require("inc/dev-functions.php");
+require("inc/functions.php");
 
 $specimen_ID = intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT));
 

@@ -1,4 +1,4 @@
-var xajaxRequestUri="ajax/dev-searchServer.php";
+var xajaxRequestUri="ajax/searchServer.php";
 var xajaxDebug=false;
 var xajaxStatusMessages=false;
 var xajaxWaitCursor=true;

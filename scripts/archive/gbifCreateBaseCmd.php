@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 require 'inc/variables.php';
-require '../../output/inc/StableIdentifier.php';
+require '../../output.new/inc/StableIdentifier.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -39,6 +39,7 @@ class DB extends mysqli {
 
 }
 
+$dbLink  = new DB($host, $user, $pass, $db);
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
@@ -272,7 +273,7 @@ foreach ($tbls as $tbl) {
         /**
          * recordURI
          */
-        $recordURI = StableIdentifier($tbl['source_id'],$row['HerbNummer'],$row['specimen_ID'],false);
+        $recordURI = StableIdentifier($tbl['source_id'], $row['HerbNummer'], $row['specimen_ID']);
         /**
          * LastEditor
          * DateLastEdited
@@ -316,7 +317,7 @@ foreach ($tbls as $tbl) {
                  copyright = " . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
                  rights_url = " . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  multimedia_object_format = " . (($image_url) ? $dbLink2->quoteString($row['multimedia_object_format']) : "NULL") . ",
-                 recordURI = "  . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : $dbLink2->quoteString($recordURI)) . ",
+                 recordURI = "  . $dbLink2->quoteString($recordURI) . ",
                  LastEditor = " . $dbLink2->quoteString($LastEditor) . ",
                  DateLastEdited = " . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
@@ -325,4 +326,5 @@ foreach ($tbls as $tbl) {
     }
     $result->free();
 }
+//                 recordURI = "  . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : $dbLink2->quoteString($recordURI)) . ",
 ?>

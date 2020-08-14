@@ -24,13 +24,13 @@ switch ($_GET['type']) {
             $_SESSION['ITEMS_PER_PAGE'] = 10;
         }
 
-        require("inc/dev-functions.php");
+        require("inc/functions.php");
         include 'ajax/search.php';
         include 'ajax/results.php';
         break;
     case 'results':
         // display the old results in another way
-        require("inc/dev-functions.php");
+        require("inc/functions.php");
         include 'ajax/results.php';
         break;
 }

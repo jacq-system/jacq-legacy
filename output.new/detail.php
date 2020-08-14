@@ -5,7 +5,7 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-require("inc/dev-functions.php");
+require("inc/functions.php");
 require_once('inc/imageFunctions.php');
 
 if (isset($_GET['ID'])) {
@@ -67,6 +67,15 @@ function makeCell($text)
 {
     if ($text) {
         echo nl2br($text);
+    } else {
+        echo "&nbsp;";
+    }
+}
+
+function makeCellWithLink($text)
+{
+    if ($text) {
+        echo "<a href=\"" . $text . '" target="_blank">' . $text . '</a><br/>';
     } else {
         echo "&nbsp;";
     }
@@ -268,7 +277,7 @@ if ($row['ncbi_accession']) {
     <tr>
       <td align="right" width="30%">Stable identifier</td>
       <td>
-        <b><?php makeCell(StableIdentifier($row['source_id'],$row['HerbNummer'],$row['specimen_ID'],true)); ?></b>
+        <b><?php makeCellWithLink(StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])); ?></b>
       </td>
     </tr>
     <tr>
@@ -466,10 +475,10 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     if ($picdetails['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
-            $protocol = (!empty($_SERVER['HTTPS'])) ? "https://" : "http://";
-            $manifest = StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'], false) . '/manifest.json';
+            // force https to always call iiif images with https
+            $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
             echo "<iframe title='Mirador' width='100%' height='800px' "
-               . "src='" . $protocol . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
+               . "src='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
         } else {
             $file = rawurlencode(basename($picdetails['specimenID']));
