@@ -24,7 +24,7 @@ function makeText($id, $uuid)
     global $dbLink;
 
     $text['scientificName1'] = $text['scientificName2'] = "";
-    $text['uuid'] = "https://resolv.jacq.org/$uuid";
+    $text['uuid'] = "https://resolve.jacq.org/$uuid";
 
     $dbLink->query("CALL herbar_view.GetScientificNameComponents($id,@genericEpithet,@specificEpithet,@infraspecificRank,@infraspecificEpithet,@author)");
     // execute the second query to get values from OUT parameter
@@ -35,7 +35,7 @@ function makeText($id, $uuid)
         if ($row['@infraspecificEpithet']) {
             $text['scientificName2'] = $row['@infraspecificRank'] . " " . $row['@infraspecificEpithet']  . " " . $row['@author'];
         } else {
-            $text['scientificName1'] .= $row['@author'];
+            $text['scientificName1'] .= " " . $row['@author'];
         }
     }
 
