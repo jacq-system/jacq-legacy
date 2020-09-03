@@ -1,5 +1,5 @@
 <?php
-require_once './inc/variables.php';
+require_once '../inc/variables.php';
 
 /** @var mysqli $dbLink */
 $dbLink = new mysqli($_CONFIG['DATABASE']['JACQ']['host'],

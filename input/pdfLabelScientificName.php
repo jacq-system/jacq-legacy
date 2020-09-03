@@ -23,7 +23,7 @@ function makeText($id, $uuid)
 {
     global $dbLink;
 
-    $text['scientificName1'] = $text['scientificName2'] = "";
+    $text['scientificName1'] = $text['scientificName2'] = $text['longName'] = "";
     $text['uuid'] = "https://resolve.jacq.org/$uuid";
 
     $dbLink->query("CALL herbar_view.GetScientificNameComponents($id,@genericEpithet,@specificEpithet,@infraspecificRank,@infraspecificEpithet,@author)");
@@ -34,8 +34,10 @@ function makeText($id, $uuid)
         $text['scientificName1'] = $row['@genericEpithet'] . " " . $row['@specificEpithet'];
         if ($row['@infraspecificEpithet']) {
             $text['scientificName2'] = $row['@infraspecificRank'] . " " . $row['@infraspecificEpithet']  . " " . $row['@author'];
+            $text['longName'] = $text['scientificName1'] . " " . $text['scientificName2'];
         } else {
             $text['scientificName1'] .= " " . $row['@author'];
+            $text['longName'] = $text['scientificName1'];
         }
     }
 
@@ -45,10 +47,9 @@ function makeText($id, $uuid)
 
 class LABEL extends TCPDF
 {
-    private $rowsPerPage;   // label rows per page
     private $colsPerPage;   // label colums per page
-    private $labelsPerPage; // labels per page = $this->rowsPerPage * $this->colsPerPage
     private $colwidth;      // columns width
+    private $cellwidth;     // width of the text cell
 
     private $QRsize;        // size of QRCode
     private $QRborder;      // border around QRCode
@@ -71,20 +72,18 @@ class LABEL extends TCPDF
     /**
      * setter function for label page settings
      *
-     * @param int $rowsPerPage label rows per page (default 18)
      * @param int $colsPerPage number of columns (default 3)
      * @param int $colwidth columns width (default 60)
      * @param int $QRsize size of QRCode (default 12)
      * @param int $QRborder border around QRCode (default 2)
      */
-    public function setQRLabelSettings($rowsPerPage = 18, $colsPerPage = 2, $colwidth = 90, $QRsize = 12, $QRborder = 2)
+    public function setQRLabelSettings($colsPerPage = 2, $colwidth = 140, $QRsize = 14, $QRborder = 2)
     {
-        $this->rowsPerPage   = $rowsPerPage;
-        $this->colsPerPage   = $colsPerPage;
-        $this->labelsPerPage = $this->rowsPerPage * $this->colsPerPage;
-        $this->colwidth      = $colwidth;
-        $this->QRsize        = $QRsize;
-        $this->QRborder      = $QRborder;
+        $this->colsPerPage = $colsPerPage;
+        $this->colwidth    = $colwidth;
+        $this->cellwidth   = $colwidth - $QRsize - 2 * $this->QRborder;
+        $this->QRsize      = $QRsize;
+        $this->QRborder    = $QRborder;
     }
 
     /**
@@ -175,9 +174,9 @@ class LABEL extends TCPDF
         }
         $x_top = $this->GetX();
         $y_top = $this->GetY();
-        $this->Cell(78, 0, $labelText['scientificName1'], 0, 1, 'L');
-        $this->Cell(78, 0, $labelText['scientificName2'], 0, 1, 'L');
-        $this->write2DBarcode($labelText['uuid'], 'QRCODE,H', $x_top + 76 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->QRstyle, 'N');
+        $this->Cell($this->cellwidth, 0, $labelText['scientificName1'], 0, 1, 'L');
+        $this->Cell($this->cellwidth, 0, $labelText['scientificName2'], 0, 1, 'L');
+        $this->write2DBarcode($labelText['uuid'], 'QRCODE,H', $x_top + $this->cellwidth + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->QRstyle, 'N');
         $this->Ln();
     }
 }
@@ -189,15 +188,19 @@ $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false);
 $pdf->SetMargins(5, 5);
 
-$pdf->AddPage();
+$pdf->AddPage('L');
 
-$pdf->SetFont('helvetica', '', 9);
+$pdf->SetFont('helvetica', '', 14);
 
 /** @var mysqli_result $result_ID */
 $result_ID = $dbLink->query("SELECT `taxonID`, `uuid` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
 while ($row_ID = $result_ID->fetch_array()) {
-    $labelText = makeText($row_ID['taxonID'], $row_ID['uuid']);
-    $pdf->makeLabel($labelText);
+    $buffer = makeText($row_ID['taxonID'], $row_ID['uuid']);
+    $labelText[$buffer['longName']] = $buffer;
+}
+ksort($labelText);
+foreach ($labelText as $line) {
+    $pdf->makeLabel($line);
 }
 
 $pdf->Output();

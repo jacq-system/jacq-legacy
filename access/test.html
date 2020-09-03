@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//Dtd XHTML 1.0 Strict//EN" "http://www.w3.org/tr/xhtml1/Dtd/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+        <title>Bonnie++ Benchmark results</title>
+        <style type="text/css">
+            td.header {text-align: center; background-color: "#CCFFFF" }
+            td.rowheader {text-align: center; background-color: "#CCCFFF" }
+            td.size {text-align: center; background-color: "#CCCFFF" }
+            td.ksec {text-align: center; fontstyle: italic }
+        </style>
+    </head>
+    <body>
+        <table border="3" cellpadding="2" cellspacing="1">
+            <tr>
+                <td colspan="2" class="header"><font size=+1><b>Version 1.97</b></font></td>
+                <td colspan="6" class="header"><font size=+2><b>Sequential Output</b></font></td>
+                <td colspan="4" class="header"><font size=+2><b>Sequential Input</b></font></td>
+                <td colspan="2" rowspan="2" class="header"><font size=+2><b>Random<br>Seeks</b></font></td>
+                <td colspan="1" class="header"></td>
+                <td colspan="6" class="header"><font size=+2><b>Sequential Create</b></font></td>
+                <td colspan="6" class="header"><font size=+2><b>Random Create</b></font></td>
+            </tr><tr>
+                <td></td>
+                <td>Size</td>
+                <td colspan="2">Per Char</td>
+                <td colspan="2">Block</td>
+                <td colspan="2">Rewrite</td>
+                <td colspan="2">Per Char</td>
+                <td colspan="2">Block</td>
+                <td>Num Files</td>
+                <td colspan="2">Create</td>
+                <td colspan="2">Read</td>
+                <td colspan="2">Delete</td>
+                <td colspan="2">Create</td>
+                <td colspan="2">Read</td>
+                <td colspan="2">Delete</td>
+            </tr><tr>
+                <td colspan="2"></td>
+                <td class="ksec"><font size=-2>K/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>K/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>K/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>K/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>K/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td colspan="1"></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+                <td class="ksec"><font size=-2>/sec</font></td>
+                <td class="ksec"><font size=-2>% CPU</font></td>
+            </tr><tr>
+                <td rowspan="2" bgcolor="#FFFFFF" class="rowheader"><font size=+1>Hetzner<br>Lokal (NVMe SDD)</td>
+                <td class="size" bgcolor="#FFFFFF">8G</td><td>733</td><td>99</td><td>962882</td><td>97</td><td>472036</td><td>46</td><td>2331</td><td>99</td><td>647865</td><td>35</td><td>11643</td><td>181</td><td class="size" bgcolor="#FFFFFF">16</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td>
+            </tr><tr>
+                <td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td><td colspan="2">14544us</td><td colspan="2">7716us</td><td colspan="2">16024us</td><td colspan="2">4947us</td><td colspan="2">6364us</td><td colspan="2">3097us</td><td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td><td colspan="2">82us</td><td colspan="2">1009us</td><td colspan="2">728us</td><td colspan="2">100us</td><td colspan="2">2704us</td><td colspan="2">880us</td>
+            </tr><tr>
+                <td colspan="28"></td>
+            </tr><tr>
+                <td rowspan="2" bgcolor="#FFFFFF" class="rowheader"><font size=+1>Hetzner<br>Netzwerk (CEPH)</td>
+                <td class="size" bgcolor="#FFFFFF">15568M</td><td>608</td><td>99</td><td>910626</td><td>88</td><td>114489</td><td>30</td><td>1411</td><td>99</td><td>130464</td><td>21</td><td>3868</td><td>133</td><td class="size" bgcolor="#FFFFFF">16</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td><td>+++++</td><td>+++</td>
+            </tr><tr>
+                <td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td><td colspan="2">22395us</td><td colspan="2">36079us</td><td colspan="2">78896us</td><td colspan="2">19618us</td><td colspan="2">14595us</td><td colspan="2">7071us</td><td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td><td colspan="2">570us</td><td colspan="2">1315us</td><td colspan="2">1245us</td><td colspan="2">531us</td><td colspan="2">46us</td><td colspan="2">64us</td>
+            </tr><tr>
+                <td colspan="28"></td>
+            </tr><tr>
+                <td rowspan="2" bgcolor="#FFFFFF" class="rowheader"><font size=+1>jacq-access.<br>botanik.univie.ac.at</td>
+                <td class="size" bgcolor="#FFFFFF">12G</td>
+                <td>749</td>
+                <td>99</td>
+                <td>815577</td>
+                <td>54</td>
+                <td>138398</td>
+                <td>9</td>
+                <td>1625</td>
+                <td>99</td>
+                <td>207442</td>
+                <td>7</td>
+                <td>1142</td>
+                <td>12</td>
+                <td class="size" bgcolor="#FFFFFF">16</td>
+                <td>+++++</td>
+                <td>+++</td>
+                <td>+++++</td>
+                <td>+++</td>
+                <td>+++++</td>
+                <td>+++</td>
+                <td>+++++</td>
+                <td>+++</td>
+                <td>+++++</td>
+                <td>+++</td>
+                <td>+++++</td>
+                <td>+++</td>
+            </tr><tr>
+                <td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td>
+                <td colspan="2">11393us</td>
+                <td colspan="2">771ms</td>
+                <td colspan="2">162ms</td>
+                <td colspan="2">13818us</td>
+                <td colspan="2">158ms</td>
+                <td colspan="2">190ms</td>
+                <td class="size" bgcolor="#FFFFFF" colspan="1">Latency</td>
+                <td colspan="2">513us</td>
+                <td colspan="2">372us</td>
+                <td colspan="2">831us</td>
+                <td colspan="2">308us</td>
+                <td colspan="2">21us</td>
+                <td colspan="2">649us</td>
+            </tr>
+        </table>
+    </body>
+</html>
