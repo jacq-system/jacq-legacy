@@ -88,7 +88,7 @@ $_SESSION['o_taxon_alt']   = $taxon_alt;
 $_SESSION['o_CollNummer']  = $CollNummer;
 $_SESSION['o_series']      = $series;
 
-$result = $dbLink->query("SELECT DATE_FORMAT(Eingabedatum,'%Y-%m-%d') AS date FROM tbl_specimens ORDER BY DATE DESC");
+$result = $dbLink->query("SELECT DATE_FORMAT(MAX(Eingabedatum),'%Y-%m-%d') AS date FROM tbl_specimens");
 $row = $result->fetch_array();
 $lastUpdate = $row['date'];
 

@@ -27,7 +27,16 @@ Levenshtein Distance Algorithm implementation as MySQL UDF by Joshua Drew for Sp
 MDLD algorithm based on the DLD algorithm and on the work of Tony Rees, November 2008 (Tony.Rees@csiro.au)
 
 Both algorithms were enhanced by the ability to use unicode strings encoded in UTF-8.
- 
+
+
+How to add UDF-function to MariaDB:
+===================================
+prerequisite: libmariadbclient-dev
+
+Ubuntu 18.04:
+  g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp -fPIC
+  cp libmysqlmdldutf8.so /usr/lib/x86_64-linux-gnu/mariadb18/plugin
+
 
 How to add UDF-function to MySQL:
 =================================

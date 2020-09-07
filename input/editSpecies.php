@@ -335,26 +335,24 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 }
 
 $comnames='';
-$sql="
-SELECT
- com.common_name as 'common_name'
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to a
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa tax ON tax.taxon_id = ent.entity_id
- 
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam ON  nam.name_id = a.name_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com ON  com.common_id = nam.name_id
-WHERE
- a.entity_id = ent.entity_id and ent.entity_id = tax.taxon_id  and tax.taxonID='{$p_taxonID}'
-LIMIT 5 
-";
+$sql = "SELECT com.common_name as 'common_name'
+        FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to a
+         LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_entities ent ON ent.entity_id = a.entity_id
+         LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_taxa tax     ON tax.taxon_id = ent.entity_id
+         LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam    ON nam.name_id = a.name_id
+         LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com  ON com.common_id = nam.name_id
+        WHERE a.entity_id = ent.entity_id
+         AND ent.entity_id = tax.taxon_id
+         AND tax.taxonID = '{$p_taxonID}'
+        LIMIT 5";
 
 $result = db_query($sql);
-while($row = mysql_fetch_array($result)){
-	$comnames.=", ".$row['common_name'];
+if (mysql_num_rows($result) > 0) {
+    while ($row = mysql_fetch_array($result)){
+        $comnames .= ", " . $row['common_name'];
+    }
+    $comnames=substr($comnames,2);
 }
-$comnames=substr($comnames,2);
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -500,8 +498,8 @@ $comnames=substr($comnames,2);
 		options = "width=900,height=700,top=50,left=50,scrollbars=yes,resizable=yes";
 		MeinFenster = window.open(target,"edit Common Names",options);
 		MeinFenster.focus();
-	}	
-	
+	}
+
   </script>
 </head>
 
@@ -729,7 +727,7 @@ $res = mysql_query("SELECT COUNT(*)  FROM tbl_specimens_types WHERE taxonID = '$
 $row1=mysql_fetch_row($res);
 
 if ($row1[0] > 0) {
-    $cf->label(22.5, 5.5, "type specimens ({$row1[0]})", "javascript:listTypeSpecimens('$p_taxonID')");	
+    $cf->label(22.5, 5.5, "type specimens ({$row1[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
 }
 
 

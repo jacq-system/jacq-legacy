@@ -5,10 +5,17 @@ require("inc/herbardb_input_functions.php");
 
 // BP: for MDLD-JSON service
 require_once('inc/variables.php');
-//require_once("inc/xajax/xajax_core/xajax.inc.php");
 require_once('inc/jsonRPCClient.php');
 
+require_once("inc/xajax/xajax_core/xajax.inc.php");
+
 no_magic();
+
+$xajax = new xajax();
+$xajax->setRequestURI("ajax/listTaxServer.php");
+
+$xajax->registerFunction("toggleScientificNameLabel");
+$xajax->registerFunction("clearScientificNameLabels");
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -36,8 +43,8 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
 		$_POST['author']='';
 		$_POST['annotation']='';
 		$_POST['external']='';
-		
-		
+
+
 	}else{
 		$location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
 		if (SID != "") $location .= "?" . SID;
@@ -55,12 +62,12 @@ if (isset($_POST['search'])) {
     $_SESSION['taxMDLD'] = $_POST['mdld'];  // BP
 	if(!empty($_SESSION['taxMDLD'])){
 		$_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
-        
+
 	}
     if ($_SESSION['editFamily']) $_POST['family'] = $_SESSION['editFamily'];
     if ($_POST['commonname']) { // commonName
 		$_SESSION['taxType']       = 5; // list ?
-		$_SESSION['noLiterature']     =  $_POST['noLiterature'];
+		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
 		$_SESSION['taxCommonname'] = $_POST['commonname'];
 		$_SESSION['taxFamily']     = "";
         $_SESSION['taxGenus']      = "";
@@ -77,7 +84,7 @@ if (isset($_POST['search'])) {
 	}else if ($_POST['collector'] || $_POST['number'] || $_POST['date']) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 4; // list Species, other display
-		$_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
+		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = $_POST['species'];
@@ -88,13 +95,13 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = $_POST['date'];
         $_SESSION['taxAuthor']     = $_POST['author'];
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = $_POST['external'];
+        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
         $_SESSION['taxOrder']      = "Sammler, Sammler_2, series, leg_nr, tt.date";
         $_SESSION['taxOrTyp']      = 41;
     } else if ($_POST['species'] || $_POST['status']){
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 3; // list Species
-		$_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
+		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
         $_SESSION['taxFamily']     = $_POST['family'];
 		$_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = $_POST['species'];
@@ -105,14 +112,14 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = $_POST['author'];
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = $_POST['external'];
+        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet, author, epithet1, author1, "
                                    . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
         $_SESSION['taxOrTyp']      = 31;
     } else if ($_POST['genus']) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 2; // list Genus
-		$_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
+		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = "";
@@ -123,12 +130,13 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = "";
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = $_POST['external'];
+        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
         $_SESSION['taxOrder']      = "genus, auth_g, family";
         $_SESSION['taxOrTyp']      = 21;
     } else {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 1; // list Family
+		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
 		$_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = "";
         $_SESSION['taxSpecies']    = "";
@@ -138,13 +146,13 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = "";
         $_SESSION['taxAnnotation'] = "";
-        $_SESSION['taxExternal']   = $_POST['external'];
+        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
         $_SESSION['taxOrder']      = "category, family";
         $_SESSION['taxOrTyp']      = 11;
     }
 } else if (isset($_GET['lfamily'])) {
     $_SESSION['taxType']       = 1; // list Family
-	$_SESSION['noLiterature']  =false;
+	$_SESSION['noLiterature']  = false;
     $_SESSION['taxFamily']     = $_GET['lfamily'];
     $_SESSION['taxGenus']      = "";
     $_SESSION['taxSpecies']    = "";
@@ -160,7 +168,7 @@ if (isset($_POST['search'])) {
     $_SESSION['taxOrTyp']      = 11;
 } else if (isset($_GET['lgenus'])) {
     $_SESSION['taxType']       = 2; // list Genus
-	$_SESSION['noLiterature']  = $_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
+    $_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
     $_SESSION['taxFamily']     = ($_SESSION['editFamily']) ? $_SESSION['editFamily'] : "";
     $_SESSION['taxGenus']      = $_GET['lgenus'];
     $_SESSION['taxSpecies']    = "";
@@ -326,8 +334,8 @@ function dumpMatchJsonRPC($searchtext)
 function LiteratureExists($taxonID){
 	global $NOLITERATURE_SQL_STATEMENT;
 
-	
-	
+
+
 	$sql = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syncheck where syncheck.taxonID='".mysql_escape_string($taxonID)."' and (  ifnull( IF(syncheck.source='literature', syncheck.source_citationID, IF(syncheck.source='person', syncheck.source_person_ID, IF(syncheck.source='service', syncheck.source_serviceID, IF(syncheck.source='specimen', syncheck.source_specimenID,NULL)))),0)<>0) LIMIT 1";
 	echo $sql;
 	$result = db_query($sql);
@@ -375,7 +383,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
             $nr=0;                  // current line-no of clickable taxonIDs in result
             $isHighlighted = false; // only highlight if indicated by $selectedRow
             $matchingTaxonID = "";  // taxonID to show in field "taxonID"
-            
+
             while ($indexMatch < count($matches['result'])) {
                 $countResults = count($matches['result'][$indexMatch]['searchresult']);
                 $countResultsNearMatch = ($useNearMatch) ? count($matchesNearMatch['result'][$indexMatch]['searchresult']) : 0;
@@ -390,14 +398,14 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
                     if ($matches['result'][$indexMatch]['type'] == 'uni') {
 						if(($indexResult < $countResults) &&
 								(!$_SESSION['noLiterature'] || !LiteratureExists($matches['result'][$indexMatch]['searchresult'][$indexResult]['ID'])) ) {
-								
+
                             $row = $matches['result'][$indexMatch]['searchresult'][$indexResult];
                             $found++;
                             // uninomial --> link to "editGenera.php"
                             $newLink = "<a href=\"javascript:editGenera(" . $row['ID'] . ")\">";
-                            $out2Left = '<td>&nbsp;&nbsp;<b>' 
-                                      . $newLink 
-                                      . $row['taxon'] 
+                            $out2Left = '<td>&nbsp;&nbsp;<b>'
+                                      . $newLink
+                                      . $row['taxon']
                                       //. '</a>'
                                       . ' <' . $row['ID'] . '></a></b></td>'
                                       . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
@@ -409,7 +417,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
                             if(($indexResult < $countResultsNearMatch) &&
 								(!$_SESSION['noLiterature'] || !LiteratureExists($matches['result'][$indexMatch]['searchresult'][$indexResult]['ID'])) ) {
                                 $row = $matchesNearMatch['result'][$indexMatch]['searchresult'][$indexResult];
-								
+
                                 $out2Right = '<td>&nbsp;&nbsp;<b>' . $row['taxon'] . ' <' . $row['ID'] . '></b></td>'
                                            . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
                                            . '<td align="right">&nbsp;' . number_format($row['ratio'] * 100, 1) . "%</td>";
@@ -432,16 +440,16 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
                             $row = $matches['result'][$indexMatch]['searchresult'][$indexResult];
                             foreach ($row['species'] as $key2 => $row2) {
                                 if(	(!$_SESSION['noLiterature'] || !LiteratureExists($row2['taxonID'])) ) {
-                            
-								
+
+
 									$nr++;
 									if (($matchingTaxonID == "") || ($nr == $selectedRow)) {
 										$matchingTaxonID = $row2['taxonID'];
 									}
 									$found++;
 									// contains taxonID --> link to "editSpecis.php"
-									$newLink = "<a href=\"editSpecies.php?sel=" 
-											   . htmlspecialchars("<" . $row2['taxonID'] . ">") 
+									$newLink = "<a href=\"editSpecies.php?sel="
+											   . htmlspecialchars("<" . $row2['taxonID'] . ">")
 											   . "&nr=" . ($nr) . "\">";
 									$columnLeft[] = '<td class="' . (($nr == $selectedRow) ? 'outMark' : 'out' ) . '">&nbsp;&nbsp;<b>'
 												  . $newLink
@@ -470,7 +478,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
                             $row = $matchesNearMatch['result'][$indexMatch]['searchresult'][$indexResult];
                             foreach ($row['species'] as $key2 => $row2) {
 								if(	(!$_SESSION['noLiterature'] || !LiteratureExists($row2['taxonID'])) ) {
-                            
+
 									$columnRight[] = '<td>&nbsp;&nbsp;<b>' . $row2['taxon'] . ' <' . $row2['taxonID'] . '></b>'
 												   . (($row2['syn']) ? "<br>&nbsp;&nbsp;&rarr;&nbsp;" . $row2['syn'] . " <" . $row2['synID'] . ">" : "")
 												   . '</td>'
@@ -695,9 +703,7 @@ if ($result = db_query($sql)) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
-  <style>
-
-  </style>
+  <?php $xajax->printJavascript('inc/xajax'); ?>
   <!-- BP: use jQuery for disabling edit-fields if MDLD-search has been entered -->
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <!-- BP END -->
@@ -737,6 +743,13 @@ if ($result = db_query($sql)) {
       MeinFenster = window.open(target,"listSynonyms",options);
       MeinFenster.focus();
     }
+    function showPDF(sel) {
+      switch (sel) {
+        case 'scientificName':  target = "pdfLabelScientificName.php";  label = "labelScientificName"; break;
+      }
+      MeinFenster = window.open(target, label);
+      MeinFenster.focus();
+    }
 
     // BP: as soon as user enters something into MDLD-input-field:
     // BP: disable other input-fields
@@ -752,13 +765,13 @@ if ($result = db_query($sql)) {
                 } else if (($(mdldField).val() != "") && (! isMDLDSearch)) {
                     $(myLabel).fadeTo('fast',0.5);
                     $(myField).attr("disabled",true);
-                }            
+                }
             });
             isMDLDSearch = $(mdldField).val() != "";
         };
 
         // always check when window is opened
-        checkEnableEdit();  
+        checkEnableEdit();
 
         // every time something is changed in MDLD-input field, check if we need to en/disable other fields
         // TODO: does not react in all cases, e.g. after pressing Ctrl+V, the fields are not disabled
@@ -808,7 +821,7 @@ if ($result = db_query($sql)) {
   <td align="right" id="authorLabel">&nbsp;<b>Author:</b></td>
     <td><input type="text" name="author" id="author" value="<?php echoSpecial('taxAuthor', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td align="right"id="collectorLabel">&nbsp;<b>Typecollection:</b></td>
+  <td align="right" id="collectorLabel">&nbsp;<b>Typecollection:</b></td>
     <td><input type="text" name="collector" id="collector" value="<?php echoSpecial('taxCollector', 'SESSION'); ?>"></td>
   <td align="right" id="numberLabel">&nbsp;<b>Number:</b></td>
     <td><input type="text" name="number" id="number" value="<?php echoSpecial('taxNumber', 'SESSION'); ?>"></td>
@@ -823,7 +836,7 @@ if ($result = db_query($sql)) {
 </tr><tr>
   <td align="left" colspan="3"><input class="button" type="submit" name="search" value=" search "></td>
   <td align="right" id="externalLabel" colspan="2">&nbsp;<b>external:</b></td>
-  <td align="left" valign="top"><input style="float:left" type="checkbox" name="external" id="external"<?php echo (!empty($_SESSION['taxExternal'])) ? ' checked' : ''; ?>> 
+  <td align="left" valign="top"><input style="float:left" type="checkbox" name="external" id="external"<?php echo (!empty($_SESSION['taxExternal'])) ? ' checked' : ''; ?>>
   <div style="float:right"><b>no Literature:</b> <input type="checkbox" name="noLiterature" value="1" id="noLiterature"<?php echo $_SESSION['noLiterature']?' checked':''; ?>></div>
   </td>
 </tr>
@@ -889,16 +902,16 @@ if ($_SESSION['taxMDLD'] != "") {
     <?php
 } else {
     // BP: reset field "taxonID" to empty
-    $_SESSION['firstTaxonID'] = "";     
+    $_SESSION['firstTaxonID'] = "";
     ?>
-    
+
     <!-- BP: no MDLD-search ==> display empty string in field "taxonID" -->
     <script type="text/javascript" language="JavaScript">
         $("#taxon").val("");
     </script>
 
     <?php
-    if ($_SESSION['taxType'] == 3 || $_SESSION['taxType'] == 5) {  
+    if ($_SESSION['taxType'] == 3 || $_SESSION['taxType'] == 5) {
         echo prettyPrintSynonymLinks();     // BP: moved to a function
     }
     echo "</tr></table><p>\n";
@@ -938,7 +951,7 @@ if ($_SESSION['taxMDLD'] != "") {
         }
     } else if ($_SESSION['taxType'] == 2) {  // list Genus
 
-        $sql = "SELECT tg.genID, tg.genus, tag.author auth_g, tf.family, 
+        $sql = "SELECT tg.genID, tg.genus, tag.author auth_g, tf.family,
                  tsc.cat_description category, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs
                 FROM tbl_tax_genera tg
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID=tg.authorID
@@ -947,30 +960,29 @@ if ($_SESSION['taxMDLD'] != "") {
 				 ";
 		// taxon for this genus....
 		if ($_SESSION['noLiterature']) {
-				$sql .= "
-				LEFT JOIN herbarinput.tbl_tax_species ts ON (
-	ts.genID = tg.genID AND ts.speciesID is NULL
-	AND ts.subspeciesID IS NULL AND ts.varietyID IS NULL
-	AND ts.subvarietyID IS NULL AND ts.formaID IS NULL AND ts.subformaID IS NULL
- )";
-		}	 
+				$sql .= "LEFT JOIN herbarinput.tbl_tax_species ts ON (
+                            ts.genID = tg.genID AND ts.speciesID is NULL
+                            AND ts.subspeciesID IS NULL AND ts.varietyID IS NULL
+                            AND ts.subvarietyID IS NULL AND ts.formaID IS NULL AND ts.subformaID IS NULL
+                         )";
+		}
 		$sql .= "WHERE genus LIKE '".mysql_escape_string($_SESSION['taxGenus'])."%' "
              . (($_SESSION['taxExternal']) ? "AND tg.external > 0 " : "AND tg.external = 0 ");
         if ($_SESSION['taxFamily']) {
             $sql .= "AND family LIKE '".mysql_escape_string($_SESSION['taxFamily'])."%' ";
         }
-        
+
 		if ($_SESSION['noLiterature']) {
 				$sql .= " AND ( {$NOLITERATURE_SQL_STATEMENT}  ) ";
 		}
-		
+
 		if ($_SESSION['taxAnnotation']) {
             $sql .= "AND tg.remarks LIKE '%".mysql_escape_string($_SESSION['taxAnnotation'])."%' ";
         }
-		
+
         $sql .= "ORDER BY ".$_SESSION['taxOrder']." LIMIT 1001";
-		
-		
+
+
         $result = db_query($sql);
         if (mysql_num_rows($result)>1000) {
             echo "<b>no more than 1000 results allowed</b>\n";
@@ -1007,12 +1019,18 @@ if ($_SESSION['taxMDLD'] != "") {
         }
     }
     else if ($_SESSION['taxType'] == 3) {  // list Species
-        $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family,
+?>
+      <input type="button" class="button" value="make PDF (Scientific Names)" id="btMakeScientificNameLabelPdf" onClick="showPDF('scientificName')">
+      <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="xajax_clearScientificNameLabels(); return false;">
+      <p>
+<?php
+        $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.uuid,
                  ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                  te4.epithet epithet4, te5.epithet epithet5
                 FROM tbl_tax_species ts
+                 LEFT JOIN tbl_labels_scientificName l ON (ts.taxonID = l.taxonID AND l.userID = '" . intval($_SESSION['uid']) . "')
                  LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
                  LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
                  LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
@@ -1028,7 +1046,7 @@ if ($_SESSION['taxMDLD'] != "") {
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID ";
-          
+
 		if(isset($_SESSION['taxon_list'])){
 			$sql .= " where ts.taxonID in (" . mysql_escape_string($_SESSION['taxon_list']) . ")";
 		}else{
@@ -1054,7 +1072,7 @@ if ($_SESSION['taxMDLD'] != "") {
 			if ($_SESSION['noLiterature']) {
 				$sql .= " AND ( {$NOLITERATURE_SQL_STATEMENT}  ) ";
 			}
-		
+
 			if ($_SESSION['taxFamily']) {
 				$sql .= "AND family LIKE '" . mysql_escape_string($_SESSION['taxFamily']) . "%' ";
 			}
@@ -1074,55 +1092,47 @@ if ($_SESSION['taxMDLD'] != "") {
 			}
 		}
         $sql .= " ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
-//echo $sql;exit;
         $result = db_query($sql);
         if (mysql_num_rows($result) > 1000) {
             echo "<b>no more than 1000 results allowed</b>\n";
         } elseif (mysql_num_rows($result) > 0) {
-            echo "<table class=\"out\" cellspacing=\"0\">\n";
-            echo "<tr class=\"out\">";
-            echo "<th class=\"out\">ID</th>";
-            echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cf\">Family</a>" . sortItem($_SESSION['taxOrTyp'], 32) . "</th>";
-            echo "<th class=\"out\">acc.</th>";
-            echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cg\">Genus</a>" . sortItem($_SESSION['taxOrTyp'], 31) . "</th>";
-            echo "<th class=\"out\">Author</th>";
-            echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cs\">Species</a>" . sortItem($_SESSION['taxOrTyp'], 33) . "</th>";
-            echo "<th class=\"out\">Author</th>";
-            echo "<th class=\"out\">infraspecific Taxon</th>";
-            echo "</tr>\n";
+            echo "<table class='out' cellspacing='0'>\n"
+               . "<tr class='out'>"
+               . "<th class='out'>ID</th>"
+               . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cf'>Family</a>" . sortItem($_SESSION['taxOrTyp'], 32) . "</th>"
+               . "<th class='out'>acc.</th>"
+               . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cg'>Genus</a>" . sortItem($_SESSION['taxOrTyp'], 31) . "</th>"
+               . "<th class='out'>Author</th>"
+               . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cs'>Species</a>" . sortItem($_SESSION['taxOrTyp'], 33) . "</th>"
+               . "<th class='out'>Author</th>"
+               . "<th class='out'>infraspecific Taxon</th>"
+               . "<th class='out'>Label</th>"
+               . "</tr>\n";
             $nr = 1;
             while ($row = mysql_fetch_array($result)) {
-                $linkList[$nr] = $row['taxonID'];
-                echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\"><td class=\"out\" style=\"text-align:right\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['taxonID'];
-                echo "</a></td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['family'];
-                echo "</a></td><td style=\"text-align: center;\" class=\"out\">";
-                echo (($row['statusID'] == 96) ? "&bull;" : "");
-                echo "</td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['genus'];
-                echo "</a></td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['auth_g'];
-                echo "</a></td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['epithet'];
-                echo "</a></td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo $row['author'];
-                echo "</a></td><td class=\"out\">";
-                echo "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">";
-                echo subTaxonItem($row);
-                echo "</a></td></tr>\n";
+                $linkList[$nr] = $id = $row['taxonID'];
+                echo "<tr class='" . (($nrSel == $nr) ? "outMark" : "out") . "'>"
+                   . "<td class='out' style='text-align:right'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['taxonID'] . "</a></td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['family'] . "</a></td>"
+                   . "<td style='text-align: center;' class='out'>" . (($row['statusID'] == 96) ? "&bull;" : "") . "</td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['genus'] . "</a></td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['auth_g'] . "</a></td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['epithet'] . "</a></td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['author'] . "</a></td>"
+                   . "<td class='out'>"
+                   .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . subTaxonItem($row) . "</a></td>";
+                echo "<td class='outCenter'>"
+                   .   "<input type='checkbox' id='cbScientificNameLabel_$id'" . ((!empty($row['uuid'])) ? " checked" : "") . " onChange=\"xajax_toggleScientificNameLabel('$id');\">"
+                   . "</td></tr>\n";
                 $hybrids = getHybrids($row['taxonID']);
                 if (strlen($hybrids) > 0) {
-                    echo "<tr><td class=\"out\" colspan=\"7\">";
+                    echo "<tr><td class=\"out\" colspan='9'>";
                     echo "$hybrids\n";
                     echo "</td></tr>\n";
                 }
@@ -1226,27 +1236,27 @@ if ($_SESSION['taxMDLD'] != "") {
             echo "<b>nothing found!</b>\n";
         }
 	} else if ($_SESSION['taxType'] == 5) {  // commonNames
-		
-		
+
+
 		$start = microtime(true);
 
 		$searchtext = strtolower(trim($_SESSION['taxCommonname']));
-		
+
 		$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
 		_logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
 		try {
-		
+
 			$matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
 			$stop = microtime(true);
 			/*if (!empty($matches['error'])) {
 				$out = $matches['error'];
 			} else */{
-			
+
 				$s[0]=sortItem($_SESSION['taxOrTyp'], 51);
 				$s[1]=sortItem($_SESSION['taxOrTyp'], 52);
 				$s[2]=sortItem($_SESSION['taxOrTyp'], 53);
 				$s[3]=sortItem($_SESSION['taxOrTyp'], 54);
-			
+
 				/*echo<<<EOF
 <table class="out" cellspacing="0">
 <tr class="out">
@@ -1279,21 +1289,21 @@ EOF;
 					$nr1 = 1;
 					while ($indexResult < $countResults) {
 						$row = $matches['result'][$indexMatch]['searchresult'][$indexResult]['species'][0];
-						   
+
 						if(empty($row['taxonID']) ||(	$_SESSION['noLiterature'] && LiteratureExists($row['taxonID'])) ) {
 								$indexResult++;
 								continue;
 						}
-						
+
 						if(!isset($used[$row['taxonID']])){
 							$nr=$nr1;
 							$nr1++;
 						}else{
 							$nr=$used[$row['taxonID']];
 						}
-						
+
 						//$link=  "editSpecies.php?sel=".htmlspecialchars("<" . $row['taxonID'] . ">")."&nr={$nr}";
-						
+
 						$ratio=number_format($row['ratio'] * 100, 1).'%';
 						$c=($x++%2 || $nrSel == $nr)?'o':'e';
 						echo<<<EOF
@@ -1328,7 +1338,7 @@ function selectID(taxonID,nr){
 }
 
 </script>
-			
+
 EOF;
 				$linkList[0] = $nr1 - 1;
 				$_SESSION['txLinkList'] = $linkList;
@@ -1336,7 +1346,7 @@ EOF;
 		}catch (Exception $e) {
 			$out =  "Fehler " . nl2br($e);
 		}
-	
+
 		/*$sql ="
 SELECT
  vc.common_name,
@@ -1367,16 +1377,16 @@ WHERE
  vc.common_name LIKE '%".mysql_escape_string($_SESSION['taxCommonname']) ."%'
 ";
 		$sql .= "ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
-		
+
 
 		$result = db_query($sql);
 		if (mysql_num_rows($result) > 1000) {
 		    echo "<b>no more than 1000 results allowed</b>\n";
 		} elseif (mysql_num_rows($result) > 0) {
-				
+
 			$s[0]=sortItem($_SESSION['taxOrTyp'], 51);
 			$s[1]=sortItem($_SESSION['taxOrTyp'], 52);
-			
+
 			echo<<<EOF
 <table class="out" cellspacing="0">
 <tr class="out">
@@ -1389,7 +1399,7 @@ EOF;
 				$link=  "editSpecies.php?sel=".htmlspecialchars("<" . $row['taxonID'] . ">")."&nr=$nr";
 		   		$class=($nrSel == $nr) ? "outMark" : "out";
 		    	$taxon=htmlspecialchars(taxon($row));
-				
+
 				echo<<<EOF
 <tr class="{$class}">
 <td class=out><a href="{$link}">{$taxon}</a></td>
@@ -1402,8 +1412,8 @@ EOF;
 		} else {
 		    echo "<b>nothing found!</b>\n";
 		}*/
-		
-		
+
+
     }
 } // no MDLD
 ?>
