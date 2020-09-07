@@ -27,7 +27,11 @@ if ($result->num_rows > 0) {
         }
         echo($scientificName);
     } elseif ($row['uuid_minter_type_id'] == 2) {
-        echo("citation: " . $row['internal_id']);
+        $result = $dbLink->query("SELECT `herbar_view`.GetProtolog('{$row['internal_id']}') AS protolog");
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            echo($row['protolog']);
+        }
     } elseif ($row['uuid_minter_type_id'] == 3) {
         echo("specimen: " . $row['internal_id']);
     }
