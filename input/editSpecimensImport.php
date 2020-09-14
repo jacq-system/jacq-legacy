@@ -870,7 +870,7 @@ if ($p_digital_image_obs && $p_specimen_ID) {
 $cf->checkbox(39, $y, "digital_image_obs", $p_digital_image_obs);
 $cf->labelMandatory(46.5, $y, 5, "checked");
 $cf->checkbox(46.5, $y, "checked", $p_checked);
-$cf->labelMandatory(54.5, $y, 6, "accessible");
+$cf->labelMandatory(54.5, $y, 6, "accessible");     // meant just as a hint. "accessible" isn't checked anywhere
 $cf->checkbox(54.5, $y, "accessible", $p_accessible);
 
 $y += 2;

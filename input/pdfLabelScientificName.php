@@ -77,7 +77,7 @@ class LABEL extends TCPDF
      * @param int $QRsize size of QRCode (default 12)
      * @param int $QRborder border around QRCode (default 2)
      */
-    public function setQRLabelSettings($colsPerPage = 2, $colwidth = 140, $QRsize = 14, $QRborder = 2)
+    public function setQRLabelSettings($colsPerPage = 2, $colwidth = 135, $QRsize = 14, $QRborder = 2)
     {
         $this->colsPerPage = $colsPerPage;
         $this->colwidth    = $colwidth;
@@ -177,7 +177,7 @@ class LABEL extends TCPDF
         $this->Cell($this->cellwidth, 0, $labelText['scientificName1'], 0, 1, 'L');
         $this->Cell($this->cellwidth, 0, $labelText['scientificName2'], 0, 1, 'L');
         $this->write2DBarcode($labelText['uuid'], 'QRCODE,H', $x_top + $this->cellwidth + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->QRstyle, 'N');
-        $this->Ln();
+        $this->Ln(8);
     }
 }
 
@@ -186,7 +186,7 @@ $pdf = new LABEL();
 $pdf->setPrintHeader(false);
 $pdf->setPrintFooter(false);
 $pdf->SetAutoPageBreak(false);
-$pdf->SetMargins(5, 5);
+$pdf->SetMargins(8, 8);
 
 $pdf->AddPage('L');
 
