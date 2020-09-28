@@ -43,20 +43,20 @@ if ($referenceType == 'citation' && $referenceId > 0) {
     <link rel="stylesheet" type="text/css" href="css/cb/form.css" />
 
     <!-- jQuery -->
-    <script type="text/javascript" src="js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.8.3.js"></script>
     <!-- jQuery-ui -->
     <link rel="stylesheet" href="css/cb/jquery-ui-1.9.2.css" type="text/css" />
     <script type="text/javascript" src="js/jquery-ui-1.9.2.min.js"></script>
     <!-- jsTree -->
     <script type="text/javascript" src="js/jquery.jstree/jquery.jstree.js"></script>
-
-    <!-- custom styles -->
-    <link rel="stylesheet" type="text/css" href="css/cb/custom.css" />
+    <link rel="stylesheet" href="js/jquery.jstree/themes/default/style.css" />
 
     <!-- initialize jstree for classification browser -->
     <script type="text/javascript" src="js/classBrowser_jstree_fct.js"></script>
 
-    <script type="text/javascript" src="js/ClassBrowser_functions.js"></script>
+    <script type="text/javascript" src="js/classBrowser_functions.js"></script>
+
+    <script type="text/javascript" src="js/classBrowser_document_ready.js"></script>
 
     <script type="text/javascript">
         var classBrowser = '<?php echo filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING); ?>?id=1';
@@ -64,6 +64,11 @@ if ($referenceType == 'citation' && $referenceId > 0) {
         var download_url = '<?php echo $_CONFIG['JACQ_URL']; ?>' + 'index.php?r=dataBrowser/classificationBrowser/download';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
     </script>
+    <style>
+        .ui-autocomplete-loading {
+            background: white url("images/loading.gif") right center no-repeat;
+        }
+    </style>
 </head>
 
 <body>
@@ -96,7 +101,8 @@ if ($referenceType == 'citation' && $referenceId > 0) {
                         </select>
                     </div>
 
-                    Filter: <input id="scientificName" type="text" />
+                    <label for="scientificName">Filter:</label>
+                    <input id="scientificName"/>
                     <input id="filter_button" type="image" src="images/magnifier.png" alt="filter" />
 
                     <span style="margin-left: 30px;">
@@ -117,7 +123,5 @@ if ($referenceType == 'citation' && $referenceId > 0) {
         </div><!-- footer -->
 
     </div><!-- page -->
-
-    <script type="text/javascript" src="js/classBrowser_document_ready.js"></script>
 </body>
 </html>

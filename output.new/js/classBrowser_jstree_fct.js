@@ -1,3 +1,5 @@
+/* global initital_data, jacq_url, classificationProgressbarCurr, classificationProgressbarMax */
+
 // handler function for jstree ajax data
 var jstree_data = function (n)
 {
@@ -8,12 +10,12 @@ var jstree_data = function (n)
     var reference_type = (link.attr) ? link.attr("data-reference-type") : 0;
 
     // check if we have a valid reference-type, if not use the default one
-    if( !reference_type ) {
+    if (!reference_type) {
         reference_type = $('#classificationBrowser_referenceType').val();
     }
 
     // check for a set reference, if not use default one
-    if( !reference_id ) {
+    if (!reference_id) {
         reference_id = $('#classificationBrowser_referenceID').val();
     }
 
@@ -29,7 +31,7 @@ var jstree_data = function (n)
 function init_jstree ()
 {
     // delete any old instance
-    $('#jstree_classificationBrowser').jstree( 'destroy' );
+    $('#jstree_classificationBrowser').jstree('destroy');
     // hide info box
     $('#infoBox').hide();
 
@@ -38,23 +40,24 @@ function init_jstree ()
         "json_data" : {
                 "data" : initital_data,
                 "ajax" : {
-                    "url" : jacq_url + "index.php?r=jSONjsTree/japi&action=classificationBrowser",
+                    "url" : "classificationBrowser_ptlp.php?type=jstree",
                     "data": jstree_data,
-                    "dataType": "jsonp"
+                    "dataType": "json"
                 }
         },
         "plugins" : [ "themes", "json_data" ],
         "core": {"html_titles": true}
     });
 
-    $('#jstree_classificationBrowser').on('after_open.jstree', function(e, data) {
-        if ($('#open_all')[0].checked) {
-            classificationProgressbarCurr++;
-            if (classificationProgressbarCurr < classificationProgressbarMax) {
-                $("#progressbar").progressbar("option", "value", classificationProgressbarCurr / classificationProgressbarMax * 100);
-            } else {
-                $("#progressbar").progressbar("destroy");
+    $('#jstree_classificationBrowser')
+        .on('after_open.jstree', function(e, data) {
+            if ($('#open_all')[0].checked) {
+                classificationProgressbarCurr++;
+                if (classificationProgressbarCurr < classificationProgressbarMax) {
+                    $("#progressbar").progressbar("option", "value", classificationProgressbarCurr / classificationProgressbarMax * 100);
+                } else {
+                    $("#progressbar").progressbar("destroy");
+                }
             }
-        }
-    });
+        });
 }
