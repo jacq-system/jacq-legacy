@@ -4,8 +4,12 @@ require_once('tools.php');
 require_once('class.natID.php');
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
-    header("Location: login.php");
-    exit();
+    if (substr(getcwd(), -5) == "/ajax") {
+        die();
+    } else {
+        header("Location: login.php");
+        exit();
+    }
 }
 
 /** @var mysqli $dbLink */

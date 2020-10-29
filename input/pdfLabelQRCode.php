@@ -217,7 +217,7 @@ class LABEL extends TCPDF
         $this->Cell(48, 0, $labelText['Herbarium'], 0, 1, 'L');
         $this->Cell(48, 0, $labelText['Collection'], 0, 1, 'L');
         $this->Cell(48, 0, $labelText['UnitID'], 0, 1, 'L');
-        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 46 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 46 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->QRstyle, 'N');
         $this->Ln();
     }
 
@@ -237,7 +237,7 @@ class LABEL extends TCPDF
         }
         $x_top = $this->GetX();
         $y_top = $this->GetY();
-        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 2 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->style, 'N');
+        $this->write2DBarcode($labelText['StblID'], 'QRCODE,H', $x_top + 2 + $this->QRborder, $y_top, $this->QRsize, $this->QRsize, $this->QRstyle, 'N');
         $this->Cell(16, 0, $labelText['UnitID'], 0, 1, 'C');
         $this->Ln();
     }

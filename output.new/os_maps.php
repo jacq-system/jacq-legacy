@@ -89,15 +89,15 @@ while ($row = $result->fetch_array()) {
         $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
-             . htmlspecialchars(taxonWithHybrids($row))
+             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
              . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']), ENT_QUOTES | ENT_HTML401) . " / "
              . $row['Datum'] . " / ";
         if ($row['typusID']) {
-            $txt .= htmlspecialchars($row['typusID']) . " / ";
+            $txt .= htmlentities($row['typusID']) . " / ";
         }
-        $txt .= htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</div>";
+        $txt .= htmlentities(collectionItem($row['collection'])) . " " . htmlentities($row['HerbNummer']) . "</div>";
         $txt = strtr($txt, array("\r" => '', "\n" => ''));
 
         $point['txt'] = "<a href=\"$url\" target=\"_blank\">$txt</a>";

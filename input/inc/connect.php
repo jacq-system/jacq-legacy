@@ -4,11 +4,19 @@ require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
-    header("Location: login.php");
-    exit();
+    if (substr(getcwd(), -5) == "/ajax") {
+        die();
+    } else {
+        header("Location: login.php");
+        exit();
+    }
 } else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-    header("Location: login.php");
-	exit();
+    if (substr(getcwd(), -5) == "/ajax") {
+        die();
+    } else {
+        header("Location: login.php");
+        exit();
+    }
 } else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
        . "<html>\n"

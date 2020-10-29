@@ -526,7 +526,6 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   </div>
 </div>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
 <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
 <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
 </body>

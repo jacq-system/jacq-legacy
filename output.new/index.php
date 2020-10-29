@@ -8,11 +8,6 @@ if(!empty($_GET)) {
 
 session_start();
 require("inc/functions.php");
-require_once ("inc/xajax/xajax.inc.php");
-$xajax = new xajax("ajax/searchServer.php");
-$xajax->registerFunction("getCollection");
-$xajax->registerFunction("getCountry");
-$xajax->registerFunction("getProvince");
 
 // if script was called from the outside with some search parameters already in place, put the in variables
 // else leave these variables empty
@@ -245,7 +240,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               </div>
               <!-- Institution -->
               <div class="input-field col s6">
-                  <select name="source_name">
+                  <select id="ajax_source_name" name="source_name">
                       <option value="" selected>Search all</option>
                       <?php
                       $result = $dbLink->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
@@ -345,7 +340,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                   </div>
                                   <!-- Continent -->
                                   <div class="input-field">
-                                      <select name="geo_general">
+                                      <select id="ajax_geo_general" name="geo_general">
                                           <option value="" selected>Search continent</option>
                                           <?php
                                           $result_geo_general = $dbLink->query("SELECT geo_general
@@ -363,12 +358,12 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       </select>
                                   </div>
                                   <!-- Series -->
-                                  <div id="ajax_nation_engl" class="input-field">
-                                      <input class="searchinput" placeholder="Country" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
+                                  <div id="ajax_nation_engl_div" class="input-field">
+                                      <input class="searchinput" placeholder="Country" id="ajax_nation_engl" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
                                   </div>
                                   <!-- Region -->
                                   <div class="input-field">
-                                      <select name="geo_region">
+                                      <select id="ajax_geo_region" name="geo_region">
                                           <option value="" selected>Search region</option>
                                           <?php
                                           $result_geo_region = $dbLink->query("SELECT geo_region
@@ -385,8 +380,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       </select>
                                   </div>
                                   <!-- State/Province -->
-                                  <div id="ajax_provinz" class="input-field">
-                                      <input class="searchinput" placeholder="State/Province" name="provinz" type="text">
+                                  <div id="ajax_provinz_div" class="input-field">
+                                      <input class="searchinput" placeholder="State/Province" id="ajax_provinz" name="provinz" type="text">
                                   </div>
                                   <!-- Placeholder -->
                                   <div></div>
@@ -753,7 +748,6 @@ header("Cache-Control: post-check=0, pre-check=0", false);
       </div>
     </div>
     <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
-    <script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
     <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
     <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
 

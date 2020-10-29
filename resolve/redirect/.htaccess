@@ -1,0 +1,4 @@
+# Enable Rewriting
+RewriteEngine on
+
+RewriteRule ^/?([a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+)$ redirect.php?uuid=$1 [L]
