@@ -264,7 +264,7 @@ $row = $result->fetch_array();
 $taxon = taxonWithHybrids($row);
 
 //$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
-$sammler = rdfcollection($row);
+$sammler = rdfcollection($row,true);
 
 if ($row['ncbi_accession']) {
     $sammler .=  " &mdash; " . $row['ncbi_accession']
