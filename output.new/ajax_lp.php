@@ -33,4 +33,22 @@ switch ($_GET['type']) {
         require("inc/functions.php");
         include 'ajax/results.php';
         break;
+    case 'getCollection':
+        // get all collections for a given source ready to be inserted into a select-statement
+        require("inc/functions.php");
+        include 'ajax/searchFunctions.php';
+        echo getCollection(filter_input(INPUT_GET, 'source_name', FILTER_SANITIZE_STRING));
+        break;
+    case 'getCountry':
+        // get all countries for a given region ready to be inserted into a select-statement
+        require("inc/functions.php");
+        include 'ajax/searchFunctions.php';
+        echo getCountry(filter_input(INPUT_GET, 'geo_general', FILTER_SANITIZE_STRING), filter_input(INPUT_GET, 'geo_region', FILTER_SANITIZE_STRING));
+        break;
+    case 'getProvince':
+        // get all provinces for a given country ready to be inserted into a select-statement
+        require("inc/functions.php");
+        include 'ajax/searchFunctions.php';
+        echo getProvince(filter_input(INPUT_GET, 'nation_engl', FILTER_SANITIZE_STRING));
+        break;
 }

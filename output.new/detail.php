@@ -264,7 +264,7 @@ $row = $result->fetch_array();
 $taxon = taxonWithHybrids($row);
 
 //$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
-$sammler = rdfcollection($row);
+$sammler = rdfcollection($row,true);
 
 if ($row['ncbi_accession']) {
     $sammler .=  " &mdash; " . $row['ncbi_accession']
@@ -526,7 +526,6 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
   </div>
 </div>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="inc/xajax/xajax_js/xajax.js"></script>
 <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
 <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
 </body>
