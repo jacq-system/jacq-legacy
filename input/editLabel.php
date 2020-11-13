@@ -20,7 +20,6 @@ $xajax->setRequestURI("ajax/editLabelServer.php");
 
 $xajax->registerFunction("toggleTypeLabelMap");
 $xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
 $xajax->registerFunction("clearTypeLabelsMap");
 $xajax->registerFunction("clearTypeLabelsSpec");
 $xajax->registerFunction("clearBarcodeLabels");
@@ -28,6 +27,7 @@ $xajax->registerFunction("checkTypeLabelMapPdfButton");
 $xajax->registerFunction("checkTypeLabelSpecPdfButton");
 $xajax->registerFunction("checkBarcodeLabelPdfButton");
 $xajax->registerFunction("updtStandardLabel");
+$xajax->registerFunction("updtBarcodeLabel");
 $xajax->registerFunction("clearStandardLabels");
 $xajax->registerFunction("checkStandardLabelPdfButton");
 
@@ -140,13 +140,12 @@ if (mysql_num_rows($result)>0) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script type="text/javascript" language="JavaScript">
     var inpSLvalue;
+    var inpBLvalue;
     function toggleLabelWrapper(sel) {
       switch (sel) {
         case 1: xajax_toggleTypeLabelMap();
                 break;
         case 2: xajax_toggleTypeLabelSpec();
-                break;
-        case 3: xajax_toggleBarcodeLabel();
                 break;
       }
     }
@@ -155,6 +154,11 @@ if (mysql_num_rows($result)>0) {
         case 10: if (data!=inpSLvalue) {
                   inpSLvalue = data;
                   xajax_updtStandardLabel(data);
+                }
+                break;
+        case 20: if (data!=inpBLvalue) {
+                  inpBLvalue = data;
+                  xajax_updtBarcodeLabel(data);
                 }
                 break;
       }
@@ -325,16 +329,15 @@ $cf->buttonJavaScript(35,34,"clear all Type spec Labels\" id=\"btClearTypeSpecLa
 
 // barcode labels
 $cf->label(9,36,"barcode Label");
-$cf->checkboxJavaScript(9,36,"cbBL\" id=\"cbBarcodeLabel",($p_label & 0x4),"toggleLabelWrapper(3)");
-$txt = ($p_label & 0x4) ? "&nbsp;&radic;" : "&nbsp;&ndash;";
-echo "<div class=\"cssftext\" style=\"position: absolute; left: 10em; top: 36.2em;\" id=\"barcodeLabel\">$txt</div>";
+$cf->inputText(9, 35.8, 1, "inpBL\" id=\"inpBarcodeLabel\" onkeyup=\"updtLabelWrapper(20,document.f.inpBL.value)", ($p_label & 0xf00) / 256, 1);
+echo "<div class=\"cssftext\" style=\"position: absolute; left: 13em; top: 36.2em;\" id=\"barcodeLabel\">".(($p_label & 0xf00) / 256)."</div>";
 $cf->buttonJavaScript(16,36,"make PDF (Barcode Labels)\" id=\"btMakeBarcodeLabelPdf","showPDF('barcode')");
 $cf->buttonJavaScript(35,36,"clear all Barcode Labels\" id=\"btClearBarcodeLabels","xajax_clearBarcodeLabels()");
 
 // standard Labels
 $cf->label(9,38,"standard Label");
-$cf->inputText(9,38,1,"inpSL\" id=\"inpStandardLabel\" onkeyup=\"updtLabelWrapper(10,document.f.inpSL.value)",($p_label & 0xf0) / 16,1);
-echo "<div class=\"cssftext\" style=\"position: absolute; left: 11em; top: 38.2em;\" id=\"standardLabel\">".(($p_label & 0xf0) / 16)."</div>";
+$cf->inputText(9,37.8,1,"inpSL\" id=\"inpStandardLabel\" onkeyup=\"updtLabelWrapper(10,document.f.inpSL.value)",($p_label & 0xf0) / 16,1);
+echo "<div class=\"cssftext\" style=\"position: absolute; left: 13em; top: 38.2em;\" id=\"standardLabel\">".(($p_label & 0xf0) / 16)."</div>";
 $cf->buttonJavaScript(16,38,"make PDF (standard Labels)\" id=\"btMakeStandardLabelPdf","showPDF('std')");
 $cf->buttonJavaScript(35,38,"clear all standard Labels\" id=\"btClearStandardLabels","xajax_clearStandardLabels()");
 

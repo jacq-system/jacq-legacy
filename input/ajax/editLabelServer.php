@@ -67,32 +67,33 @@ function toggleTypeLabelSpec() {
  * xajax-function toggleBarcodeLabel
  *
  * operates the switch for the barcode labels
+ * deprecated
  *
  * @param integer $id specimen_ID
  * @return xajaxResponse
  */
-function toggleBarcodeLabel() {
-  $constraint = "specimen_ID=".$_SESSION['labelSpecimen_ID']." AND userID='".$_SESSION['uid']."'";
-  $sql = "SELECT label FROM tbl_labels WHERE $constraint";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
-    $newLabel = ($row['label'] & 0x4) ? ($row['label'] & 0xfffb) : ($row['label'] | 4);
-    if ($newLabel)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
-    else
-      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
-  }
-  else  {
-    $newLabel = 4;
-    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
-  }
-
-  $objResponse = new xajaxResponse();
-  $objResponse->assign("barcodeLabel", "innerHTML", ($newLabel & 0x4) ? "&nbsp;&radic;" : "&nbsp;&ndash;");
-  $objResponse->call("xajax_checkBarcodeLabelPdfButton");
-  return $objResponse;
-}
+//function toggleBarcodeLabel() {
+//  $constraint = "specimen_ID=".$_SESSION['labelSpecimen_ID']." AND userID='".$_SESSION['uid']."'";
+//  $sql = "SELECT label FROM tbl_labels WHERE $constraint";
+//  $result = mysql_query($sql);
+//  if (mysql_num_rows($result)>0) {
+//    $row = mysql_fetch_array($result);
+//    $newLabel = ($row['label'] & 0x4) ? ($row['label'] & 0xfffb) : ($row['label'] | 4);
+//    if ($newLabel)
+//      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+//    else
+//      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+//  }
+//  else  {
+//    $newLabel = 4;
+//    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+//  }
+//
+//  $objResponse = new xajaxResponse();
+//  $objResponse->assign("barcodeLabel", "innerHTML", ($newLabel & 0x4) ? "&nbsp;&radic;" : "&nbsp;&ndash;");
+//  $objResponse->call("xajax_checkBarcodeLabelPdfButton");
+//  return $objResponse;
+//}
 
 /**
  * xajax-function clearTypeLabelsMap
@@ -150,20 +151,24 @@ function clearTypeLabelsSpec() {
  * @return xajaxResponse
  */
 function clearBarcodeLabels() {
-  $sql = "SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
-  while ($row=mysql_fetch_array($result)) {
-    $value = $row['label'] & 0xfffb;
-    if ($value)
-      mysql_query("UPDATE tbl_labels SET label='$value' WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
-    else
-      mysql_query("DELETE FROM tbl_labels WHERE specimen_ID='".$row['specimen_ID']."' AND userID='".$_SESSION['uid']."'");
-  }
-  $objResponse = new xajaxResponse();
-  $objResponse->assign("cbBarcodeLabel", "checked", "");
-  $objResponse->assign("barcodeLabel", "innerHTML", "&nbsp;&ndash;");
-  $objResponse->call("xajax_checkBarcodeLabelPdfButton()");
-  return $objResponse;
+    $sql = "SELECT specimen_ID, label FROM tbl_labels WHERE (label & 3840) > '0' AND userID = '" . $_SESSION['uid'] . "'";
+    $result = mysql_query($sql);
+    while ($row = mysql_fetch_array($result)) {
+        if ($row['label'] & 0xf00) {
+            $value = $row['label'] & 0xf0ff;
+            if ($value) {
+                mysql_query("UPDATE tbl_labels SET label = '$value' WHERE specimen_ID = '" . $row['specimen_ID'] . "' AND userID = '" . $_SESSION['uid'] . "'");
+            } else {
+                mysql_query("DELETE FROM tbl_labels WHERE specimen_ID = '" . $row['specimen_ID'] . "' AND userID = '" . $_SESSION['uid'] . "'");
+            }
+        }
+    }
+
+    $objResponse = new xajaxResponse();
+    $objResponse->assign("inpBarcodeLabel", 'value', 0);
+    $objResponse->assign("barcodeLabel", "innerHTML", "0");
+    $objResponse->call("xajax_checkBarcodeLabelPdfButton()");
+    return $objResponse;
 }
 
 /**
@@ -214,16 +219,19 @@ function checkTypeLabelSpecPdfButton() {
  * @return xajaxResponse
  */
 function checkBarcodeLabelPdfButton() {
-  $sql = "SELECT label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0)
-    $disabled = false;
-  else
-    $disabled = true;
+    $sql = "SELECT label FROM tbl_labels WHERE (label&3840) > '0' AND userID = '" . $_SESSION['uid'] . "'";
+    $result = mysql_query($sql);
+    $value = true;
+    while ($row = mysql_fetch_array($result)) {
+        if ($row['label'] & 0xf00) {
+            $value = false;
+            break;
+        }
+    }
 
-  $objResponse = new xajaxResponse();
-  $objResponse->assign("btMakeBarcodeLabelPdf", "disabled", $disabled);
-  return $objResponse;
+    $objResponse = new xajaxResponse();
+    $objResponse->assign("btMakeBarcodeLabelPdf", "disabled", $value);
+    return $objResponse;
 }
 
 /**
@@ -257,6 +265,36 @@ function updtStandardLabel($ctr) {
 }
 
 /**
+ * xajax-function updtBarcodeLabel
+ *
+ * stores the number of barcode labels to print for a given specimenID
+ *
+ * @param int $ctr
+ * @return xajaxResponse
+ */
+function updtBarcodeLabel($ctr) {
+    $constraint = "specimen_ID = " . $_SESSION['labelSpecimen_ID'] . " AND userID = '" . $_SESSION['uid']."'";
+    $sql = "SELECT label FROM tbl_labels WHERE $constraint";
+    $result = mysql_query($sql);
+    if (mysql_num_rows($result) > 0) {
+        $row = mysql_fetch_array($result);
+        $newLabel = ($row['label'] & 0xf0ff) + intval($ctr) * 0x100;
+        if ($newLabel) {
+            mysql_query("UPDATE tbl_labels SET label = '$newLabel' WHERE $constraint");
+        } else {
+           mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+        }
+    } else {
+        $newLabel = intval($ctr) * 0x100;
+        mysql_query("INSERT INTO tbl_labels SET label = '$newLabel', specimen_ID = " . $_SESSION['labelSpecimen_ID'] . ", userID = '" . $_SESSION['uid'] . "'");
+    }
+    $objResponse = new xajaxResponse();
+    $objResponse->assign("barcodeLabel", "innerHTML", ($newLabel & 0xf00) / 256);
+    $objResponse->call("xajax_checkBarcodeLabelPdfButton");
+    return $objResponse;
+}
+
+/**
  * xajax-function clearStandardLabels
  *
  * clears all switches for the standard labels
@@ -278,7 +316,7 @@ function clearStandardLabels() {
   }
   $objResponse = new xajaxResponse();
   $objResponse->assign("inpStandardLabel", "value", "0");
-  $objResponse->assign("standardLabel", "innerHTML", "&nbsp;&ndash;");
+  $objResponse->assign("standardLabel", "innerHTML", "0");
   $objResponse->call("xajax_checkStandardLabelPdfButton()");
   return $objResponse;
 }
@@ -312,7 +350,6 @@ function checkStandardLabelPdfButton() {
 $xajax = new xajax();
 $xajax->registerFunction("toggleTypeLabelMap");
 $xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
 $xajax->registerFunction("clearTypeLabelsMap");
 $xajax->registerFunction("clearTypeLabelsSpec");
 $xajax->registerFunction("clearBarcodeLabels");
@@ -320,6 +357,7 @@ $xajax->registerFunction("checkTypeLabelMapPdfButton");
 $xajax->registerFunction("checkTypeLabelSpecPdfButton");
 $xajax->registerFunction("checkBarcodeLabelPdfButton");
 $xajax->registerFunction("updtStandardLabel");
+$xajax->registerFunction("updtBarcodeLabel");
 $xajax->registerFunction("clearStandardLabels");
 $xajax->registerFunction("checkStandardLabelPdfButton");
 $xajax->processRequest();

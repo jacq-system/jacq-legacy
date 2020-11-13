@@ -272,9 +272,12 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     $result_ID = mysql_query($sql);
     //$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
     while ($row_ID = mysql_fetch_array($result_ID)) {
-        $labelText = makeText($row_ID['specimen_ID']);
-        if (count($labelText) > 0) {
-            $pdf->makeLabel($labelText);
+        $ctr = ($row_ID['label'] & 0xf00) / 256;
+        for ($i = 0; $i < $ctr; $i++) {
+            $labelText = makeText($row_ID['specimen_ID']);
+            if (count($labelText) > 0) {
+                $pdf->makeLabel($labelText);
+            }
         }
     }
     // make small labels
@@ -283,9 +286,12 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     $pdf->SetFont('helvetica', '', 8);
     mysql_data_seek($result_ID, 0);
     while ($row_ID = mysql_fetch_array($result_ID)) {
-        $labelText = makeText($row_ID['specimen_ID']);
-        if (count($labelText) > 0) {
-            $pdf->makeSmallLabel($labelText);
+        $ctr = ($row_ID['label'] & 0xf00) / 256;
+        for ($i = 0; $i < $ctr; $i++) {
+            $labelText = makeText($row_ID['specimen_ID']);
+            if (count($labelText) > 0) {
+                $pdf->makeSmallLabel($labelText);
+            }
         }
     }
 } else {    // make standard-labels to stick on the herbarium specimen
