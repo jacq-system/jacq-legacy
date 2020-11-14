@@ -1,5 +1,4 @@
 <?php
-//update `tbl_labels` set labelsBarQR = label + 256 WHERE (label&4) > 0
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
@@ -14,6 +13,7 @@ $xajax->registerFunction("makeDropdownCollection");
 $xajax->registerFunction("changeDropdownCollectionQR");
 $xajax->registerFunction("toggleTypeLabelMap");
 $xajax->registerFunction("toggleTypeLabelSpec");
+$xajax->registerFunction("toggleBarcodeLabel");
 $xajax->registerFunction("clearTypeLabelsMap");
 $xajax->registerFunction("clearTypeLabelsSpec");
 $xajax->registerFunction("clearBarcodeLabels");
@@ -21,7 +21,6 @@ $xajax->registerFunction("checkTypeLabelMapPdfButton");
 $xajax->registerFunction("checkTypeLabelSpecPdfButton");
 $xajax->registerFunction("checkBarcodeLabelPdfButton");
 $xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("updtBarcodeLabel");
 $xajax->registerFunction("clearStandardLabels");
 $xajax->registerFunction("checkStandardLabelPdfButton");
 $xajax->registerFunction("setAll");
@@ -222,15 +221,12 @@ function collectionItem($coll)
                 break;
         case 2: xajax_toggleTypeLabelSpec(id);
                 break;
+        case 3: xajax_toggleBarcodeLabel(id);
+                break;
       }
     }
-    function updtLabelWrapper(sel, id, data) {
-      switch (sel) {
-          case 1: xajax_updtStandardLabel(id, data);
-                  break;
-          case 2: xajax_updtBarcodeLabel(id, data);
-                  break;
-      }
+    function updtLabelWrapper(id, data) {
+      xajax_updtStandardLabel(id, data);
     }
 
     function check_all() {
@@ -584,12 +580,12 @@ if ($_SESSION['labelType'] == 1) { ?>
                 echo "<td class=\"out\"></td> \n";
             }
             echo "<td class=\"outCenter\">"
-               .   "<input style=\"width: 1em;\" type=\"text\" name=\"inpBarcodeLabel_$id\" id=\"inpBarcodeLabel_$id\" maxlength=\"1\" "
-               .     "value=\"" . (($row['label'] & 0xf00) / 256) . "\" onkeyup=\"updtLabelWrapper(2,'$id',document.f.inpBarcodeLabel_$id.value)\">"
+               .   "<input type=\"checkbox\" id=\"cbBarcodeLabel_$id\"" . (($row['label'] & 0x4) ? " checked" : "")
+               .     " onChange=\"toggleLabelWrapper(3,'$id')\">"
                . "</td>\n";
             echo "<td class=\"outCenter\">"
                .   "<input style=\"width: 1em;\" type=\"text\" name=\"inpSL_$id\" id=\"inpSL_$id\" maxlength=\"1\" "
-               .     "value=\"" . (($row['label'] & 0xf0) / 16) . "\" onkeyup=\"updtLabelWrapper(1,'$id',document.f.inpSL_$id.value)\">"
+               .     "value=\"" . (($row['label'] & 0xf0) / 16) . "\" onkeyup=\"updtLabelWrapper('$id',document.f.inpSL_$id.value)\">"
                . "</td>";
             echo "</tr>\n";
             $nr++;

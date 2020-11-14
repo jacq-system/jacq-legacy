@@ -153,15 +153,12 @@ if (empty($_POST['collection'])) {
     $result_ID = mysql_query($sql);
     //$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
     while ($row_ID=mysql_fetch_array($result_ID)) {
-        $ctr = ($row_ID['label'] & 0xf00) / 256;
-        for ($i = 0; $i < $ctr; $i++) {
-            $labelText = makeText($row_ID['specimen_ID']);
-            if (count($labelText)>0) {
-                $pdf->Cell(55, 0, $labelText['abbr'], 0, 1, 'C');
-                $pdf->Cell(55, 0, $labelText['Herbarium'], 0, 1, 'C');
-                $pdf->write1DBarcode($labelText['UnitID'], 'C39', '', '', 55, 15, 0.4, $style, 'N');
-                $pdf->Ln();
-            }
+        $labelText = makeText($row_ID['specimen_ID']);
+        if (count($labelText)>0) {
+            $pdf->Cell(55, 0, $labelText['abbr'], 0, 1, 'C');
+            $pdf->Cell(55, 0, $labelText['Herbarium'], 0, 1, 'C');
+            $pdf->write1DBarcode($labelText['UnitID'], 'C39', '', '', 55, 15, 0.4, $style, 'N');
+            $pdf->Ln();
         }
     }
 } else {
