@@ -193,14 +193,16 @@ $pdf->AddPage('L');
 $pdf->SetFont('helvetica', '', 14);
 
 /** @var mysqli_result $result_ID */
-$result_ID = $dbLink->query("SELECT `taxonID`, `uuid` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
+$result_ID = $dbLink->query("SELECT `taxonID`, `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
 while ($row_ID = $result_ID->fetch_array()) {
     $buffer = makeText($row_ID['taxonID'], $row_ID['uuid']);
-    $labelText[$buffer['longName']] = $buffer;
+    $labelText[$buffer['longName']] = array('text' => $buffer, 'nr' => $row_ID['nr']);
 }
 ksort($labelText);
 foreach ($labelText as $line) {
-    $pdf->makeLabel($line);
+    for ($i = 0; $i < $line['nr']; $i++) {
+        $pdf->makeLabel($line['text']);
+    }
 }
 
 $pdf->Output();

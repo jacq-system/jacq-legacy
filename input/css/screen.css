@@ -3,7 +3,7 @@ div.label { font-family: sans-serif; font-weight: bold; font-size: 100%; text-al
 div.input { font-family: sans-serif; font-size: 100%; }
 div.text  { font-family: sans-serif; font-size: 100%; }
 input { font-family: sans-serif; font-size: 100%; padding-left: 0.3em; }
-input.button { font-family: sans-serif; font-weight: bold; font-size:100%; padding-left:5px; text-align:left;}
+input.button { font-family: sans-serif; font-weight: bold; font-size:100%; padding-left:5px; text-align:left; border-width: 3px;}
 input.button:hover { background-color: #abffab; }
 textarea { font-family: sans-serif; font-size: 100%; padding-left: 0.3em; }
 select { font-family: sans-serif; font-size: 100%; }
