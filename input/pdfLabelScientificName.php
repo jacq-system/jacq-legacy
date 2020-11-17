@@ -39,6 +39,7 @@ function makeText($id, $uuid)
             $text['scientificName1'] .= " " . $row['@author'];
             $text['longName'] = $text['scientificName1'];
         }
+        error_log("Author: " . $row['@author']);
     }
 
     return $text;
@@ -190,7 +191,7 @@ $pdf->SetMargins(8, 8);
 
 $pdf->AddPage('L');
 
-$pdf->SetFont('helvetica', '', 14);
+$pdf->SetFont('freesans', '', 14);
 
 /** @var mysqli_result $result_ID */
 $result_ID = $dbLink->query("SELECT `taxonID`, `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
