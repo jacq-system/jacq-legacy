@@ -21,3 +21,5 @@ $_CONFIG['ANNOSYS']['ACTIVE'] = false;  // switch to true if annosys-service is 
 
 // URL to yii-based JACQ implementation (for JSON webservices)
 $_CONFIG['JACQ_URL'] = "http://example.com/jacq-yii/";
+// URL to JACQ services
+$_CONFIG['JACQ_SERVICES'] = "http://localhost/develop.jacq/legacy/services/rest/";
