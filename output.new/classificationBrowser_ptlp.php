@@ -21,7 +21,6 @@ switch ($type) {
         } else {
             $taxonID = filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT);
             echo json_encode(getChildrenJsTree($referenceType, $referenceID, $taxonID));
-//            echo file_get_contents($_CONFIG['JACQ_SERVICES'] . "classification/childrenJsTree/$referenceType/$referenceID" . (($taxonID) ? "?taxonID=$taxonID" : ''));
         }
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONjsTree/japi&action=classificationBrowser'
 //           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)
