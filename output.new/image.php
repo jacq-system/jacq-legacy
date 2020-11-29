@@ -7,66 +7,70 @@ require_once('inc/imageFunctions.php');
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
  */
 
-$filename = isset($_GET['filename']) ? $_GET['filename'] : '';
-$method = isset($_GET['method']) ? $_GET['method'] : '';
-$format = isset($_GET['format']) ? $_GET['format'] : '';
-getResult($filename, $method, $format);
+$filename = filter_input(INPUT_GET, 'filename', FILTER_SANITIZE_STRING);
+$method   = filter_input(INPUT_GET, 'method', FILTER_SANITIZE_STRING);
+$format   = filter_input(INPUT_GET, 'format', FILTER_SANITIZE_STRING);
 
-function getResult($filename, $method, $format) {
-    $picdetails = getPicDetails($filename);
+$picdetails = getPicDetails($filename);
 
-    error_reporting(E_ALL);
-    if (isset($picdetails['url']) && $picdetails['url'] !== false) {
-        switch ($method) {
-            default:
-                doRedirectDownloadPic($picdetails, $method, 0);
-                break;
-            case 'download':
-                doRedirectDownloadPic($picdetails, $format, 0);
-                break;
-            case 'thumb':
-                doRedirectDownloadPic($picdetails, $format, 1);
-                break;
-            case 'resized':
-                doRedirectDownloadPic($picdetails, $format, 2);
-                break;
-            case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-                doRedirectDownloadPic($picdetails, $format, 3);
-                break;
-            case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
-                doRedirectDownloadPic($picdetails, $format, 4);
-                break;
-            case 'thumbs':
-                header('Content-type: text/json');
-                header('Content-type: application/json');
-                echo json_encode(getPicInfo($picdetails));
-                break;
-            case 'show':
-                doRedirectShowPic($picdetails);
-                break;
-        }
-        exit;
-    } else {
-        switch ($method) {
-            default:
-            case 'download':
-            case 'thumb':
-                $pic = 'images/404.png';
-                header('Content-Type: image/png');
-                header('Content-Length: ' . filesize($pic));
-                readfile($pic);
-                break;
-            case 'thumbs':
-                header('Content-type: text/json');
-                header('Content-type: application/json');
-                echo json_encode(array('error' => 'not found'));
-                break;
-            case 'show':
-                echo 'not found';
-                break;
-        }
+error_reporting(E_ALL);
+if (isset($picdetails['url']) && $picdetails['url'] !== false) {
+    switch ($method) {
+        default:
+            doRedirectDownloadPic($picdetails, $method, 0);
+            break;
+        case 'download':
+            doRedirectDownloadPic($picdetails, $format, 0);
+            break;
+        case 'thumb':
+            doRedirectDownloadPic($picdetails, $format, 1);
+            break;
+        case 'resized':
+            doRedirectDownloadPic($picdetails, $format, 2);
+            break;
+        case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
+            $picinfo = getPicInfo($picdetails);
+            if (!in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+                $picdetails['originalFilename'] = $picinfo['pics'][0];
+            }
+            doRedirectDownloadPic($picdetails, $format, 3);
+            break;
+        case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
+            doRedirectDownloadPic($picdetails, $format, 4);
+            break;
+        case 'thumbs':
+            header('Content-type: text/json');
+            header('Content-type: application/json');
+            echo json_encode(getPicInfo($picdetails));
+            break;
+        case 'show':
+            doRedirectShowPic($picdetails);
+            break;
+    }
+    exit;
+} else {
+    switch ($method) {
+        default:
+        case 'download':
+        case 'thumb':
+            $pic = 'images/404.png';
+            header('Content-Type: image/png');
+            header('Content-Length: ' . filesize($pic));
+            readfile($pic);
+            break;
+        case 'thumbs':
+            header('Content-type: text/json');
+            header('Content-type: application/json');
+            echo json_encode(array('error' => 'not found'));
+            break;
+        case 'show':
+            echo 'not found';
+            break;
     }
 }
+
+
+////////// functions //////////
 
 function doRedirectShowPic($picdetails)
 {
@@ -76,10 +80,10 @@ function doRedirectShowPic($picdetails)
         $identifiers = implode($picinfo['pics'], ',');
 
         // Construct URL to viewer
-        if (in_array($picdetails['originalFilename'], $identifiers)) {
+        if (in_array($picdetails['originalFilename'], $picinfo['pics'])) {
             // the filename is in the list returend by the picture-server
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $identifiers;
-        } elseif (!empty ($identifiers)) {
+        } elseif (!empty($identifiers)) {
             // the filename is not in the list, but there is a list
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picinfo['pics'][0] . '&identifiers=' . $identifiers;
         } else {
@@ -87,9 +91,6 @@ function doRedirectShowPic($picdetails)
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $picdetails['originalFilename'];
         }
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
-        // Get additional identifiers (if available)
-        $picinfo = getPicInfo($picdetails);
-        $identifiers = implode($picinfo['pics'], ',');
         // Construct URL to viewer
         $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
     } else if ($picdetails['imgserver_type'] == 'baku') {
