@@ -14,8 +14,10 @@ no_magic();
 $xajax = new xajax();
 $xajax->setRequestURI("ajax/listTaxServer.php");
 
-$xajax->registerFunction("toggleScientificNameLabel");
+$xajax->registerFunction("updateScientificNameLabel");
 $xajax->registerFunction("clearScientificNameLabels");
+$xajax->registerFunction("setAll");
+$xajax->registerFunction("clearAll");
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -788,13 +790,6 @@ if ($result = db_query($sql)) {
 
 <body>
 
-<form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
-  <input type="submit" name="reload" value="" id="close">
-  <input type="hidden" name="family" value="">
-  <input type="hidden" name="gen" value="">
-  <input class="button" type="button" value=" close window " onclick="self.close()" id="close">
-</form>
-
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST">
 
 <table cellspacing="5" cellpadding="0">
@@ -1022,9 +1017,11 @@ if ($_SESSION['taxMDLD'] != "") {
 ?>
       <input type="button" class="button" value="make PDF (Scientific Names)" id="btMakeScientificNameLabelPdf" onClick="showPDF('scientificName')">
       <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="xajax_clearScientificNameLabels(); return false;">
+      <input type="button" class="button" value="set all" id="btSetAllLabels" onClick="xajax_setAll(); return false;">
+      <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="xajax_clearAll(); return false;">
       <p>
 <?php
-        $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.uuid,
+        $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.nr,
                  ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -1092,6 +1089,7 @@ if ($_SESSION['taxMDLD'] != "") {
 			}
 		}
         $sql .= " ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
+        $_SESSION['labelTaxSQL'] = $sql;
         $result = db_query($sql);
         if (mysql_num_rows($result) > 1000) {
             echo "<b>no more than 1000 results allowed</b>\n";
@@ -1128,7 +1126,8 @@ if ($_SESSION['taxMDLD'] != "") {
                    . "<td class='out'>"
                    .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . subTaxonItem($row) . "</a></td>";
                 echo "<td class='outCenter'>"
-                   .   "<input type='checkbox' id='cbScientificNameLabel_$id'" . ((!empty($row['uuid'])) ? " checked" : "") . " onChange=\"xajax_toggleScientificNameLabel('$id');\">"
+                   .   "<input style='width: 1em;' type='text' id='inpScientificNameLabel_$id' maxlength='2' "
+                   .     "value='" . intval($row['nr']) . "' onChange=\"xajax_updateScientificNameLabel('$id', $('#inpScientificNameLabel_$id').val());\">"
                    . "</td></tr>\n";
                 $hybrids = getHybrids($row['taxonID']);
                 if (strlen($hybrids) > 0) {
