@@ -73,7 +73,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
 
 <body>
     <div class="container" id="page">
-        <div id="cssmenu"><ul><li><a>&nbsp;</a></li></ul></div>
+      <div id="cssmenu"><ul><li><a>&nbsp;</a></li></ul><span id="login" style="float:right">&pi;&nbsp;</span></div>
         <img id="logo" src="images/jacq_logo.png" width="120" height="60" />
 
         <div id="content">

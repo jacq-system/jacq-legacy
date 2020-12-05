@@ -3,13 +3,17 @@
 
 // require configuration
 require('inc/variables.php');
+require('inc/RestClient.php');
+
+$rest = new RestClient($_CONFIG['JACQ_SERVICES']);
 
 header('Content-Type: application/json');
 
 $type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING);
 switch ($type) {
     case 'referenceType':
-        echo getWebService('classification/references/', filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
+        echo $rest->get('classification/references', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)));
+//        echo getWebService('classification/references/', filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=references'
 //           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
         break;
@@ -33,25 +37,31 @@ switch ($type) {
         if (empty($taxonID)) {
             echo json_encode(array());
         } else {
-            echo getWebService("classification/nameReferences/", "$taxonID" . (($excludeReferenceId) ? "?excludeReferenceId=$excludeReferenceId" : ''));
+            $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId));
+//            echo getWebService("classification/nameReferences/", "$taxonID" . (($excludeReferenceId) ? "?excludeReferenceId=$excludeReferenceId" : ''));
         }
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=nameReferences'
 //           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)
 //           . '&excludeReferenceId=' . filter_input(INPUT_GET, 'excludeReferenceId', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'scientificNameAc':
-        echo getWebService('autocomplete/scientificNames/', filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
+        $rest->get('autocomplete/scientificNames', array(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)));
+//        echo getWebService('autocomplete/scientificNames/', filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=autoComplete/scientificName'
 //           . '&term=' . filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
         break;
     case 'infoBox_statistics':
-        echo getWebService('classification/periodicalStatistics/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING));
+        $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
+//        echo getWebService('classification/periodicalStatistics/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=getPeriodicalStatistics'
 //           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'open_all':
-        echo getWebService('classification/numberOfChildrenWithChildrenCitation/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)
-                                                                                 . '?taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
+        $rest->get('classification/numberOfChildrenWithChildrenCitation',
+                   array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)),
+                   array('taxonID' => filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)));
+//        echo getWebService('classification/numberOfChildrenWithChildrenCitation/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)
+//                                                                                 . '?taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=numberOfChildrenWithChildrenCitation'
 //           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT)
 //           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
@@ -108,6 +118,7 @@ function jsonGetWebservice($service, $params)
  */
 function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
 {
+    global $rest;
     // only execute code if we have a valid reference ID
     if (intval($referenceID) <= 0) {
         return array();
@@ -119,7 +130,8 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
 
     // check for synonyms
     if ($taxonID) {
-        $synonyms = jsonGetWebservice("classification/synonyms/", "$referenceType/$referenceID/$taxonID");
+        $synonyms = $rest->jsonGet("classification/synonyms", array($referenceType, $referenceID, $taxonID));
+//        $synonyms = jsonGetWebservice("classification/synonyms/", "$referenceType/$referenceID/$taxonID");
         if (count($synonyms) > 0) {
             foreach ($synonyms as $synonym) {
                 $typeLink = $synonym["hasType"] ? "<span class='typeBox'>&#x3C4;</span>" : '';
@@ -147,68 +159,88 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
     }
 
     // find all classification children
-    $children = jsonGetWebservice("classification/children/", "$referenceType/$referenceID" . (($taxonID) ? "?taxonID=$taxonID" : ''));
+    $children = $rest->jsonGet("classification/children", array($referenceType, $referenceID), (($taxonID) ? array("taxonID" => $taxonID) : array()));
+//    $children = jsonGetWebservice("classification/children/", "$referenceType/$referenceID" . (($taxonID) ? "?taxonID=$taxonID" : ''));
     foreach ($children as $child) {
-        if (mb_strlen($child["referenceName"]) > 120) {
-            $title = mb_substr($child["referenceName"], 0, 50) . ' ... ' . mb_substr($child["referenceName"], -70);
-            $titleFull = $child["referenceName"];
-        } else {
-            $title = $child["referenceName"];
-            $titleFull = '';
-        }
-        $typeLink = $child["hasType"] ? "<span class='typeBox'>&#x3C4;</span>" : '';
-        $specimenLink = $child["hasSpecimen"] ? "<span class='specimenBox'>S</span>" : '';
-        if ($child["hasType"] || $child["hasSpecimen"]) {
-            $parts = explode(' ', $child["referenceName"]);
-            $taxon = trim((count($parts) <= 2) ? $parts[0] : $child["referenceName"]);
-        } else {
-            $taxon = '';
-        }
-        $entry = array(
-            "data" => array(
-                "title" => $title .  $infoLink . $typeLink . $specimenLink,
-                "attr" => array(
-                    "data-taxon-id" => $child["taxonID"],
-                    "data-taxon" => $taxon,
-                    "data-reference-id" => $child["referenceId"],
-                    "data-reference-type" => $child["referenceType"],
-                )
-            ),
-        );
-        if ($titleFull) {
-            $entry['data']['attr']['title'] = $titleFull;
-        }
-
-        // change node icon based on various aspects
-        switch ($child["referenceType"]) {
-            case 'citation':
-                $entry["icon"] = "images/book_open.png";
-                break;
-            default:
-                break;
-        }
-        // if entry has a taxon id, it is a scientific name entry
-        if ($child["taxonID"]) {
-            $entry["icon"] = "images/spacer.gif";
-
-            // check for rank display
-            if ($child['referenceInfo']['rank_hierarchy'] > 15 && $child['referenceInfo']['rank_hierarchy'] < 21) {
-                $entry['data']['title'] = $child['referenceInfo']['rank_abbr'] . ' ' . $entry['data']['title'];
+        if (empty($child['insertedCitation'])) {
+            if (mb_strlen($child["referenceName"]) > 120) {
+                $title = mb_substr($child["referenceName"], 0, 50) . ' ... ' . mb_substr($child["referenceName"], -70);
+                $titleFull = $child["referenceName"];
+            } else {
+                $title = $child["referenceName"];
+                $titleFull = '';
+            }
+            $typeLink = $child["hasType"] ? "<span class='typeBox'>&#x3C4;</span>" : '';
+            $specimenLink = $child["hasSpecimen"] ? "<span class='specimenBox'>S</span>" : '';
+            if ($child["hasType"] || $child["hasSpecimen"]) {
+                $parts = explode(' ', $child["referenceName"]);
+                $taxon = trim((count($parts) <= 2) ? $parts[0] : $child["referenceName"]);
+            } else {
+                $taxon = '';
+            }
+            $entry = array(
+                "data" => array(
+                    "title" => $title .  $infoLink . $typeLink . $specimenLink,
+                    "attr" => array(
+                        "data-taxon-id" => $child["taxonID"],
+                        "data-taxon" => $taxon,
+                        "data-reference-id" => $child["referenceId"],
+                        "data-reference-type" => $child["referenceType"],
+                    )
+                ),
+            );
+            if ($titleFull) {
+                $entry['data']['attr']['title'] = $titleFull;
             }
 
-            // taxon entries do have some additional info
-            if (!empty($child['referenceInfo']['number'])) {
-                $entry['data']['title'] = '<i><b>' . $child['referenceInfo']['number'] . '</b></i>&nbsp;'. $entry['data']['title'];
+            // change node icon based on various aspects
+            switch ($child["referenceType"]) {
+                case 'citation':
+                    $entry["icon"] = "images/book_open.png";
+                    break;
+                default:
+                    break;
             }
-        }
+            // if entry has a taxon id, it is a scientific name entry
+            if ($child["taxonID"]) {
+                $entry["icon"] = "images/spacer.gif";
 
-        // check if we have further children
-        if ($child['hasChildren']) {
-            $entry['state'] = 'closed';
-        }
+                // check for rank display
+                if ($child['referenceInfo']['rank_hierarchy'] > 15 && $child['referenceInfo']['rank_hierarchy'] < 21) {
+                    $entry['data']['title'] = $child['referenceInfo']['rank_abbr'] . ' ' . $entry['data']['title'];
+                }
 
-        // save entry for return
-        $return[] = $entry;
+                // taxon entries do have some additional info
+                if (!empty($child['referenceInfo']['number'])) {
+                    $entry['data']['title'] = '<i><b>' . $child['referenceInfo']['number'] . '</b></i>&nbsp;'. $entry['data']['title'];
+                }
+            }
+
+            // check if we have further children
+            if ($child['hasChildren']) {
+                $entry['state'] = 'closed';
+            }
+
+            // save entry for return
+            $return[] = $entry;
+        } else {
+            $entry = array(
+                "data" => array(
+                    "title" => $child["referenceName"],
+                    "attr" => array(
+                        "data-taxon-id" => $child["taxonID"],
+                        "data-reference-id" => $child["referenceId"],
+                        "data-reference-type" => $child["referenceType"],
+                    )
+                ),
+                'icon' => 'images/book_open.png',
+            );
+            // check if we have further children
+            if ($child['hasChildren']) {
+                $entry['state'] = 'closed';
+            }
+            $return[] = $entry;
+        }
     }
 
     return $return;
