@@ -13,7 +13,6 @@ $type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING);
 switch ($type) {
     case 'referenceType':
         echo $rest->get('classification/references', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)));
-//        echo getWebService('classification/references/', filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=references'
 //           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
         break;
@@ -37,31 +36,26 @@ switch ($type) {
         if (empty($taxonID)) {
             echo json_encode(array());
         } else {
-            $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId));
-//            echo getWebService("classification/nameReferences/", "$taxonID" . (($excludeReferenceId) ? "?excludeReferenceId=$excludeReferenceId" : ''));
+            echo $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId));
         }
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=nameReferences'
 //           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)
 //           . '&excludeReferenceId=' . filter_input(INPUT_GET, 'excludeReferenceId', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'scientificNameAc':
-        $rest->get('autocomplete/scientificNames', array(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)));
-//        echo getWebService('autocomplete/scientificNames/', filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
+        echo $rest->get('autocomplete/scientificNames', array(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=autoComplete/scientificName'
 //           . '&term=' . filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
         break;
     case 'infoBox_statistics':
-        $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
-//        echo getWebService('classification/periodicalStatistics/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING));
+        echo $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=getPeriodicalStatistics'
 //           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'open_all':
-        $rest->get('classification/numberOfChildrenWithChildrenCitation',
+        echo $rest->get('classification/numberOfChildrenWithChildrenCitation',
                    array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)),
                    array('taxonID' => filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)));
-//        echo getWebService('classification/numberOfChildrenWithChildrenCitation/', filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)
-//                                                                                 . '?taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=numberOfChildrenWithChildrenCitation'
 //           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT)
 //           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
@@ -80,37 +74,9 @@ switch ($type) {
 ////////////////////////////// service functions //////////////////////////////
 
 /**
- * get data of a webservice
- *
- * @global array $_CONFIG configuration variable
- * @param string $service which service do we call
- * @param string $params parameters for the call, already formatted
- * @return string answer of the webservice
- */
-function getWebService ($service, $params)
-{
-    global $_CONFIG;
-
-    return file_get_contents($_CONFIG['JACQ_SERVICES'] . $service . $params);
-}
-
-/**
- * get data of a webservice and json-decode them
- *
- * @global array $_CONFIG configuration variable
- * @param string $service which service do we call
- * @param string $params parameters for the call, already formatted
- * @return mixed json-decoded answer of the webservice
- */
-function jsonGetWebservice($service, $params)
-{
-    global $_CONFIG;
-
-    return json_decode(file_get_contents($_CONFIG['JACQ_SERVICES'] . $service . $params), true);
-}
-
-/**
  * Returns the next classification-level below a given taxonID or top level (if taxonID=0)
+ *
+ * @global RestClient $rest the rest-client
  * @param type $referenceType Type of reference (periodical, citation, service, etc.)
  * @param type $referenceID ID of reference
  * @param type $taxonID optional ID of taxon
@@ -119,6 +85,7 @@ function jsonGetWebservice($service, $params)
 function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
 {
     global $rest;
+
     // only execute code if we have a valid reference ID
     if (intval($referenceID) <= 0) {
         return array();
@@ -131,36 +98,53 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
     // check for synonyms
     if ($taxonID) {
         $synonyms = $rest->jsonGet("classification/synonyms", array($referenceType, $referenceID, $taxonID));
-//        $synonyms = jsonGetWebservice("classification/synonyms/", "$referenceType/$referenceID/$taxonID");
         if (count($synonyms) > 0) {
             foreach ($synonyms as $synonym) {
-                $typeLink = $synonym["hasType"] ? "<span class='typeBox'>&#x3C4;</span>" : '';
-                $specimenLink = $synonym["hasSpecimen"] ? "<span class='specimenBox'>S</span>" : '';
-                if ($synonym["hasType"] || $synonym["hasSpecimen"]) {
-                    $parts = explode(' ', $synonym["referenceName"]);
-                    $taxon = trim((count($parts) <= 2) ? $parts[0] : $synonym["referenceName"]);
+                if (empty($synonym['insertedCitation'])) {
+                    $typeLink = $synonym["hasType"] ? "<span class='typeBox'>&#x3C4;</span>" : '';
+                    $specimenLink = $synonym["hasSpecimen"] ? "<span class='specimenBox'>S</span>" : '';
+                    if ($synonym["hasType"] || $synonym["hasSpecimen"]) {
+                        $parts = explode(' ', $synonym["referenceName"]);
+                        $taxon = trim((count($parts) <= 2) ? $parts[0] : $synonym["referenceName"]);
+                    } else {
+                        $taxon = '';
+                    }
+                    $return[] = array(
+                        "data" => array(
+                            "title" => (($synonym['referenceInfo']['cited']) ? $synonym["referenceName"] : '[' . $synonym["referenceName"] . ']') . $infoLink . $typeLink . $specimenLink, // uncited synonyms (i.e. basionym) are shown in brackets
+                            "attr" => array(
+                                "data-taxon-id" => $synonym["taxonID"],
+                                "data-taxon" => $taxon,
+                                "data-reference-id" => $synonym["referenceId"],
+                                "data-reference-type" => $synonym["referenceType"]
+                            )
+                        ),
+                        "icon" => ($synonym['referenceInfo']['type'] == 'homotype') ? "images/identical_to.png" : "images/equal_to.png"
+                    );
                 } else {
-                    $taxon = '';
+                    $entry = array(
+                        "data" => array(
+                            "title" => $synonym["referenceName"],
+                            "attr" => array(
+                                "data-taxon-id" => $synonym["taxonID"],
+                                "data-reference-id" => $synonym["referenceId"],
+                                "data-reference-type" => $synonym["referenceType"],
+                            )
+                        ),
+                        'icon' => 'images/book_open.png',
+                    );
+                    // check if we have further children
+                    if ($synonym['hasChildren']) {
+                        $entry['state'] = 'closed';
+                    }
+                    $return[] = $entry;
                 }
-                $return[] = array(
-                    "data" => array(
-                        "title" => (($synonym['referenceInfo']['cited']) ? $synonym["referenceName"] : '[' . $synonym["referenceName"] . ']') . $infoLink . $typeLink . $specimenLink, // uncited synonyms (i.e. basionym) are shown in brackets
-                        "attr" => array(
-                            "data-taxon-id" => $synonym["taxonID"],
-                            "data-taxon" => $taxon,
-                            "data-reference-id" => $synonym["referenceId"],
-                            "data-reference-type" => $synonym["referenceType"]
-                        )
-                    ),
-                    "icon" => ($synonym['referenceInfo']['type'] == 'homotype') ? "images/identical_to.png" : "images/equal_to.png"
-                );
             }
         }
     }
 
     // find all classification children
     $children = $rest->jsonGet("classification/children", array($referenceType, $referenceID), (($taxonID) ? array("taxonID" => $taxonID) : array()));
-//    $children = jsonGetWebservice("classification/children/", "$referenceType/$referenceID" . (($taxonID) ? "?taxonID=$taxonID" : ''));
     foreach ($children as $child) {
         if (empty($child['insertedCitation'])) {
             if (mb_strlen($child["referenceName"]) > 120) {
@@ -248,6 +232,8 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
 
 /**
  * Returns the whole classification tree filtered down to a given taxonID
+ *
+ * @global RestClient $rest the rest-client
  * @param type $referenceType
  * @param type $referenceId
  * @param type $taxonID
@@ -255,6 +241,8 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
  */
 function getFilteredJsTree($referenceType, $referenceId, $taxonID)
 {
+    global $rest;
+
     $return = array();
     // collection of references to search for the taxonID in
     $references = array(
@@ -293,7 +281,7 @@ function getFilteredJsTree($referenceType, $referenceId, $taxonID)
         );
 
         // find chain of parents
-        while (($currParent = jsonGetWebservice("classification/parent/", $currParent['referenceType'] . "/" . $currParent['referenceId'] . "/" . $currParent['taxonID'])) != null) {
+        while (($currParent = $rest->jsonGet("classification/parent", array($currParent['referenceType'], $currParent['referenceId'], $currParent['taxonID']))) != null) {
             $currParentChildren = getChildrenJsTree(
                     $currParent['referenceType'],
                     $currParent['referenceId'],
@@ -301,11 +289,11 @@ function getFilteredJsTree($referenceType, $referenceId, $taxonID)
                     );
 
             // find active child among all children
-            if( $activeChild != null ) {
+            if ($activeChild != null) {
                 foreach( $currParentChildren as $i => $currParentChild ) {
-                    if( $currParentChild['data']['attr']['data-reference-type'] == $activeChild['referenceType'] &&
+                    if ($currParentChild['data']['attr']['data-reference-type'] == $activeChild['referenceType'] &&
                         $currParentChild['data']['attr']['data-reference-id'] == $activeChild['referenceId'] &&
-                        $currParentChild['data']['attr']['data-taxon-id'] == $activeChild['taxonID'] ) {
+                        $currParentChild['data']['attr']['data-taxon-id'] == $activeChild['taxonID']) {
 
                         $currParentChildren[$i]['state'] = 'open';
                         $currParentChildren[$i]['children'] = $structure;
@@ -315,8 +303,8 @@ function getFilteredJsTree($referenceType, $referenceId, $taxonID)
             }
             // search for taxon we are looking for and highlight it
             else {
-                foreach( $currParentChildren as $i => $currParentChild ) {
-                    if( $currParentChild['data']['attr']['data-taxon-id'] == $taxonID ) {
+                foreach ($currParentChildren as $i => $currParentChild) {
+                    if ($currParentChild['data']['attr']['data-taxon-id'] == $taxonID) {
                         $currParentChildren[$i]['data']['title'] =
                                 '<img src="images/arrow_right.png">&nbsp;' .
                                 $currParentChildren[$i]['data']['title'];
@@ -328,22 +316,23 @@ function getFilteredJsTree($referenceType, $referenceId, $taxonID)
             $structure = $currParentChildren;
             $activeChild = $currParent;
 
-            if( $currParent['taxonID'] == 0 && $citations != null ) break;
+            if ($currParent['taxonID'] == 0 && $citations != null) {
+                break;
+            }
 
             $bParentFound = true;
         }
 
         // check if we found something
-        if( $bParentFound ) {
+        if ($bParentFound) {
             // check if we have a periodical structure
-            if( $citations != null ) {
+            if ($citations != null) {
                 $citations[$refIndex]['children'] = $structure;
                 $citations[$refIndex]['state'] = 'open';
                 $return = $citations;
             }
             // if not just return the found single structure
             else {
-//                error_log(var_export($structure,true));
                 $return = $structure;
             }
         }

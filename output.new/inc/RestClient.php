@@ -17,7 +17,10 @@ private $service;
  */
 public function __construct($service)
 {
-    $this->service = $service;
+    $this->service = trim($service);
+    if (substr($this->service, -1) != "/") {
+        $this->service .= '/';
+    }
 }
 
 /**
@@ -26,20 +29,14 @@ public function __construct($service)
  * @param string $resource resource-part of the url
  * @param array $arguments mandatory arguments
  * @param array $optArguments optional arguments ("name" => "value")
- * @return mixed json-decoded answer of the service
+ * @return mixed answer of the service
  */
 public function get($resource, $arguments, $optArguments = array())
 {
     $service_url = $this->service
                  . trim($resource, '/') . ((trim($resource, '/')) ? '/' : '')
-                 . implode('/', $arguments);
-    if ($optArguments) {
-        $parts = array();
-        foreach ($optArguments as $key=>$val) {
-            $parts[] = urlencode($key) . '=' . urlencode($val);
-        }
-        $service_url .= '?' . implode('&', $parts);
-    }
+                 . implode('/', $arguments)
+                 . (($optArguments) ? '?' . http_build_query($optArguments) : '');
     $curl = curl_init($service_url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $curl_response = curl_exec($curl);
@@ -67,93 +64,100 @@ public function jsonGet($resource, $arguments, $optArguments = array())
     return $decoded;
 }
 
-private function post()
+/**
+ * Performs a POST operation for the given resource with the given arguments. Returns the received response.
+ *
+ * @param string $resource resource-part of the url
+ * @param array $arguments arguments (if any)
+ * @param array $data data to post ("name" => "value")
+ * @return mixed answer of the service
+ */
+public function post($resource, $arguments, $data)
 {
-    return;  // not yet finished
-
-    //next example will insert new conversation
-    $service_url = 'https://example.com/api/conversations';
+    $service_url = $this->service
+             . trim($resource, '/') . ((trim($resource, '/')) ? '/' : '')
+             . implode('/', $arguments);
     $curl = curl_init($service_url);
-    $curl_post_data = array(
-            'message' => 'test message',
-            'useridentifier' => 'agent@example.com',
-            'department' => 'departmentId001',
-            'subject' => 'My first conversation',
-            'recipient' => 'recipient@example.com',
-            'apikey' => 'key001'
-    );
+//    $curl_post_data = array(
+//            'message' => 'test message',
+//            'useridentifier' => 'agent@example.com',
+//            'department' => 'departmentId001',
+//            'subject' => 'My first conversation',
+//            'recipient' => 'recipient@example.com',
+//            'apikey' => 'key001'
+//    );
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_POST, true);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
+    curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
     $curl_response = curl_exec($curl);
     if ($curl_response === false) {
-        $info = curl_getinfo($curl);
+//        $info = curl_getinfo($curl);
         curl_close($curl);
-        die('error occured during curl exec. Additioanl info: ' . var_export($info));
+        return null;
     }
     curl_close($curl);
-    $decoded = json_decode($curl_response);
-    if (isset($decoded->response->status) && $decoded->response->status == 'ERROR') {
-        die('error occured: ' . $decoded->response->errormessage);
-    }
-    echo 'response ok!';
-    var_export($decoded->response);
+    return $curl_response;
 }
 
-private function put()
+/**
+ * Performs a PUT operation for the given resource with the given arguments. Returns the received response.
+ *
+ * @param string $resource resource-part of the url
+ * @param array $arguments arguments (if any)
+ * @param array $data data to put ("name" => "value")
+ * @return mixed answer of the service
+ */
+public function put($resource, $arguments, $data)
 {
-    return;  // not yet finished
-
-    //next eample will change status of specific conversation to resolve
-    $service_url = 'https://example.com/api/conversations/cid123/status';
-    $ch = curl_init($service_url);
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-    $data = array("status" => 'R');
-    curl_setopt($ch, CURLOPT_POSTFIELDS,http_build_query($data));
-    $response = curl_exec($ch);
-    if ($response === false) {
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-        die('error occured during curl exec. Additioanl info: ' . var_export($info));
-    }
-    curl_close($ch);
-    $decoded = json_decode($response);
-    if (isset($decoded->response->status) && $decoded->response->status == 'ERROR') {
-        die('error occured: ' . $decoded->response->errormessage);
-    }
-    echo 'response ok!';
-    var_export($decoded->response);
-}
-
-private function delete()
-{
-    return;  // not yet finished
-
-    $service_url = 'https://example.com/api/conversations/[CONVERSATION_ID]';
-    $ch = curl_init($service_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-    $curl_post_data = array(
-            'note' => 'this is spam!',
-            'useridentifier' => 'agent@example.com',
-            'apikey' => 'key001'
-    );
-    curl_setopt($curl, CURLOPT_POSTFIELDS, $curl_post_data);
-    $response = curl_exec($ch);
+    $service_url = $this->service
+             . trim($resource, '/') . ((trim($resource, '/')) ? '/' : '')
+             . implode('/', $arguments);
+    $curl = curl_init($service_url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "PUT");
+    curl_setopt($curl, CURLOPT_POSTFIELDS,http_build_query($data));
+    $curl_response = curl_exec($curl);
     if ($curl_response === false) {
-        $info = curl_getinfo($curl);
+//        $info = curl_getinfo($curl);
         curl_close($curl);
-        die('error occured during curl exec. Additioanl info: ' . var_export($info));
+        return null;
     }
     curl_close($curl);
-    $decoded = json_decode($curl_response);
-    if (isset($decoded->response->status) && $decoded->response->status == 'ERROR') {
-        die('error occured: ' . $decoded->response->errormessage);
+    return $curl_response;
+}
+
+/**
+ * Performs a POST operation for the given resource with the given arguments. Returns the received response.
+ *
+ * @param string $resource resource-part of the url
+ * @param array $arguments arguments (if any)
+ * @param array $data optional data to post ("name" => "value")
+ * @return mixed answer of the service
+ */
+public function delete($resource, $arguments, $data = array())
+{
+    $service_url = $this->service
+             . trim($resource, '/') . ((trim($resource, '/')) ? '/' : '')
+             . implode('/', $arguments);
+    $curl = curl_init($service_url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+//    $curl_post_data = array(
+//            'note' => 'this is spam!',
+//            'useridentifier' => 'agent@example.com',
+//            'apikey' => 'key001'
+//    );
+    if (!empty($data)) {
+        curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($data));
     }
-    echo 'response ok!';
-    var_export($decoded->response);
+    $curl_response = curl_exec($curl);
+    if ($curl_response === false) {
+//        $info = curl_getinfo($curl);
+        curl_close($curl);
+        return null;
+    }
+    curl_close($curl);
+    return $curl_response;
 }
 
 
