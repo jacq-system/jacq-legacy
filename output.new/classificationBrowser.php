@@ -6,6 +6,8 @@ require('inc/variables.php');
 $filterId      = intval(filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMBER_INT));
 $referenceId   = intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT));
 $referenceType = filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING);
+$insertSeries  = intval(filter_input(INPUT_GET, 'insertSeries', FILTER_SANITIZE_NUMBER_INT));
+$editSeries    = intval(filter_input(INPUT_GET, 'editSeries', FILTER_SANITIZE_NUMBER_INT));
 
 // initialize variables
 $data = null;
@@ -63,6 +65,8 @@ if ($referenceType == 'citation' && $referenceId > 0) {
         var jacq_url = '<?php echo $_CONFIG['JACQ_URL']; ?>';
         var download_url = '<?php echo $_CONFIG['JACQ_URL']; ?>' + 'index.php?r=dataBrowser/classificationBrowser/download';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
+        var insertSeries = <?php echo $insertSeries; ?>;
+        var editSeries = <?php echo $editSeries; ?>;
     </script>
     <style>
         .ui-autocomplete-loading {

@@ -1,4 +1,4 @@
-/* global jacq_url */
+/* global jacq_url, insertSeries */
 
 // called once jquery is ready
 $(function() {
@@ -121,7 +121,8 @@ $(function() {
                     url: "classificationBrowser_ptlp.php?type=infoBox_references",
                     data: {
                         taxonID: taxonID,
-                        excludeReferenceId: referenceId
+                        excludeReferenceId: referenceId,
+                        insertSeries: insertSeries
                     },
                     dataType: "json",
                     success: function(data) {
@@ -131,6 +132,8 @@ $(function() {
 
                             // remember return reference-data
                             $('#infoBox').data('referenceData', data);
+                            // and referenceId
+                            $('#infoBox').data('referenceId', referenceId);
 
                             // add all found references to infobox
                             var referenceInfos = new Array();

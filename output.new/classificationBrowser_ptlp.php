@@ -22,8 +22,9 @@ switch ($type) {
         if (empty($referenceType) || empty($referenceID)) {
             echo json_encode(array());
         } else {
-            $taxonID = filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT);
-            echo json_encode(getChildrenJsTree($referenceType, $referenceID, $taxonID));
+            $taxonID = intval(filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
+            $insertSeries = intval(filter_input(INPUT_GET, 'insertSeries', FILTER_SANITIZE_NUMBER_INT));
+            echo json_encode(getChildrenJsTree($referenceType, $referenceID, $taxonID, $insertSeries));
         }
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONjsTree/japi&action=classificationBrowser'
 //           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)
@@ -33,10 +34,11 @@ switch ($type) {
     case 'infoBox_references':
         $taxonID = intval(filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
         $excludeReferenceId = intval(filter_input(INPUT_GET, 'excludeReferenceId', FILTER_SANITIZE_NUMBER_INT));
+        $insertSeries = intval(filter_input(INPUT_GET, 'insertSeries', FILTER_SANITIZE_NUMBER_INT));
         if (empty($taxonID)) {
             echo json_encode(array());
         } else {
-            echo $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId));
+            echo $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId, "insertSeries" => $insertSeries));
         }
 //        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=nameReferences'
 //           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)
@@ -82,7 +84,7 @@ switch ($type) {
  * @param type $taxonID optional ID of taxon
  * @return string result formatted for direct use with jsTree
  */
-function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
+function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0, $insertSeries = 0)
 {
     global $rest;
 
@@ -97,7 +99,7 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
 
     // check for synonyms
     if ($taxonID) {
-        $synonyms = $rest->jsonGet("classification/synonyms", array($referenceType, $referenceID, $taxonID));
+        $synonyms = $rest->jsonGet("classification/synonyms", array($referenceType, $referenceID, $taxonID), array('insertSeries' => $insertSeries));
         if (count($synonyms) > 0) {
             foreach ($synonyms as $synonym) {
                 if (empty($synonym['insertedCitation'])) {
@@ -144,7 +146,7 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0)
     }
 
     // find all classification children
-    $children = $rest->jsonGet("classification/children", array($referenceType, $referenceID), (($taxonID) ? array("taxonID" => $taxonID) : array()));
+    $children = $rest->jsonGet("classification/children", array($referenceType, $referenceID), array("taxonID" => $taxonID, "insertSeries" => $insertSeries));
     foreach ($children as $child) {
         if (empty($child['insertedCitation'])) {
             if (mb_strlen($child["referenceName"]) > 120) {
