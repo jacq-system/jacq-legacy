@@ -7,12 +7,18 @@ $filterId      = intval(filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMB
 $referenceId   = intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT));
 $referenceType = filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING);
 
-// initialize variables
-$data = null;
+$insertSeries  = intval(filter_input(INPUT_GET, 'insertSeries', FILTER_SANITIZE_NUMBER_INT));
+$editSeries    = intval(filter_input(INPUT_GET, 'editSeries', FILTER_SANITIZE_NUMBER_INT));
+
+// initialize base url of script
+$baseUrl = "http://localhost" . dirname(filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING)) . '/';
 
 // check if a valid request was made
 if ($referenceType == 'citation' && $referenceId > 0) {
-    $url = $_CONFIG['JACQ_URL'] . "index.php?r=jSONjsTree/japi&action=classificationBrowser&referenceType=citation&referenceId=" . $referenceId;
+    $url = $baseUrl . "classificationBrowser_ptlp.php?type=jstree&referenceType=citation&referenceId=" . $referenceId;
+    if ($insertSeries) {
+        $url .= "&insertSeries=" . $insertSeries;
+    }
     // check if we are looking for a specific name
     if ($filterId > 0) {
         $data = file_get_contents($url . "&filterId=" . $filterId);
@@ -60,9 +66,10 @@ if ($referenceType == 'citation' && $referenceId > 0) {
 
     <script type="text/javascript">
         var classBrowser = '<?php echo filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING); ?>?id=1';
-        var jacq_url = '<?php echo $_CONFIG['JACQ_URL']; ?>';
         var download_url = '<?php echo $_CONFIG['JACQ_URL']; ?>' + 'index.php?r=dataBrowser/classificationBrowser/download';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
+        var insertSeries = <?php echo $insertSeries; ?>;
+        var editSeries = <?php echo $editSeries; ?>;
     </script>
     <style>
         .ui-autocomplete-loading {
@@ -73,7 +80,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
 
 <body>
     <div class="container" id="page">
-        <div id="cssmenu"><ul><li><a>&nbsp;</a></li></ul></div>
+      <div id="cssmenu"><ul><li><a>&nbsp;</a></li></ul><span id="login" style="float:right">&pi;&nbsp;</span></div>
         <img id="logo" src="images/jacq_logo.png" width="120" height="60" />
 
         <div id="content">

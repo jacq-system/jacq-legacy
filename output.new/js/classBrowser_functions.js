@@ -1,4 +1,4 @@
-/* global classBrowser, download_url */
+/* global classBrowser, download_url, editSeries */
 
 /**
  * open link to other classification
@@ -25,8 +25,14 @@ function arrow_down (p_i)
     var index = p_i;
     var referenceData = $('#infoBox').data('referenceData');
     referenceData = referenceData[index];
+    var referenceIdTop = $('#infoBox').data('referenceId');
     var liElement = $('#infoBox').data('liElement');
     var addedReferences = liElement.data(referenceData.referenceType);
+
+    // show SQL insert-string in alertbox
+    if (editSeries) {
+        alert("(`taxonID`, `referenceId`, `citationID`) VALUES\n" + "(" + referenceData.taxonID + ", " + referenceIdTop + ", " + referenceData.referenceId + "),");
+    }
 
     // check if there are references stored already
     if (addedReferences == null) {

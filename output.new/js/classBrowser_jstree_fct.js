@@ -1,4 +1,4 @@
-/* global initital_data, jacq_url, classificationProgressbarCurr, classificationProgressbarMax */
+/* global initital_data, classificationProgressbarCurr, classificationProgressbarMax, insertSeries */
 
 // handler function for jstree ajax data
 var jstree_data = function (n)
@@ -23,7 +23,8 @@ var jstree_data = function (n)
     return {
         "referenceType": reference_type,
         "referenceId": reference_id,
-        "taxonID": taxon_id
+        "taxonID": taxon_id,
+        "insertSeries": insertSeries
     };
 };
 

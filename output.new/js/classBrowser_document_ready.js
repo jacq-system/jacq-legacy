@@ -1,4 +1,4 @@
-/* global jacq_url */
+/* global insertSeries */
 
 // called once jquery is ready
 $(function() {
@@ -121,7 +121,8 @@ $(function() {
                     url: "classificationBrowser_ptlp.php?type=infoBox_references",
                     data: {
                         taxonID: taxonID,
-                        excludeReferenceId: referenceId
+                        excludeReferenceId: referenceId,
+                        insertSeries: insertSeries
                     },
                     dataType: "json",
                     success: function(data) {
@@ -131,6 +132,8 @@ $(function() {
 
                             // remember return reference-data
                             $('#infoBox').data('referenceData', data);
+                            // and referenceId
+                            $('#infoBox').data('referenceId', referenceId);
 
                             // add all found references to infobox
                             var referenceInfos = new Array();
@@ -220,23 +223,6 @@ $(function() {
             return false;
         });
 
-    // add click handler for access handling
-    $(document)
-        .on('click', '#jstree_classificationBrowser .acl', function() {
-            var tax_syn_ID = $(this).attr('data-tax-syn-id');
-
-            // load authorization view and assign it to div
-            $('#authorization_view').load(
-                    jacq_url + "index.php?r=authorization/ajaxClassificationAccess&tax_syn_ID=" + tax_syn_ID,
-                    null,
-                    function(responseText, textStatus, XMLHttpRequest) {
-                        $('#authorization_management_dialog').dialog('open');
-                    }
-            );
-
-            return false;
-        });
-
     // Add hover-behaviour for infoBox
     $('#infoBox')
         .mouseleave(function(evt) {
@@ -276,7 +262,7 @@ $(function() {
                 $('#jstree_classificationBrowser').html('');
 
                 $.ajax({
-                    url: 'classificationBrowser_ptlp.php?type=filter_button',
+                    url: 'classificationBrowser_ptlp.php?type=jstree',
                     data: {
                         referenceType: reference_type,
                         referenceId: reference_id,
