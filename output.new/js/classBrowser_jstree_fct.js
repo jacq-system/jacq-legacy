@@ -1,4 +1,4 @@
-/* global initital_data, jacq_url, classificationProgressbarCurr, classificationProgressbarMax, insertSeries */
+/* global initital_data, classificationProgressbarCurr, classificationProgressbarMax, insertSeries */
 
 // handler function for jstree ajax data
 var jstree_data = function (n)
