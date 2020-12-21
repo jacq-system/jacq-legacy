@@ -210,7 +210,7 @@ function makeTypus($ID) {
 <div id="navbar" class="navbar-fixed">
   <nav class="nav-extended">
     <div class="nav-wrapper">
-      <a href="#" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
+      <a href="https://www.jacq.org/#database" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
     </div>
     <div class="nav-content">
       <ul class="tabs">
