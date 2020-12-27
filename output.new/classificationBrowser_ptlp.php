@@ -1,8 +1,7 @@
 <?php
 // this is the local pass through landing page for all ajax-operations of the classification browser
 
-// require configuration
-require('inc/variables.php');
+require('inc/variables.php'); // require configuration
 require('inc/RestClient.php');
 require('inc/classificationBrowser_jstreeFunctions.php');
 

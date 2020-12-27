@@ -5,7 +5,6 @@ variables.php
 input/install.php
 /output.new/testJsonRPC.php
 /access/test.html
-/services/classification/vendor/
-/services/classification/logs/
-/services/rest/vendor/
-/services/rest/logs/
+/input.services/vendor/
+/input.services/logs/
+/input.services/composer.lock
