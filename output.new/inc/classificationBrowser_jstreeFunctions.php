@@ -7,9 +7,10 @@
  * Returns the next classification-level below a given taxonID or top level (if taxonID=0)
  *
  * @global RestClient $rest the rest-client
- * @param type $referenceType Type of reference (periodical, citation, service, etc.)
- * @param type $referenceID ID of reference
- * @param type $taxonID optional ID of taxon
+ * @param string $referenceType Type of reference (periodical, citation, service, etc.)
+ * @param int $referenceID ID of reference
+ * @param int $taxonID optional ID of taxon
+ * @param int $insertSeries optional ID of cication-Series to insert
  * @return string result formatted for direct use with jsTree
  */
 function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0, $insertSeries = 0)
@@ -164,12 +165,13 @@ function getChildrenJsTree ($referenceType, $referenceID, $taxonID = 0, $insertS
  * Returns the whole classification tree filtered down to a given taxonID
  *
  * @global RestClient $rest the rest-client
- * @param type $referenceType
- * @param type $referenceId
- * @param type $taxonID
+ * @param string $referenceType Type of reference (periodical, citation, service, etc.)
+ * @param int $referenceID ID of reference
+ * @param int $taxonID ID of taxon
+ * @param int $insertSeries optional ID of cication-Series to insert
  * @return string
  */
-function getFilteredJsTree($referenceType, $referenceId, $taxonID, $insertSeries)
+function getFilteredJsTree($referenceType, $referenceId, $taxonID, $insertSeries = 0)
 {
     global $rest;
 

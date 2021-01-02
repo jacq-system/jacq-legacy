@@ -1,7 +1,4 @@
 <?php
-// require configuration
-require('inc/variables.php');
-
 // get all parameters
 $filterId      = intval(filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMBER_INT));
 $referenceId   = intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT));
@@ -10,12 +7,11 @@ $referenceType = filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING
 $insertSeries  = intval(filter_input(INPUT_GET, 'insertSeries', FILTER_SANITIZE_NUMBER_INT));
 $editSeries    = intval(filter_input(INPUT_GET, 'editSeries', FILTER_SANITIZE_NUMBER_INT));
 
-// initialize base url of script
-$baseUrl = "http://localhost" . dirname(filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING)) . '/';
-
 // check if a valid request was made
 if ($referenceType == 'citation' && $referenceId > 0) {
-    $url = $baseUrl . "classificationBrowser_ptlp.php?type=jstree&referenceType=citation&referenceId=" . $referenceId;
+    // prepare the local service-url to ask for data (ajax pass-through landing page)
+    $url = "http://localhost" . dirname(filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING))
+         . "/classificationBrowser_ptlp.php?type=jstree&referenceType=citation&referenceId=" . $referenceId;
     if ($insertSeries) {
         $url .= "&insertSeries=" . $insertSeries;
     }
@@ -66,7 +62,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
 
     <script type="text/javascript">
         var classBrowser = '<?php echo filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING); ?>?id=1';
-        var download_url = '<?php echo $_CONFIG['JACQ_URL']; ?>' + 'index.php?r=dataBrowser/classificationBrowser/download';
+        var download_url = 'classificationBrowser_download.php?type=csv';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
         var insertSeries = <?php echo $insertSeries; ?>;
         var editSeries = <?php echo $editSeries; ?>;
