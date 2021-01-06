@@ -4,6 +4,7 @@
     <title>JACQ - Statistics</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
+    <link rel="shortcut icon" href="JACQ_LOGO.png"/>
 
     <!-- blueprint CSS framework -->
     <link rel="stylesheet" type="text/css" href="css/statistics/screen.css" media="screen, projection" />
@@ -70,7 +71,7 @@
                     <br />
                 </form>
                 <div id="statistics_result" style="padding-top: 10px; padding-bottom: 10px; overflow:auto;"></div>
-                <div id="statistics_plot" style="width:100%;height:300px"></div>
+                <div id="statistics_plot" style="width: 100%; height: 300px;"></div>
             </div>
         </div><!-- content -->
         <div class="clear"></div>

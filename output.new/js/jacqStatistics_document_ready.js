@@ -44,6 +44,8 @@ $(function() {
                         plotInstitution(data.plotMaxIndex - 1);
                     } else if (data.plotMaxIndex > 0) {
                         plotInstitution(0);
+                    } else {
+                        $('#statistics_plot').empty();
                     }
                 }
             });

@@ -1,3 +1,5 @@
+/* global plotData */
+
 /**
  * plot data of given institution
  * @param {integer} institution index to institution to plot

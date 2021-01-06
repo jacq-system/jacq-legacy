@@ -33,6 +33,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
     <title>JACQ - ClassificationBrowser</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
+    <link rel="shortcut icon" href="JACQ_LOGO.png"/>
 
     <!-- blueprint CSS framework -->
     <link rel="stylesheet" type="text/css" href="css/cb/screen.css" media="screen, projection" />
