@@ -6,8 +6,8 @@
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
  <link rel="stylesheet" type="text/css" href="css/screen.css">
  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
- <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
- <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
+ <link rel="stylesheet" href="js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
+ <link rel="stylesheet" href="js/jquery_autocompleter_freud.css" type="text/css" />
  <link rel="stylesheet" href="js/lib/jQuery/css/pagination.css" type="text/css" />
  <style type="text/css">
  th { font-weight: bold; font-size: medium }
@@ -16,7 +16,7 @@
  .missing { margin: 0px; padding: 0px }
  td.missing { vertical-align: middle }
  #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
-	
+
  </style>
  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
@@ -125,7 +125,7 @@ function checkConsisty(page_index, jq, newsearch){
 	);
 }
 var ITEMSPERPAGE=20;
-			
+
 var $tabs;
 var tab_counter = 4;
 $(function() {
@@ -151,18 +151,18 @@ $(function() {
                         }
 		}
 	});
-	
+
 	$('#datepicker').datepicker({
 		showOn: "both",
 		//buttonImage: "images/calendar.gif",
 		constrainInput: true
-		
+
 	});
 	$('#datepicker').datepicker( "setDate" , new Date() )
 
 	updateInstitutions(dinit['serverIP'],dinit['source_id']);
 	ACFreudInit();
-	
+
 	$('#serverIP').change(function(){
 		updateInstitutions( getImageServerIP(),0 );
 	});
@@ -174,8 +174,8 @@ $(function() {
 	$('#filterChecksFaulty').click(function() {
 		filterChecks(0,0,1,1);
 	});
-	
-	
+
+
 	$('#ImportPictures').click(function() {
 		PostIt(
 			'x_ImportImages',
@@ -221,7 +221,7 @@ function ListThreads(page_index, jq, newsearch){
 			'x_listImportThreads',
 			{'serverIP':getImageServerIP() , 'starttime':$('#datepicker').val(), 'page_index':page_index,'limit':ITEMSPERPAGE},
 			function(data){
-				
+
 				$('#ThreadsLoading').css('visibility','hidden');
 				if(newsearch!=undefined){
 					$("#PaginationThreads").pagination(data.maxc, {
@@ -282,20 +282,20 @@ function filterChecks(page_index, jq, newsearch, faulty){
 var threadids={};
 var threadtypes = {};
 function loadImportLog(threadid, times, type){
-	
+
 	$tabs.tabs( "add", "#tabs-" + tab_counter,"Log of "+times);
 	$tabs.tabs( "select" , $tabs.tabs( "length" )-1 );
-	
+
 	threadids[tab_counter]=threadid;
         threadtypes[tab_counter] = type;
-	
+
 	loadImportLogIntoTab(0, 0, 1, tab_counter);
 	tab_counter++;
 }
 
 
 function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
-	
+
 	if(jq[0] != undefined){
 		tabres=1*(jq[0].id.replace(/PaginationTabres/,''));
 	}
@@ -308,8 +308,8 @@ function loadImportLogIntoTab(page_index, jq, newsearch, tabres){
 		{'serverIP':getImageServerIP() , 'thread_id':threadid, 'page_index':page_index,'limit':ITEMSPERPAGE,'type':threadtype},
 		function(data){
 			$('#loadingtabres'+tabres).css('visibility','hidden');
-			
-			
+
+
 			if(newsearch!=undefined){
 				$("#PaginationTabres"+tabres).pagination(data.maxc, {
 					num_edge_entries: 2,
@@ -391,7 +391,7 @@ function PostIt(method, params, callback){
 					buttons: {"OK": function() {$( this ).dialog( "close" );}}
 				});
 			}
-			
+
 			if(data.info!=undefined){
 				$("#dinformation").html("Some info: "+data.info);
 				$("#dialog-information").dialog({
@@ -400,7 +400,7 @@ function PostIt(method, params, callback){
 					buttons: {"OK": function() {$( this ).dialog( "close" );}}
 				});
 			}
-			
+
 			if(data.error!=undefined || data.res==undefined ){
 				if(data.error!=undefined){
 					$("#derror").html(data.error);
@@ -409,18 +409,18 @@ function PostIt(method, params, callback){
 				}else{
 					$("#derror").html("error");
 				}
-				
+
 				$("#dialog-error").dialog({
 					resizable: false,
 					modal: false,
 					buttons: {"OK": function() {$( this ).dialog( "close" );}}
 				});
 				return;
-				
+
 			}
-			
+
 			callback(data.res);
-		}, 
+		},
 		'json'
 	);
 }
@@ -457,7 +457,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 </td><td>
   <div style="float:left">Family:&nbsp;</div> <?php echo $family; ?>
 </td><td width="10">
- 
+
 </td><td>
   <input type="button" name="filterChecks" id="filterChecks" value="Get Last Scan"> <input type="button" name="filterChecksFaulty" id="filterChecksFaulty" value="Get last Scan With Faulty HerbNumbers">
 </td>
@@ -476,7 +476,7 @@ echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 <div style="height:30px;margin-top:20px;" id="PaginationConsitency"></div>
 
 </div>
-    
+
 <div id="tabs-3">
 Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads">
 <div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>

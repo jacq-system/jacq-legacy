@@ -8,3 +8,5 @@ input/install.php
 /input.services/vendor/
 /input.services/logs/
 /input.services/composer.lock
+/input/vendor/
+/input/composer.lock

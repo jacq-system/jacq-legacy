@@ -53,7 +53,7 @@ $path="../inc/";
  background-color:#f5eea8;
 }
   </style>
-<script src="<?PHP echo $path;?>/jQuery/jquery.min.js" type="text/javascript"></script>
+<script src="../js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
 <script type='text/javascript' charset='UTF-8'>
 
 $(document).ready(function() {
@@ -65,11 +65,11 @@ $(document).ready(function() {
 		function(){ $(this).find('td').css('background-color','#ffff99');},
 		function(){ $(this).find('td').css('background-color','');}
 	);
-	
+
 	$('.result').dblclick(function(event) {
 		window.location.hash='jump_'+$(this).attr('jump');
 	})
-	
+
 	$('*:radio').bind('click change', function(){
 
 		if($(this).is(':checked')){
@@ -80,11 +80,11 @@ $(document).ready(function() {
 			}else{
 				jQuery.data( this,'c', '1');
 			}
-			
-			
+
+
 		}
 		//nput[name=gender]:radio
-		$('input[name='+$(this).attr('name')+']:radio:not(:checked)').each(function() { 
+		$('input[name='+$(this).attr('name')+']:radio:not(:checked)').each(function() {
 			//alert('d'+$(this).val());
 			$(this).parent().parent().removeClass('selectedtr');
 		});
@@ -98,7 +98,7 @@ $(document).ready(function() {
 <body>
 <form Action="<?PHP echo $_SERVER['PHP_SELF'];?>" Method="POST" name="f" id="sendto">
 
-<?php 
+<?php
 
 error_reporting(E_ALL);
  ini_set("display_errors", TRUE);
@@ -205,9 +205,9 @@ foreach($a as $b){
 if(isset($_POST['update'])){
 	// Todo: Save!
 	$res=array();
-	
+
 	foreach($_POST as $k=>$v){
-	
+
 		if(strpos($k,'check_')!==false){
 			$p=explode('_',$k);
 			$result[$p[1]][$p[2]]=$v;
@@ -224,13 +224,13 @@ if(isset($_POST['update'])){
 EOF;
 
 	foreach($result as $id=>$obj){
-		
+
 		if(isset($lines[$id])){
-			
+
 			$a=isset($obj[0])?$obj[0]:'';
 			$b=isset($_POST['year_'.$id.'_0'])?$_POST['year_'.$id.'_0']:'';
-			
-			
+
+
 			echo "<tr class=\"result\" jump=\"{$id}\"><td>{$id}</td><td>".$lines[$id]."</td><td>{$a}</td><td>{$b}</td></tr>";
 		}
 	}
@@ -253,50 +253,50 @@ foreach($lines as $id=>$b){
 
 	$r=$b;
 	$res['a']=$b;
-	
+
 	if($a=strpos($b,"&")!==false){
 
 		$doublea=true;
 		$res['a1']=strstr2($b,"&",1);
 		$r=strstr2($b,"&",2);
 	}
-	
+
 	$found=false;
 	foreach(array('in prep','in press','ex APNI') as $search){
-		
-		if(strpos($r,$search)!==false){
-			
 
-		
+		if(strpos($r,$search)!==false){
+
+
+
 			$aut=strstr2($r,$search,1);
 			if($doublea){
 				$res['a2']=$aut;
 			}else{
 				$res['a1']=$aut;
 			}
-			
+
 			$res['y']=strstr2($r,$search);
-			
+
 			$found=true;
 			break;
 		}
 	}
 	if(!$found){
 		preg_match('/(\d+)/', $r, $matches,PREG_OFFSET_CAPTURE);
-	
+
 		if(isset($matches[0][0])){
-		
+
 			$aut=substr($r,0,$matches[0][1]);
 			$res['y']=substr($r,$matches[0][1]);
-			
+
 			if($doublea){
 				$res['a2']=$aut;
 			}else{
 				$res['a1']=$aut;
 			}
-			
+
 			//print_r($matches);
-			
+
 		}else{
 			$aut="???".$r;
 			if($doublea){
@@ -307,7 +307,7 @@ foreach($lines as $id=>$b){
 			//$res['y']=$r;
 		}
 	}
-	
+
 	if(isset($res['a1']) && strpos($res['a1'],",")!==false){
 		$a1=explode(",",$res['a1']);
 		$res['a1']=array('fname'=>trim($a1[0]),'abr'=>trim($a1[1]));
@@ -345,9 +345,9 @@ $z=0;
 //print_r($res2);
 //$err=error_reporting(0);
 foreach($res2 as $key=>$obj){
-	
-	
-	
+
+
+
 	echo<<<EOF
 <tr class="trtop2"><td></td><td colspan="5" valign="bottom" ><a name="jump_{$obj['id']}">#{$z}</a></td></tr>
 
@@ -362,76 +362,76 @@ EOF;
 		foreach($parts as $k=>$pp2){
 			$parts2[$k]="<span class='highl'>{$pp2}</span>";
 		}
-		
+
 		$service = clsInternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
-			
+
 		try {
 			$res = $service->check_checkScrutiny($author, $year);
 		}catch (Exception $e) {
 			echo "Fehler " . nl2br($e);
 		}
-		
+
 		if(isset($res['error']) ) {
 			echo $res['error'];
 			continue;
 		}
-                
+
 		$res3=array();
 		foreach($res as $row){
 			$t1=max(substr_count($row['autor'], ','),substr_count($row['autor'], '&'));
 			$t2=max(substr_count($author, ','),substr_count($author, '&')) ;
-			
+
 			if($t1==$t2){
 				$row['check_a_6_1']=1;
 			}else{
 				$row['check_a_6_1']=1;
 			}
-			
+
 			// Check-Auswertung
 			$listing=array();
 			$listing['ges']['m']=0;
 			$listing['ges']['r']=0;
 			$chc=0;
 			foreach($row as $col=>$val){
-				
+
 				$result=preg_match('/check_(?P<group>\w+)_(?P<index>\d+)_(?P<max>\d+)/',$col,$m);
 				if($result==1){
 					$chc++;
 					$listing[$m['group']][$m['index']]['m']=$m['max'];
 					$listing[$m['group']][$m['index']]['r']=$val;
-					
+
 					if(!isset($listing[$m['group']]['ges']['m'])){
 						$listing[$m['group']]['ges']['m']=0;
 						$listing[$m['group']]['ges']['r']=0;
 					}
 					$listing[$m['group']]['ges']['m']+=$m['max'];
 					$listing[$m['group']]['ges']['r']+=$val;
-					
+
 					$listing['ges']['m']+=$m['max'];
 					$listing['ges']['r']+=$val;
 				}
-		
+
 			}
 			$row['res']=$listing;
 			//echo "-{$obj['a']}-{$row['autorID']}:$t1:$t2-";
 			$su=$listing['ges']['r'];
 			$res3[$su][]=$row;
-			
+
 		}
-		
+
 		ksort($res3);
 		$res3= array_reverse($res3,1);
 		echo<<<EOF
 <tr class="trtop4"><td></td><td colspan="5" >ID: <b>{$obj['id']}</b>,  Author: <span class="at"><b>{$author}</b></span>, Year: <input type="text" class="inpyear" name="year_{$obj['id']}_{$i}" value="{$obj['y']}"></td></tr>
 EOF;
-		
+
 		if(count($res3)==0){
 				echo<<<EOF
 <tr><td></td><td></td><td colspan="5">Nothing found</td></tr>
 EOF;
 		}
-			
-		
+
+
 		$next=array();
 		$x=0;
 		foreach ($res3 as $dist => $row1) {
@@ -442,15 +442,15 @@ EOF;
 			$x=1;
 		}
 		$next[$l]=0;
-		
+
 		$key2=$key+1;
 		if(isset($res2[$key2])){
 				$z=$res2[$key2]['id'];
 		}else{
 			$z='';
 		}
-			
-		
+
+
 		$xx=0;
 		$first =true;
 		$checked=false;
@@ -458,27 +458,27 @@ EOF;
 			$co=count($row1);
 			//print_r($row1);exit;
 			$chk=$row1[0]['res']['ges']['m'];
-			
+
 			$rat=$dist/$chk;
-			
-			
-			
+
+
+
 			$pr=number_format($rat* 100, 1).'%';
 			$trc='';
 			if($rat>0.95)$trc=' class="at"';
 			echo<<<EOF
 <tr class="at2" ><td></td><td colspan="5" ><span{$trc}><b>{$pr}</b></span>, <small>{$chc} checks</small>, <b>{$co} results</b> matched. </td></tr>
 EOF;
-			
-			
+
+
 				foreach ($row1 as  $k=>$row) {
-					
+
 					$ratAuth=$row['res']['a']['ges']['r']/$row['res']['a']['ges']['m'];
 					$ratLit=$row['res']['l']['ges']['r']/$row['res']['l']['ges']['m'];
-					
+
 					$prA=number_format($ratAuth* 100, 1).'%';
 					$prL=number_format($ratLit* 100, 1).'%';
-					
+
 					$s='';
 					if($dist>0){
 						foreach($row['res'] as $group=>$obj11){
@@ -496,18 +496,18 @@ EOF;
 								}
 								$s.=$t;
 							}
-						
+
 						}
 						//$s=substr($s,0,-1);
 						echo<<<EOF
-				
+
 <tr><td></td><td></td><td colspan="5"></td></tr>
 
 EOF;
 					}
-					
+
 					$sho=$row['autor'];
-					
+
 					$c='';$cl='hoverd';$cl2='';
 					$a=(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]));
 					$c4='';
@@ -519,14 +519,14 @@ EOF;
 						$c4=' ';
 						$sho="<span{$cl2}><b>{$row['autor']}</b></span>";
 					}else{
-						
-						
+
+
 						$sho=str_replace($parts,$parts2,$row['autor']);
-					
+
 					}
 					$cit= "";
 					if(isset($row['citationID']) && strlen($row['citationID'])>0){
-					
+
 						$cit= " year: {$row['jahr']}, ID:{$row['citationID']}, info: {$row['litinfo']}";
 					}else{
 						$jj=implode(",",$parts7);
@@ -535,7 +535,7 @@ EOF;
 					$xx++;
 //{$c}
 					echo<<<EOF
-				
+
 <tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$row['citationID']}" jump="{$z}"></td><td></td><td><small>Auth:{$prA}, Lit:{$prL}<br>(AuthorID:{$row['autorID']}, CitationID: {$row['citationID']})</small> {$c4}</td><td>  {$sho}</td><td>{$cit}</td><td><i><small>{$s}</small></i></td></tr>
 
 
@@ -544,12 +544,12 @@ EOF;
 						break;
 					}
 
-					
+
 				}
 				if($xx>50)break;
 				$first=false;
 		}
-		
+
 		$c='';$cl='hoverd';$cl2='';
 		$a=(isset($result[$obj['id']]) && isset($result[$obj['id']][$i]));
 		if( ($a && $result[$obj['id']][$i]==$row['autorID']) || count($res3)==0 ){
@@ -557,23 +557,23 @@ EOF;
 			$cl.=" selectedtr";
 			$cl2=' class="at"';
 		}
-					
+
 		echo<<<EOF
-				
+
 <tr class="{$cl}"><td><input type="radio" name="check_{$obj['id']}_{$i}" value="{$author}"{$c} jump="{$z}"></td><td></td><td>not now</td><td><span{$cl2}><b>check manually not now</b></span></td><td></td><td></td></tr>
 
 
 EOF;
 		if($xx>50){
-					
+
 			echo<<<EOF
-				
+
 <tr><td></td><td></td><td></td><td><span><b>More than 50 found</b></span></td><td></td><td></td></tr>
 
 
 EOF;
 		}
-		
+
 	//}
 
 }
@@ -598,7 +598,7 @@ function strstr2($val,$search,$arg=0,$trim=true,$show=0){
 		$p=strpos($val,$search);
 		$res=substr($val,0,$p);
 	}else if($arg==2){
-		
+
 		$p=strpos($val,$search);
 		$res=substr($val,$p+strlen($search));
 	}
@@ -606,7 +606,7 @@ function strstr2($val,$search,$arg=0,$trim=true,$show=0){
 		$res=trim($res);
 	}
 	if($show){
-	
+
 		echo "h-$arg-$val-";
 	}
 	return $res;

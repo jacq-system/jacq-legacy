@@ -2,11 +2,14 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-require_once ("../inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/../vendor/autoload.php';
 
-$xajax = new xajax();
+use Jaxon\Jaxon;
+use Jaxon\Response\Response;
 
-$objResponse = new xajaxResponse();
+$jaxon = jaxon();
+
+$response = new Response();
 
 
 /*-------------------\
@@ -286,27 +289,27 @@ function makeChorologyDropdowns ($chorology, $taxonID, $provinceID = 0)
 
 /*-------------------\
  *                   *
- *  xajax functions  *
+ *  jaxon functions  *
  *                   *
  \------------------*/
 
 /**
  * react on a changed project
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function projectChanged ($formValues)
 {
-    global $objResponse;
+    global $response;
 
     ob_start();  // intercept all output
 
     //---
     // make sources-dropdown
     //---
-    $selectSource = "<select name='projectSource' onchange=\"xajax_projectDataChanged(xajax.getFormValues('f'));\">\n"
+    $selectSource = "<select name='projectSource' onchange=\"jaxon_projectDataChanged(jaxon.getFormValues('f'));\">\n"
                   . "  <option></option>\n";
 
     // first list all possible literatures
@@ -362,7 +365,7 @@ function projectChanged ($formValues)
     //---
     // make nations-dropdown
     //---
-    $selectNation = "<select name='projectNation' onchange=\"xajax_projectDataChanged(xajax.getFormValues('f'));\">\n"
+    $selectNation = "<select name='projectNation' onchange=\"jaxon_projectDataChanged(jaxon.getFormValues('f'));\">\n"
                   . "  <option></option>\n";
 
     $result = db_query("SELECT nation, iso_alpha_2_code, n.nationID
@@ -386,42 +389,42 @@ function projectChanged ($formValues)
     //---
     $output = ob_get_clean();
     if ($output) {
-        $objResponse->alert($output);
+        $response->alert($output);
     } else {
-        $objResponse->assign('projectSource', 'innerHTML', $selectSource);
-        $objResponse->assign('projectNation', 'innerHTML', $selectNation);
-        $objResponse->assign('xajaxResult', 'innerHTML', '');
+        $response->assign('projectSource', 'innerHTML', $selectSource);
+        $response->assign('projectNation', 'innerHTML', $selectNation);
+        $response->assign('jaxonResult', 'innerHTML', '');
     }
 
-    return $objResponse;
+    return $response;
 }
 
 /**
  * react on a change in project data (source or nation)
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function projectDataChanged ($formValues)
 {
-    global $objResponse;
+    global $response;
 
     editDistribution($formValues);
 
-    return $objResponse;
+    return $response;
 }
 
 /**
  * show the table for distribution editing
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function editDistribution ($formValues)
 {
-    global $objResponse;
+    global $response;
 
     ob_start();  // intercept all output
 
@@ -440,8 +443,10 @@ function editDistribution ($formValues)
                 $provinces = getProvincesCode($formValues['projectNation']);
 
                 $ret = '';
-                if (checkRight('chorol')) $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"xajax_updateDistribution(xajax.getFormValues('f')); return false;\">";
-                $ret .= "<input class='button' type='submit' name='editChorology' value=' edit chorology ' onclick=\"xajax_editChorology(xajax.getFormValues('f')); return false;\">"
+                if (checkRight('chorol')) {
+                    $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateDistribution(jaxon.getFormValues('f')); return false;\">";
+                }
+                $ret .= "<input class='button' type='submit' name='editChorology' value=' edit chorology ' onclick=\"jaxon_editChorology(jaxon.getFormValues('f')); return false;\">"
                       . "<table class='out' id='tblDistribution' cellspacing='0'>\n"
                       . "<tr class='out'>"
                       . "<th class='out'>Taxon</th>"
@@ -466,7 +471,9 @@ function editDistribution ($formValues)
                             if ($chorology) {
                                 $retP .= " checked";
                                 $numChecked++;
-                                if ($chorology['province_debatable']) $debatable = true;
+                                if ($chorology['province_debatable']) {
+                                    $debatable = true;
+                                }
                             }
                             $retP .= " onchange=\"checkNation('" . $row['taxonID'] . "', this.checked);\"></td>";
                         }
@@ -474,8 +481,12 @@ function editDistribution ($formValues)
                         $retN = "<td class='out'><input type='checkbox' name='choroln_" . $row['taxonID'] . "'";
                         if ($chorology || $numChecked) {
                             $retN .= " checked";
-                            if ($numChecked) $retN .= " disabled";
-                            if (!empty($chorology['province_debatable'])) $debatable = true;
+                            if ($numChecked) {
+                                $retN .= " disabled";
+                            }
+                            if (!empty($chorology['province_debatable'])) {
+                                $debatable = true;
+                            }
                         }
                         $retN .= "><input type='hidden' name='choroln_lock_" . $row['taxonID'] . "' value='$numChecked'></td>";
                     }
@@ -485,7 +496,9 @@ function editDistribution ($formValues)
                           . "</tr>\n";
                 }
                 $ret .= "</table>\n";
-                if (checkRight('chorol')) $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"xajax_updateDistribution(xajax.getFormValues('f')); return false;\">";
+                if (checkRight('chorol')) {
+                    $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateDistribution(jaxon.getFormValues('f')); return false;\">";
+                }
             } else {
                 $ret = "<b>nothing found!</b>\n";
             }
@@ -498,24 +511,24 @@ function editDistribution ($formValues)
 
     $output = ob_get_clean();
     if ($output) {
-        $objResponse->alert($output);
+        $response->alert($output);
     } else {
-        $objResponse->assign('xajaxResult', 'innerHTML', $ret);
-        $objResponse->script('$("#tblDistribution").fixedtableheader();');
+        $response->assign('jaxonResult', 'innerHTML', $ret);
+        $response->script('$("#tblDistribution").fixedtableheader();');
     }
-    return $objResponse;
+    return $response;
 }
 
 /**
  * update any changes in the distribution
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function updateDistribution($formValues)
 {
-    global $objResponse;
+    global $response;
 
     ob_start();  // intercept all output
 
@@ -540,15 +553,18 @@ function updateDistribution($formValues)
                     $sql = "INSERT INTO tbl_tax_chorol_status SET
                              taxonID_fk = '" . intval($taxonID) . "',
                              province_debatable = '$debatable',
-                             NationID_fk = '" . intval($formValues['projectNation']) . "'";
+                             NationID_fk = '" . intval($formValues['projectNation']) . "',
+                             locked = 0";
                     if (substr($formValues['projectSource'], 0, 10) == 'literature') {
                         $sql .= ", citationID_fk = '" . intval(substr($formValues['projectSource'], 11)) . "'";
-                    } elseif (substr($source, 0, 6) == 'person') {
+                    } elseif (substr($formValues['projectSource'], 0, 6) == 'person') {
                         $sql .= ", personID_fk = '" . intval(substr($formValues['projectSource'], 7)) . "'";
-                    } elseif (substr($source, 0, 7) == 'service') {
+                    } elseif (substr($formValues['projectSource'], 0, 7) == 'service') {
                         $sql .= ", serviceID_fk = '" . intval(substr($formValues['projectSource'], 8)) . "'";
                     }
-                    if ($province) $sql .= ", provinceID_fk = '$province'";
+                    if ($province) {
+                        $sql .= ", provinceID_fk = '$province'";
+                    }
                     db_query($sql);
                 }
             }
@@ -559,21 +575,21 @@ function updateDistribution($formValues)
 
     $output = ob_get_clean();
     if ($output) {
-        $objResponse->alert($output);
+        $response->alert($output);
     }
-    return $objResponse;
+    return $response;
 }
 
 /**
  * show the table for chorology editing
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function editChorology($formValues)
 {
-    global $objResponse;
+    global $response;
 
     ob_start();  // intercept all output
 
@@ -592,8 +608,10 @@ function editChorology($formValues)
                 $provinces = getProvincesCode($formValues['projectNation']);
 
                 $ret = '';
-                if (checkRight('chorol')) $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"xajax_updateChorology(xajax.getFormValues('f')); return false;\">";
-                $ret .= "<input class='button' type='submit' name='editDistribution' value=' edit distribution ' onclick=\"xajax_editDistribution(xajax.getFormValues('f')); return false;\">"
+                if (checkRight('chorol')) {
+                    $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateChorology(jaxon.getFormValues('f')); return false;\">";
+                }
+                $ret .= "<input class='button' type='submit' name='editDistribution' value=' edit distribution ' onclick=\"jaxon_editDistribution(jaxon.getFormValues('f')); return false;\">"
                       . "<table class='out' id='tblChorology' cellspacing='0'>\n"
                       . "<tr class='out'>"
                       . "<th class='out'>Taxon</th>"
@@ -627,7 +645,9 @@ function editChorology($formValues)
                           . "</td>" . $retC;
                 }
                 $ret .= "</table>\n";
-                if (checkRight('chorol')) $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"xajax_updateChorology(xajax.getFormValues('f')); return false;\">";
+                if (checkRight('chorol')) {
+                    $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateChorology(jaxon.getFormValues('f')); return false;\">";
+                }
             } else {
                 $ret = "<b>nothing found!</b>\n";
             }
@@ -640,24 +660,24 @@ function editChorology($formValues)
 
     $output = ob_get_clean();
     if ($output) {
-        $objResponse->alert($output);
+        $response->alert($output);
     } else {
-        $objResponse->assign('xajaxResult', 'innerHTML', $ret);
-        $objResponse->script('$("#tblChorology").fixedtableheader();');
+        $response->assign('jaxonResult', 'innerHTML', $ret);
+        $response->script('$("#tblChorology").fixedtableheader();');
     }
-    return $objResponse;
+    return $response;
 }
 
 /**
  * update any changes in the chorology
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $formValues form values
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function updateChorology($formValues)
 {
-    global $objResponse;
+    global $response;
 
     ob_start();  // intercept all output
 
@@ -690,28 +710,28 @@ function updateChorology($formValues)
 
     $output = ob_get_clean();
     if ($output) {
-        $objResponse->alert($output);
+        $response->alert($output);
     }
-    return $objResponse;
+    return $response;
 }
 
 /**
  * helper function to react on any changes in the chorology dropdowns and open a new dropdown field if neccessary
  *
- * @global xajaxResponse $objResponse xajax response object
+ * @global Response $response jaxon response object
  * @param array $newChorology new chorologies
  * @param integer $taxonID nation-ID
  * @param integer $provinceID province-ID
- * @return xajaxResponse send response back to caller
+ * @return Response send response back to caller
  */
 function changeChorology($newChorology, $taxonID, $provinceID)
 {
-    global $objResponse;
+    global $response;
 
-    $objResponse->assign("chorol_td_{$taxonID}_{$provinceID}",
+    $response->assign("chorol_td_{$taxonID}_{$provinceID}",
                             'innerHTML',
                             makeChorologyDropdowns(implode('/', $newChorology), $taxonID, $provinceID));
-    return $objResponse;
+    return $response;
 }
 
 
@@ -726,13 +746,13 @@ function changeChorology($newChorology, $taxonID, $provinceID)
 
 
 /**
- * register all xajax-functions in this file
+ * register all jaxon-functions in this file
  */
-$xajax->registerFunction("projectChanged");
-$xajax->registerFunction("projectDataChanged");
-$xajax->registerFunction("editDistribution");
-$xajax->registerFunction("updateDistribution");
-$xajax->registerFunction("editChorology");
-$xajax->registerFunction("updateChorology");
-$xajax->registerFunction("changeChorology");
-$xajax->processRequest();
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "projectChanged");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "projectDataChanged");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editDistribution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateDistribution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editChorology");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateChorology");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeChorology");
+$jaxon->processRequest();

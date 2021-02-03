@@ -14,8 +14,8 @@ error_reporting(E_ALL);
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
-   <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
-   <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
+   <link rel="stylesheet" href="js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
+   <link rel="stylesheet" href="js/jquery_autocompleter_freud.css" type="text/css" />
   <style type="text/css">
     table.out { width: 100% }
     tr.out { }
@@ -78,15 +78,15 @@ if( $action=='doUpdate'){
 		'transliteration'	=> $_POST['transliteration'],
 		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 	));
-	
+
 	// Insert/Update
 	if($action=='doUpdate') {
 		list($msg['err'],$msg['result'])=UpdateCommonName($_dvar);
 	}
-	
+
 }else if(isset($_GET['common_nameIndex'])){
 	$_dvar['common_nameIndex']=$_GET['common_nameIndex'];
-	
+
 	$sql="
 SELECT
  com.common_name as 'common_name',
@@ -97,7 +97,7 @@ FROM
  LEFT JOIN {$dbprefix}tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
 WHERE
  com.common_id='{$_dvar['common_nameIndex']}'";
-	
+
 	$result = doDBQuery($sql);
 	if($row=mysql_fetch_array($result)){
 		$_dvar['common_name']=$row['common_name'];
@@ -112,7 +112,7 @@ WHERE
 
 <?php
 $dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
-	
+
 $_dvar['enableClose']=((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0;
 
 $msgs='';
@@ -173,7 +173,7 @@ function createMapSearchstring(){
 		searchString='&mysqlSearch='+$('#ajax_mysqlSearch').val();
 	else
 		searchString='&mdldSearch='+$('#mdldSearch').val();
-	
+
 	return searchString;
 }
 EOF;
@@ -199,24 +199,24 @@ $cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_jq_autocomplet
 
 function UpdateCommonName(&$_dvar){
 	global $dbprefix;
-	
+
 	$msg=array();
 	if(($_SESSION['editControl'] & 0x10000) == 0){
 		return array("You have no Rights for Update",0);
 	}
-	
+
 	if($_dvar['common_nameIndex']==''){
 		return array("Wrong original Common name",0);
 	}
-	
+
 	if(strlen($_dvar['new_common_name'])<2){
 		return array("Wrong New Common name",0);
 	}
-	
+
 	// Already the same???
 	$result=doDBQuery("SELECT common_id, common_name FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
 	if($result && $row=mysql_fetch_array($result)){
-		
+
 		if($_dvar['common_nameIndex']!=$row['common_id']){
 			return array("The typed in Common Name is already in the Database.",0);
 		}
@@ -228,11 +228,11 @@ function UpdateCommonName(&$_dvar){
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],1);
 	}
-	
+
 	if(strlen($_dvar['transliteration'])<2){
 		return array("Ttransliteration too short, not considert.",0);
 	}
-	
+
 	$result = doDBQuery("SELECT transliteration_id FROM {$dbprefix}tbl_name_transliterations WHERE name='{$_dvar['transliteration']}'");
 	if($result && $row=mysql_fetch_assoc($result)){
 		$_dvar['transliterationIndex']=$row['transliteration_id'];
@@ -240,9 +240,9 @@ function UpdateCommonName(&$_dvar){
 		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}')");
 		$_dvar['transliterationIndex']=mysql_insert_id();
 	}
-		
+
 	$result=doDBQuery("SELECT nam.name_id FROM {$dbprefix}tbl_name_commons  com LEFT JOIN {$dbprefix}tbl_name_names nam on nam.name_id=com.common_id WHERE com.common_id='{$_dvar['common_nameIndex']}'");
-	
+
 	if($result && $row=mysql_fetch_array($result)){
 		$_dvar['nameIndex']=$row['name_id'];
 		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_names SET transliteration_id='{$_dvar['transliterationIndex']}' WHERE name_id='{$_dvar['nameIndex']}'");
@@ -256,8 +256,8 @@ function UpdateCommonName(&$_dvar){
 
 /**
  * doDBQuery:
- * @param 
- * @param 
+ * @param
+ * @param
  * @return sql string
  */
 function doDBQuery($sql,$debug=false){
@@ -265,7 +265,7 @@ function doDBQuery($sql,$debug=false){
 		echo $sql;
 	}
 	$res=db_query($sql);
-	
+
 	if(!$res){
 		echo mysql_errno() . ": " . mysql_error() . "\n";
 	}

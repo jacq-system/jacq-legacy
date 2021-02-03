@@ -286,7 +286,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
   <title>herbardb - import Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="../css/screen.css">
-  <script src="../inc/jQuery/jquery.min.js" type="text/javascript"></script>
+  <script src="../js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
       $(document).ready(function() {
           $( 'input[name^="similarTaxa_"]' ).change( function() {

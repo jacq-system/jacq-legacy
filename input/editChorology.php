@@ -1,19 +1,20 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editChorologyServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("projectChanged");
-$xajax->registerFunction("projectDataChanged");
-$xajax->registerFunction("editDistribution");
-$xajax->registerFunction("updateDistribution");
-$xajax->registerFunction("editChorology");
-$xajax->registerFunction("updateChorology");
-$xajax->registerFunction("changeChorology");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editChorologyServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "projectChanged");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "projectDataChanged");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editDistribution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateDistribution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editChorology");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateChorology");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeChorology");
 
 
 //-------------------------------
@@ -71,9 +72,9 @@ if ($result && mysql_num_rows($result) > 0) {
   <title>herbardb - edit Chorology</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery.fixedtableheader.min.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.fixedtableheader.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function checkNation(taxonID, checked) {
         if (checked) {
@@ -97,7 +98,7 @@ if ($result && mysql_num_rows($result) > 0) {
                 break;
             }
         }
-        xajax_changeChorology(parts, taxonID, provinceID);
+        jaxon_changeChorology(parts, taxonID, provinceID);
     }
   </script>
 </head>
@@ -106,7 +107,7 @@ if ($result && mysql_num_rows($result) > 0) {
 
 <b>choose project parameters</b><br>
 <form method="POST" name="f" id="f">
-<div style="margin-left:2em;"><?php makeDropdown("project", '', $projects['value'], $projects['text'], "xajax_projectChanged(xajax.getFormValues('f'));"); ?></div>
+<div style="margin-left:2em;"><?php makeDropdown("project", '', $projects['value'], $projects['text'], "jaxon_projectChanged(jaxon.getFormValues('f'));"); ?></div>
 <div style="margin-left:2em;" id="projectSource"></div>
 <div style="margin-left:2em;" id="projectNation"></div>
 <p></p>
@@ -131,8 +132,11 @@ if ($result && mysql_num_rows($result) > 0) {
     <td colspan="5"><input type="text" name="annotation" size="89"></td>
 </tr>
 </table>
-<input class="button" type="submit" name="search" value=" search " onclick="xajax_editDistribution(xajax.getFormValues('f')); return false;">
+<input class="button" type="submit" name="search" value=" search " onclick="jaxon_editDistribution(jaxon.getFormValues('f')); return false;">
 
 <p></p>
-<div id="xajaxResult"></div>
+<div id="jaxonResult"></div>
 </form>
+
+</body>
+</html>

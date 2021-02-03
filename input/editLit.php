@@ -167,12 +167,12 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_editor     = $_POST['editor'];
     $p_periodical = $_POST['periodical'];
     $p_publisher  = $_POST['publisher'];
-	
+
     $p_autorIndex      = $_POST['autorIndex'];
     $p_editorIndex     = $_POST['editorIndex'];
     $p_periodicalIndex = $_POST['periodicalIndex'];
     $p_publisherIndex  = $_POST['publisherIndex'];
-		
+
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
         if (intval($_POST['citationID'])) {
             $sql = "UPDATE tbl_lit SET
@@ -256,10 +256,10 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <link rel="stylesheet" href="inc/jQuery/jquery_autocompleter_freud.css" type="text/css" />
+  <link rel="stylesheet" href="js/jquery_autocompleter_freud.css" type="text/css" />
 
 
-  
+
   <style type="text/css">
 	.ui-autocomplete {
         font-size: 0.9em;  /* smaller size */
@@ -281,7 +281,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
- 
+
   <script type="text/javascript" language="JavaScript">
     var reload = false;
     var classification_page = 0;
@@ -368,7 +368,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         minLength: 2
       });
     }
-    
+
     // called when the user clicks the edit button of a classification
     function editClassification( p_classification_id ) {
         // transfer all entered content to edit form
@@ -383,12 +383,12 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $('#ajax_classification_parent').val( $('*[name=classification_' + p_classification_id + '_parent_name]').val() );
         // remember classification id
         $('#classification_editId').val( p_classification_id );
-        
+
         // hide add button & show update button
         $('#classification_add').hide();
         $('#classification_update').show();
     }
-    
+
     // called when the user clicks on update classification
     function updateClassification() {
         xajax_updateClassification(
@@ -399,7 +399,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             $('#classification_parentIndex').val()
         );
     }
-    
+
     // callback for the server side to indicate a successfull update
     // does the cleanup
     function updateClassificationDone() {
@@ -418,7 +418,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 
         refreshClassification();
     }
-    
+
     /**
      * called when the user clicks on the "Add" button in the classification form
      */
@@ -431,7 +431,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             $('#classification_parentIndex').val()
         );
     }
-    
+
     /**
      * callback of server side when classification was successfully added
      */
@@ -443,10 +443,10 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $('#classification_parentIndex').val('');
         $('#ajax_classification_child').val('');
         $('#ajax_classification_parent').val('');
-        
+
         refreshClassification();
     }
-    
+
     /**
      * refresh current view of classification
      */
@@ -458,11 +458,11 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             $('#classification_searchIndex').val()
         );
     }
-    
+
     // init javascript
     $(function() {
         ACFreudInit();
-        
+
         $('#iBox_content').dialog( {
           autoOpen: false,
           modal: true,
@@ -470,7 +470,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
           width: 750,
           height: 600
         } );
-        
+
         $('#edit_tax_classification').dialog( {
             autoOpen: false,
             modal: true,
@@ -478,7 +478,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             height: 450,
             resizable: false
         } );
-        
+
         <?php
         if( $p_citationID ) {
         ?>
@@ -513,7 +513,7 @@ function createMapSearchstring(){
 		searchString='&genusSearch='+$('#ajax_genusSearch').val();
 	else
 		searchString='&mdldSearch='+$('#mdldSearch').val();
-	
+
 	return searchString;
 }
 EOF;
@@ -594,7 +594,7 @@ else {
 }
 $cf->label(7, 0.5, "citationID");
 $cf->text(7, 0.5, "&nbsp;" . $text);
-		
+
 $cf->labelMandatory(19, 0.5, 3, "date");
 $cf->inputText(19, 0.5, 5, "jahr", $p_jahr, 50);
 $cf->inputText(25, 0.5, 5, "code", $p_code, 25);
