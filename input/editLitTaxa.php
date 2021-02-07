@@ -4,13 +4,14 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editLitTaxaServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("setSource");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editLitTaxaServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
 
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -186,7 +187,7 @@ if (isset($_GET['new'])) {
 		height: 200px;
 	}
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
@@ -201,7 +202,7 @@ if (isset($_GET['new'])) {
       }
     }
     function setSource() {
-      xajax_setSource(xajax.getFormValues('f'));
+      jaxon_setSource(jaxon.getFormValues('f'));
     }
   </script>
 </head>

@@ -5,7 +5,6 @@ require("inc/herbardb_input_functions.php");
 
 // BP: for MDLD-JSON service
 require_once('inc/variables.php');
-//require_once("inc/xajax/xajax_core/xajax.inc.php");
 require_once('inc/jsonRPCClient.php');
 
 no_magic();
@@ -292,7 +291,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
             $isHighlighted = false; // only highlight if indicated by $selectedRow
             $matchingTaxonID = "";  // taxonID to show in field "taxonID"
             print_r($matches);
-			
+
 			// Get TaxonIds...
 			$ids='';
 			foreach($matches['result'] as $rows){
@@ -302,7 +301,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
 			}
 			$ids=substr($ids,1);
 			$taxon_ids=array();
-			
+
 			// taken from editSpecies.php
 			$sql = "
 SELECT
@@ -323,10 +322,10 @@ WHERE
 			while ($row = mysql_fetch_array($result)) {
                 $taxon_ids[$row['genID']]=$row['taxonID'];
 			}
-			
+
 			print_r($taxon_ids);
-			
-			
+
+
             while ($indexMatch < count($matches['result'])) {
                 $countResults = count($matches['result'][$indexMatch]['searchresult']);
                 $countResultsNearMatch = ($useNearMatch) ? count($matchesNearMatch['result'][$indexMatch]['searchresult']) : 0;
@@ -344,9 +343,9 @@ WHERE
                             $found++;
                             // uninomial --> link to "editGenera.php"
                             $newLink = "<a href=\"javascript:selectTaxon('" . $taxon_ids[$row['ID']] . "')\">";
-                            $out2Left = '<td>&nbsp;&nbsp;<b>' 
-                                      . $newLink 
-                                      . $row['taxon'] 
+                            $out2Left = '<td>&nbsp;&nbsp;<b>'
+                                      . $newLink
+                                      . $row['taxon']
                                       //. '</a>'
                                       . ' <' . $row['ID'] . '></a></b></td>'
                                       . '<td>&nbsp;' . $row['distance'] . '&nbsp;</td>'
@@ -685,13 +684,13 @@ function selectTaxon(taxonID){
                 } else if (($(mdldField).val() != "") && (! isMDLDSearch)) {
                     $(myLabel).fadeTo('fast',0.5);
                     $(myField).attr("disabled",true);
-                }            
+                }
             });
             isMDLDSearch = $(mdldField).val() != "";
         };
 
         // always check when window is opened
-        checkEnableEdit();  
+        checkEnableEdit();
 
         // every time something is changed in MDLD-input field, check if we need to en/disable other fields
         // TODO: does not react in all cases, e.g. after pressing Ctrl+V, the fields are not disabled
@@ -816,16 +815,16 @@ if ($_SESSION['taxMDLD'] != "") {
     <?php
 } else {
     // BP: reset field "taxonID" to empty
-    $_SESSION['firstTaxonID'] = "";     
+    $_SESSION['firstTaxonID'] = "";
     ?>
-    
+
     <!-- BP: no MDLD-search ==> display empty string in field "taxonID" -->
     <script type="text/javascript" language="JavaScript">
         $("#taxon").val("");
     </script>
 
     <?php
-    if ($_SESSION['taxType'] == 3) {  
+    if ($_SESSION['taxType'] == 3) {
         echo prettyPrintSynonymLinks();     // BP: moved to a function
     }
     echo "</tr></table><p>\n";
@@ -844,7 +843,7 @@ SELECT
 FROM
  tbl_tax_families tf
  LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
- 
+
  LEFT JOIN tbl_tax_genera gen ON gen.genus=tf.family
  LEFT JOIN tbl_tax_species sp ON(
       sp.speciesID IS NULL
@@ -861,8 +860,8 @@ FROM
             $sql .= "AND family LIKE '" . mysql_escape_string($_SESSION['taxFamily']) . "%' ";
         }
         $sql .= "ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
-		
-			 
+
+
         $result = db_query($sql);
         if (mysql_num_rows($result) > 1000) {
             echo "<b>no more than 1000 results allowed</b>\n";
@@ -888,7 +887,7 @@ FROM
             echo "<b>nothing found!</b>\n";
         }
     } else if ($_SESSION['taxType'] == 2) {  // list Genus
-        $sql = "SELECT tg.genID, tg.genus, tg.fk_taxonID, tag.author auth_g, tf.family, 
+        $sql = "SELECT tg.genID, tg.genus, tg.fk_taxonID, tag.author auth_g, tf.family,
                  tsc.cat_description category, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs
                 FROM tbl_tax_genera tg
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID=tg.authorID

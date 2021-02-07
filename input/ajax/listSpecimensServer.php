@@ -6,12 +6,14 @@
  */
 require_once("../inc/herbardb_input_functions.php");
 
+use Jaxon\Response\Response;
+
 /**
  * Specimens list/searching function
  * @param int $page Pagination parameter
  * @param bool $bInitialize init pagination
  * @param int $itemsPerPage Items per page
- * @return \xajaxResponse
+ * @return Response
  */
 function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     ob_start();
@@ -21,7 +23,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $itemsPerPage = ( $itemsPerPage > 0 ) ? $itemsPerPage : (($_SESSION['sItemsPerPage'] > 0) ? $_SESSION['sItemsPerPage'] : 10);
     $_SESSION['sItemsPerPage'] = $itemsPerPage;
 
-    $objResponse = new xajaxResponse();
+    $response = new Response();
 
     $start = intval($page) * $itemsPerPage;
     $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
@@ -62,7 +64,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
              AND tf.familyID = tg.familyID
              AND mc.collectionID = s.collectionID";
     $sql2 = "";
-    if (trim($_SESSION['taxonID'])) {
+    if (isset($_SESSION['taxonID']) && trim($_SESSION['taxonID'])) {
         $sql2 .= " AND ts.taxonID='" . intval($_SESSION['taxonID']) . "'";
     }
     else {
@@ -153,22 +155,23 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         $found_rows = $fr_row['found_rows'];
 
         if (mysql_num_rows($result) > 0) {
-            echo "<table class=\"out\" cellspacing=\"0\">\n";
-            echo "<tr class=\"out\">";
-            echo "<th class=\"out\"></th>";
-            echo "<th class=\"out\">"
-            . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
-            echo "<th class=\"out\">"
-            . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
-            echo "<th class=\"out\">Date</th>";
-            echo "<th class=\"out\">X/Y</th>";
-            echo "<th class=\"out\">Location</th>";
-            echo "<th class=\"out\">"
-            . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>";
-            echo "<th class=\"out\">"
-            . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
-            if ($swBatch)
+            echo "<table class=\"out\" cellspacing=\"0\">\n"
+               . "<tr class=\"out\">"
+               . "<th class=\"out\"></th>"
+               . "<th class=\"out\">"
+               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>"
+               . "<th class=\"out\">"
+               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>"
+               . "<th class=\"out\">Date</th>"
+               . "<th class=\"out\">X/Y</th>"
+               . "<th class=\"out\">Location</th>"
+               . "<th class=\"out\">"
+               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>"
+               . "<th class=\"out\">"
+               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+            if ($swBatch) {
                 echo "<th class=\"out\">Batch</th>";
+            }
             echo "</tr>\n";
             $nr = 1;
             while ($row = mysql_fetch_array($result)) {
@@ -178,27 +181,22 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                     $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
                             . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
                             . "</a>";
-                }
-                else {
+                } else {
                     $digitalImage = "";
                 }
 
                 if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
                     $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-                }
-                else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
+                } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
                     $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
-                }
-                else {
+                } else {
                     $lat = 0;
                 }
                 if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
                     $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-                }
-                else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
+                } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
                     $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
-                }
-                else {
+                } else {
                     $lon = 0;
                 }
                 if ($lat != 0 && $lon != 0) {
@@ -207,31 +205,29 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                             . "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"webimages/mapquest.png\" width=\"15\">"
                             . "</a>"
                             . "</td>";
-                }
-                else {
+                } else {
                     $textLatLon = "<td class=\"out\"></td>";
                 }
 
-				 if ($row['source_id'] == '29') {
-					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
-                 				. htmlspecialchars($row['HerbNummer']) . "</td>";
-					}
-				else {
-					 $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
-                 				. htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
-					};
+				if ($row['source_id'] == '29') {
+                    $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+                              . htmlspecialchars($row['HerbNummer']) . "</td>";
+				} else {
+                    $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
+                              . htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+				};
 
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
-                . "<td class=\"out\">$digitalImage</td>"
-                . "<td class=\"out\">"
-                . "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
-                . htmlspecialchars(taxonItem($row)) . "</a></td>"
-                . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
-                . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
-                . $textLatLon
-                . "<td class=\"out\">" . locationItem($row) . "</td>"
-                . "<td class=\"out\">" . htmlspecialchars($row['typus_lat']) . "</td>"
-               	. $textColl;
+                   . "<td class=\"out\">$digitalImage</td>"
+                   . "<td class=\"out\">"
+                   . "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
+                   . htmlspecialchars(taxonItem($row)) . "</a></td>"
+                   . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
+                   . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
+                   . $textLatLon
+                   . "<td class=\"out\">" . locationItem($row) . "</td>"
+                   . "<td class=\"out\">" . htmlspecialchars($row['typus_lat']) . "</td>"
+               	   . $textColl;
                 if ($swBatch) {
                     echo "<td class=\"out\" style=\"text-align: center\">";
                     $resultDummy = db_query("SELECT t1.remarks FROM api.tbl_api_batches AS t1, api.tbl_api_specimens AS t2 WHERE t2.specimen_ID = '" . $row['specimen_ID'] . "' AND t1.batchID = t2.batchID_fk");
@@ -239,8 +235,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                         //echo "&radic;";
                         $rowDummy = mysql_fetch_array($resultDummy);
                         echo $rowDummy['remarks'];
-                    }
-                    else {
+                    } else {
                         echo "<input type=\"checkbox\" name=\"batch_spec_" . $row['specimen_ID'] . "\">";
                     }
                     echo "</td>";
@@ -251,8 +246,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $linkList[0] = $nr - 1;
             $_SESSION['sLinkList'] = $linkList;
             echo "</table>\n";
-        }
-        else {
+        } else {
             echo "<b>nothing found!</b>\n";
         }
     }
@@ -260,12 +254,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $output = ob_get_clean();
 
     if ($bInitialize) {
-        $objResponse->script("
+        $response->script("
             $('.specimen_pagination').pagination( " . $found_rows . ", {
                 items_per_page: $itemsPerPage,
                 num_edge_entries: 1,
                 callback: function(page, container) {
-                    xajax_listSpecimens( page, 0, $itemsPerPage );
+                    jaxon_listSpecimens( page, 0, $itemsPerPage );
 
                     return false;
                 }
@@ -273,9 +267,9 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         ");
     }
 
-    $objResponse->assign('specimen_entries', 'innerHTML', $output);
+    $response->assign('specimen_entries', 'innerHTML', $output);
 
-    return $objResponse;
+    return $response;
 }
 
 function collectorItem($row) {
@@ -287,22 +281,29 @@ function collectorItem($row) {
         $text .= " & " . $row['Sammler_2'];
     }
     if ($row['series_number']) {
-        if ($row['Nummer'])
+        if ($row['Nummer']) {
             $text .= " " . $row['Nummer'];
-        if ($row['alt_number'] && trim($row['alt_number']) != "s.n.")
+        }
+        if ($row['alt_number'] && trim($row['alt_number']) != "s.n.") {
             $text .= " " . $row['alt_number'];
-        if ($row['series'])
+        }
+        if ($row['series']) {
             $text .= " " . $row['series'];
+        }
         $text .= " " . $row['series_number'];
     } else {
-        if ($row['series'])
+        if ($row['series']) {
             $text .= " " . $row['series'];
-        if ($row['Nummer'])
+        }
+        if ($row['Nummer']) {
             $text .= " " . $row['Nummer'];
-        if ($row['alt_number'])
+        }
+        if ($row['alt_number']) {
             $text .= " " . $row['alt_number'];
-        if (strstr($row['alt_number'], "s.n."))
+        }
+        if (strstr($row['alt_number'], "s.n.")) {
             $text .= " [" . $row['Datum'] . "]";
+        }
     }
 
     return $text;
@@ -314,13 +315,15 @@ function locationItem($row) {
         $text = "<span style=\"background-color:white;\">" . htmlspecialchars(trim($row['nation_engl'])) . "</span>";
     }
     if (trim($row['provinz'])) {
-        if (strlen($text) > 0)
+        if (strlen($text) > 0) {
             $text .= ". ";
+        }
         $text .= "<span style=\"background-color:white;\">" . htmlspecialchars(trim($row['provinz'])) . "</span>";
     }
     if (trim($row['Fundort']) && $row['collectionID'] != 12) {
-        if (strlen($text) > 0)
+        if (strlen($text) > 0) {
             $text .= ". ";
+        }
         $text .= htmlspecialchars(trim($row['Fundort']));
     }
 

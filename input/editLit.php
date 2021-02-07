@@ -3,24 +3,23 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
-no_magic();
+use Jaxon\Jaxon;
 
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editLitServer.php');
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editLitServer.php");
-
-$xajax->registerFunction("listLib");
-$xajax->registerFunction("listContainer");
-$xajax->registerFunction("editContainer");
-$xajax->registerFunction("updateContainer");
-$xajax->registerFunction("deleteContainer");
-$xajax->registerFunction("addClassification");
-$xajax->registerFunction("deleteClassification");
-$xajax->registerFunction("listClassifications");
-$xajax->registerFunction("searchClassifications");
-$xajax->registerFunction("updateClassification");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listLib");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listContainer");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editContainer");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateContainer");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteContainer");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "addClassification");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteClassification");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listClassifications");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchClassifications");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateClassification");
 
 if (!isset($_SESSION['liLinkList'])) $_SESSION['liLinkList'] = '';
 
@@ -277,7 +276,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 		height: 200px;
 		}
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
@@ -302,7 +301,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
       MeinFenster.focus();
     }
     function searchAuthor() {
-      MeinFenster = window.open("searchLitAuthor","searchLitAuthor","scrollbars=yes,resizable=yes");
+      MeinFenster = window.open("searchLitAuthor.php","searchLitAuthor","scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function taxIndex(sel) {
@@ -360,7 +359,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         return true;
     }
     function call_listLib() {
-      xajax_listLib(xajax.getFormValues('f',0,'periodicalIndex'));
+      jaxon_listLib(jaxon.getFormValues('f',0,'periodicalIndex'));
     }
     function call_makeAutocompleter(name) {
       $('#' + name).autocomplete ({
@@ -391,7 +390,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 
     // called when the user clicks on update classification
     function updateClassification() {
-        xajax_updateClassification(
+        jaxon_updateClassification(
             $('#classification_editId').val(),
             $('*[name=classification_number]').val(),
             $('*[name=classification_order]').val(),
@@ -423,7 +422,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
      * called when the user clicks on the "Add" button in the classification form
      */
     function addClassification( p_citation ) {
-        xajax_addClassification(
+        jaxon_addClassification(
             p_citation,
             $('*[name=classification_number]').val(),
             $('*[name=classification_order]').val(),
@@ -451,7 +450,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
      * refresh current view of classification
      */
     function refreshClassification() {
-        xajax_listClassifications(
+        jaxon_listClassifications(
             <?php echo intval($p_citationID); ?>,
             classification_page,
             0,
@@ -483,7 +482,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         if( $p_citationID ) {
         ?>
         // Fetch classifications list
-        xajax_listClassifications( <?php echo intval($p_citationID); ?> , 0, 1);
+        jaxon_listClassifications( <?php echo intval($p_citationID); ?> , 0, 1);
         <?php
         }
         ?>
@@ -583,8 +582,8 @@ if ($p_citationID) {
     $cf->label(13.5, 2.5, "cited taxa ", "javascript:taxa('$p_citationID')");
     $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
 
-    $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"xajax_listContainer('$p_citationID');");
-    $cf->label(37, 2.5, "edit Container", "#\" onclick=\"xajax_editContainer('$p_citationID');");
+    $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"jaxon_listContainer('$p_citationID');");
+    $cf->label(37, 2.5, "edit Container", "#\" onclick=\"jaxon_editContainer('$p_citationID');");
 
     // label for editing the classification
     $cf->label(62, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
@@ -686,7 +685,7 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
 </form>
 
 
-<div id="xajax_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
+<div id="jaxon_listLibraries" style="position: absolute; top: 39em; left: 0em;"></div>
 
 <div id="edit_tax_classification" style="display: none;" title="taxon classification">
     <input type="hidden" id="classification_editId" value="0" />
@@ -703,8 +702,8 @@ $cf->buttonJavaScript(2, 36, " < Literature ", "self.location.href='listLit.php?
     $cf->buttonLink(57.5, 2.5, "Upd", '#" id="classification_update" style="display: none;" onclick="updateClassification(); return false;', 0);
 
     $cf->inputJqAutocomplete2(7, 6.5, 24, "classification_search",0,"index_jq_autocomplete.php?field=taxonCitation&citationID=" . $p_citationID,50,2,'','',2,true);
-    $cf->buttonLink(32, 6.5, "Search", '#" onclick="xajax_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);
-    $cf->buttonLink(38, 6.5, "Reset", '#" onclick="$(\'#ajax_classification_search\').val(\'\'); $(\'#classification_searchIndex\').val(\'\'); xajax_listClassifications( ' . $p_citationID . ', 0, 1); return false;', 0);
+    $cf->buttonLink(32, 6.5, "Search", '#" onclick="jaxon_searchClassifications( ' . $p_citationID . ', $(\'#classification_searchIndex\').val() ); return false;', 0);
+    $cf->buttonLink(38, 6.5, "Reset", '#" onclick="$(\'#ajax_classification_search\').val(\'\'); $(\'#classification_searchIndex\').val(\'\'); jaxon_listClassifications( ' . $p_citationID . ', 0, 1); return false;', 0);
     ?>
     <div id="classification_entries"></div>
     <?php

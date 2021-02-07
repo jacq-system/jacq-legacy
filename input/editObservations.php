@@ -4,15 +4,23 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editSpecimensServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("toggleLanguage");
-$xajax->registerFunction("searchGeonames");
-$xajax->registerFunction("useGeoname");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 
 if (!empty($_POST['submitMakeSpecimen']) && isset($_POST['specimen_ID']) && intval($_POST['specimen_ID'])) {
     $location="Location: editSpecimens.php?sel=<" . intval($_POST['specimen_ID']) . ">";
@@ -444,7 +452,7 @@ if (isset($_GET['sel'])) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/freudLib.js" type="text/javascript"></script>
@@ -636,7 +644,7 @@ if (isset($_GET['sel'])) {
     }
 
     function call_toggleLanguage() {
-      xajax_toggleLanguage(xajax.getFormValues('f'));
+      jaxon_toggleLanguage(jaxon.getFormValues('f'));
       return false;
     }
 
@@ -835,7 +843,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
 }
 $cf->label(40, 27, "Province");
 $cf->dropdown(40, 27, "province", $p_province, $province[0], $province[1]);
-$cf->label(9, 29, "geonames","#\" onclick=\"xajax_searchGeonames(document.f.Bezirk.value);");
+$cf->label(9, 29, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 $cf->inputText(9, 29, 20, "Bezirk", $p_Bezirk, 255);
 
 $cf->label(9, 31, "Altitude");

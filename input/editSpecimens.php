@@ -4,22 +4,23 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editSpecimensServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("toggleLanguage");
-$xajax->registerFunction("searchGeonames");
-$xajax->registerFunction("useGeoname");
-$xajax->registerFunction("makeLinktext");
-$xajax->registerFunction("editLink");
-$xajax->registerFunction("updateLink");
-$xajax->registerFunction("deleteLink");
-$xajax->registerFunction("editMultiTaxa");
-$xajax->registerFunction("updateMultiTaxa");
-$xajax->registerFunction("deleteMultiTaxa");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 
 if (!isset($_SESSION['sPTID'])) $_SESSION['sPTID'] = 0;
 
@@ -517,7 +518,7 @@ if (isset($_GET['sel'])) {
 		height: 200px;
 	}
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" src="js/lib/overlib/overlib.js"></script>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
@@ -754,7 +755,7 @@ if (isset($_GET['sel'])) {
     }
 
     function call_toggleLanguage() {
-      xajax_toggleLanguage(xajax.getFormValues('f'));
+      jaxon_toggleLanguage(jaxon.getFormValues('f'));
       return false;
     }
 
@@ -765,7 +766,7 @@ if (isset($_GET['sel'])) {
       });
     }
 
-    xajax_makeLinktext('<?php echo $p_specimen_ID; ?>');
+    jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
     $(function() {
         $('#iBox_content').dialog( {
           autoOpen: false,
@@ -840,6 +841,8 @@ $result = db_query("SELECT series FROM tbl_specimens_series WHERE seriesID = '$p
 if ($result && mysql_num_rows($result) > 0) {
     $row = mysql_fetch_array($result);
     $p_seriesName = $row['series'] . " <" . $p_series . ">";
+} else {
+    $p_seriesName = '';
 }
 
 unset($nation);
@@ -953,7 +956,7 @@ $cf->label(55, $y, "Nr.");
 $cf->inputText(55, $y, 6, "CollNummer", $p_CollNummer, 25);
 
 $y += 2;
-$cf->label(11, $y, "links", "#\" onclick=\"xajax_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
+$cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
 $cf->label(44, $y, "T", "javascript:editSpecimensTypes('$p_specimen_ID')");
 $cf->label(47, $y, "type");
 $cf->dropdown(47, $y, "typus", $p_typus, $typus[0], $typus[1]);
@@ -981,7 +984,7 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
 //$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
 $cf->inputJqAutocomplete(11, $y, 50, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
-$cf->label(11, $y + 1.5, "multi", "#\" onclick=\"xajax_editMultiTaxa('$p_specimen_ID');");
+$cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 
 $y += 4;
 $cf->labelMandatory(10, $y, 8, "det / rev / conf");
@@ -1041,7 +1044,7 @@ $cf->label(46, $y, "Province");
 $cf->dropdown(46, $y, "province", $p_province, $province[0], $province[1]);
 
 $y += 2;
-$cf->label(10, $y, "geonames","#\" onclick=\"xajax_searchGeonames(document.f.Bezirk.value);");
+$cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 $cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);
 
 $y += 2;

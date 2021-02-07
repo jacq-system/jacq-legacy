@@ -3,13 +3,14 @@ session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listObservationsServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("getUserDate");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listObservationsServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
 
 if (!isset($_SESSION['obsCollection'])) $_SESSION['obsCollection'] = '';
 if (!isset($_SESSION['obsTyp'])) $_SESSION['obsTyp'] = '';
@@ -118,7 +119,7 @@ function makeDropdownUsername()
             GROUP BY hu.userID
             ORDER BY surname, firstname, username";
     $result = db_query($sql);
-    echo "<select size=\"1\" name=\"userID\" onchange=\"xajax_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
+    echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
     while ($row = mysql_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
@@ -217,7 +218,7 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
   <title>herbardb - list Observations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">

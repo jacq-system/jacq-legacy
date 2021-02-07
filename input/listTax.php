@@ -7,17 +7,17 @@ require("inc/herbardb_input_functions.php");
 require_once('inc/variables.php');
 require_once('inc/jsonRPCClient.php');
 
-require_once("inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/vendor/autoload.php';
 
-no_magic();
+use Jaxon\Jaxon;
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listTaxServer.php");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listTaxServer.php');
 
-$xajax->registerFunction("updateScientificNameLabel");
-$xajax->registerFunction("clearScientificNameLabels");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateScientificNameLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearScientificNameLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -705,7 +705,7 @@ if ($result = db_query($sql)) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" href="js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <!-- BP: use jQuery for disabling edit-fields if MDLD-search has been entered -->
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <!-- BP END -->
@@ -1016,9 +1016,9 @@ if ($_SESSION['taxMDLD'] != "") {
     else if ($_SESSION['taxType'] == 3) {  // list Species
 ?>
       <input type="button" class="button" value="make PDF (Scientific Names)" id="btMakeScientificNameLabelPdf" onClick="showPDF('scientificName')">
-      <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="xajax_clearScientificNameLabels(); return false;">
-      <input type="button" class="button" value="set all" id="btSetAllLabels" onClick="xajax_setAll(); return false;">
-      <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="xajax_clearAll(); return false;">
+      <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="jaxon_clearScientificNameLabels(); return false;">
+      <input type="button" class="button" value="set all" id="btSetAllLabels" onClick="jaxon_setAll(); return false;">
+      <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="jaxon_clearAll(); return false;">
       <p>
 <?php
         $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.nr,
@@ -1127,7 +1127,7 @@ if ($_SESSION['taxMDLD'] != "") {
                    .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . subTaxonItem($row) . "</a></td>";
                 echo "<td class='outCenter'>"
                    .   "<input style='width: 1em;' type='text' id='inpScientificNameLabel_$id' maxlength='2' "
-                   .     "value='" . intval($row['nr']) . "' onChange=\"xajax_updateScientificNameLabel('$id', $('#inpScientificNameLabel_$id').val());\">"
+                   .     "value='" . intval($row['nr']) . "' onChange=\"jaxon_updateScientificNameLabel('$id', $('#inpScientificNameLabel_$id').val());\">"
                    . "</td></tr>\n";
                 $hybrids = getHybrids($row['taxonID']);
                 if (strlen($hybrids) > 0) {

@@ -2,29 +2,30 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listLabelServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("makeDropdownInstitution");
-$xajax->registerFunction("makeDropdownCollection");
-$xajax->registerFunction("changeDropdownCollectionQR");
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("clearTypeLabelsMap");
-$xajax->registerFunction("clearTypeLabelsSpec");
-$xajax->registerFunction("clearBarcodeLabels");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("clearStandardLabels");
-$xajax->registerFunction("checkStandardLabelPdfButton");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listLabelServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeDropdownCollectionQR");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearBarcodeLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearStandardLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editLabel.php?sel=<" . $_POST['specimen'] . ">";
@@ -191,7 +192,7 @@ function collectionItem($coll)
   <title>herbardb - list Labels</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
@@ -199,34 +200,34 @@ function collectionItem($coll)
 
     function initInstitutionCollection() {
         if (swInstitutionCollection) {
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         } else {
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         }
     }
 
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         } else {
             swInstitutionCollection = 1;
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         }
     }
 
     function toggleLabelWrapper(sel, id) {
       switch (sel) {
-        case 1: xajax_toggleTypeLabelMap(id);
+        case 1: jaxon_toggleTypeLabelMap(id);
                 break;
-        case 2: xajax_toggleTypeLabelSpec(id);
+        case 2: jaxon_toggleTypeLabelSpec(id);
                 break;
-        case 3: xajax_toggleBarcodeLabel(id);
+        case 3: jaxon_toggleBarcodeLabel(id);
                 break;
       }
     }
     function updtLabelWrapper(id, data) {
-      xajax_updtStandardLabel(id, data);
+      jaxon_updtStandardLabel(id, data);
     }
 
     function check_all() {
@@ -248,10 +249,10 @@ function collectionItem($coll)
       MeinFenster.focus();
     }
 
-    xajax_checkTypeLabelMapPdfButton();
-    xajax_checkTypeLabelSpecPdfButton();
-    xajax_checkStandardLabelPdfButton();
-    xajax_checkBarcodeLabelPdfButton();
+    jaxon_checkTypeLabelMapPdfButton();
+    jaxon_checkTypeLabelSpecPdfButton();
+    jaxon_checkStandardLabelPdfButton();
+    jaxon_checkBarcodeLabelPdfButton();
   </script>
 </head>
 
@@ -353,7 +354,7 @@ function collectionItem($coll)
 <form action="pdfLabelQRCode.php" target="_blank" method="POST" name="f2">
   <table cellspacing="2" cellpadding="0"><tr><td>
     <b>Institution:</b>
-        <select size="1" name="institution_QR" id="institution_QR" onchange="xajax_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
+        <select size="1" name="institution_QR" id="institution_QR" onchange="jaxon_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
         <?php makeDropdownInstitution(); ?></select>&nbsp;
     <b>Collection:</b> <select size="1" name="collection_QR" id="collection_QR"><option value="0"></option></select>&nbsp;
     <b>start number:</b> <input type="text" name="start" size="10">&nbsp;
@@ -380,7 +381,7 @@ function collectionItem($coll)
 if ($_SESSION['labelType'] == 1) { ?>
   <table cellpadding="0" cellspacing="4">
     <tr>
-      <td align="center"><input type="button" class="button" value=" set all " onclick="xajax_setAll()"></td>
+      <td align="center"><input type="button" class="button" value=" set all " onclick="jaxon_setAll()"></td>
       <td><input type="button" class="button" value="make PDF (Type map)" id="btMakeTypeLabelMapPdf" onClick="showPDF('typeMap')"></td>
       <td><input type="button" class="button" value="make PDF (Type spec)" id="btMakeTypeLabelSpecPdf" onClick="showPDF('typeSpec')"></td>
       <td><input type="button" class="button" value="make PDF (barcode)" id="btMakeBarcodeLabelPdf" onClick="showPDF('barcode')"></td>
@@ -388,11 +389,11 @@ if ($_SESSION['labelType'] == 1) { ?>
       <td><input type="button" class="button" value="make PDF (standard)" id="btMakeStandardLabelPdf" onClick="showPDF('std')"></td>
     </tr>
     <tr>
-      <td><input type="button" class="button" value=" clear all " onclick="xajax_clearAll()"></td>
-      <td align="center"><input type="button" class="button" value="clear all Type map" id="btClearTypeMapLabels" onClick="xajax_clearTypeLabelsMap(); return false;"></td>
-      <td align="center"><input type="button" class="button" value="clear all Type spec" id="btClearTypeSpecLabels" onClick="xajax_clearTypeLabelsSpec(); return false;"></td>
-      <td align="center" colspan="2"><input type="button" class="button" value="clear all Barcode" id="btClearBarcodeLabels" onClick="xajax_clearBarcodeLabels(); return false;"></td>
-      <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="xajax_clearStandardLabels(); return false;"></td>
+      <td><input type="button" class="button" value=" clear all " onclick="jaxon_clearAll()"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type map" id="btClearTypeMapLabels" onClick="jaxon_clearTypeLabelsMap(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type spec" id="btClearTypeSpecLabels" onClick="jaxon_clearTypeLabelsSpec(); return false;"></td>
+      <td align="center" colspan="2"><input type="button" class="button" value="clear all Barcode" id="btClearBarcodeLabels" onClick="jaxon_clearBarcodeLabels(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="jaxon_clearStandardLabels(); return false;"></td>
     </tr>
   </table>
   <p>

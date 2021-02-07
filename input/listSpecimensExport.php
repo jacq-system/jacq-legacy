@@ -298,7 +298,7 @@ else {
     }
 }
 
-error_log("listSpecimensExport: Running query: " . $sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
+//error_log("listSpecimensExport: Running query: " . $sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 
 $resultSpecimens = mysql_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 

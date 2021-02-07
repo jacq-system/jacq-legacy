@@ -2,43 +2,46 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-require_once ("../inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/../vendor/autoload.php';
 
-$xajax = new xajax();
+use Jaxon\Jaxon;
+use Jaxon\Response\Response;
 
-$objResponse = new xajaxResponse();
+$jaxon = jaxon();
+
+$response = new Response();
 
 // ajax-functions
 /**
- * xajax-function react on a change of the source
+ * jaxon-function react on a change of the source
  *
  * @param array $formData form-values
- * @return xajaxResponse
+ * @return Response
  */
 function setSource($formData)
 {
-    global $objResponse;
+    global $response;
 
     if ($formData['source'] == 'literature') {
-        $objResponse->assign("ajax_sourcePers", "style.display", 'none');
-        $objResponse->assign("ajax_sourceLit", "style.display", '');
-        $objResponse->assign("sourceService", "style.display", 'none');
+        $response->assign("ajax_sourcePers", "style.display", 'none');
+        $response->assign("ajax_sourceLit", "style.display", '');
+        $response->assign("sourceService", "style.display", 'none');
     } elseif ($formData['source'] == 'service') {
-        $objResponse->assign("ajax_sourcePers", "style.display", 'none');
-        $objResponse->assign("ajax_sourceLit", "style.display", 'none');
-        $objResponse->assign("sourceService", "style.display", '');
+        $response->assign("ajax_sourcePers", "style.display", 'none');
+        $response->assign("ajax_sourceLit", "style.display", 'none');
+        $response->assign("sourceService", "style.display", '');
     } else {
-        $objResponse->assign("ajax_sourcePers", "style.display", '');
-        $objResponse->assign("ajax_sourceLit", "style.display", 'none');
-        $objResponse->assign("sourceService", "style.display", 'none');
+        $response->assign("ajax_sourcePers", "style.display", '');
+        $response->assign("ajax_sourceLit", "style.display", 'none');
+        $response->assign("sourceService", "style.display", 'none');
     }
 
-    return $objResponse;
+    return $response;
 }
 
 
 /**
- * register all xajax-functions in this file
+ * register all jaxon-functions in this file
  */
-$xajax->registerFunction("setSource");
-$xajax->processRequest();
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
+$jaxon->processRequest();

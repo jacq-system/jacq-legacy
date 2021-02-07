@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
-//require_once ("inc/xajax/xajax_core/xajax.inc.php");
 no_magic();
 
 $nrSel = intval($_GET['nr']);

@@ -4,9 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/vendor/autoload.php';
 
-no_magic();
+use Jaxon\Jaxon;
 
 if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL")
   $db_specimen_ID = extractID($_GET['sel']);
@@ -15,21 +15,21 @@ elseif (intval($_POST['specimen_ID']))
 else
   die('No valid dataset selected');
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editLabelServer.php");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editLabelServer.php');
 
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("clearTypeLabelsMap");
-$xajax->registerFunction("clearTypeLabelsSpec");
-$xajax->registerFunction("clearBarcodeLabels");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("clearStandardLabels");
-$xajax->registerFunction("checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearBarcodeLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearStandardLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
 
 $nr = intval($_GET['nr']);
 $linkList = $_SESSION['labelLinkList'];
@@ -137,16 +137,16 @@ if (mysql_num_rows($result)>0) {
   </style>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" language="JavaScript">
     var inpSLvalue;
     function toggleLabelWrapper(sel) {
       switch (sel) {
-        case 1: xajax_toggleTypeLabelMap();
+        case 1: jaxon_toggleTypeLabelMap();
                 break;
-        case 2: xajax_toggleTypeLabelSpec();
+        case 2: jaxon_toggleTypeLabelSpec();
                 break;
-        case 3: xajax_toggleBarcodeLabel();
+        case 3: jaxon_toggleBarcodeLabel();
                 break;
       }
     }
@@ -154,7 +154,7 @@ if (mysql_num_rows($result)>0) {
       switch (sel) {
         case 10: if (data!=inpSLvalue) {
                   inpSLvalue = data;
-                  xajax_updtStandardLabel(data);
+                  jaxon_updtStandardLabel(data);
                 }
                 break;
       }
@@ -175,10 +175,10 @@ if (mysql_num_rows($result)>0) {
       self.location.href = 'listLabel.php?nr=' + sel;
     }
 
-    xajax_checkTypeLabelMapPdfButton();
-    xajax_checkTypeLabelSpecPdfButton();
-    xajax_checkStandardLabelPdfButton();
-    xajax_checkBarcodeLabelPdfButton();
+    jaxon_checkTypeLabelMapPdfButton();
+    jaxon_checkTypeLabelSpecPdfButton();
+    jaxon_checkStandardLabelPdfButton();
+    jaxon_checkBarcodeLabelPdfButton();
   </script>
 </head>
 
@@ -319,9 +319,9 @@ else {
   echo "<div class=\"cssftext\" style=\"position: absolute; left: 10em; top: 34.2em;\" id=\"typeLabelSpec\">&nbsp;&ndash;</div>";
 }
 $cf->buttonJavaScript(16,32,"make PDF (Type map Labels)\" id=\"btMakeTypeLabelMapPdf","showPDF('typeMap')");
-$cf->buttonJavaScript(35,32,"clear all Type map Labels\" id=\"btClearTypeMapLabels","xajax_clearTypeLabelsMap()");
+$cf->buttonJavaScript(35,32,"clear all Type map Labels\" id=\"btClearTypeMapLabels","jaxon_clearTypeLabelsMap()");
 $cf->buttonJavaScript(16,34,"make PDF (Type spec Labels)\" id=\"btMakeTypeLabelSpecPdf","showPDF('typeSpec')");
-$cf->buttonJavaScript(35,34,"clear all Type spec Labels\" id=\"btClearTypeSpecLabels","xajax_clearTypeLabelsSpec()");
+$cf->buttonJavaScript(35,34,"clear all Type spec Labels\" id=\"btClearTypeSpecLabels","jaxon_clearTypeLabelsSpec()");
 
 // barcode labels
 $cf->label(9,36,"barcode Label");
@@ -329,14 +329,14 @@ $cf->checkboxJavaScript(9,36,"cbBL\" id=\"cbBarcodeLabel",($p_label & 0x4),"togg
 $txt = ($p_label & 0x4) ? "&nbsp;&radic;" : "&nbsp;&ndash;";
 echo "<div class=\"cssftext\" style=\"position: absolute; left: 10em; top: 36.2em;\" id=\"barcodeLabel\">$txt</div>";
 $cf->buttonJavaScript(16,36,"make PDF (Barcode Labels)\" id=\"btMakeBarcodeLabelPdf","showPDF('barcode')");
-$cf->buttonJavaScript(35,36,"clear all Barcode Labels\" id=\"btClearBarcodeLabels","xajax_clearBarcodeLabels()");
+$cf->buttonJavaScript(35,36,"clear all Barcode Labels\" id=\"btClearBarcodeLabels","jaxon_clearBarcodeLabels()");
 
 // standard Labels
 $cf->label(9,38,"standard Label");
 $cf->inputText(9,38,1,"inpSL\" id=\"inpStandardLabel\" onkeyup=\"updtLabelWrapper(10,document.f.inpSL.value)",($p_label & 0xf0) / 16,1);
 echo "<div class=\"cssftext\" style=\"position: absolute; left: 11em; top: 38.2em;\" id=\"standardLabel\">".(($p_label & 0xf0) / 16)."</div>";
 $cf->buttonJavaScript(16,38,"make PDF (standard Labels)\" id=\"btMakeStandardLabelPdf","showPDF('std')");
-$cf->buttonJavaScript(35,38,"clear all standard Labels\" id=\"btClearStandardLabels","xajax_clearStandardLabels()");
+$cf->buttonJavaScript(35,38,"clear all standard Labels\" id=\"btClearStandardLabels","jaxon_clearStandardLabels()");
 
 
 $cf->buttonJavaScript(2,50," < Specimens ","goBack($nr)");

@@ -2,14 +2,15 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editUserAccessServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("getFamilyDropdown");
-$xajax->registerFunction("getGenusDropdown");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editUserAccessServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getFamilyDropdown");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getGenusDropdown");
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_userID = intval($_GET['id']);
@@ -63,13 +64,13 @@ $username = $row['username'];
   <title>herbardb - edit User access</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" language="JavaScript">
     function call_getFamilyDropdown() {
-      xajax_getFamilyDropdown(xajax.getFormValues('f',0,'categoryID'));
+      jaxon_getFamilyDropdown(jaxon.getFormValues('f',0,'categoryID'));
     }
     function call_getGenusDropdown() {
-      xajax_getGenusDropdown(xajax.getFormValues('f',0,'familyID'));
+      jaxon_getGenusDropdown(jaxon.getFormValues('f',0,'familyID'));
     }
   </script>
 </head>

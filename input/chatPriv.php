@@ -1,19 +1,20 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/chatPrivServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("displaychat");
-$xajax->registerFunction("changeStatus");
-$xajax->registerFunction("changetid");
-$xajax->registerFunction("insertchat");
-$xajax->registerFunction("checklatest");
-$xajax->registerFunction("chatIsOpen");
-$xajax->registerFunction("chatIsClosed");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/chatPrivServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displaychat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeStatus");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changetid");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "insertchat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checklatest");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsOpen");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsClosed");
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -22,16 +23,16 @@ $xajax->registerFunction("chatIsClosed");
   <title>herbardb - private shoutbox</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <SCRIPT LANGUAGE="JavaScript">
   <!--
   function timer() {
-    xajax_chatIsOpen();
-    xajax_changetid(xajax.getFormValues('chatform'));
-    window.setInterval("xajax_checklatest(xajax.getFormValues('chatform'))",5000);//reload timer
+    jaxon_chatIsOpen();
+    jaxon_changetid(jaxon.getFormValues('chatform'));
+    window.setInterval("jaxon_checklatest(jaxon.getFormValues('chatform'))",5000);//reload timer
   }
   function stopEverything() {
-    xajax_chatIsClosed();
+    jaxon_chatIsClosed();
   }
   function enableSend() {
     document.getElementById("chat").style.display = "";
@@ -71,11 +72,11 @@ $xajax->registerFunction("chatIsClosed");
     <form id="chatform" name="chatform" style="display:inline;">
       <table cellpadding=2 cellspacing=0 border=0 width="98%">
         <tr><td valign=top>
-          <button id="btnSend" onclick="xajax_insertchat(xajax.getFormValues('chatform')); return false;" disabled>send</button>&nbsp;
+          <button id="btnSend" onclick="jaxon_insertchat(jaxon.getFormValues('chatform')); return false;" disabled>send</button>&nbsp;
           <span name="spn_tid" id="spn_tid">
-            <select name="tid" id="tid" onchange="xajax_changetid(xajax.getFormValues('chatform'))"></select>
+            <select name="tid" id="tid" onchange="jaxon_changetid(jaxon.getFormValues('chatform'))"></select>
           </span>&nbsp;
-          <!--<select name="theme" id="theme" onchange="xajax_checklatest(xajax.getFormValues('chatform'))"></select>-->
+          <!--<select name="theme" id="theme" onchange="jaxon_checklatest(jaxon.getFormValues('chatform'))"></select>-->
           <textarea id="chat" style="width: 100%; display:none;" name="chat" rows="4"></textarea>
           <input type=hidden name="latestid" id="latestid" value="">
           <input type=hidden name="latestuid" id="latestuid" value="">

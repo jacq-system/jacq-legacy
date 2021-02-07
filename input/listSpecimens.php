@@ -4,26 +4,27 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listWUServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("makeDropdownInstitution");
-$xajax->registerFunction("makeDropdownCollection");
-$xajax->registerFunction("getUserDate");
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("checkStandardLabelPdfButton");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
-$xajax->registerFunction("listSpecimens");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listWUServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
 if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';
 if (!isset($_SESSION['sTyp'])) $_SESSION['sTyp'] = '';
@@ -86,6 +87,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
     $_SESSION['sOrTyp'] = 1;
+    $_SESSION['labelOrder'] = $_SESSION['sOrder'];
 } else if (isset($_POST['selectUser'])) {
     $_SESSION['sType'] = 2;
     $_SESSION['wuCollection'] = $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
@@ -110,6 +112,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
     $_SESSION['sOrTyp'] = 1;
+    $_SESSION['labelOrder'] = $_SESSION['sOrder'];
 } else if (isset($_GET['order'])) {
     if ($_GET['order'] == "b") {
         $_SESSION['sOrder'] = "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
@@ -148,7 +151,10 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
             $_SESSION['sOrTyp'] = 1;
         }
     }
-    if ($_SESSION['sOrTyp'] < 0) $_SESSION['sOrder'] = implode(" DESC, ", explode(", ", $_SESSION['sOrder'])) . " DESC";
+    if ($_SESSION['sOrTyp'] < 0) {
+        $_SESSION['sOrder'] = implode(" DESC, ", explode(", ", $_SESSION['sOrder'])) . " DESC";
+    }
+    $_SESSION['labelOrder'] = $_SESSION['sOrder'];
 }
 
 function makeDropdownInstitution()
@@ -191,7 +197,7 @@ function makeDropdownUsername()
             GROUP BY hu.userID
             ORDER BY surname, firstname, username";
     $result = db_query($sql);
-    echo "<select size=\"1\" name=\"userID\" onchange=\"xajax_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
+    echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
     while ($row = mysql_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
@@ -211,7 +217,7 @@ function makeDropdownDate($label = false)
 {
     $sql = "SELECT DATE(timestamp) as date
             FROM herbarinput_log.log_specimens
-            WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 120 ";
+            WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 7120 ";
     if (intval($label)) {
         $sql .= "AND userID='" . intval($_SESSION['uid']) . "' ";
     } elseif (intval($_SESSION['sUserID'])) {
@@ -312,7 +318,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <title>herbardb - list Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-1.4.2.min.js" type="text/javascript"></script>
@@ -335,25 +341,25 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         } else {
             swInstitutionCollection = 1;
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         }
     }
 
     function toggleLabelWrapper(sel, id) {
       switch (sel) {
-        case 1: xajax_toggleTypeLabelMap(id);
+        case 1: jaxon_toggleTypeLabelMap(id);
                 break;
-        case 2: xajax_toggleTypeLabelSpec(id);
+        case 2: jaxon_toggleTypeLabelSpec(id);
                 break;
-        case 3: xajax_toggleBarcodeLabel(id);
+        case 3: jaxon_toggleBarcodeLabel(id);
                 break;
       }
     }
     function updtLabelWrapper(id, data) {
-      xajax_updtStandardLabel(id, data);
+      jaxon_updtStandardLabel(id, data);
     }
     function check_all() {
       for (var i=0, n=document.f.elements.length; i<n; i++) {
@@ -373,10 +379,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       MeinFenster.focus();
     }
 
-    xajax_checkTypeLabelMapPdfButton();
-    xajax_checkTypeLabelSpecPdfButton();
-    xajax_checkStandardLabelPdfButton();
-    xajax_checkBarcodeLabelPdfButton();
+    jaxon_checkTypeLabelMapPdfButton();
+    jaxon_checkTypeLabelSpecPdfButton();
+    jaxon_checkStandardLabelPdfButton();
+    jaxon_checkBarcodeLabelPdfButton();
   </script>
 </head>
 
@@ -588,7 +594,7 @@ if ($_SESSION['sType'] == 1) {
     </div>
     <script type="text/javascript">
         function listSpecimens() {
-            xajax_listSpecimens( 0, true, $('#items_per_page').val() );
+            jaxon_listSpecimens( 0, true, $('#items_per_page').val() );
         }
 
     // init pagination
@@ -643,8 +649,8 @@ if ($_SESSION['sType'] == 1) {
     }
 } else if ($_SESSION['sType'] == 3) {
     if (strlen(trim($_SESSION['sLabelDate'])) > 0) {
-        echo "<input type=\"button\" class=\"button\" value=\" set all \" onclick=\"xajax_setAll()\"> ".
-             "<input type=\"button\" class=\"button\" value=\" clear all \" onclick=\"xajax_clearAll()\"> ".
+        echo "<input type=\"button\" class=\"button\" value=\" set all \" onclick=\"jaxon_setAll()\"> ".
+             "<input type=\"button\" class=\"button\" value=\" clear all \" onclick=\"jaxon_clearAll()\"> ".
              "<input type=\"button\" class=\"button\" value=\"make PDF (Type map Labels)\" id=\"btMakeTypeLabelMapPdf\" onClick=\"showPDF('typeMap')\"> ".
              "<input type=\"button\" class=\"button\" value=\"make PDF (Type spec Labels)\" id=\"btMakeTypeLabelSpecPdf\" onClick=\"showPDF('typeSpec')\"> ".
              "<input type=\"button\" class=\"button\" value=\"make PDF (barcode Labels)\" id=\"btMakeBarcodeLabelPdf\" onClick=\"showPDF('barcode')\" >".

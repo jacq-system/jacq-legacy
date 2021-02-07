@@ -5,25 +5,27 @@ require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listWUServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("makeDropdownInstitution");
-$xajax->registerFunction("makeDropdownCollection");
-$xajax->registerFunction("getUserDate");
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("checkStandardLabelPdfButton");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listWUServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
 if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';  //wird von listSpecimens und listSpecimensImport gemeinsam benutzt
 if (!isset($_SESSION['siTyp'])) $_SESSION['siTyp'] = '';
@@ -31,6 +33,8 @@ if (!isset($_SESSION['siType'])) $_SESSION['siType'] = 0;
 if (!isset($_SESSION['siImages'])) $_SESSION['siImages'] = '';
 if (!isset($_SESSION['siExternal'])) $_SESSION['siExternal'] = 0;
 if (!isset($_SESSION['siLinkList'])) $_SESSION['siLinkList'] = array();
+if (!isset($_SESSION['siGeoGeneral'])) $_SESSION['siGeoGeneral'] = '';
+if (!isset($_SESSION['siGeoRegion'])) $_SESSION['siGeoRegion'] = '';
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -388,7 +392,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     /***************************************/
 
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
@@ -399,10 +403,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         } else {
             swInstitutionCollection = 1;
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         }
     }
   </script>

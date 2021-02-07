@@ -39,7 +39,7 @@ function makeText($id, $uuid)
             $text['scientificName1'] .= " " . $row['@author'];
             $text['longName'] = $text['scientificName1'];
         }
-        error_log("Author: " . $row['@author']);
+//        error_log("Author: " . $row['@author']);
     }
 
     return $text;

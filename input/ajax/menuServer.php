@@ -1,10 +1,13 @@
 <?php
 session_start();
-require_once ("../inc/xajax/xajax_core/xajax.inc.php");
 require("../inc/connect.php");
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jaxon\Jaxon;
+use Jaxon\Response\Response;
 
 function checkChats() {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
 
     $text = "";
 
@@ -42,15 +45,15 @@ function checkChats() {
     }
 
     if ($text) {
-        $objResponse->alert($text);
+        $response->alert($text);
     }
 
-    return $objResponse;
+    return $response;
 }
 
 
 function checkJacqLogin () {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
 
     $prefix_id = 'id';
     $prefix_name = 'name';
@@ -67,18 +70,18 @@ function checkJacqLogin () {
         }
     }
     if ($prefix_id == $prefix_name && $prefix_id == $prefix_states && $prefix_name == $prefix_states) {
-        $objResponse->assign("jacqThumb", "innerHTML", "<img src='webimages/jacqThumb.png'>");
+        $response->assign("jacqThumb", "innerHTML", "<img src='webimages/jacqThumb.png'>");
     } else {
-        $objResponse->assign("jacqThumb", "innerHTML", "");
+        $response->assign("jacqThumb", "innerHTML", "");
     }
 
-    return $objResponse;
+    return $response;
 }
 
 /**
- * register all xajax-functions in this file
+ * register all jaxon-functions in this file
  */
-$xajax = new xajax();
-$xajax->registerFunction("checkChats");
-$xajax->registerFunction("checkJacqLogin");
-$xajax->processRequest();
+$jaxon = jaxon();
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkChats");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkJacqLogin");
+$jaxon->processRequest();

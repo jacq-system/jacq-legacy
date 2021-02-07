@@ -1,17 +1,18 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/chatServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("displaychat");
-$xajax->registerFunction("insertchat");
-$xajax->registerFunction("checklatest");
-$xajax->registerFunction("chatIsOpen");
-$xajax->registerFunction("chatIsClosed");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/chatServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displaychat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "insertchat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checklatest");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsOpen");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsClosed");
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -20,16 +21,16 @@ $xajax->registerFunction("chatIsClosed");
   <title>herbardb - public shoutbox</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <SCRIPT LANGUAGE="JavaScript">
   <!--
   function timer(){
-    xajax_chatIsOpen();
-    xajax_displaychat();
-    window.setInterval("xajax_checklatest(xajax.getFormValues('chatform'))",5000);//reload timer
+    jaxon_chatIsOpen();
+    jaxon_displaychat();
+    window.setInterval("jaxon_checklatest(jaxon.getFormValues('chatform'))",5000);//reload timer
   }
   function stopEverything() {
-    xajax_chatIsClosed();
+    jaxon_chatIsClosed();
   }
   //-->
   </SCRIPT>
@@ -61,7 +62,7 @@ $xajax->registerFunction("chatIsClosed");
     <form id="chatform" name="chatform" style="display:inline;">
       <table cellpadding=2 cellspacing=0 border=0 width="98%">
         <tr><td valign=top>
-          <button onclick="xajax_insertchat(xajax.getFormValues('chatform')); return false;">send</button>
+          <button onclick="jaxon_insertchat(jaxon.getFormValues('chatform')); return false;">send</button>
           <textarea id="chat" style="width: 100%" name="chat" rows="4"></textarea><br>
           <input type=hidden name="latestid" id="latestid" value="">
         </td></tr>

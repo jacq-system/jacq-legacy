@@ -4,13 +4,14 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editTaxSynonymyServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("setSource");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editTaxSynonymyServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
 
 function dateconvert($date,$tomysql=false){
 	/*if($tomysql){
@@ -240,7 +241,7 @@ if (isset($_GET['new'])) {
 		height: 200px;
 	}
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery.inputmask.js" type="text/javascript"></script>
@@ -276,7 +277,7 @@ if (isset($_GET['new'])) {
 
 
     function setSource() {
-      xajax_setSource(xajax.getFormValues('f'));
+      jaxon_setSource(jaxon.getFormValues('f'));
     }
   </script>
 </head>
