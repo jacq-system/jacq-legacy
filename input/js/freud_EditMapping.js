@@ -17,7 +17,7 @@ $(function() {
 			}
 		}
 	});
-	
+
 	$('#insertLineForm').submit(function(){
 		saveMapLines();
 		return false;
@@ -26,23 +26,23 @@ $(function() {
 		searchMapLines();
 		return false;
     });
-	
+
 	$("#editAccordion").multiOpenAccordion({
 		active: [0, 1],
 	});
-	
+
 	newPaginator(0);
 	searchMapLines();
-	
+
 	addMapLine('insertLineTable',1,0,0);
 	addMapLine('insertLineTable',1,0,0);
-				
+
 });
 
 function searchMapLines(searchstringVal){
 	if(searchstringVal==undefined){
-		if(typeof createMapSearchstring == 'function') { 
-			searchString=createMapSearchstring(); 
+		if(typeof createMapSearchstring == 'function') {
+			searchString=createMapSearchstring();
 		}else{
 			searchString='';
 		}
@@ -54,8 +54,8 @@ function searchMapLines(searchstringVal){
 }
 
 function pageselectCallback(page_index, jq){
-	$('#PageInfo2').html('Loading <img align="absmiddle" src="inc/jQuery/css/loading2.gif"> ');
-				
+	$('#PageInfo2').html('Loading <img align="absmiddle" src="js/lib/jQuery/css/loading2.gif"> ');
+
 	$.ajax({
 		type: 'POST',
 		dataType: 'json',
@@ -78,8 +78,8 @@ function pageselectCallback(page_index, jq){
 }
 
 function saveMapLines(){
-	$('#PageInfo2').html('Saving <img align="absmiddle" src="inc/jQuery/css/loading2.gif"> ');
-	
+	$('#PageInfo2').html('Saving <img align="absmiddle" src="js/lib/jQuery/css/loading2.gif"> ');
+
 	$.ajax({
 		type: 'POST',
 		url: serverUrl,
@@ -105,7 +105,7 @@ function saveMapLines(){
 					s+=value[1]+'=>'+value[2]+':okay!<br>';
 				});
 			}
-			
+
 			if(s!=''){
 				$("#dinformation").html(s1+'<br>'+s);
 				$("#dialog-information").dialog({
@@ -117,17 +117,17 @@ function saveMapLines(){
 					]
 				});
 			}
-			
+
 			$('#insertLineTable').find('tr:gt(0)').remove();
 			addMapLine('insertLineTable',1,0,0);
 			addMapLine('insertLineTable',1,0,0);
-			
+
 			searchMapLines('');
 		}
 	});
 }
 
-function deleteSearchedLine2(oid){	
+function deleteSearchedLine2(oid){
 	if(COLS==2){
 		leftID=$('#acmap_l_'+oid+'Index').val();
 	}
@@ -148,7 +148,7 @@ function deleteSearchedLine2(oid){
                         }
 		}
 	});
-			
+
 }
 
 function newPaginator(numentries1){
@@ -198,7 +198,7 @@ function addMapLine(idnam,idtype,leftId,rightId,leftName,rightName){
 		$('#ajax_acmap_r_'+x).val(rightName).removeClass('wrongItem');
 	}
 
-	
+
 	if(idtype==1){
 		if(COLS==2){
 			ACFreudPrepare(serverACL,'acmap_l_'+x,((!isNaN(leftId) && leftName==undefined)?leftId:'0'),2,0,1,2);

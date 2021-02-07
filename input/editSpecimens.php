@@ -518,7 +518,7 @@ if (isset($_GET['sel'])) {
 	}
   </style>
   <?php $xajax->printJavascript('inc/xajax'); ?>
-  <script type="text/javascript" src="inc/overlib/overlib.js"></script>
+  <script type="text/javascript" src="js/lib/overlib/overlib.js"></script>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/freudLib.js" type="text/javascript"></script>

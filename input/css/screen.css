@@ -33,7 +33,7 @@ div.cssfinputAutocomplete { font-size: 100%; font-family: sans-serif; white-spac
 div.cssflabel          { font-size: 100%; font-family: sans-serif; font-weight: bold; color: darkGray; text-align: right; white-space: nowrap; }
 div.cssflabelMandatory { font-size: 100%; font-family: sans-serif; font-weight: bold; color: darkGray; background-color: #006666; text-align: right; white-space: nowrap; }
 div.cssftext           { font-size: 100%; font-family: sans-serif; white-space: nowrap; }
-input.cssfbutton       { font-size: 100%; font-family: sans-serif; padding-left: 0; font-weight: bold; }
+input.cssfbutton       { font-size: 100%; font-family: sans-serif; padding-left: 0; font-weight: bold; border-width: 3px; }
 input.cssfbutton:hover { background-color: #abffab; }
 input.cssfcheckbox     { font-size: 100%; font-family: sans-serif; padding-left: 0; }
 input.cssftext         { font-size: 100%; font-family: sans-serif; padding-left: 0.3em; }

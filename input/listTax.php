@@ -704,7 +704,7 @@ if ($result = db_query($sql)) {
   <title>herbardb - list Species</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" href="inc/jQuery/css/blue/style_nhm.css" type="text/css" />
+  <link rel="stylesheet" href="js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <!-- BP: use jQuery for disabling edit-fields if MDLD-search has been entered -->
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
@@ -1266,7 +1266,7 @@ if ($_SESSION['taxMDLD'] != "") {
 </tr>
 EOF;*/
 				echo<<<EOF
-<script type="text/javascript" src="inc/jQuery/jquery.tablesorter_nhm.js"></script>
+<script type="text/javascript" src="js/lib/jQuery/jquery.tablesorter_nhm.js"></script>
 
 <table id="sorttable" cellspacing="0" cellpadding="0" class="tablesorter" border="1" style="border: 1px solid #000;border-collapse:collapse" width="700">
 <colgroup><col width="40%"><col width="40%"><col width="10%"><col width="10%"></colgroup>

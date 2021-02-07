@@ -243,7 +243,7 @@ if (isset($_GET['new'])) {
   <?php $xajax->printJavascript('inc/xajax'); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
-  <script src="inc/jQuery/jquery.inputmask.js" type="text/javascript"></script>
+  <script src="js/lib/jQuery/jquery.inputmask.js" type="text/javascript"></script>
 
   <script type="text/javascript" language="JavaScript">
 

@@ -1,13 +1,10 @@
-<?php
-// require configuration
-require('inc/variables.php');
-
-?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
     <title>JACQ - Statistics</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="en" />
+    <link rel="shortcut icon" href="JACQ_LOGO.png"/>
 
     <!-- blueprint CSS framework -->
     <link rel="stylesheet" type="text/css" href="css/statistics/screen.css" media="screen, projection" />
@@ -32,7 +29,6 @@ require('inc/variables.php');
     <script type="text/javascript" src="js/jacqStatistics_document_ready.js"></script>
 
     <script type="text/javascript">
-        var jacq_url = '<?php echo $_CONFIG['JACQ_URL']; ?>';
         var plotData;
     </script>
 </head>
@@ -75,7 +71,7 @@ require('inc/variables.php');
                     <br />
                 </form>
                 <div id="statistics_result" style="padding-top: 10px; padding-bottom: 10px; overflow:auto;"></div>
-                <div id="statistics_plot" style="width:100%;height:300px"></div>
+                <div id="statistics_plot" style="width: 100%; height: 300px;"></div>
             </div>
         </div><!-- content -->
         <div class="clear"></div>
