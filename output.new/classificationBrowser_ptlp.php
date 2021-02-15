@@ -13,8 +13,6 @@ $type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING);
 switch ($type) {
     case 'referenceType':
         echo $rest->get('classification/references', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)));
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=references'
-//           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
         break;
     case 'jstree':
         $referenceType = trim(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
@@ -34,16 +32,6 @@ switch ($type) {
                 echo json_encode(getChildrenJsTree($referenceType, $referenceID, $taxonID, $insertSeries));
             }
         }
-        // without filterID:
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONjsTree/japi&action=classificationBrowser'
-//           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)
-//           . '&referenceId=' . filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT)
-//           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
-        // with filterID:
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONjsTree/japi&action=classificationBrowser'
-//           . '&referenceType=' . filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)
-//           . '&referenceId=' . filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT)
-//           . '&filterId=' . filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'filter_button':
         echo json_encode(getFilteredJsTree(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING),
@@ -59,26 +47,16 @@ switch ($type) {
         } else {
             echo $rest->get("classification/nameReferences", array($taxonID), array("excludeReferenceId" => $excludeReferenceId, "insertSeries" => $insertSeries));
         }
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=nameReferences'
-//           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)
-//           . '&excludeReferenceId=' . filter_input(INPUT_GET, 'excludeReferenceId', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'scientificNameAc':
         echo $rest->get('autocomplete/scientificNames', array(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)));
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=autoComplete/scientificName'
-//           . '&term=' . filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING));
         break;
     case 'infoBox_statistics':
         echo $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=getPeriodicalStatistics'
-//           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT));
         break;
     case 'open_all':
         echo $rest->get('classification/numberOfChildrenWithChildrenCitation',
                    array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)),
                    array('taxonID' => filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)));
-//        echo file_get_contents($_CONFIG['JACQ_URL'] . 'index.php?r=jSONClassification/japi&action=numberOfChildrenWithChildrenCitation'
-//           . '&referenceID=' . filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_NUMBER_INT)
-//           . '&taxonID=' . filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT));
         break;
 }

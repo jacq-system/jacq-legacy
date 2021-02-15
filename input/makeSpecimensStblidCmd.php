@@ -103,7 +103,7 @@ require_once 'inc/stableIdentifierFunctions.php';
 
 ob_start();
 
-$result_start = db_query("SELECT DATE(`starttime`) AS startdate FROM statusSpecimensStblid ORDER BY starttime DESC LIMIT 1");
+$result_start = db_query("SELECT DATE(`starttime`) AS startdate FROM statusSpecimensStblid ORDER BY id DESC LIMIT 1");
 $row_start = mysql_fetch_array($result_start);
 $startdate = $row_start['startdate'];
 
