@@ -8,12 +8,17 @@ session_set_cookie_params(0, "/", "", $secure);
 session_start();
 
 if (isset($_SESSION['username']) && isset($_SESSION['password'])) {
-    if (@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-        if (@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
-            $location="Location: menu.php";
-            if (SID) $location = $location . "?" . SID;
-            header($location);
+    $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
+                         $_SESSION['username'],
+                         $_SESSION['password'],
+                         $_CONFIG['DATABASE']['INPUT']['name']);
+
+    if ($dbLink) {
+        $location = "Location: menu.php";
+        if (SID) {
+            $location = $location . "?" . SID;
         }
+        header($location);
     }
 }
 
@@ -29,10 +34,8 @@ function getUnamePw($username, $password)
             WHERE username='".mysql_escape_string($username)."'";
     $result = mysql_query($sql);
     $row = mysql_fetch_array($result);
-    @mysql_close($ident);
+    mysql_close($ident);
 
-    $iv = $row['iv'];
-    $secret = $row['secret'];
     if (strlen($row['iv'])>0 && strlen($row['secret'])>0) {
         $td = mcrypt_module_open('rijndael-256', '', 'cfb', '');
         mcrypt_generic_init($td, $row['username']." ".$password, base64_decode($row['iv']));
@@ -143,7 +146,9 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 $_SESSION['linkControl'] = $row['linkTaxon'];
                 $_SESSION['editorControl'] = $row['editor'];
                 $location="Location: menu.php";
-                if (SID) $location = $location."?".SID;
+                if (SID) {
+                    $location = $location."?".SID;
+                }
                 Header($location);
             } else {
                 show_page("Login failed!<br>\nPlease redo!");

@@ -9,7 +9,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     } else {
         header("Location: login.php");
         exit();
-    }
+    }  // TODO: remove the remaining lines up to $dbLink... when removing the mysql-part
 } else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
     if (substr(getcwd(), -5) == "/ajax") {
         die();
@@ -28,37 +28,75 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
 
 mysql_query("SET character set utf8");
 
-function no_magic()   // PHP >= 4.1
+function no_magic()   // PHP >= 4.1, depricated
 {
     if (get_magic_quotes_gpc()) {
         foreach($_GET as $k => $v)  $_GET["$k"] = stripslashes($v);
         foreach($_POST as $k => $v) $_POST["$k"] = stripslashes($v);
     }
 }
+// remove up to here
 
-// mode=1=> From Post to escaped mysql
+/** @var mysqli $dbLink */
+$dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
+                     $_SESSION['username'],
+                     $_SESSION['password'],
+                     $_CONFIG['DATABASE']['INPUT']['name']);
+if ($dbLink->connect_errno) {
+    header("Location: login.php");
+	exit();
+}
+$dbLink->set_charset('utf8');
+
+// $mode=1 => from Post to escaped mysql
 // $mode=2 => for formulars from escaped mysql
 // $mode=3 => for formulars from not escaped mysql
 // $mode=4 => from mysql to mysql
-function doQuotes(&$obj,$mode){
-	if(!is_array($obj))$obj=array($obj);
-	foreach($obj as &$val){
-		if(is_array($val)){
-				doQuotes($val,$mode);
-		}else if(is_scalar($val)){
-			if($mode==1){
-				$val=htmlspecialchars_decode($val);
-				$val=mysql_escape_string($val);
-			}else if($mode==2){
-				$val=htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
-				$val=stripslashes($val);
-			}else if($mode==3){
-				$val=htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
-			}else if($mode==4){
-				$val=mysql_escape_string($val);
-			}
-		}
-	}
+function doQuotes(&$obj, $mode)
+{
+    global $dbLink;
+
+    if (!is_array($obj)) {
+        $obj = array($obj);
+    }
+    foreach ($obj as &$val) {
+        if (is_array($val)) {
+            doQuotes($val, $mode);
+        } else if (is_scalar($val)) {
+            if ($mode == 1) {
+                $val = $dbLink->real_escape_string(htmlspecialchars_decode($val));
+            } else if($mode == 2) {
+            	$val = stripslashes(htmlspecialchars($val, ENT_COMPAT, "UTF-8", 1));
+            } else if($mode == 3) {
+            	$val = htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
+            } else if($mode == 4) {
+            	$val = $dbLink->real_escape_string($val);
+            }
+        }
+    }
+}
+
+/**
+ * @param $sql
+ * @param bool|FALSE $debug
+ * @return mysqli_result
+ */
+function dbi_query($sql, $debug=false)
+{
+    global $_OPTIONS, $dbLink;
+
+    if($debug || $_OPTIONS['debug']==1){
+        $debug=true;
+    }
+
+    $res = $dbLink->query($sql);
+
+    if(!$res && $debug){
+        echo $sql;
+        echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+    }
+
+    return $res;
 }
 
 /**
@@ -69,21 +107,22 @@ function doQuotes(&$obj,$mode){
  * @return resource
  *
  */
-function db_query($sql,$debug=false){
-  global $_OPTIONS;
+function db_query($sql, $debug=false)
+{
+    global $_OPTIONS;
 
-  if($debug || $_OPTIONS['debug']==1){
-    $debug=true;
-  }
+    if($debug || $_OPTIONS['debug'] == 1) {
+        $debug=true;
+    }
 
-  $res=mysql_query($sql);
+    $res = mysql_query($sql);
 
-  if(!$res && $debug){
-    echo $sql;
-    echo mysql_errno() . ": " . mysql_error() . "<br>\n";
-  }
+    if(!$res && $debug) {
+        echo $sql;
+        echo mysql_errno() . ": " . mysql_error() . "<br>\n";
+    }
 
-  return $res;
+    return $res;
 }
 
 /**
@@ -102,10 +141,19 @@ function mysql_fetch_all ($result)
 }
 
 
+/**
+ * quotes a string or returns NULL if string is empty
+ *
+ * @global mysqli $dbLink link to mysql-db
+ * @param type $text what to quote
+ * @return string quoted string or NULL
+ */
 function quoteString($text)
 {
+    global $dbLink;
+
     if (strlen($text) > 0) {
-        return "'" . mysql_real_escape_string($text) . "'";
+        return "'" . $dbLink->real_escape_string($text) . "'";
     } else {
         return "NULL";
     }
@@ -133,8 +181,8 @@ function checkRight($right)
                 FROM herbarinput_log.tbl_herbardb_unlock
                 WHERE `table` = ".quoteString(substr($right, 7))."
                  AND groupID = '" . intval($_SESSION['gid']) . "'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if ($result->num_rows > 0) {
             return true;
         } else {
             return false;
@@ -144,7 +192,7 @@ function checkRight($right)
                 FROM herbarinput_log.tbl_herbardb_users, herbarinput_log.tbl_herbardb_groups
                 WHERE herbarinput_log.tbl_herbardb_users.groupID = herbarinput_log.tbl_herbardb_groups.groupID
                  AND userID = '" . intval($_SESSION['uid']) . "'";
-        $row = mysql_fetch_array(db_query($sql));
+        $row = dbi_query($sql)->fetch_array();
         if (isset($row[$right]) && $row[$right]) {
             return true;
         } else {
@@ -153,47 +201,38 @@ function checkRight($right)
     }
 }
 
-function isLocked($table, $id){
+function isLocked($table, $id)
+{
 	$lock = "locked";
 	if (is_numeric($id)) {
         $PID = "";
-        $result = mysql_query("SHOW INDEX FROM $table");
-        while ($row=mysql_fetch_array($result)) {
-            if ($row['Key_name']=='PRIMARY') {
+        $result = dbi_query("SHOW INDEX FROM $table");
+        while ($row = $result->fetch_array()) {
+            if ($row['Key_name'] == 'PRIMARY') {
                 $PID = $row['Column_name'];
                 break;
             }
         }
         $sql = "SELECT $lock FROM $table WHERE $PID = '" . intval($id) . "'";
-        $row = mysql_fetch_array(mysql_query($sql));
+        $row = dbi_query($sql)->fetch_array();
         if ($row[$lock]) {
             return true;
         }
-    }else if(is_object($id)){
-		if(! $where=$id->getWhere() ) return false;
-		$res=mysql_query("SELECT {$lock} FROM {$table} WHERE {$where}");
+    } else if(is_object($id)) {
+        $where = $id->getWhere();
+		if (!$where) {
+            return false;
+        }
+		$res = dbi_query("SELECT {$lock} FROM {$table} WHERE {$where}");
 
-		if($res && $row = mysql_fetch_array($res)){
-			if(isset($row[$lock]) && $row[$lock]){
+		if ($res && $row = $res->fetch_array()){
+			if (isset($row[$lock]) && $row[$lock]){
 				return true;
 			}
 		}
     }
 
     return false;
-}
-
-/**
- * deprecated
- * get the IP of the appropriate picture server
- *
- * @param integer $specimenID Specimen ID
- * @return string IP of picture server
- */
-function getPictureServerIP($specimenID){
-	global $_OPTIONS;
-
-    return $_OPTIONS['HERBARIMAGEURL'];
 }
 
 /**
@@ -209,24 +248,24 @@ function formatUnitID($specimenID)
             WHERE s.collectionID = mc.collectionID
              AND mc.source_id = herbarinput.meta.source_id
              AND specimen_ID='" . intval($specimenID) . "'";
-    $rowSpecimen = mysql_fetch_array(db_query($sql));
+    $rowSpecimen = dbi_query($sql)->fetch_array();
 
     $unitID = $rowSpecimen['source_code'];
     if ($rowSpecimen['HerbNummer']) {
         $sql = "SELECT digits, replace_char
                 FROM tbl_labels_numbering
                 WHERE collectionID_fk = '" . $rowSpecimen['collectionID'] . "'";            // first check on collectionID
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            $row1 = mysql_fetch_array($result);
+        $result = dbi_query($sql);
+        if ($result->num_rows > 0) {
+            $row1 = $result->fetch_array();
             $found = false;
-            if (mysql_num_rows($result) > 1) {
-                $sql = "SELECT digits, replace_char
-                        FROM tbl_labels_numbering
-                        WHERE replace_char IS NOT NULL
-                         AND collectionID_fk = '" . $rowSpecimen['collectionID'] . "'";     // set replace char wins
-                $result = db_query($sql);
-                while ($row2 = mysql_fetch_array($result)) {
+            if ($result->num_rows() > 1) {
+                $sql2 = "SELECT digits, replace_char
+                         FROM tbl_labels_numbering
+                         WHERE replace_char IS NOT NULL
+                          AND collectionID_fk = '" . $rowSpecimen['collectionID'] . "'";     // set replace char wins
+                $result2 = dbi_query($sql2);
+                while ($row2 = $result2->fetch_array()) {
                     if (strpos($rowSpecimen['HerbNummer'], $row2['replace_char']) !== false) {
                         $digits  = $row2['digits'];
                         $replace = $row2['replace_char'];
@@ -244,18 +283,18 @@ function formatUnitID($specimenID)
                     FROM tbl_labels_numbering
                     WHERE collectionID_fk IS NULL
                      AND sourceID_fk = '" . $rowSpecimen['source_id'] . "'";               // second check on sourceID
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row1 = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if ($result->num_rows > 0) {
+                $row1 = $result->fetch_array();
                 $found = false;
-                if (mysql_num_rows($result) > 1) {
+                if ($result->num_rows > 1) {
                     $sql = "SELECT digits, replace_char
                             FROM tbl_labels_numbering
                             WHERE replace_char IS NOT NULL
                              AND collectionID_fk IS NULL
                              AND sourceID_fk = '" . $rowSpecimen['source_id'] . "'";        // set replace char wins
-                    $result = db_query($sql);
-                    while ($row2 = mysql_fetch_array($result)) {
+                    $result = dbi_query($sql);
+                    while ($row2 = $result->fetch_array()) {
                         if (strpos($rowSpecimen['HerbNummer'], $row2['replace_char']) !== false) {
                             $digits  = $row2['digits'];
                             $replace = $row2['replace_char'];
@@ -299,7 +338,7 @@ function formatPreUnitID($sourceID, $number)
     $sql = "SELECT source_code
             FROM herbarinput.meta
             WHERE source_id = '" . intval($sourceID) . "'";
-    $row = mysql_fetch_array(db_query($sql));
+    $row = dbi_query($sql)->fetch_array();
 
     $unitID = $row['source_code'];
 
@@ -308,9 +347,9 @@ function formatPreUnitID($sourceID, $number)
             WHERE replace_char IS NULL
              AND collectionID_fk IS NULL
              AND sourceID_fk = '" . intval($sourceID) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array;
         $digits = $row['digits'];
     } else {
         $digits = 7;
