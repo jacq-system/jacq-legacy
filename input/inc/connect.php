@@ -125,27 +125,27 @@ function db_query($sql, $debug=false)
     return $res;
 }
 
+
 /**
- * wrapper for the depricated mysql interface
+ * wrapper function to mysqli-real-escape-string
+ * (makes it unnecessary to use global variable $dbLink
  *
- * @param resource $result
+ * @global mysqli $dbLink
+ * @param type $text text to escape
+ * @return string escaped text
  */
-function mysql_fetch_all ($result)
+function dbi_escape_string($text)
 {
-    $rows = array();
-    while ($row = mysql_fetch_assoc($result)) {
-        $rows[] = $row;
-    }
+    global $dbLink;
 
-    return $rows;
+    return $dbLink->real_escape_string($text);
 }
-
 
 /**
  * quotes a string or returns NULL if string is empty
  *
  * @global mysqli $dbLink link to mysql-db
- * @param type $text what to quote
+ * @param string $text what to quote
  * @return string quoted string or NULL
  */
 function quoteString($text)
@@ -349,7 +349,7 @@ function formatPreUnitID($sourceID, $number)
              AND sourceID_fk = '" . intval($sourceID) . "'";
     $result = dbi_query($sql);
     if ($result->num_rows > 0) {
-        $row = $result->fetch_array;
+        $row = $result->fetch_array();
         $digits = $row['digits'];
     } else {
         $digits = 7;
