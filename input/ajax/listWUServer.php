@@ -12,8 +12,8 @@ function makeDropdownInstitution()
                 . "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while($row = mysqli_fetch_array($result)) {
         $selectData .= "  <option value=\"-".htmlspecialchars($row['source_id'])."\"";
         if ($_SESSION['wuCollection'] == $row['source_id']) {
             $selectData .= " selected";
@@ -35,8 +35,8 @@ function makeDropdownCollection() {
               . "  <option value=\"0\"></option>\n";
 
   $sql = "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-  $result = db_query($sql);
-  while($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while($row=mysqli_fetch_array($result)) {
     $selectData .= "  <option value=\"".htmlspecialchars($row['collectionID'])."\"";
     if ($_SESSION['wuCollection']==$row['collectionID']) $selectData .= " selected";
     $selectData .= ">".htmlspecialchars($row['collection'])."</option>\n";
@@ -64,9 +64,9 @@ function getUserDate($id) {
   if (intval($id)) $sql .= "WHERE userID='".intval($id)."' ";
   $sql .= "GROUP BY date
            ORDER BY date";
-  $result = db_query($sql);
+  $result = dbi_query($sql);
   $selectData = "";
-  while($row=mysql_fetch_array($result)) {
+  while($row=mysqli_fetch_array($result)) {
     $selectData .= "  <option>".htmlspecialchars($row['date'])."</option>\n";
   }
 
@@ -86,18 +86,18 @@ function getUserDate($id) {
 function toggleTypeLabelMap($id) {
   $constraint = "specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'";
   $sql = "SELECT label FROM tbl_labels WHERE $constraint";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
     $newLabel = ($row['label'] & 0x1) ? ($row['label'] & 0xfffe) : ($row['label'] | 1);
     if ($newLabel)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+      dbi_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
     else
-      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+      dbi_query("DELETE FROM tbl_labels WHERE $constraint");
 	}
 	else  {
 	  $newLabel = 1;
-    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+    dbi_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
 	}
 
   $response = new Response();
@@ -116,18 +116,18 @@ function toggleTypeLabelMap($id) {
 function toggleTypeLabelSpec($id) {
   $constraint = "specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'";
   $sql = "SELECT label FROM tbl_labels WHERE $constraint";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
     $newLabel = ($row['label'] & 0x2) ? ($row['label'] & 0xfffd) : ($row['label'] | 2);
     if ($newLabel)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+      dbi_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
     else
-      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+      dbi_query("DELETE FROM tbl_labels WHERE $constraint");
 	}
 	else  {
 	  $newLabel = 2;
-    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+    dbi_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
 	}
 
   $response = new Response();
@@ -146,18 +146,18 @@ function toggleTypeLabelSpec($id) {
 function toggleBarcodeLabel($id) {
   $constraint = "specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'";
   $sql = "SELECT label FROM tbl_labels WHERE $constraint";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
     $newLabel = ($row['label'] & 0x4) ? ($row['label'] & 0xfffb) : ($row['label'] | 4);
     if ($newLabel)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+      dbi_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
     else
-      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+      dbi_query("DELETE FROM tbl_labels WHERE $constraint");
   }
   else  {
     $newLabel = 4;
-    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+    dbi_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
   }
 
   $response = new Response();
@@ -174,8 +174,8 @@ function toggleBarcodeLabel($id) {
  */
 function checkTypeLabelMapPdfButton() {
   $sql = "SELECT label FROM tbl_labels WHERE (label&1)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0)
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0)
     $disabled = false;
   else
     $disabled = true;
@@ -194,8 +194,8 @@ function checkTypeLabelMapPdfButton() {
  */
 function checkTypeLabelSpecPdfButton() {
   $sql = "SELECT label FROM tbl_labels WHERE (label&2)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0)
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0)
     $disabled = false;
   else
     $disabled = true;
@@ -214,8 +214,8 @@ function checkTypeLabelSpecPdfButton() {
  */
 function checkBarcodeLabelPdfButton() {
   $sql = "SELECT label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0)
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0)
     $disabled = false;
   else
     $disabled = true;
@@ -237,18 +237,18 @@ function checkBarcodeLabelPdfButton() {
 function updtStandardLabel($id, $ctr) {
   $constraint = "specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'";
   $sql = "SELECT label FROM tbl_labels WHERE $constraint";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
     $newLabel = ($row['label'] & 0xff0f) + intval($ctr) * 0x10;
     if ($newLabel)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+      dbi_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
     else
-      mysql_query("DELETE FROM tbl_labels WHERE $constraint");
+      dbi_query("DELETE FROM tbl_labels WHERE $constraint");
   }
   else {
     $newLabel = intval($ctr) * 0x10;
-    mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+    dbi_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
   }
 	$response = new Response();
   $response->call("jaxon_checkStandardLabelPdfButton");
@@ -265,9 +265,9 @@ function updtStandardLabel($id, $ctr) {
 function checkStandardLabelPdfButton() {
 
   $sql = "SELECT label FROM tbl_labels WHERE (label&240)>'0' AND userID='".$_SESSION['uid']."'";
-  $result = mysql_query($sql);
+  $result = dbi_query($sql);
   $value = true;
-  while ($row=mysql_fetch_array($result)) {
+  while ($row=mysqli_fetch_array($result)) {
     if ($row['label'] & 0xf0) {
       $value = false;
       break;
@@ -285,7 +285,7 @@ function checkStandardLabelPdfButton() {
  */
 function setAll() {
   $response = new Response();
-  $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
+  $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
   $sql = "SELECT ls.specimenID, s.typusID, l.label
           FROM (herbarinput_log.log_specimens ls, tbl_specimens s)
            LEFT JOIN tbl_labels l ON (ls.specimenID=l.specimen_ID AND ls.userID=l.userID)
@@ -294,8 +294,8 @@ function setAll() {
            AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
           GROUP BY ls.specimenID
           ORDER BY ls.timestamp";
-  $result = db_query($sql);
-  while ($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row=mysqli_fetch_array($result)) {
     $id = $row['specimenID'];
     $response->assign("inpSL_$id", 'value', 1);
     $response->assign("cbBarcodeLabel_$id", 'checked', 'checked');
@@ -308,11 +308,11 @@ function setAll() {
       $newLabel = 0x14;
 
     $constraint = "specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'";
-    $result2 = mysql_query("SELECT label FROM tbl_labels WHERE $constraint");
-    if (mysql_num_rows($result2)>0)
-      mysql_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
+    $result2 = dbi_query("SELECT label FROM tbl_labels WHERE $constraint");
+    if (mysqli_num_rows($result2)>0)
+      dbi_query("UPDATE tbl_labels SET label='$newLabel' WHERE $constraint");
     else
-      mysql_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
+      dbi_query("INSERT INTO tbl_labels SET label='$newLabel', specimen_ID=".intval($id).", userID='".$_SESSION['uid']."'");
   }
 
   $response->call("jaxon_checkTypeLabelMapPdfButton");
@@ -329,7 +329,7 @@ function setAll() {
  */
 function clearAll() {
   $response = new Response();
-  $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
+  $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
   $sql = "SELECT ls.specimenID, s.typusID, l.label
           FROM (herbarinput_log.log_specimens ls, tbl_specimens s)
            LEFT JOIN tbl_labels l ON (ls.specimenID=l.specimen_ID AND ls.userID=l.userID)
@@ -338,8 +338,8 @@ function clearAll() {
            AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
           GROUP BY ls.specimenID
           ORDER BY ls.timestamp";
-  $result = db_query($sql);
-  while ($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row=mysqli_fetch_array($result)) {
     $id = $row['specimenID'];
     $response->assign("inpSL_$id", 'value', 0);
     if ($row['typusID']) {
@@ -347,7 +347,7 @@ function clearAll() {
       $response->assign("cbTypeLabelSpec_$id", 'checked', '');
     }
 
-    mysql_query("DELETE FROM tbl_labels WHERE specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'");
+    dbi_query("DELETE FROM tbl_labels WHERE specimen_ID=".intval($id)." AND userID='".$_SESSION['uid']."'");
   }
 
   $response->call("jaxon_checkTypeLabelMapPdfButton");

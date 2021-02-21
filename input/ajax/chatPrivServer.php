@@ -25,17 +25,17 @@ function makeDropdownUsers($tid)
              AND hu.login >= subtime(now(), '24:00:00')
              AND hu.userID != {$_SESSION['uid']}
             ORDER BY m.`source_code`, hu.surname, hu.firstname";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
             $sql = "SELECT ID
                     FROM tbl_chat_priv
                     WHERE uid = {$row['userID']}
                      AND tid = {$_SESSION['uid']}
                      AND seen = 0";
-            $checkResult = db_query($sql);
+            $checkResult = dbi_query($sql);
             $ret .= "<option value=\"{$row['userID']}\""
-                  . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
+                  . ((mysqli_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
                   . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] ({$row['login']})"
@@ -50,17 +50,17 @@ function makeDropdownUsers($tid)
              AND (hu.login IS NULL OR hu.login < subtime(now(), '24:00:00'))
              AND hu.userID != {$_SESSION['uid']}
             ORDER BY m.`source_code`, hu.surname, hu.firstname";
-    $result = db_query($sql);
-    while ($row=mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row=mysqli_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
             $sql = "SELECT ID
                     FROM tbl_chat_priv
                     WHERE uid = {$row['userID']}
                      AND tid = {$_SESSION['uid']}
                      AND seen = 0";
-            $checkResult = db_query($sql);
+            $checkResult = dbi_query($sql);
             $ret .= "<option value=\"{$row['userID']}\""
-                  . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
+                  . ((mysqli_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
                   . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] (" . (($row['login']) ? $row['login'] : "offline") . ")"
@@ -106,11 +106,15 @@ function displaychat($tid)
                 ORDER BY tbl_chat_priv.timestamp DESC
                 LIMIT 100";
     }
-    $r = db_query($sql);
+    $r = dbi_query($sql);
     $chat = '<table width="500" dir=\"ltr\" summary=\"Shoutbox formating\" cellpadding=2 cellspacing=0 border=0>';
 
     $bgcolor='#c2c2c2';
-    while($row=mysql_fetch_assoc($r)){
+    $latestTableId = 0;
+    while($row = mysqli_fetch_assoc($r)) {
+        if (!$latestTableId) {
+            $latestTableId = $row['ID'];
+        }
         $bold = ($row['seen'] == 0 && $row['tid'] == $_SESSION['uid']) ? 'style="font-weight:bold"' : '';
         $onclick = "onclick=\"jaxon_changeStatus('{$row['userID']}', '{$row['ID']}');\"";
         $chat .= "<tr bgcolor=\"$bgcolor\">".
@@ -128,12 +132,11 @@ function displaychat($tid)
     $chat .= '</table>';
     $response->assign('chatdiv', 'innerHTML', $chat);
 
-    $latestTableId = (mysql_num_rows($r)>0) ? mysql_result($r,0,0) : 0;
     $response->script("document.getElementById('latestid').value='".$latestTableId."'");
 
     $response->assign('spn_tid', 'innerHTML', makeDropdownUsers($tid));
 
-    $latestUserId = mysql_result(mysql_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1"),0,0);
+    $latestUserId = dbi_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1")->fetch_assoc()['userID'];
     $response->script("document.getElementById('latestuid').value='".$latestUserId."'");
 
     if ($tid > 0) {
@@ -154,7 +157,7 @@ function changeStatus($userID, $ID)
              timestamp = timestamp,
              seen = 1
             WHERE ID = '" . intval($ID) . "'";
-    db_query($sql);
+    dbi_query($sql);
 
     return displaychat($userID);
 }
@@ -183,8 +186,8 @@ function insertchat($formdata)
         $sql = "INSERT INTO tbl_chat_priv SET
                 uid='".$_SESSION['uid']."',
                 tid='".$formdata['tid']."',
-                chat='".mysql_real_escape_string($formdata['chat'])."'";
-        db_query($sql);
+                chat='".dbi_escape_string($formdata['chat'])."'";
+        dbi_query($sql);
 
         //Empty the textarea
         $response->script("document.getElementById('chat').value=''");
@@ -225,9 +228,9 @@ function checklatest($formdata)
                 ORDER BY timestamp DESC
                 LIMIT 1";
     }
-    $r = mysql_query($sql);
-    $latestTableId = (mysql_num_rows($r)>0) ? mysql_result($r,0,0) : 0;
-    $latestUserId = mysql_result(mysql_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1"),0,0);
+    $r = dbi_query($sql);
+    $latestTableId = (mysqli_num_rows($r) > 0) ? $r->fetch_assoc()['ID'] : 0;
+    $latestUserId = dbi_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1")->fetch_assoc()['userID'];
     if($formdata['latestid']!=$latestTableId || $formdata['latestuid']!=$latestUserId){
         $response->appendResponse(displaychat($formdata['tid'])); //reload the chat display div
     }

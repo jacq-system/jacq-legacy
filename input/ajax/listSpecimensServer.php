@@ -72,16 +72,16 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $pieces = explode(" ", trim($_SESSION['sTaxon']));
             $part1 = array_shift($pieces);
             $part2 = array_shift($pieces);
-            $sql2 .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+            $sql2 .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
             if ($part2) {
-                $sql2 .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' " .
-                        "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' " .
-                        "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' " .
-                        "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+                $sql2 .= " AND (te.epithet LIKE '" . dbi_escape_string($part2) . "%' " .
+                        "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' " .
+                        "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' " .
+                        "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
             }
         }
         if (trim($_SESSION['sSeries'])) {
-            $sql2 .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['sSeries'])) . "%'";
+            $sql2 .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['sSeries'])) . "%'";
         }
         if (trim($_SESSION['wuCollection'])) {
             if (trim($_SESSION['wuCollection']) > 0) {
@@ -92,44 +92,44 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
         if (trim($_SESSION['sNumber'])) {
-            $sql2 .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumber'])) . "%'";
+            $sql2 .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumber'])) . "%'";
         }
         if (trim($_SESSION['sFamily'])) {
-            $sql2 .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['sFamily'])) . "%'";
+            $sql2 .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['sFamily'])) . "%'";
         }
         if (trim($_SESSION['sCollector'])) {
-            $sql2 .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%' OR
-						   c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['sCollector'])) . "%')";
+            $sql2 .= " AND (c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%' OR
+						   c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%')";
         }
         if (trim($_SESSION['sNumberC'])) {
-            $sql2 .= " AND (s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.CollNummer LIKE '%" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.series_number LIKE '" . mysql_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
+            $sql2 .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
+							s.series_number LIKE '" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
         }
         if (trim($_SESSION['sDate'])) {
-            $sql2 .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['sDate'])) . "%'";
+            $sql2 .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['sDate'])) . "%'";
         }
         if (trim($_SESSION['sGeoGeneral'])) {
-            $sql2 .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";
+            $sql2 .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";
         }
         if (trim($_SESSION['sGeoRegion'])) {
-            $sql2 .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['sGeoRegion'])) . "%'";
+            $sql2 .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['sGeoRegion'])) . "%'";
         }
         if (trim($_SESSION['sCountry'])) {
-            $sql2 .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['sCountry'])) . "%'";
+            $sql2 .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['sCountry'])) . "%'";
         }
         if (trim($_SESSION['sProvince'])) {
-            $sql2 .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['sProvince'])) . "%'";
+            $sql2 .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['sProvince'])) . "%'";
         }
         if (trim($_SESSION['sLoc'])) {
-            $sql2 .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['sLoc'])) . "%'";
+            $sql2 .= " AND s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%'";
         }
         if (trim($_SESSION['sBemerkungen'])) {
-            $sql2 .= " AND s.Bemerkungen LIKE '%" . mysql_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+            $sql2 .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
         }
         if (trim($_SESSION['sTaxonAlt'])) {
-            $sql2 .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
+            $sql2 .= " AND s.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
         }
         if ($_SESSION['sTyp']) {
             $sql2 .= " AND s.typusID != 0";
@@ -149,12 +149,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     else {
         $_SESSION['sSQLCondition'] = $sql2;
 
-        $result = db_query($sql . $sql2 . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
-        $fr_result = db_query("SELECT FOUND_ROWS() AS `found_rows`");
-        $fr_row = mysql_fetch_array($fr_result);
+        $result = dbi_query($sql . $sql2 . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+        $fr_result = dbi_query("SELECT FOUND_ROWS() AS `found_rows`");
+        $fr_row = mysqli_fetch_array($fr_result);
         $found_rows = $fr_row['found_rows'];
 
-        if (mysql_num_rows($result) > 0) {
+        if (mysqli_num_rows($result) > 0) {
             echo "<table class=\"out\" cellspacing=\"0\">\n"
                . "<tr class=\"out\">"
                . "<th class=\"out\"></th>"
@@ -174,7 +174,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
             echo "</tr>\n";
             $nr = 1;
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $row['specimen_ID'];
 
                 if ($row['digital_image']) {
@@ -230,10 +230,10 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                	   . $textColl;
                 if ($swBatch) {
                     echo "<td class=\"out\" style=\"text-align: center\">";
-                    $resultDummy = db_query("SELECT t1.remarks FROM api.tbl_api_batches AS t1, api.tbl_api_specimens AS t2 WHERE t2.specimen_ID = '" . $row['specimen_ID'] . "' AND t1.batchID = t2.batchID_fk");
-                    if (mysql_num_rows($resultDummy) > 0) {
+                    $resultDummy = dbi_query("SELECT t1.remarks FROM api.tbl_api_batches AS t1, api.tbl_api_specimens AS t2 WHERE t2.specimen_ID = '" . $row['specimen_ID'] . "' AND t1.batchID = t2.batchID_fk");
+                    if (mysqli_num_rows($resultDummy) > 0) {
                         //echo "&radic;";
-                        $rowDummy = mysql_fetch_array($resultDummy);
+                        $rowDummy = mysqli_fetch_array($resultDummy);
                         echo $rowDummy['remarks'];
                     } else {
                         echo "<input type=\"checkbox\" name=\"batch_spec_" . $row['specimen_ID'] . "\">";

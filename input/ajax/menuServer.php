@@ -18,10 +18,10 @@ function checkChats() {
              AND tbl_chat_priv.timestamp > subtime(now(), '0:00:30')
             ORDER BY tbl_chat_priv.timestamp DESC
             LIMIT 1";
-    $result = mysql_query($sql);
+    $result = dbi_query($sql);
 
-    if (!$_SESSION['chatPrivActive'] && mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    if (!$_SESSION['chatPrivActive'] && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         if (strpos($_SESSION['chatPrivIDs'], $row['ID']) === false) {
             $_SESSION['chatPrivIDs'] .= " " . $row['ID'];
             $text .= "You got a private message from " . $row['firstname'] . " " . $row['surname'] . " at " . $row['timestamp'] . "\n\n";
@@ -34,10 +34,10 @@ function checkChats() {
              AND tbl_chat.timestamp > subtime(now(), '0:00:30')
             ORDER BY tbl_chat.timestamp DESC
             LIMIT 1";
-    $result = mysql_query($sql);
+    $result = dbi_query($sql);
 
-    if (!$_SESSION['chatActive'] && mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    if (!$_SESSION['chatActive'] && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         if (strpos($_SESSION['chatIDs'], $row['ID']) === false) {
             $_SESSION['chatIDs'] .= " " . $row['ID'];
             $text .= "New public message from " . $row['firstname'] . " " . $row['surname'] . " at " . $row['timestamp'];

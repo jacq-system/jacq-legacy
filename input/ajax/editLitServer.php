@@ -24,9 +24,9 @@ function makeProtologFromID($citationID)
           LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID
           LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
          WHERE citationID = '" . intval($citationID) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         return protolog($row);
     } else {
         return '';
@@ -40,9 +40,9 @@ function makeHeaderFromID($citationID)
           LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
           LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
          WHERE citationID = '" . intval($citationID) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $text = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . "): " . $row['titel'];
         if ($row['periodicalID']) {
             $text .= " " . $row['periodical'];
@@ -74,10 +74,10 @@ function getChildrenOfParent($parentID, $citationID)
              LEFT JOIN tbl_lit l ON l.citationID = lc.citation_child_ID
             WHERE citation_parent_ID = '" . intval($parentID) . "'
             ORDER BY l.ppSort";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     $ret = array();
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             if ($row['citation_child_ID'] == $citationID) {
                 $text = "<span title=\"" . makeProtologFromID($citationID) . "\">" . makeTextShorter(makeProtologFromID($citationID), 80, 20) . "</span>";
             } else {
@@ -139,10 +139,10 @@ function listLib($periodical)
                 WHERE tbl_lit_lib_period.library_ID = tbl_lit_libraries.library_ID
                  AND periodicalID = $id
                 ORDER BY library";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
             $text = "";
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $url = '';
                 if (trim($row['url'])) {
                     $parts = explode('http', $row['url']);
@@ -196,9 +196,9 @@ function listContainer($citationID)
             $sql = "SELECT citation_parent_ID
                     FROM tbl_lit_container
                     WHERE citation_child_ID = '$topID'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $topID = $row['citation_parent_ID'];
             } else {
                 break;
@@ -253,8 +253,8 @@ function editContainer($citationID)
                   FROM tbl_lit_container
                   WHERE citation_parent_ID = '" . intval($citationIDfiltered) . "' )
                 ORDER BY sortBlock, citation_parent_ID, citation_child_ID";
-        $result = db_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             $id = $row['tbl_lit_containerID'];
             if ($row['citation_child_ID'] == $citationIDfiltered) {
                 $protolog = makeProtologFromID($row['citation_parent_ID']);
@@ -317,7 +317,7 @@ function updateContainer($formData)
                         $sql = "INSERT INTO tbl_lit_container SET
                                 $sqldata";
                     }
-                    db_query($sql);
+                    dbi_query($sql);
                 }
             }
         }
@@ -336,7 +336,7 @@ function deleteContainer($containerID, $citationID)
     $containerIDfiltered = intval($containerID);
 
     if ($containerIDfiltered && ($_SESSION['editControl'] & 0x20) != 0) {
-        db_query("DELETE FROM tbl_lit_container WHERE tbl_lit_containerID = '" . $containerIDfiltered . "'");
+        dbi_query("DELETE FROM tbl_lit_container WHERE tbl_lit_containerID = '" . $containerIDfiltered . "'");
     }
 
     editContainer($citationID);

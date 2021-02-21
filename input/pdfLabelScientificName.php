@@ -7,7 +7,7 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 }
 
 session_start();
-require("inc/connect7.php");
+require("inc/connect.php");
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');

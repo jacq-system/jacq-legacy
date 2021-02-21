@@ -1,21 +1,11 @@
 <?php
 session_start();
-require("../inc/connect7.php");
+require("../inc/connect.php");
 require_once("../inc/uuidMinterFunctions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
-
-/** @var mysqli $dbLinkJacq */
-$dbLinkJacq = new mysqli($_CONFIG['DATABASE']['JACQ']['host'],
-                     $_CONFIG['DATABASE']['JACQ']['readonly']['user'],
-                     $_CONFIG['DATABASE']['JACQ']['readonly']['pass'],
-                     $_CONFIG['DATABASE']['JACQ']['name']);
-if ($dbLinkJacq->connect_errno) {
-    error_log("listTaxServer: Database jacq_input not available!");
-}
-$dbLinkJacq->set_charset('utf8');
 
 /**
  * jaxon-function toggleScientificNameLabel

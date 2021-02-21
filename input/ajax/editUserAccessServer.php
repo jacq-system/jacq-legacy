@@ -16,10 +16,10 @@ use Jaxon\Response\Response;
 function getFamilyDropdown($category)
 {
     $selectData = "  <option></option>\n";
-    $result = db_query("SELECT familyID, family FROM tbl_tax_families WHERE categoryID='" . intval($category['categoryID']) . "' ORDER BY family");
+    $result = dbi_query("SELECT familyID, family FROM tbl_tax_families WHERE categoryID='" . intval($category['categoryID']) . "' ORDER BY family");
     if ($result) {
-        if (mysql_num_rows($result) > 0) {
-            while ($row = mysql_fetch_array($result)) {
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result)) {
                 $selectData .= "  <option value=\"" . $row['familyID'] . "\">" . htmlspecialchars($row['family']) . "</option>\n";
             }
         }
@@ -40,10 +40,10 @@ function getFamilyDropdown($category)
 function getGenusDropdown($family) {
 
   $selectData = "  <option></option>\n";
-  $result = db_query("SELECT genID, genus FROM tbl_tax_genera WHERE familyID='" . intval($family['familyID']) . "' ORDER BY genus");
+  $result = dbi_query("SELECT genID, genus FROM tbl_tax_genera WHERE familyID='" . intval($family['familyID']) . "' ORDER BY genus");
   if ($result) {
-    if (mysql_num_rows($result) > 0) {
-      while ($row = mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+      while ($row = mysqli_fetch_array($result)) {
         $selectData .= "  <option value=\"" . $row['genID'] . "\">" . htmlspecialchars($row['genus']) . "</option>\n";
       }
     }

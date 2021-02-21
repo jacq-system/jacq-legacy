@@ -90,11 +90,11 @@ function searchGeonames($searchtext)
                 WHERE grg.name LIKE " . quoteString($searchtext) . "
                  OR grg.asciiname LIKE " . quoteString($searchtext) . "
                 ORDER BY grg.geonameid";
-        $result = db_query($sql);
-        $num = mysql_num_rows($result);
+        $result = dbi_query($sql);
+        $num = mysqli_num_rows($result);
         if ($num > 0) {
             $ret = "<b>found " . $num . (($num > 1) ? " entries" : " entry") . "</b><br>\n";
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $admin1Code = $row['admin1_code'];
                 if ($row['admin1_code'] && $row['admin1_code'] != '00') {
                     $sql = "SELECT name
@@ -102,10 +102,10 @@ function searchGeonames($searchtext)
                             WHERE `country code` = " . quoteString($row['country_code']) . "
                              AND `admin1 code` = " . quoteString($row['admin1_code']) . "
                              AND `feature code` = 'ADM1'";
-                    $result2 = db_query($sql);
+                    $result2 = dbi_query($sql);
                     $admin1Code .= '-';
-                    if (mysql_num_rows($result2) > 0) {
-                        $row2 = mysql_fetch_array($result2);
+                    if (mysqli_num_rows($result2) > 0) {
+                        $row2 = mysqli_fetch_array($result2);
                         $admin1Code = $row2['name'] . " (" . $row['admin1_code'] . ")";
                     }
                 }
@@ -140,9 +140,9 @@ function useGeoname($geonameid)
             FROM tbl_geo_ref_geonames grg
              LEFT JOIN tbl_geo_nation gn ON gn.iso_alpha_2_code = grg.`country code`
             WHERE grg.geonameid = " . quoteString($geonameid);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $lat = dec2min($row['latitude'], 'lat', false);
         $lon = dec2min($row['longitude'], 'lon', false);
         $response->script("fillLocation('" . $lon['deg'] . "', '" . $lon['min'] . "', '" . $lon['sec'] . "', '" . $lon['dir'] . "', '"
@@ -177,8 +177,8 @@ function makeLinktext($specimenID)
                           FROM tbl_specimens_links
                           WHERE specimen1_ID = '$searchID' )
                         ORDER BY specimenID";
-                $result = db_query($sql);
-                while ($row = mysql_fetch_array($result)) {
+                $result = dbi_query($sql);
+                while ($row = mysqli_fetch_array($result)) {
                     if (empty($checkedLinks[$row['specimens_linkID']]) && $row['specimenID'] != $specimenID) {
                         $foundIDs[$row['specimenID']] = true;
                         $searchIDs[$row['specimenID']] = true;
@@ -197,7 +197,7 @@ function makeLinktext($specimenID)
                         WHERE s.collectionID = mc.collectionID
                          AND mc.source_id = m.source_id
                          AND s.specimen_ID = '$foundID'";
-                $row2 = mysql_fetch_array(db_query($sql));
+                $row2 = mysqli_fetch_array(dbi_query($sql));
                 $ret .= "<li><a href=\"editSpecimens.php?sel=" . htmlentities("<$foundID>") . "&ptid=0\">"
                       . $row2['source_code'] . $row2['HerbNummer'] . ": " . getScientificName($row2['taxonID'], false, false) . "</a></li>";
             }
@@ -218,8 +218,8 @@ function editLink($specimenID)
 
     unset($institution);
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         $institution[0][] = $row['source_id'];
         $institution[1][] = substr($row['source_code'], 0, 3);
     }
@@ -241,14 +241,14 @@ function editLink($specimenID)
                   FROM tbl_specimens_links
                   WHERE specimen1_ID = '$specimenID' )
                 ORDER BY specimenID";
-        $result = db_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             $id = $row['specimens_linkID'];
             $sql = "SELECT s.HerbNummer, mc.source_id
                     FROM tbl_specimens s, tbl_management_collections mc
                     WHERE s.collectionID = mc.collectionID
                      AND s.specimen_ID = '" . $row['specimenID'] . "'";
-            $row2 = mysql_fetch_array(db_query($sql));
+            $row2 = mysqli_fetch_array(dbi_query($sql));
             $ret .= "<tr><td align=\"center\">"
                   . makeInstitutionDropdown($institution, $row2['source_id'], $id)
                   . "</td><td>"
@@ -289,9 +289,9 @@ function updateLink($formData)
                         WHERE s.collectionID = mc.collectionID
                          AND s.HerbNummer = " . quoteString($formData['linkSpecimen_' . $linkID]) . "
                          AND mc.source_id = '" . intval($formData['linkInstitution_' . $linkID]) . "'";
-                $result = db_query($sql);
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query($sql);
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $targetID = $row['specimen_ID'];
                     if ($specimenID != $targetID) {
                         $sqldata = "specimen1_ID = '" . $specimenID . "',
@@ -304,7 +304,7 @@ function updateLink($formData)
                             $sql = "INSERT INTO tbl_specimens_links SET
                                     $sqldata";
                         }
-                        db_query($sql);
+                        dbi_query($sql);
                     }
                 }
             }
@@ -326,7 +326,7 @@ function deleteLink($linkID, $specimenID)
     $linkID = intval($linkID);
 
     if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
-        db_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $linkID . "'");
+        dbi_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $linkID . "'");
     }
 
     makeLinktext($specimenID);
@@ -370,9 +370,9 @@ function editMultiTaxa ($specimenID)
                 WHERE tst.taxonID = ts.taxonID
                  AND specimen_ID = '$specimenID'
                 ORDER BY tg.genus, te.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result)) {
                 $id = $row['specimens_tax_ID'];
                 $ret .= "<tr><td>"
                       . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_$id' id='multiTaxaData_$id' "
@@ -422,7 +422,7 @@ function updateMultiTaxa ($formData)
                                  specimen_ID = '$specimenID',
                                  taxonID = $taxonID";
                     }
-                    db_query($sql);
+                    dbi_query($sql);
                 }
             }
         }
@@ -440,7 +440,7 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
     $specimens_tax_ID = intval($specimens_tax_ID);
 
     if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
-        db_query("DELETE FROM tbl_specimens_taxa WHERE specimens_tax_ID = '" . $specimens_tax_ID . "'");
+        dbi_query("DELETE FROM tbl_specimens_taxa WHERE specimens_tax_ID = '" . $specimens_tax_ID . "'");
     }
 
     editMultiTaxa($specimenID);

@@ -15,16 +15,20 @@ function displaychat() {
 	$response = new Response();
 	ob_start();
 
-	$sql = "SELECT firstname, surname, chat, tbl_chat.timestamp
+	$sql = "SELECT ID, firstname, surname, chat, tbl_chat.timestamp
 	        FROM tbl_chat, herbarinput_log.tbl_herbardb_users
 	        WHERE uid=userID
 	        ORDER BY tbl_chat.timestamp DESC
 	        LIMIT 10";
-	$r = db_query($sql);
+	$r = dbi_query($sql);
 	echo '<table width="500" dir=\"ltr\" summary=\"Shoutbox formating\" cellpadding=2 cellspacing=0 border=0>';
 
 	$bgcolor='#c2c2c2';
-	while($row=mysql_fetch_assoc($r)){
+    $latestTableId = 0;
+	while($row = mysqli_fetch_assoc($r)) {
+        if (!$latestTableId) {
+            $latestTableId = $row['ID'];
+        }
 		//format how you want
 		echo "<tr bgcolor=$bgcolor>".
 		     "<td nowrap width=\"70\" valign=\"top\">" . $row['firstname'] . " " . $row['surname'] . "<br>" . $row['timestamp'] . "</td>".
@@ -40,7 +44,6 @@ function displaychat() {
   }
   echo '</table>';
 
-  $latestTableId = (mysql_num_rows($r)>0) ? mysql_result($r,0,0) : 0;
   $response->script("document.getElementById('latestid').value='".$latestTableId."'");
 
   $response->assign('chatdiv', 'innerHTML', ob_get_clean());
@@ -64,8 +67,8 @@ function insertchat($formdata) {
 
 		$sql = "INSERT INTO tbl_chat SET
 		         uid  = '" . $_SESSION['uid'] . "',
-		         chat = '" . mysql_real_escape_string($formdata['chat']) . "'";
-        db_query($sql);
+		         chat = '" . dbi_escape_string($formdata['chat']) . "'";
+        dbi_query($sql);
 
         //Empty the textarea
         $response->script("document.getElementById('chat').value=''");
@@ -90,7 +93,7 @@ function checklatest($formdata) {
 	$response = new Response();
 
 	//get most recent id in table
-	$latestTableId=mysql_result(mysql_query("SELECT * FROM tbl_chat ORDER BY timestamp DESC LIMIT 1"),0,0);
+	$latestTableId = dbi_query("SELECT ID FROM tbl_chat ORDER BY timestamp DESC LIMIT 1")->fetch_assoc()['ID'];
 
 	if($formdata['latestid'] != $latestTableId){
 		//reload the chat display div

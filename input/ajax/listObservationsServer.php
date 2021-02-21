@@ -22,9 +22,9 @@ function getUserDate($id)
     }
     $sql .= "GROUP BY date
              ORDER BY date";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     $selectData = "";
-    while($row = mysql_fetch_array($result)) {
+    while($row = mysqli_fetch_array($result)) {
         $selectData .= "  <option>" . htmlspecialchars($row['date']) . "</option>\n";
     }
 
