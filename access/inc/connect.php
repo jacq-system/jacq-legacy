@@ -1,67 +1,86 @@
 <?php
-require( "variables.php" );
+require("variables.php");
 
-function db_connect( $dbConfig, $dbAccess = "readonly" ) {
+/**
+ * connect to database using mysqli
+ *
+ * @param array $dbConfig connection credentials
+ * @param string $dbAccess readonly (default) or readwrite
+ * @return mysqli link to database
+ */
+function dbi_connect ($dbConfig, $dbAccess = "readonly")
+{
     $host = $dbConfig["host"];
-    $db = $dbConfig["db"];
+    $db   = $dbConfig["db"];
     $user = $dbConfig[$dbAccess]["user"];
     $pass = $dbConfig[$dbAccess]["pass"];
 
-    if (!@mysql_connect($host,$user,$pass) || !@mysql_select_db($db)) {
-      echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n".
-           "<html>\n".
-           "<head><titel>Sorry, no connection ...</title></head>\n".
-           "<body><p>Sorry, no connection to database ...</p></body>\n".
-           "</html>\n";
-      exit();
+    /** @var mysqli $dbLink */
+    $dbLink = new mysqli($host, $user, $pass, $db);
+    if ($dbLink->connect_errno) {
+        echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+           . "<html>\n"
+           . "<head><titel>Sorry, no connection ...</title></head>\n"
+           . "<body><p>Sorry, no connection to database ...</p></body>\n"
+           . "</html>\n";
+        exit();
     }
-    //mysql_query("SET character_set_results='utf8'");
-    mysql_query("SET character set utf8");
+    $dbLink->set_charset('utf8');
+
+    return $dbLink;
 }
 
 // Connect to Input DB by default
-db_connect( $_CONFIG['DATABASE']['INPUT'] );
-
-function no_magic() {  // PHP >= 4.1
-  if (get_magic_quotes_gpc()) {
-    foreach($_GET as $k=>$v)  $_GET["$k"] = stripslashes($v);
-    foreach($_POST as $k=>$v) $_POST["$k"] = stripslashes($v);
-  }
-}
+$dbLink = dbi_connect($_CONFIG['DATABASE']['INPUT']);
 
 /**
  * @param $sql
- * @return resource
- * @deprecated
+ * @return mysqli_result
  */
-function db_query($sql) {
-  $result = @mysql_query($sql);
-  if (!$result) {
-    echo $sql."<br>\n";
-    echo mysql_error()."<br>\n";
-  }
-  return $result;
+function dbi_query($sql)
+{
+    global $dbLink;
+
+    $res = $dbLink->query($sql);
+
+    if (!$res){
+        echo $sql . "<br>\n";
+        echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+    }
+
+    return $res;
 }
 
-function extractID($text) {
-
-  $pos1 = strpos($text,"<");
-  $pos2 = strpos($text,">");
-  if ($pos1!==false && $pos2!==false)
-    return "'".intval(substr($text,$pos1+1,$pos2-$pos1-1))."'";
-  else
-    return "NULL";
+function extractID($text)
+{
+    $pos1 = strpos($text,"<");
+    $pos2 = strpos($text,">");
+    if ($pos1 !== false && $pos2 !== false) {
+        return "'".intval(substr($text,$pos1+1,$pos2-$pos1-1))."'";
+    } else {
+        return "NULL";
+    }
 }
 
-function quoteString($text) {
+/**
+ * quotes a string or returns NULL if string is empty
+ *
+ * @global mysqli $dbLink link to mysql-db
+ * @param string $text what to quote
+ * @return string quoted string or NULL
+ */
+function quoteString($text)
+{
+    global $dbLink;
 
-  if (strlen($text)>0)
-    return "'".mysql_escape_string($text)."'";
-  else
-    return "NULL";
+    if (strlen($text) > 0) {
+        return "'" . $dbLink->real_escape_string($text) . "'";
+    } else {
+        return "NULL";
+    }
 }
 
-function replaceNewline($text) {
-
-  return strtr(str_replace("\r\n","\n",$text),"\r\n","  ");  //replaces \r\n with \n and then \r or \n with <space>
+function replaceNewline($text)
+{
+    return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
 }

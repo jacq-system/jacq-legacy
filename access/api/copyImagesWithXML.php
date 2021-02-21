@@ -10,9 +10,9 @@ $batchID = intval($_GET['ID']);
 
 function getPicturePaths($path, $pic)
 {
-    
+
     return array();
-    
+
     $filelist = trim(shell_exec("find '$path' -name '$pic*.tif'"));
     $ret = array();
     if (trim($filelist)) {
@@ -40,8 +40,8 @@ function symlinkImages($specimenID, $dir)
             WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
              AND tbl_management_collections.source_id = tbl_img_definition.source_id_fk
              AND specimen_ID = '" . intval($specimenID) . "'";
-    $result = mysql_query($sql);
-    if ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    if ($row = mysqli_fetch_array($result)) {
         $path = $row['img_directory'] . "/";
         $pic = $row['coll_short_prj'] . "_";
         $picNumber = "";
@@ -196,8 +196,8 @@ $sql = "SELECT remarks, date_supplied, batchID
         FROM api.tbl_api_batches
         WHERE sent='0'
         ORDER BY date_supplied DESC";
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row=mysqli_fetch_array($result)) {
     echo "<li><a href=\"" . $_SERVER['PHP_SELF'] . "?ID=" . $row['batchID'] . "\">"
        . $row['date_supplied'] . " (" . trim($row['remarks']) . ") <" . $row['batchID'] . "></a>";
     if ($batchID == $row['batchID']) echo "&nbsp;<b>processed</b>";
@@ -209,11 +209,11 @@ while ($row=mysql_fetch_array($result)) {
 if ($batchID) {
     $dir_base = $basedir . "/" . $dirprefix . sprintf("%03d", $batchID);
     @mkdir($dir_base);
-    
+
     // Fetch date_supplied
     $sql = "SELECT ab.`date_supplied` FROM `api`.`tbl_api_batches` ab WHERE ab.`batchID` = " . quoteString($batchID);
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
     $date_supplied = $row['date_supplied'];
 
     // set `source_update` to the current date only for the used institutions
@@ -222,21 +222,21 @@ if ($batchID) {
             WHERE api.tbl_api_units.specimenID = api.tbl_api_specimens.specimen_ID
              AND batchID_fk = " . quoteString($batchID) . "
             GROUP BY source_id_fk";
-    $result = db_query($sql);
-    while ($row=mysql_fetch_array($result)) {
-        db_query("UPDATE herbarinput.metadata SET source_update = NOW() WHERE source_id = " . quoteString($row['source_id_fk']));
+    $result = dbi_query($sql);
+    while ($row=mysqli_fetch_array($result)) {
+        dbi_query("UPDATE herbarinput.metadata SET source_update = NOW() WHERE source_id = " . quoteString($row['source_id_fk']));
     }
 
-    $result = db_query("SELECT * FROM herbarinput.meta, herbarinput.metadb WHERE herbarinput.meta.source_id = herbarinput.metadb.source_id_fk");
-    while ($row=mysql_fetch_array($result)) {
+    $result = dbi_query("SELECT * FROM herbarinput.meta, herbarinput.metadb WHERE herbarinput.meta.source_id = herbarinput.metadb.source_id_fk");
+    while ($row=mysqli_fetch_array($result)) {
         $sql = "SELECT *
                 FROM api.tbl_api_units, api.tbl_api_specimens
                 WHERE api.tbl_api_units.specimenID = api.tbl_api_specimens.specimen_ID
                  AND source_id_fk = " . quoteString($row['source_id']) . "
                  AND batchID_fk = " . quoteString($batchID) . "
                 ORDER BY UnitID";
-        $result2 = db_query($sql);
-        if (mysql_num_rows($result2) > 0) {
+        $result2 = dbi_query($sql);
+        if (mysqli_num_rows($result2) > 0) {
             $dir = $dir_base . "/" . $row['source_code'];
             mkdir($dir);
 
@@ -248,7 +248,7 @@ if ($batchID) {
             $xml->addSingle("DateSupplied", $date_supplied);
             $xml->addSingle("PersonName", $row['supplier_person']);
 
-            while ($row2=mysql_fetch_array($result2)) {
+            while ($row2=mysqli_fetch_array($result2)) {
                 $xml->addMultiBegin("Unit");
 
                 $xml->addSingle("UnitID", $row2['UnitID']);
@@ -258,9 +258,9 @@ if ($batchID) {
                         FROM api.tbl_api_units_identifications
                         WHERE specimenID_fk = " . quoteString($row2['specimenID']) . "
                         ORDER BY StoredUnderName DESC";
-                $result3 = db_query($sql);
-                if (mysql_num_rows($result3) > 0) {
-                    while ($row3=mysql_fetch_array($result3)) {
+                $result3 = dbi_query($sql);
+                if (mysqli_num_rows($result3) > 0) {
+                    while ($row3=mysqli_fetch_array($result3)) {
                         $xml->addMultiBegin("Identification", "StoredUnderName=\"" . $row3['StoredUnderName'] . "\"");
 
                         $xml->addSingle("Family", $row3['Family']);
