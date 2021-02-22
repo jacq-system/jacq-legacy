@@ -1,10 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-$sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
-        login=NULL
+$sql = "UPDATE herbarinput_log.tbl_herbardb_users SET login=NULL
         WHERE userID='" . $_SESSION['uid'] . "'";
-mysql_query($sql);
+dbi_query($sql);
 
 // Unset all of the session variables.
 unset($_SESSION['username']);
@@ -18,4 +17,3 @@ unset($_SESSION['linkControl']);
 unset($_SESSION['editorControl']);
 
 Header("Location: login.php");
-?>

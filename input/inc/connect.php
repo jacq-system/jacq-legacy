@@ -127,7 +127,7 @@ function db_query($sql, $debug=false)
 
 
 /**
- * wrapper function to mysqli-real-escape-string
+ * wrapper function to mysqli_real_escape_string
  * (makes it unnecessary to use global variable $dbLink
  *
  * @global mysqli $dbLink
@@ -139,6 +139,20 @@ function dbi_escape_string($text)
     global $dbLink;
 
     return $dbLink->real_escape_string($text);
+}
+
+/**
+ * wrapper function to mysqli_insert_id
+ * (makes it unnecessary to use global variable $dbLink
+ *
+ * @global mysqli $dbLink
+ * @return mixed value of the AUTO_INCREMENT field
+ */
+function dbi_insert_id()
+{
+    global $dbLink;
+
+    return $dbLink->insert_id;
 }
 
 /**

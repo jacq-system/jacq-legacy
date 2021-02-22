@@ -339,7 +339,7 @@ VALUES
 						$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
 						$result2 = dbi_query($sql2);
 						if($result2){
-							$tax_syn_ID=$dblink->insert_id;
+							$tax_syn_ID = dbi_insert_id();
 							logTbl_tax_synonymy($tax_syn_ID,0);
 							continue;
 						}
