@@ -151,50 +151,52 @@ function taxon ($row)
 
 function taxonWithHybrids ($row)
 {
+    global $dbLink;
+
     if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
-        $rowHybrid = mysql_fetch_array(mysql_query("SELECT parent_1_ID, parent_2_ID
-                                                    FROM tbl_tax_hybrids
-                                                    WHERE taxon_ID_fk = '" . $row['taxonID'] . "'"));
-        $row1 = mysql_fetch_array(mysql_query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'"));
-        $row2 = mysql_fetch_array(mysql_query("SELECT tg.genus,
-                                                ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                                                ta4.author author4, ta5.author author5,
-                                                te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                                                te4.epithet epithet4, te5.epithet epithet5
-                                               FROM tbl_tax_species ts
-                                                LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                                                LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                                LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                                LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                                LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                                LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                                LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                                                LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                                LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                                LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                                LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                                LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                                LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                               WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'"));
+        $rowHybrid = $dbLink->query("SELECT parent_1_ID, parent_2_ID
+                                     FROM tbl_tax_hybrids
+                                     WHERE taxon_ID_fk = '" . $row['taxonID'] . "'")->fetch_array();
+        $row1 = $dbLink->query("SELECT tg.genus,
+                                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                 ta4.author author4, ta5.author author5,
+                                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                 te4.epithet epithet4, te5.epithet epithet5
+                                FROM tbl_tax_species ts
+                                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'")->fetch_array();
+        $row2 = $dbLink->query("SELECT tg.genus,
+                                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+                                 ta4.author author4, ta5.author author5,
+                                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+                                 te4.epithet epithet4, te5.epithet epithet5
+                                FROM tbl_tax_species ts
+                                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'")->fetch_array();
 
         return taxon($row1) . " x " . taxon($row2);
     } else {

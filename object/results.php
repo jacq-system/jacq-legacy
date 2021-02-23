@@ -149,7 +149,6 @@ $navigation = "<form name='page' action='{$_SERVER['SCRIPT_NAME']}' method='get'
             . "</form>";
 
 
-//echo "<b>".mysql_num_rows($result)." records found</b>\n<p>\n";
 echo "<div align='center'><table width='100%'>\n"
    . "<tr><td colspan='2'><b>" . $res_count . " record" . (($res_count > 1) ? "s" : "") . " found</b></td>\n";
 
