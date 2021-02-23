@@ -7,30 +7,45 @@ $db   = "herbardb";       // database
 
 ini_set("max_execution_time","3600");
 
-mysql_connect($host,$user,$pass) or die("Database not available!");
-mysql_select_db($db) or die ("Access denied!");
-mysql_query("SET character set utf8");
+class DB extends mysqli {
 
-function db_query($sql) {
-  $result = @mysql_query($sql);
-  if (!$result) {
-    echo $sql."\n";
-    echo mysql_error()."\n";
-  }
-  return $result;
-}
-function quoteString($text) {
+    public function __construct($host, $user, $pass, $db) {
+        parent::__construct($host, $user, $pass, $db);
 
-  if (strlen($text)>0)
-    return "'".mysql_escape_string($text)."'";
-  else
-    return "NULL";
+        if (mysqli_connect_error()) {
+            die('Connect Error (' . mysqli_connect_errno() . ') ' . mysqli_connect_error());
+        }
+
+        $this->query("SET character set utf8");
+    }
+
+    public function query($query, $resultmode = MYSQLI_STORE_RESULT) {
+        $result = parent::query($query, $resultmode);
+        if (!$result) {
+            echo $query . "\n";
+            echo $this->error . "\n";
+        }
+
+        return $result;
+    }
+
+    public function quoteString($text) {
+        if (mb_strlen($text) > 0) {
+            return "'" . $this->real_escape_string($text) . "'";
+        }
+        else {
+            return "NULL";
+        }
+    }
+
 }
+
+$dbLink  = new DB($host, $user, $pass, $db);
 
 
 //----------  Table sp2000.tbl_taxa  ----------
 
-db_query("truncate sp2000.tbl_taxa");
+$dbLink->query("truncate sp2000.tbl_taxa");
 
 $sql = "SELECT ts.taxonID, ts.synID, tg.genus, tag.author auth_g, tf.family,
          ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -60,76 +75,78 @@ $sql = "SELECT ts.taxonID, ts.synID, tg.genus, tag.author auth_g, tf.family,
         WHERE ts.tax_rankID=ttr.tax_rankID
          AND tf.familyID='30'
          AND ts.statusID!='2'";  // only Annonaceae
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = $dbLink->query($sql);
+while ($row = mysqli_fetch_array($result)) {
 
-  $taxonID = $row['taxonID'];
+    $taxonID = $row['taxonID'];
 
-  $synID = $row['synID'];
+    $synID = $row['synID'];
 
-  $NameAuthorYearString = $row['genus'];
-  if ($row['epithet'])  $NameAuthorYearString .= " ".$row['epithet']." ".$row['author'];
-  if ($row['epithet1']) $NameAuthorYearString .= " subsp. ".$row['epithet1']." ".$row['author1'];
-  if ($row['epithet2']) $NameAuthorYearString .= " var. ".$row['epithet2']." ".$row['author2'];
-  if ($row['epithet3']) $NameAuthorYearString .= " subvar. ".$row['epithet3']." ".$row['author3'];
-  if ($row['epithet4']) $NameAuthorYearString .= " forma ".$row['epithet4']." ".$row['author4'];
-  if ($row['epithet5']) $NameAuthorYearString .= " subforma ".$row['epithet5']." ".$row['author5'];
+    $NameAuthorYearString = $row['genus'];
+    if ($row['epithet'])  { $NameAuthorYearString .= " ".$row['epithet']." ".$row['author']; }
+    if ($row['epithet1']) { $NameAuthorYearString .= " subsp. ".$row['epithet1']." ".$row['author1']; }
+    if ($row['epithet2']) { $NameAuthorYearString .= " var. ".$row['epithet2']." ".$row['author2']; }
+    if ($row['epithet3']) { $NameAuthorYearString .= " subvar. ".$row['epithet3']." ".$row['author3']; }
+    if ($row['epithet4']) { $NameAuthorYearString .= " forma ".$row['epithet4']." ".$row['author4']; }
+    if ($row['epithet5']) { $NameAuthorYearString .= " subforma ".$row['epithet5']." ".$row['author5']; }
 
-  $Family = $row['family'];
+    $Family = $row['family'];
 
-  $Genus = $row['genus'];
+    $Genus = $row['genus'];
 
-  $FirstEpithet = $row['epithet'];
+    $FirstEpithet = $row['epithet'];
 
-  if (strlen($row['epithet5'])>0) {
-    $AuthorTeam = $row['author5'];
-    $SecondEpithet = $row['epithet5'];
-  } elseif (strlen($row['epithet4'])>0) {
-    $AuthorTeam = $row['author4'];
-    $SecondEpithet = $row['epithet4'];
-  } elseif (strlen($row['epithet3'])>0) {
-    $AuthorTeam = $row['author3'];
-    $SecondEpithet = $row['epithet3'];
-  } elseif (strlen($row['epithet2'])>0) {
-    $AuthorTeam = $row['author2'];
-    $SecondEpithet = $row['epithet2'];
-  } elseif (strlen($row['epithet1'])>0) {
-    $AuthorTeam = $row['author1'];
-    $SecondEpithet = $row['epithet1'];
-  } else {
-    $AuthorTeam = $row['author'];
-    $SecondEpithet = "";
-  }
-  if (strlen($AuthorTeam)==0 && $SecondEpithet==$row['epithet']) $AuthorTeam = $row['author'];
+    if (strlen($row['epithet5'])>0) {
+        $AuthorTeam = $row['author5'];
+        $SecondEpithet = $row['epithet5'];
+    } elseif (strlen($row['epithet4'])>0) {
+        $AuthorTeam = $row['author4'];
+        $SecondEpithet = $row['epithet4'];
+    } elseif (strlen($row['epithet3'])>0) {
+        $AuthorTeam = $row['author3'];
+        $SecondEpithet = $row['epithet3'];
+    } elseif (strlen($row['epithet2'])>0) {
+        $AuthorTeam = $row['author2'];
+        $SecondEpithet = $row['epithet2'];
+    } elseif (strlen($row['epithet1'])>0) {
+        $AuthorTeam = $row['author1'];
+        $SecondEpithet = $row['epithet1'];
+    } else {
+        $AuthorTeam = $row['author'];
+        $SecondEpithet = "";
+    }
+    if (strlen($AuthorTeam) == 0 && $SecondEpithet == $row['epithet']) {
+        $AuthorTeam = $row['author'];
+    }
 
-  $Status = $row['status'];
+    $Status = $row['status'];
 
-  $Status_sp2000 = $row['status_sp2000'];
+    $Status_sp2000 = $row['status_sp2000'];
 
-  $Rank_abbr = $row['rank_abbr'];
+    $Rank_abbr = $row['rank_abbr'];
 
-  $source_id_fk = 7;
+    $source_id_fk = 7;
 
-  $sql = "INSERT INTO sp2000.tbl_taxa SET ".
-         "taxonID=".quoteString($taxonID).", ".
-         "synID=".quoteString($synID).", ".
-         "NameAuthorYearString=".quoteString($NameAuthorYearString).", ".
-         "Family=".quoteString($Family).", ".
-         "Genus=".quoteString($Genus).", ".
-         "FirstEpithet=".quoteString($FirstEpithet).", ".
-         "AuthorTeam=".quoteString($AuthorTeam).", ".
-         "SecondEpithet=".quoteString($SecondEpithet).", ".
-         "Status=".quoteString($Status).", ".
-         "Status_sp2000=".quoteString($Status_sp2000).", ".
-         "Rank_abbr=".quoteString($Rank_abbr).", ".
-         "source_id_fk=".quoteString($source_id_fk);
-  db_query($sql);
+    $sql = "INSERT INTO sp2000.tbl_taxa SET
+             taxonID              = " . $dbLink->quoteString($taxonID) . ",
+             synID                = " . $dbLink->quoteString($synID) . ",
+             NameAuthorYearString = " . $dbLink->quoteString($NameAuthorYearString) . ",
+             Family               = " . $dbLink->quoteString($Family) . ",
+             Genus                = " . $dbLink->quoteString($Genus) . ",
+             FirstEpithet         = " . $dbLink->quoteString($FirstEpithet) . ",
+             AuthorTeam           = " . $dbLink->quoteString($AuthorTeam) . ",
+             SecondEpithet        = " . $dbLink->quoteString($SecondEpithet) . ",
+             Status               = " . $dbLink->quoteString($Status) . ",
+             Status_sp2000        = " . $dbLink->quoteString($Status_sp2000) . ",
+             Rank_abbr            = " . $dbLink->quoteString($Rank_abbr) . ",
+             source_id_fk         = " . $dbLink->quoteString($source_id_fk);
+    $dbLink->query($sql);
 }
 
 
 //----------  Table sp2000.tbl_refs  ----------
 
-db_query("truncate sp2000.tbl_refs");
+$dbLink->query("truncate sp2000.tbl_refs");
 
 $sql = "SELECT ti.taxonID, ti.citationID, ti.paginae, ti.figures,
          l.titel, l.suptitel, l.periodicalID, l.vol, l.part, l.jahr,
@@ -140,8 +157,8 @@ $sql = "SELECT ti.taxonID, ti.citationID, ti.paginae, ti.figures,
         WHERE ti.citationID=l.citationID
          AND l.autorID=la.autorID
          AND ti.taxonID=sp2000.tbl_taxa.taxonID";
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = $dbLink->query($sql);
+while ($row = mysqli_fetch_array($result)) {
 
   $citationID = $row['citationID'];
 
@@ -164,15 +181,15 @@ while ($row=mysql_fetch_array($result)) {
 
   $figures = $row['figures'];
 
-  $sql = "INSERT INTO sp2000.tbl_refs SET ".
-         "citationID=".quoteString($citationID).", ".
-         "taxonID_fk=".quoteString($taxonID_fk).", ".
-         "NomenclaturalReference=".quoteString($NomenclaturalReference).", ".
-         "autor=".quoteString($autor).", ".
-         "jahr=".quoteString($jahr).", ".
-         "titel=".quoteString($titel).", ".
-         "paginae=".quoteString($paginae).", ".
-         "figures=".quoteString($figures);
-  db_query($sql);
+  $sql = "INSERT INTO sp2000.tbl_refs SET
+           citationID             = " . $dbLink->quoteString($citationID) . ",
+           taxonID_fk             = " . $dbLink->quoteString($taxonID_fk) . ",
+           NomenclaturalReference = " . $dbLink->quoteString($NomenclaturalReference) . ",
+           autor                  = " . $dbLink->quoteString($autor) . ",
+           jahr                   = " . $dbLink->quoteString($jahr) . ",
+           titel                  = " . $dbLink->quoteString($titel) . ",
+           paginae                = " . $dbLink->quoteString($paginae) . ",
+           figures                = " . $dbLink->quoteString($figures);
+  $dbLink->query($sql);
 }
 ?>

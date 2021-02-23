@@ -1,9 +1,7 @@
-<?php 
+<?php
 
 
 require("../inc/connect.php");
-
-//mysql_query("SET character set utf8"); <= do not use it!
 
 $q='';
 
@@ -17,21 +15,18 @@ for($i=ord('a');$i<=ord('z');$i++){
 	$a=count($parsed);
 	for($j=0;$j<$a;$j+=3){
 		$q.="\n ('".
-			mysql_real_escape_string($parsed[$j])  ."','".
-			mysql_real_escape_string($parsed[$j+1])."','".
-			mysql_real_escape_string($parsed[$j+2])."'),";
+			$dbLink->real_escape_string($parsed[$j])  ."','".
+			$dbLink->real_escape_string($parsed[$j+1])."','".
+			$dbLink->real_escape_string($parsed[$j+2])."'),";
 	}
 }
 $q="\n INSERT IGNORE INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_languages (`iso639-6`,`parent_iso639-6`,name) VALUES"
   .substr($q,0,-1)
-  ."\n ON DUPLICATE KEY UPDATE name = VALUES(name), `parent_iso639-6`=VALUES(`parent_iso639-6`)"; 
- 
- 
+  ."\n ON DUPLICATE KEY UPDATE name = VALUES(name), `parent_iso639-6`=VALUES(`parent_iso639-6`)";
+
+
 file_put_contents('logs/'.date('d.m.Y_H.i').'_azquery.sql',$q);
 
-$res = mysql_query($q) or logerr("Error: ". mysql_error(). "(". mysql_errno().")");
- 
+$res = $dbLink->query($q) or logerr("Error: ". $dbLink->error. "(". $dbLink->errno.")");
+
 logerr('Successfully updated.');
-
-
-?>
