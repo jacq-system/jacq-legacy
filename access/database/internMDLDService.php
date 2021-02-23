@@ -111,16 +111,16 @@ limit 1000
 
 
 }
-/*
+
 // log the request
-if (@mysql_connect($options['log']['dbhost'], $options['log']['dbuser'], $options['log']['dbpass']) && @mysql_select_db($options['log']['dbname'])) {
-	@mysql_query("SET character set utf8");
-	@mysql_query("INSERT INTO tblrpclog SET
-				   http_header = '" . mysql_real_escape_string(var_export(apache_request_headers(), true)) . "',
-				   http_post_data = '" . mysql_real_escape_string(file_get_contents('php://input')) . "',
-				   remote_host = '" . mysql_real_escape_string($_SERVER['REMOTE_ADDR']) . "'");
-	@mysql_close();
-}*/
+//if (@mysql_connect($options['log']['dbhost'], $options['log']['dbuser'], $options['log']['dbpass']) && @mysql_select_db($options['log']['dbname'])) {
+//	@mysql_query("SET character set utf8");
+//	@mysql_query("INSERT INTO tblrpclog SET
+//				   http_header = '" . mysql_real_escape_string(var_export(apache_request_headers(), true)) . "',
+//				   http_post_data = '" . mysql_real_escape_string(file_get_contents('php://input')) . "',
+//				   remote_host = '" . mysql_real_escape_string($_SERVER['REMOTE_ADDR']) . "'");
+//	@mysql_close();
+//}
 
 
 /**

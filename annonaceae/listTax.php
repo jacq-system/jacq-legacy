@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $scriptName = htmlspecialchars($_SERVER['SCRIPT_NAME']);  // $_SERVER['PHP_SELF'] is susceptible to XSS-Attacks
 $scriptDir = dirname($scriptName);
@@ -230,14 +229,14 @@ if ($_SESSION['taxType'] == 2) {
              LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-            WHERE genus LIKE '" . mysql_real_escape_string($_SESSION['taxGenus']) . "%'
+            WHERE genus LIKE '" . dbi_escape_string($_SESSION['taxGenus']) . "%'
              AND family LIKE 'Annonaceae' ";
     if ($_SESSION['taxAuthor']) {
-        $sql .= "AND tag.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%' ";
+        $sql .= "AND tag.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%' ";
     }
     $sql .= "ORDER BY " . $_SESSION['taxOrder'];
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n"
            . "<tr class=\"out\">"
            . "<th class=\"out\">"
@@ -247,7 +246,7 @@ if ($_SESSION['taxType'] == 2) {
            . "<th class=\"out\">"
            . "<a href=\"" . $scriptName."?order=bf\">Family</a>" . sortItem($_SESSION['taxOrTyp'], 22) . "</th>"
            . "<th class=\"out\">Category</th></tr>\n";
-        while ($row=mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             echo "<tr class=\"out\"><td class=\"out\">"
                . "<a href=\"javascript:editGenera('<" . $row['genID'] . ">')\">"
                . $row['genus']
@@ -290,22 +289,22 @@ if ($_SESSION['taxType'] == 2) {
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
              LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-            WHERE te.epithet LIKE '" . mysql_real_escape_string($_SESSION['taxSpecies']) . "%'
+            WHERE te.epithet LIKE '" . dbi_escape_string($_SESSION['taxSpecies']) . "%'
              AND family LIKE 'Annonaceae' ";
     if ($_SESSION['taxGenus']) {
-        $sql .= "AND genus LIKE '" . mysql_real_escape_string($_SESSION['taxGenus']) . "%' ";
+        $sql .= "AND genus LIKE '" . dbi_escape_string($_SESSION['taxGenus']) . "%' ";
     }
     if ($_SESSION['taxAuthor']) {
-        $sql .= "AND (ta.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%'
-                  OR ta1.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%'
-                  OR ta2.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%'
-                  OR ta3.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%'
-                  OR ta4.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%'
-                  OR ta5.author LIKE '%" . mysql_real_escape_string($_SESSION['taxAuthor']) . "%') ";
+        $sql .= "AND (ta.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%'
+                  OR ta1.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%'
+                  OR ta2.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%'
+                  OR ta3.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%'
+                  OR ta4.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%'
+                  OR ta5.author LIKE '%" . dbi_escape_string($_SESSION['taxAuthor']) . "%') ";
     }
     $sql .= "ORDER BY " . $_SESSION['taxOrder'];
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n"
            . "<tr class=\"out\">"
            . "<th class=\"out\">"
@@ -320,7 +319,7 @@ if ($_SESSION['taxType'] == 2) {
            . "<th class=\"out\">infraspecific Taxon</th>"
            . "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $row['taxonID'];
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\"><td class=\"out\">"
                . "<a href=\"editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr\">"
@@ -378,27 +377,27 @@ if ($_SESSION['taxType'] == 2) {
              LEFT JOIN tbl_collector_2 tc2 ON tc2.Sammler_2ID = tt.Sammler_2ID ";
     $preSQL = "WHERE ";
     if ($_SESSION['taxDate']) {
-        $sql .= $preSQL . "tt.date LIKE '" . mysql_real_escape_string($_SESSION['taxDate']) . "%' ";
+        $sql .= $preSQL . "tt.date LIKE '" . dbi_escape_string($_SESSION['taxDate']) . "%' ";
         $preSQL = "AND ";
     }
     if ($_SESSION['taxNumber']) {
-        $sql .= $preSQL . "tt.leg_nr='" . mysql_real_escape_string($_SESSION['taxNumber']) . "' ";
+        $sql .= $preSQL . "tt.leg_nr='" . dbi_escape_string($_SESSION['taxNumber']) . "' ";
         $preSQL = "AND ";
     }
     if ($_SESSION['taxCollector']) {
-        $sql .= $preSQL . "(tc.Sammler LIKE '" . mysql_real_escape_string($_SESSION['taxCollector']) . "%' ".
-                        "OR tc2.Sammler_2 LIKE '" . mysql_real_escape_string($_SESSION['taxCollector']) . "%') ";
+        $sql .= $preSQL . "(tc.Sammler LIKE '" . dbi_escape_string($_SESSION['taxCollector']) . "%' ".
+                        "OR tc2.Sammler_2 LIKE '" . dbi_escape_string($_SESSION['taxCollector']) . "%') ";
     }
     if ($_SESSION['taxSpecies']) {
-        $sql .= "AND te.epithet LIKE '" . mysql_real_escape_string($_SESSION['taxSpecies']) . "%' ";
+        $sql .= "AND te.epithet LIKE '" . dbi_escape_string($_SESSION['taxSpecies']) . "%' ";
     }
     $sql .= "AND family LIKE 'Annonaceae' ";
     if ($_SESSION['taxGenus']) {
-        $sql .= "AND genus LIKE '" . mysql_real_escape_string($_SESSION['taxGenus']) . "%' ";
+        $sql .= "AND genus LIKE '" . dbi_escape_string($_SESSION['taxGenus']) . "%' ";
     }
     $sql .= "ORDER BY " . $_SESSION['taxOrder'];
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n"
            . "<tr class=\"out\">"
            . "<th class=\"out\">"
@@ -407,7 +406,7 @@ if ($_SESSION['taxType'] == 2) {
            . "<a href=\"".$scriptName."?order=db\">Taxon</a>".sortItem($_SESSION['taxOrTyp'],42)."</th>"
            . "</tr>\n";
         $nr = 1;
-        while ($row=mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             echo "<tr class=\"".(($nrSel==$nr)?"outMark":"out")."\"><td class=\"out\">"
                . "<a href=\"editSpecies.php?sel=".htmlspecialchars("<".$row['taxonID'].">")."&nr=$nr\">"
                . htmlspecialchars(typusItem($row))

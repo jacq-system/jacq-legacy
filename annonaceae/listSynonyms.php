@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = (isset($_GET['ID'])) ? intval($_GET['ID']) : 0;
 
@@ -59,11 +58,11 @@ function protologList($taxon, $short=false)
             LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-           WHERE taxonID = '" . mysql_escape_string($taxon) . "'";
-    $result = db_query($sql);
+           WHERE taxonID = '" . dbi_escape_string($taxon) . "'";
+    $result = dbi_query($sql);
     $display = "";
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $display = ($short) ? "" : smallCaps($row['autor']) . " (" . htmlspecialchars($row['jahr']).")";
             if ($row['suptitel']) {
                 $display .= " in " . htmlspecialchars($row['editor']) . ": " . htmlspecialchars($row['suptitel']);
@@ -94,10 +93,10 @@ function typusList($taxon,$sw)
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID = c2.Sammler_2ID
            WHERE tt.SammlerID = c.SammlerID
-            AND taxonID = '" . mysql_escape_string($taxon) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+            AND taxonID = '" . dbi_escape_string($taxon) . "'";
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $display = $row['Sammler'];
             if ($row['Sammler_2']) {
                 if (strstr($row['Sammler_2'], "&") === false) {
@@ -166,8 +165,8 @@ function item($offset, $row, $short, $sign="=")
 <body>
 
 <?php
-$result = db_query("SELECT taxonID, synID FROM tbl_tax_species WHERE taxonID='" . mysql_escape_string($id) . "'");
-$row = mysql_fetch_array($result);
+$result = dbi_query("SELECT taxonID, synID FROM tbl_tax_species WHERE taxonID='" . dbi_escape_string($id) . "'");
+$row = mysqli_fetch_array($result);
 if (!empty($row['synID'])) {
     $id = $row['synID'];
 }
@@ -194,10 +193,10 @@ $sql = "SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.Da
          LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
          LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID
          LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-        WHERE taxonID='" . mysql_escape_string($id) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+        WHERE taxonID='" . dbi_escape_string($id) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
 
     if ($short) {
         echo "<b>" . taxonList($row) . "</b>" . protologList($row['taxonID'], true) . "<br>\n";
@@ -230,38 +229,38 @@ if (mysql_num_rows($result)>0) {
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-            WHERE synID = '" . mysql_escape_string($id) . "' ";
+            WHERE synID = '" . dbi_escape_string($id) . "' ";
     if (empty($row['basID'])) {
-        $result2 = db_query($sql . "AND basID='" . mysql_escape_string($id) . "'");
+        $result2 = dbi_query($sql . "AND basID='" . dbi_escape_string($id) . "'");
     } else {
-        $result2 = db_query($sql . "AND (basID IS NULL OR basID='" . mysql_escape_string($id) . "') AND taxonID='" . $row['basID'] . "'");
+        $result2 = dbi_query($sql . "AND (basID IS NULL OR basID='" . dbi_escape_string($id) . "') AND taxonID='" . $row['basID'] . "'");
     }
 
-    while ($row2 = mysql_fetch_array($result2)) {
+    while ($row2 = mysqli_fetch_array($result2)) {
         echo $tableStart;
         echo item(20, $row2, $short, "&equiv;");
         typusList($row2['taxonID'], true);
         echo "</table>\n";
-        $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
-        while ($row3 = mysql_fetch_array($result3)) {
+        $result3 = dbi_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
+        while ($row3 = mysqli_fetch_array($result3)) {
             echo $tableStart;
             echo item(40, $row3, $short, "&equiv;");
             echo "</table>\n";
         }
     }
     if (empty($row['basID'])) {
-        $result2 = db_query($sql . "AND basID IS NULL" . $order);
+        $result2 = dbi_query($sql . "AND basID IS NULL" . $order);
     } else {
-        $result2 = db_query($sql . "AND (basID IS NULL OR basID='" . mysql_escape_string($id) . "') AND taxonID!='" . $row['basID'] . "'" . $order);
+        $result2 = dbi_query($sql . "AND (basID IS NULL OR basID='" . dbi_escape_string($id) . "') AND taxonID!='" . $row['basID'] . "'" . $order);
     }
 
-    while ($row2 = mysql_fetch_array($result2)) {
+    while ($row2 = mysqli_fetch_array($result2)) {
         echo $tableStart;
         echo item(20, $row2,$short);
         typusList($row2['taxonID'], true);
         echo "</table>\n";
-        $result3 = db_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
-        while ($row3 = mysql_fetch_array($result3)) {
+        $result3 = dbi_query($sql . "AND basID='" . $row2['taxonID'] . "'" . $order);
+        while ($row3 = mysqli_fetch_array($result3)) {
             echo $tableStart;
             echo item(40, $row3, $short, "&equiv;");
             echo "</table>\n";

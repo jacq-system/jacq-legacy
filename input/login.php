@@ -7,10 +7,10 @@ session_set_cookie_params(0, "/", "", $secure);
 session_start();
 
 if (isset($_SESSION['username']) && isset($_SESSION['password'])) {
-    $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
-                         $_SESSION['username'],
-                         $_SESSION['password'],
-                         $_CONFIG['DATABASE']['INPUT']['name']);
+    $dbLink = mysqli_connect($_CONFIG['DATABASE']['INPUT']['host'],
+                             $_SESSION['username'],
+                             $_SESSION['password'],
+                             $_CONFIG['DATABASE']['INPUT']['name']);
 
     if ($dbLink) {
         $location = "Location: menu.php";

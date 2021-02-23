@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $nr = intval($_GET['nr']);
 $linkList = $_SESSION['txLinkList'];
@@ -17,16 +16,16 @@ function makeEpithet($search, $x, $y, $top)
     if ($search && strlen($search) > 1) {
         $sql = "SELECT epithet, epithetID
                 FROM tbl_tax_epithets
-                WHERE epithet LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                WHERE epithet LIKE '" . dbi_escape_string($pieces[0]) . "%'
                 ORDER BY epithet";
-        if ($result = db_query($sql)) {
+        if ($result = dbi_query($sql)) {
             if ($top) {
-                $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
+                $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " record" . ((mysqli_num_rows($result) != 1) ? "s" : "") . " found</b>");
             } else {
-                $cf->label($x, $y, mysql_num_rows($result) . " rec.");
+                $cf->label($x, $y, mysqli_num_rows($result) . " rec.");
             }
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = $row['epithet'] . " <" . $row['epithetID'] . ">";
                 }
             }
@@ -46,16 +45,16 @@ function makeAuthor($search, $x, $y, $top)
     if ($search && strlen($search) > 1) {
         $sql = "SELECT author, authorID, Brummit_Powell_full
                 FROM tbl_tax_authors
-                WHERE author LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                WHERE author LIKE '" . dbi_escape_string($pieces[0]) . "%'
                 ORDER BY author";
-        if ($result = db_query($sql)) {
+        if ($result = dbi_query($sql)) {
             if ($top) {
-                $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
+                $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " record" . ((mysqli_num_rows($result) != 1) ? "s" : "") . " found</b>");
             } else {
-                $cf->label($x, $y, mysql_num_rows($result) . " rec.");
+                $cf->label($x, $y, mysqli_num_rows($result) . " rec.");
             }
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $res = $row['author'] . " <" . $row['authorID'] . ">";
                     if ($row['Brummit_Powell_full']) {
                         $res .= " [" . replaceNewline($row['Brummit_Powell_full']) . "]";
@@ -83,12 +82,12 @@ function makeGen($search,$x,$y)
                  LEFT JOIN tbl_tax_authors ta ON ta.authorID = tg.authorID
                  LEFT JOIN tbl_tax_families tf ON tg.familyID = tf.familyID
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                WHERE genus LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                WHERE genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
                 ORDER BY tg.genus";
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row=mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " record" . ((mysqli_num_rows($result) != 1) ? "s" : "") . " found</b>");
+            if (mysqli_num_rows($result) > 0) {
+                while ($row=mysqli_fetch_array($result)) {
                     $results[] = $row['genus'] . " " . $row['author'] . " " . $row['family'] . " "
                                . $row['category'] . " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs']
                                . " <" . $row['genID'] . ">";
@@ -131,14 +130,14 @@ function makeSyn($search)
                  LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-                WHERE genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
+                WHERE genus LIKE '" . dbi_escape_string($pieces[0]) . "%' ";
         if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%' ";
         }
         $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = taxon($row, true);
                 }
             }
@@ -193,9 +192,9 @@ $sql = "SELECT ts.taxonID, ts.synID, ts.basID, ts.genID, ts.annotation,
          LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
          LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
         WHERE taxonID = $p_taxonID";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_array($result);
     $p_taxonID      = $row['taxonID'];
     $p_species      = ($row['epithet']) ? $row['epithet'] . " <" . $row['epithetID'] . ">" : "";
     $p_author       = ($row['author']) ? $row['author'] . " <" . $row['authorID'] . ">" : "";
@@ -256,9 +255,9 @@ if (mysql_num_rows($result) > 0) {
                  LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-                WHERE ts.taxonID = '" . mysql_escape_string($row['synID']) . "'";
-        $result2 = db_query($sql);
-        $row2 = mysql_fetch_array($result2);
+                WHERE ts.taxonID = '" . dbi_escape_string($row['synID']) . "'";
+        $result2 = dbi_query($sql);
+        $row2 = mysqli_fetch_array($result2);
         $p_syn   = taxon($row2, true);
     } else {
         $p_syn = "";
@@ -286,9 +285,9 @@ if (mysql_num_rows($result) > 0) {
                  LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-                WHERE ts.taxonID = '" . mysql_escape_string($row['basID']) . "'";
-        $result2 = db_query($sql);
-        $row2 = mysql_fetch_array($result2);
+                WHERE ts.taxonID = '" . dbi_escape_string($row['basID']) . "'";
+        $result2 = dbi_query($sql);
+        $row2 = mysqli_fetch_array($result2);
         $p_bas   = taxon($row2, true);
     } else {
         $p_bas = "";
@@ -299,12 +298,12 @@ if (mysql_num_rows($result) > 0) {
     $p_forma = $p_forauthor = $p_subforma = $p_subforauthor = $p_gen = "";
     $p_syn = $p_bas = $p_annotation = "";
     // Rank
-    $result = db_query("SELECT rank FROM tbl_tax_rank WHERE tax_rankID=1");
-    $dummy = mysql_fetch_array($result);
+    $result = dbi_query("SELECT rank FROM tbl_tax_rank WHERE tax_rankID=1");
+    $dummy = mysqli_fetch_array($result);
     $p_rank = $dummy['rank'] . " <1>";
     // Status
-    $result = db_query("SELECT status FROM tbl_tax_status WHERE statusID=96");
-    $dummy = mysql_fetch_array($result);
+    $result = dbi_query("SELECT status FROM tbl_tax_status WHERE statusID=96");
+    $dummy = mysqli_fetch_array($result);
     $p_status = $dummy['status'] . " <96>";
 }
 ?>
@@ -332,18 +331,18 @@ if (mysql_num_rows($result) > 0) {
 <?php
 
 unset($rank);
-if ($result = db_query("SELECT rank, tax_rankID FROM tbl_tax_rank ORDER BY rank")) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query("SELECT rank, tax_rankID FROM tbl_tax_rank ORDER BY rank")) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $rank[] = $row['rank'] . " <" . $row['tax_rankID'] . ">";
         }
     }
 }
 
 unset($status);
-if ($result = db_query("SELECT status, statusID FROM tbl_tax_status ORDER BY status")) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query("SELECT status, statusID FROM tbl_tax_status ORDER BY status")) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $status[] = $row['status'] . " <" . $row['statusID'] . ">";
         }
     }
@@ -370,10 +369,10 @@ $sql = "SELECT ts.taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, t
          LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
          LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
          LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-        WHERE taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_array($result);
+        WHERE taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_array($result);
     $display_head1 = $row['status'] . "&nbsp;&nbsp;" . taxon($row, true);
 } else {
     $display_head1 = "";
@@ -388,11 +387,11 @@ $sql ="SELECT paginae, figures,
         LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
         LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
         LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-       WHERE taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    if (mysql_num_rows($result) == 1) {
-        $row = mysql_fetch_array($result);
+       WHERE taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) == 1) {
+        $row = mysqli_fetch_array($result);
         $display_head2 = $row['autor'] . " (" . $row['jahr'] . ")";
         if ($row['suptitel']) {
             $display_head2 .= " in " . $row['editor'] . ": " . $row['suptitel'];
@@ -417,11 +416,11 @@ $sql ="SELECT Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplic
        FROM (tbl_tax_typecollections tt, tbl_collector c)
         LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID = c2.Sammler_2ID
        WHERE tt.SammlerID = c.SammlerID
-        AND taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    if (mysql_num_rows($result) == 1) {
-        $row = mysql_fetch_array($result);
+        AND taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) == 1) {
+        $row = mysqli_fetch_array($result);
         $display_head3 = $row['Sammler'];
         if ($row['Sammler_2']) {
             if (strstr($row['Sammler_2'], "&") === false) {
@@ -453,8 +452,8 @@ if (mysql_num_rows($result) > 0) {
                 LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID = c2.Sammler_2ID
                WHERE tt.SammlerID = c.SammlerID
                 AND taxonID = " . extractID($p_bas);
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
             $display_head3 = "&rarr; Basionym"; // "-> Basionym" wenn im Basionym mindestens ein Typus eingetragen ist
         } else {
             $display_head3 = "&mdash;";
