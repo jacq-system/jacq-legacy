@@ -32,7 +32,7 @@ if(isset($_GET['update']) || !file_exists($databases_cache) || (time()-filemtime
 $services = unserialize(file_get_contents($databases_cache));
 
 if (!empty($_POST['username'])) {
-    $result = db_query("SELECT uid, username FROM tbluser WHERE username = " . quoteString($_POST['username']));
+    $result = dbi_query("SELECT uid, username FROM tbluser WHERE username = " . quoteString($_POST['username']));
     if ($result->num_rows > 0) {
         $row = $result->fetch_array();
         session_regenerate_id();  // prevent session fixation
@@ -41,11 +41,11 @@ if (!empty($_POST['username'])) {
     } else {
         do {
             $user = $_POST['username'] . sprintf("%05d", mt_rand(100, 99999));
-            $result = db_query("SELECT uid FROM tbluser WHERE username = " . quoteString($user));
+            $result = dbi_query("SELECT uid FROM tbluser WHERE username = " . quoteString($user));
         } while ($result->num_rows > 0);
-        db_query("INSERT INTO tbluser SET username = " . quoteString($user));
+        dbi_query("INSERT INTO tbluser SET username = " . quoteString($user));
         $id = $dbLink->insert_id;
-        $result = db_query("SELECT uid, username FROM tbluser WHERE uid = '$id'");
+        $result = dbi_query("SELECT uid, username FROM tbluser WHERE uid = '$id'");
         $row = $result->fetch_array();
         session_regenerate_id();  // prevent session fixation
         $_SESSION['uid']      = $row['uid'];
@@ -57,7 +57,7 @@ if (!empty($_POST['username'])) {
     $_SESSION['uid']      = 0;
     $_SESSION['username'] = '';
 } elseif (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name'])) {
-    $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
+    $result = dbi_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
     if ($result->num_rows == 0) {
 
         if ($_POST['database'] == 'extern') {
@@ -70,7 +70,7 @@ if (!empty($_POST['username'])) {
         }
         $database.=$_POST['database'];
 
-        db_query("INSERT INTO tbljobs SET
+        dbi_query("INSERT INTO tbljobs SET
                    uid = '" . $_SESSION['uid'] . "',
                    filename = " . quoteString($_FILES['userfile']['name']) . ",
                    db = '$database'");
@@ -84,7 +84,7 @@ if (!empty($_POST['username'])) {
                 $line = ucfirst(trim(fgets($handle)));
                 if (substr($line, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $line = substr($line, 3);
                 if ($line) {
-                    db_query("INSERT INTO tblqueries SET
+                    dbi_query("INSERT INTO tblqueries SET
                                jobID  = '$jobID',
                                lineNr = '$ctr',
                                query  = " . quoteString($line));
@@ -94,7 +94,7 @@ if (!empty($_POST['username'])) {
         }
         fclose($handle);
         ini_set('auto_detect_line_endings', $oldIniSetting);
-        db_query("INSERT INTO tblschedule SET jobID = '$jobID'");
+        dbi_query("INSERT INTO tblschedule SET jobID = '$jobID'");
     }
     //exec("./bulkprocessCmd.php > /dev/null 2>&1 &");
 }
@@ -174,7 +174,7 @@ if (!$_SESSION['uid']) {
        . "<input type='submit' name='logout' value='logout'>\n"
        . "<p>\n";
 
-    $result = db_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
+    $result = dbi_query("SELECT * FROM tbljobs WHERE finish IS NULL AND uid = '" . $_SESSION['uid'] . "'");
     if ($result->num_rows > 0) {
         $row = $result->fetch_array();
     } else {
@@ -247,7 +247,7 @@ EOF;
            . "</tr>\n";
     }
 
-    $result = db_query("SELECT * FROM tbljobs WHERE finish IS NOT NULL AND uid = '" . $_SESSION['uid'] . "' ORDER by start DESC");
+    $result = dbi_query("SELECT * FROM tbljobs WHERE finish IS NOT NULL AND uid = '" . $_SESSION['uid'] . "' ORDER by start DESC");
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_array()) {
             $database = $services[$row['db']]['name'];

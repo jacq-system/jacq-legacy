@@ -15,7 +15,7 @@
  * @author Johannes Schachner <joschach@ap4net.at>
  * @since 23.03.2011
  */
-/* 
+/*
  INSERT IGNORE INTO fuzzy_fastsearch_taxon_faeu_v2
 
 (GENUS_NAME)
@@ -27,18 +27,20 @@ SELECT GENUS_NAME  FROM taxon_faeu_v2
 error_reporting(0);
 require_once('inc/variables.php');
 
- 
-class cls_herbarium_col2011 extends cls_herbarium_base {
 
-	var $block_limit=2;
-	var $limit=4;
+class cls_herbarium_col2011 extends cls_herbarium_base
+{
+	public $block_limit=2;
+	public $limit=4;
+
+    private $dbLink;
 
 	/*******************\
 	|                   |
 	|  public functions |
 	|                   |
 	\*******************/
-	
+
 	/**
 	 * get all possible matches against the catalogue of life
 	 *
@@ -46,35 +48,35 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 	 * @param bool[optional] $withNearMatch use near_match if true
 	 * @return array result of all searches
 	 */
-	public function getMatches ($searchtext, $withNearMatch = false){
-	
-
+	public function getMatches ($searchtext, $withNearMatch = false)
+    {
 		global $options;
-		
+
 		// catch all output to the console
 		ob_start();
-		
+
 		// base definition of the return array
 		$matches = array('error'	   => '',
 						 'result'	  => array());
-		
-		if (!@mysql_connect($options['col2011']['dbhost'], $options['col2011']['dbuser'], $options['col2011']['dbpass']) || !@mysql_select_db($options['col2011']['dbname'])) {
+
+        $this->dbLink = mysqli_connect($options['col2011']['dbhost'], $options['col2011']['dbuser'], $options['col2011']['dbpass'], $options['col2011']['dbname']);
+        if (!$this->dbLink) {
 			$matches['error'] = 'no database connection';
 			return $matches;
 		}
-		mysql_query("SET character set utf8");
-		
+	    $this->dbLink->query("SET character set utf8");
+
 		// split the input at newlines into several queries
 		$searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
 		$fam_dump=array();
-		
+
 		foreach ($searchItems as $searchItem) {
 			$searchresult = array();
 			$sort1 = $sort2 = $sort3 = array();
 		//		$fullHit = false;
 			$lev = array();
 			$ctr = 0;  // how many checks did we do
-			
+
 			$j=0;
 			/***********************************************
 			 * Single
@@ -83,7 +85,7 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 			 ***********************************************/
 			if (strpos(trim($searchItem), ' ') === false) {
 				$type = 'uni';								// we're asked for a uninomial
-		
+
 				if ($withNearMatch) {
 					$searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
 					$uninomial		   = strtolower(trim($searchItemNearmatch));
@@ -91,7 +93,7 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 					$searchItemNearmatch = '';
 					$uninomial		   = strtolower(trim($searchItem));
 				}
-				
+
 
 				$searchresult=$this->getUninomial($uninomial);
 			/***********************************************
@@ -103,7 +105,7 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 				$type = 'multi';
 				// parse the taxon string
 				$parts = $this->_tokenizeTaxa($searchItem);
-				
+
 				// use near match if desired
 				if ($withNearMatch) {
 					$parts['genus']	  = $this->_near_match($parts['genus'], false, true);
@@ -114,10 +116,10 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 				} else {
 					$searchItemNearmatch = '';
 				}
-				
+
 				$searchresult= $this->getMultinomal($parts);
 			}
-		
+
 			$matches['result'][] = array(
 				'searchtext'   => $searchItem,
 				'searchtextNearmatch' => $searchItemNearmatch,
@@ -129,32 +131,32 @@ class cls_herbarium_col2011 extends cls_herbarium_base {
 			);
 		}
 		$matches['error'] = ob_get_clean();
-	
+
 		return $matches;
 	}
 
-	
-	
-	function getMultinomal($parts){
+
+
+	private function getMultinomal($parts){
 		$lev=array();
 		$genus	= strtolower(trim($parts['genus'])); // Uniominal = genus
 		$lenGenus=mb_strlen($genus);
-		
+
 		$lenlim=min($lenGenus/2,$this->limit);
 
-		
+
 		//$subgenus	= strtolower($parts['subgenus']);			  // subgenus (if any)
-		
+
 		$species	 = strtolower(trim($parts['epithet'])); // Binomial = species
 		$lenSpecies=mb_strlen($species);
-		
+
 		$rank		= $parts['rank'];						// Trinomial
 		$epithet	= strtolower(trim($parts['subepithet']));
 		$lenEpithet=mb_strlen($epithet);
-		
+
 		// Search Uniominal FAST in Names (g=1 => this name refers to a genus
-		
-		
+
+
 		// Genus Fetched (Uniomnial)
 		$query="
 SELECT
@@ -163,15 +165,15 @@ FROM
  fuzzy_fastsearch_scientific_name_element
 WHERE
  rank in ('genus')
- and 
+ and
  mdld('{$genus}',genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
 
  //echo $query;exit;
- 
-		$res = mysql_query($query);
+
+		$res = $this->dbLink->query($query);
 		$s="";
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$s.=",".$row['genusids']."";
 		}
 		$s=substr($s,1);
@@ -192,48 +194,48 @@ SELECT
  s2.accepted_species_id as 'accepted_species_id',
  s2.accepted_species_name 	as 'accepted_species_name',
  s2.accepted_species_author as 'accepted_species_author',
- 
- 
+
+
  mdld('{$genus}', LOWER(s2.genus), {$this->block_limit}, {$this->limit}) as 'mdld_g',
  mdld('{$species}', LOWER(s2.species), {$this->block_limit}, {$this->limit}) as 'mdld_s',
  mdld('{$epithet}', LOWER(s2.infraspecies), {$this->block_limit}, {$this->limit})  as 'mdld_i'
 FROM
  _search_scientific s1
  LEFT JOIN _search_scientific s2 ON s2.genus = s1.genus
- 
+
 WHERE
  s1.id in ({$s})
 ";
 
 		//echo $query;exit;
-		$res = mysql_query($query);
-		while ($row = mysql_fetch_array($res)) {
+		$res = $this->dbLink->query($query);
+		while ($row = mysqli_fetch_array($res)) {
 			// If no infraspecies was given but found... discard
 			if(!($epithet && $rank) && $row['i_name']!="" ){
 				continue;
 			}
 			$found=false;
 			$g_ratio=0;
-			
-			
+
+
 			// if a species was given...
 			if($species){
 				$distance=$row['mdld_s'];
-			
+
 				// we've hit a species
 				if( (($distance + $row['mdld_g']) < $this->limit )&& ($row['mdld_s'] <= min($lenSpecies, mb_strlen($row['s_name'], "UTF-8")) / 2 )){
 					// if epithet
 					if($epithet && $rank){
-					
+
 						// we've hit an epithet
 						if ($row['mdld_i'] <= $this->limit && $row['mdld_i'] <= min($lenEpithet, mb_strlen($row['i_name'], "UTF-8")) / 2 ) {                         // 4th limit of the search
-							$found = true;  
+							$found = true;
 							$ratio = 1
 									- $row['mdld_s'] / max(mb_strlen($row['s_name'], "UTF-8"), $lenSpecies)
 									- $row['mdld_i'] / max(mb_strlen($row['i_name'], "UTF-8"), $lenEpithet);
 							$distance += $row['mdld_i'];
 						}
-					
+
 					// if no epithet was given
 					}else{
 						$found = true;
@@ -247,13 +249,13 @@ WHERE
 				$ratio = 1;
 				$distance = 0;
 			}
-			
+
 			// of found and synonynm accepted code
 			if($found){
-				
+
 				if(!isset($lev[$row['g_name']]['ID'])){
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['g_name'], "UTF-8"), $lenGenus);
-				
+
 					$lev[$row['g_name']]=array(
 						'genus'    => $row['g_name'],
 						'distance' => $row['mdld_g'],
@@ -263,7 +265,7 @@ WHERE
 						'species' => array()
 					);
 				}
-				
+
 				if($row['accepted_species_id']!=''){
 					$syn=trim($row['accepted_species_name']." ".$row['accepted_species_author']);
 					$synID = $row['accepted_species_id'];
@@ -271,9 +273,9 @@ WHERE
 					$syn = '';
 					$synID = 0;
 				}
-				$taxon = trim($row['g_name']." ".$row['s_name']." ".$row['marker']." ".$row['i_name']." ".$row['author']);         
+				$taxon = trim($row['g_name']." ".$row['s_name']." ".$row['marker']." ".$row['i_name']." ".$row['author']);
 					;
-			
+
 				if($g_ratio==0){
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['g_name'], "UTF-8"), $lenGenus);
 				}
@@ -288,7 +290,7 @@ WHERE
 					'synID'    => $synID
 				);
 			}
-			
+
 			//$ctr++;
 		}
 
@@ -297,15 +299,16 @@ WHERE
 			$lev[$k]=$obj;
 		}
 		usort($lev,'col2011sort_a');
-		
-		
+
+
 		return $lev;
 	}
-			
-	function getUninomial($uninomial,$getGenusIds=false){
+
+	private function getUninomial($uninomial,$getGenusIds=false)
+    {
 		$j=0;
 		$ctr=0;
-		
+
 		$lenUninomial=mb_strlen(trim($uninomial));
 		$lenlim=min($lenUninomial/2,$this->limit);
 
@@ -319,15 +322,15 @@ FROM
  fuzzy_fastsearch_scientific_name_element
 WHERE
  rank in ('genus','kingdom','phylum','class','order','superfamily','family')
- and 
+ and
  mdld('{$uninomial}',genus_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(genus_name)/2,{$lenlim})
  ";
 
  //echo $query;exit;
- 
-		$res = mysql_query($query);
+
+		$res = $this->dbLink->query($query);
 		$s="";
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$s.=",".$row['genusids']."";
 		}
 		$s=substr($s,1);
@@ -342,15 +345,15 @@ SELECT
  mdld('{$uninomial}', LOWER(s.genus), {$this->block_limit}, {$this->limit}) AS 'mdld'
 FROM
  _search_scientific s
- LEFT JOIN taxon t on t.id=s.id 
+ LEFT JOIN taxon t on t.id=s.id
  LEFT JOIN taxonomic_rank tr on tr.id=t.taxonomic_rank_id
 WHERE
  s.id in ({$s})
 ";
 //echo "$query2 s";exit;
-		$res = mysql_query($query2);
-	
-		while ($row = mysql_fetch_array($res)) {
+		$res = $this->dbLink->query($query2);
+
+		while ($row = mysqli_fetch_array($res)) {
 			$sr = array(
 				'genus'	=> $row['genus'],
 				'taxon'	=> $row['genus'].' ('.$row['family'].') ',
@@ -360,27 +363,25 @@ WHERE
 				'type'	=> $row['rank']
 			);
 			$searchresult[] = $sr;
-			
+
 			$j++;
 			$ctr++;
 		}
-		
+
 		usort($searchresult,'col2011sort_a');
 		return $searchresult;
 	}
-
-				
-
 }
 
-function col2011sort_a($a,$b){
-    if($a['distance']==$b['distance']) {
-		if($a['ratio']==$b['ratio']){
-			return strcmp($a['taxon'],$b['taxon']);
+function col2011sort_a($a, $b)
+{
+    if ($a['distance'] == $b['distance']) {
+		if ($a['ratio'] == $b['ratio']){
+			return strcmp($a['taxon'], $b['taxon']);
 		}
-		return($a['ratio']<$b['ratio'])?-1:1;		
+		return ($a['ratio'] < $b['ratio']) ? -1 : 1;
     }
-    return($a['distance']<$b['distance'])?-1:1;
+    return ($a['distance'] < $b['distance']) ? -1 : 1;
 }
 
 

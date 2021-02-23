@@ -17,10 +17,14 @@
  */
 require_once('inc/variables.php');
 
-class cls_herbarium_faeuv2 extends cls_herbarium_base {
+class cls_herbarium_faeuv2 extends cls_herbarium_base
+{
 
-	var $block_limit=2;
-	var $limit=4;
+	public $block_limit = 2;
+	public $limit = 4;
+
+    private $dbLink;
+
 	/**
 	 * get all possible matches against the fauna europaea
 	 *
@@ -28,7 +32,8 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 	 * @param bool[optional] $withNearMatch use near_match if true
 	 * @return array result of all searches
 	 */
-	public function getMatches ($searchtext, $withNearMatch = false){
+	public function getMatches ($searchtext, $withNearMatch = false)
+    {
 		global $options;
 
 		// catch all output to the console
@@ -38,11 +43,12 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 		$matches = array('error'	   => '',
 						 'result'	  => array());
 
-		if (!@mysql_connect($options['fev2']['dbhost'], $options['fev2']['dbuser'], $options['fev2']['dbpass']) || !@mysql_select_db($options['fev2']['dbname'])) {
-			$matches['error'] = 'no database connection';
-			return $matches;
-		}
-		mysql_query("SET character set utf8");
+        $this->dbLink = mysqli_connect($options['fev2']['dbhost'], $options['fev2']['dbuser'], $options['fev2']['dbpass'], $options['fev2']['dbname']);
+        if (!$this->dbLink) {
+            $matches['error'] = 'no database connection';
+            return $matches;
+        }
+        $this->dbLink->query("SET character set utf8");
 
 		// split the input at newlines into several queries
 		$searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
@@ -55,7 +61,7 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 
 			if (strpos(trim($searchItem), ' ') === false) {
 				$type = 'uni';								// we're asked for a uninomial
-		
+
 				if ($withNearMatch) {
 					$searchItemNearmatch = $this->_near_match($searchItem, false, true); // use near match if desired
 					$uninomial		   = strtolower(trim($searchItemNearmatch));
@@ -63,9 +69,9 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 					$searchItemNearmatch = '';
 					$uninomial		   = strtolower(trim($searchItem));
 				}
-				
+
 				$searchresult=$this->getUninomial($uninomial);
-				
+
 			} else {
 				$type = 'multi';
 				// parse the taxon string
@@ -81,9 +87,9 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 				} else {
 					$searchItemNearmatch = '';
 				}
-				
+
 				$searchresult=array_merge($searchresult, $this->getMultinomal($parts));
-				
+
 
 			}
 
@@ -101,26 +107,26 @@ class cls_herbarium_faeuv2 extends cls_herbarium_base {
 	}
 
 
-	function getMultinomal($parts){
-		
+	private function getMultinomal($parts)
+    {
 		$lev=array();
 		// distribute the parsed string to different variables and calculate the (real) length
 		$genus[0]	= strtolower(trim($parts['genus']));
 		$lenGenus[0] = mb_strlen($parts['genus'], "UTF-8");
 		$lenGenuslim[0]=min((int)( $lenGenus[0]/2),$this->limit-1);
-		
+
 		$genus[1]	= strtolower(trim($parts['subgenus']));			  // subgenus (if any)
 		$lenGenus[1] = mb_strlen($parts['subgenus'], "UTF-8");   // real length of subgenus
 		$lenGenuslim[1]=min((int)( $lenGenus[1]/2),$this->limit-1);
 
 		$epithet	 = strtolower(trim($parts['epithet']));
 		$lenEpithet  = mb_strlen($parts['epithet'], "UTF-8");
-		
+
 		$rank		= strtolower(trim($parts['rank']));
 		$epithet2	= strtolower(trim($parts['subepithet']));
 		$lenEpithet2 = mb_strlen($parts['subepithet'], "UTF-8");
-				
-		
+
+
 		$query="
 SELECT
  taxonids
@@ -138,10 +144,10 @@ FROM
 WHERE
  mdld('{$genus[1]}', LOWER(subgenus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenGenuslim[1]})
  ";
-		$res = mysql_query($query);
-		
+		$res = $this->dbLink->query($query);
+
 		$s="";
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			$s.=",".$row['taxonids']."";
 		}
 		$s=substr($s,1);
@@ -169,32 +175,32 @@ FROM
 WHERE
  id in ({$s})
 ";
-	
-		$res = mysql_query($query);
-		while ($row = mysql_fetch_array($res)) {
-			
+
+		$res = $this->dbLink->query($query);
+		while ($row = mysqli_fetch_array($res)) {
+
 			$found=false;
 			$g_ratio=0;
-			
+
 			// if a epithet was given...
 			if($epithet){
-			
+
 				$distance=$row['mdld_e'];
 				// we've hit a species
 				if( ($distance + $row['mdld_g']) < $this->limit && $distance < min($lenEpithet, mb_strlen($row['SPECIES_EPITHET'], "UTF-8")) / 2 ){
-					
+
 					// if epithet
 					if($epithet && $rank){
-					
+
 						// we've hit an epithet
 						if ($row['mdld_i'] < $this->limit && $row['mdld_i'] < min($lenEpithet2, mb_strlen($row['INFRASPECIES_EPITHET'], "UTF-8")) / 2 ) {                         // 4th limit of the search
-							$found = true;  
+							$found = true;
 							$ratio = 1
 									- $row['mdld_e'] / max(mb_strlen($row['SPECIES_EPITHET'], "UTF-8"), $lenEpithet)
 									- $row['mdld_i'] / max(mb_strlen($row['INFRASPECIES_EPITHET'], "UTF-8"), $lenEpithet2);
 							$distance += $row['mdld_i'];
 						}
-					
+
 					// if no epithet was given
 					}else{
 						$found = true;
@@ -208,10 +214,10 @@ WHERE
 				$ratio = 1;
 				$distance = 0;
 			}
-			
+
 			// of found and synonynm accepted code
 			if($found){
-				
+
 				if(!isset($lev[$row['id']]['ID'])){
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['GENUS_NAME'], "UTF-8"), $lenGenus[1]);
 					$lev[$row['id']]=array(
@@ -223,7 +229,7 @@ WHERE
 						'species' => array()
 					);
 				}
-				
+
 				if($g_ratio==0){
 					$g_ratio=1 - $row['mdld_g'] / max(mb_strlen($row['GENUS_NAME'], "UTF-8"), $lenGenus);
 				}
@@ -245,15 +251,16 @@ WHERE
 		return $lev;
 	}
 
-				
-	function getUninomial($uninomial,$getGenusIds=false){
+
+	private function getUninomial ($uninomial, $getGenusIds = false)
+    {
 		$j=0;
 		$ctr=0;
-		
+
 		$lenUninomial=mb_strlen(trim($uninomial));
 		$lenlim=min( $lenUninomial/2,$this->limit);
 
-		
+
 		$query="
 SELECT
  genus_name,
@@ -278,9 +285,9 @@ WHERE
  mdld('{$uninomial}', LOWER(subgenus_name), {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(subgenus_name)/2,{$lenlim})
  ";
  //echo $query;exit;
-		$res = mysql_query($query);
+		$res = $this->dbLink->query($query);
 		$tmp=array();
-		while ($row = mysql_fetch_array($res)) {
+		while ($row = mysqli_fetch_array($res)) {
 			if(isset($tmp[$row['genus_name']]))continue;
 			$tmp[$row['genus_name']]=1;
 			$sr = array(
@@ -292,20 +299,20 @@ WHERE
 				'type'	=> 'genus'
 			);
 			$searchresult[] = $sr;
-			
+
 			$j++;
 			$ctr++;
 		}
-		
-		
+
+
 		$this->_doMultiSort($searchresult);
-		
-		
+
+
 		return $searchresult;
 	}
-	
-	function _doMultiSort(&$searchresult){
-				
+
+	private function _doMultiSort (&$searchresult)
+    {
 		// if there's more than one hit, sort them (faster here than within the db)
 		if (count($searchresult) > 1) {
 			foreach ($searchresult as $key => $row) {
@@ -316,6 +323,5 @@ WHERE
 			array_multisort($sort1, SORT_NUMERIC, $sort2, SORT_DESC, SORT_NUMERIC, $sort3, $searchresult);
 		}
 	}
-
 
 }

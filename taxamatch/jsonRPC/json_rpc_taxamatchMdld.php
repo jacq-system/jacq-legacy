@@ -56,7 +56,7 @@
  *				 'basID' => '',					  basID of current synonym
  *				 'synID' => '',					  synID of current synonym
  *				 'synonyms' => array (			   all synonyms of the current synonym (if any)
- *				   0 => array (					  
+ *				   0 => array (
  *					 . . .						   same structure as 'synonyms' one level above
  *				   ),
  *			 ),
@@ -85,13 +85,12 @@
 require_once('inc/jsonRPCServer.php');
 require_once('inc/variables.php');
 
-
 /**
- * function for automatic class loading
+ * anonymous function for automatic class loading
  *
  * @param string $class_name name of class and of file
  */
-function __autoload ($class_name)
+spl_autoload_register(function ($class_name)
 {
 	if (preg_match('|^\w+$|', $class_name)) {
 		$path = 'inc/' . basename($class_name) . '.php';
@@ -102,7 +101,7 @@ function __autoload ($class_name)
 			die("The requested library $class_name could not be found.");
 		}
 	}
-}
+});
 
 /**
  * taxamatchMdld service class
@@ -132,7 +131,7 @@ class taxamatchMdldService {
 			'name'=>'Fauna Europea v2','params'=>array('NearMatch'=>true,'showSy'=>'false')
 		),
 	);
-	
+
 /*******************\
 |                   |
 |  public functions |
@@ -142,7 +141,7 @@ class taxamatchMdldService {
 /**
  * get all databases with options
  *
- * @param 
+ * @param
  * @return array result of all searches
  */
 public function getDatabases(){
@@ -161,7 +160,7 @@ public function getDatabases(){
 public function getMatchesService($database='', $searchitem='', $params=array()){
 
 
-	
+
 
 	if(!isset($params['NearMatch'])){
 		$params['NearMatch']=false;
@@ -170,19 +169,19 @@ public function getMatchesService($database='', $searchitem='', $params=array())
 		$params['showSy']=false;
 	}
         $params['includeCommonNames'] = (isset($params['includeCommonNames']) && $params['includeCommonNames']) ? true : false;
-	
+
 	if($database=='vienna'){
-		
+
 		if($params['showSy']==true){
-			
+
 			return $this->getMatchesWithSynonyms($searchitem, $params['NearMatch']);
 
 		}else{
 			return $this->getMatchesFreud($searchitem, $params['NearMatch'], $params['includeCommonNames']);
 		}
-		
+
 	}else if($database=='vienna_common'){
-		
+
 		if($params['showSy']==true){
 			return $this->getMatchesCommonNamesWithSynonyms($searchitem, $params['NearMatch']);
 		}else{
@@ -190,23 +189,23 @@ public function getMatchesService($database='', $searchitem='', $params=array())
 		}
 
 	}else if($database=='col2010ac'){
-		
+
 		return $this->getMatchesCol($searchitem,$params['NearMatch']);
-	
+
 	}else if($database=='col2011ac'){
-		
+
 		return $this->getMatchesCol2011($searchitem,$params['NearMatch']);
-	
+
 	}else if($database=='fe'){
 		return $this->getMatchesFaunaEuropaea($searchitem,$params['NearMatch']);
-	
+
 	}else if($database=='fev2'){
-	
+
 		return $this->getMatchesFaunaEuropaeav2($searchitem,$params['NearMatch']);
 	}else{
 		return $this->getMatchesMulti($searchitem,$params['NearMatch'],$database);
 	}
-	
+
 	return 'd';
 }
 
@@ -309,7 +308,7 @@ public function getMatchesFaunaEuropaea ($searchtext, $withNearMatch = false)
  */
 public function getMatchesFaunaEuropaeav2 ($searchtext, $withNearMatch = false)
 {
-	
+
 	$herbarium = new cls_herbarium_faeuv2();
 	return $herbarium->getMatches($searchtext, $withNearMatch);
 }
@@ -347,23 +346,24 @@ public function getMatchesCommonNamesWithSynonyms ($searchtext, $withNearMatch =
 
 
 
-/********************\
-|					|
-|  private functions |
-|					|
-\********************/
+/*********************\
+|                     |
+|  private functions  |
+|                     |
+\*********************/
 
 } // class taxamatchMdldService
 
 
 // log the request
-if (@mysql_connect($options['log']['dbhost'], $options['log']['dbuser'], $options['log']['dbpass']) && @mysql_select_db($options['log']['dbname'])) {
-	@mysql_query("SET character set utf8");
-	@mysql_query("INSERT INTO tblrpclog SET
-				   http_header = '" . mysql_real_escape_string(var_export(apache_request_headers(), true)) . "',
-				   http_post_data = '" . mysql_real_escape_string(file_get_contents('php://input')) . "',
-				   remote_host = '" . mysql_real_escape_string($_SERVER['REMOTE_ADDR']) . "'");
-	@mysql_close();
+$dbLink = mysqli_connect($options['log']['dbhost'], $options['log']['dbuser'], $options['log']['dbpass'], $options['log']['dbname']);
+if ($dbLink) {
+	$dbLink->query("SET character set utf8");
+	$dbLink->query("INSERT INTO tblrpclog SET
+                     http_header = '"    . $dbLink->real_escape_string(var_export(apache_request_headers(), true)) . "',
+                     http_post_data = '" . $dbLink->real_escape_string(file_get_contents('php://input')) . "',
+                     remote_host = '"    . $dbLink->real_escape_string($_SERVER['REMOTE_ADDR']) . "'");
+	$dbLink->close();
 }
 
 /**

@@ -58,14 +58,14 @@ class showResults{
 
 		$end=$start+$limit;
 
-		//$result = db_query("SELECT * FROM tbljobs WHERE jobID = '{jobID}' AND uid = '" . $_SESSION['uid'] . "'");
-		$result = db_query("SELECT * FROM tbljobs WHERE jobID = '{$jobID}' ");
+		//$result = dbi_query("SELECT * FROM tbljobs WHERE jobID = '{jobID}' AND uid = '" . $_SESSION['uid'] . "'");
+		$result = dbi_query("SELECT * FROM tbljobs WHERE jobID = '{$jobID}' ");
 		if ($result->num_rows == 0){
 			return array('html'=>'Not allowed','maxc'=>0);
 		}
 
 
-		$result = db_query("SELECT COUNT(*) as 'c' FROM tblqueries WHERE jobID = '$jobID'");
+		$result = dbi_query("SELECT COUNT(*) as 'c' FROM tblqueries WHERE jobID = '$jobID'");
 
 		$row = $result->fetch_array();
 		$maxc=$row['c'];
@@ -73,7 +73,7 @@ class showResults{
 		$out = "";
 		$correct = 0;
 		$nr = 1;
-		$result = db_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr limit {$start},{$end}");
+		$result = dbi_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr limit {$start},{$end}");
 		while ($row = $result->fetch_array()) {
 			$lnr= $row['lineNr'];
 			$matches = @unserialize($row['result']);
