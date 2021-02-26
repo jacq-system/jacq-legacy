@@ -85,7 +85,7 @@ function dbi_query($sql, $debug=false)
 {
     global $_OPTIONS, $dbLink;
 
-    if($debug || $_OPTIONS['debug']==1){
+    if($debug || $_OPTIONS['debug'] == 1){
         $debug=true;
     }
 

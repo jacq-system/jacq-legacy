@@ -16,19 +16,19 @@
  * @subpackage classes
  */
 class clsAutocomplete {
-    /*     * ******************\
-      |				|
-      |  static variables  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  static variables  |
+    |                    |
+    \********************/
 
     private static $instance = null;
 
-    /*     * ******************\
-      |				|
-      |  static functions  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  static functions  |
+    |                    |
+    \********************/
 
     /**
      * instances the class clsAutocomplete
@@ -42,28 +42,28 @@ class clsAutocomplete {
         return self::$instance;
     }
 
-    /*     * ***********\
-      |		 |
-      |  variables  |
-      |		 |
-      \************ */
+    /*************\
+    |             |
+    |  variables  |
+    |             |
+    \*************/
 
 
-    /*     * *************\
-      |	|
-      |  constructor  |
-      |	|
-      \************** */
+    /***************\
+    |               |
+    |  constructor  |
+    |               |
+    \***************/
 
     protected function __construct() {
-        
+
     }
 
-    /*     * ******************\
-      |				|
-      |  public functions  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  public functions  |
+    |                    |
+    \********************/
 
     /** W
      * autocomplete a taxonomy author entry field
@@ -83,7 +83,7 @@ class clsAutocomplete {
             $db = clsDbAccess::Connect('INPUT');
             $sql = "SELECT author, authorID, Brummit_Powell_full
 			FROM tbl_tax_authors
-			WHERE 
+			WHERE
 		";
             if (!empty($value['id'])) {
                 $sql.=" authorID='{$value['id']}'";
@@ -141,7 +141,7 @@ class clsAutocomplete {
             $db = clsDbAccess::Connect('INPUT');
             $sql = "SELECT autor, autorID
                 FROM tbl_lit_authors
-			WHERE 
+			WHERE
 		";
 
             if (!empty($value['id'])) {
@@ -201,7 +201,7 @@ class clsAutocomplete {
 
                 $sql = "SELECT Sammler_2 AS Sammler, Sammler_2ID AS SammlerID
 				FROM tbl_collector_2
-				WHERE 
+				WHERE
 				";
 
                 if (!empty($value['id'])) {
@@ -214,7 +214,7 @@ class clsAutocomplete {
             } else {
                 $sql = "SELECT Sammler, SammlerID
 				FROM tbl_collector
-				WHERE 
+				WHERE
 				";
                 if (!empty($value['id'])) {
                     $sql.=" SammlerID='{$value['id']}'";
@@ -861,7 +861,7 @@ class clsAutocomplete {
                 } else {
                     $sql.=" AND te0.epithet IS NULL";
                 }
-                
+
                 // Check if we filter the resulting taxons using some extra condition(s)
                 if(!empty($extraCondition)) {
                     $sql .= $extraCondition;
@@ -1122,7 +1122,7 @@ class clsAutocomplete {
 
         return $results;
     }
-    
+
     /**
      * Auto-completer for taxon but limited to a certain citation
      * @param string $value taxon name to search for
@@ -1136,7 +1136,7 @@ class clsAutocomplete {
         // Check if a valid citation was passed
         if ($citationID > 0) {
             $db = clsDbAccess::Connect('INPUT');
-            
+
             // Find all taxon name IDs for the current citation
             // but do not use already assigned ones
             $extraCondition = "
@@ -1151,7 +1151,7 @@ class clsAutocomplete {
                 ts.`source_citationID` IN ( " . implode(', ', $citationIDs) . " )
                 )
             ";
-            
+
             // Do the actual taxon name matching
             $results = $this->taxon($value,false,false,true,$extraCondition);
         }
@@ -1161,39 +1161,40 @@ class clsAutocomplete {
     }
 
 
-    /*     * *********************\
-      |			|
-      |  protected functions  |
-      |			|
-      \********************** */
+    /***********************\
+    |                       |
+    |  protected functions  |
+    |                       |
+    \***********************/
 
-    /*     * *******************\
-      |				 |
-      |  private functions  |
-      |				 |
-      \******************** */
+    /*********************\
+    |                     |
+    |  private functions  |
+    |                     |
+    \*********************/
 
     private function __clone() {
-        
+
     }
 
 
     /**
      * Find all parent citations for a given citationID
      * @param int $p_citationID ID of citation to look for
-     * @return array list of citation IDs (including the passed one) 
+     * @return array list of citation IDs (including the passed one)
      */
-    private function findParents( $p_citationID ) {
-        $p_citationID = intval($p_citationID);
-        $results = array($p_citationID);
-        
+    private function findParents ($p_citationID)
+    {
+        $p_citationID_filter = intval($p_citationID);
+        $results = array($p_citationID_filter);
+
         $db = clsDbAccess::Connect('INPUT');
 
         // Find the parent(s) for a citation
         $sql = "
             SELECT `citation_parent_ID`
             FROM `tbl_lit_container`
-            WHERE `citation_child_ID` = '$p_citationID'
+            WHERE `citation_child_ID` = '$p_citationID_filter'
             ";
         $dbst = $db->query($sql);
         $rows = $dbst->fetchAll();

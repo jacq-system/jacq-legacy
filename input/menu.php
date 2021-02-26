@@ -24,7 +24,7 @@ $sql = "SELECT username, group_name
         FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.tbl_herbardb_groups hg
         WHERE hu.groupID=hg.groupID
          AND hu.userID='".intval($_SESSION['uid'])."'";
-$userdata = mysql_fetch_array(mysql_query($sql));
+$userdata = mysqli_fetch_array(dbi_query($sql));
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -155,7 +155,6 @@ $userdata = mysql_fetch_array(mysql_query($sql));
       <tr align="left"><td>
         <input class="button" type="button" value="change password" onclick="changePassword()">
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
-      </tr>
     </table>
   </form>
 </div>

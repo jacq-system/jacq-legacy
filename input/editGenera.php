@@ -89,9 +89,9 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                     WHERE tg.genID = '".intval($_POST['genID'])."'
                      AND (ac.familyID = tf.familyID OR ac.categoryID = tf.categoryID)
                      AND ac.userID = '".$_SESSION['uid']."'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result)>0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result)>0) {
+                $row = mysqli_fetch_array($result);
                 if (!$row['update']) $blocked = true;  // no update access
             } else {
                 $blocked = true;                       // no access at all
@@ -104,8 +104,8 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                 WHERE tf.familyID = ".intval($_POST['familyIndex'])."
                  AND (ac.familyID = tf.familyID OR ac.categoryID = tf.categoryID)
                  AND ac.userID = '".$_SESSION['uid']."'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result)==0) $blocked = true; // no access
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result)==0) $blocked = true; // no access
     }
 
     if (!checkRight('unlock_tbl_tax_genera') && isLocked('tbl_tax_genera', $_POST['genID'])) $blocked = true;
@@ -138,7 +138,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                              remarks = ".quoteString($remarks)."
                              $lock
                             WHERE genID = '".intval($_POST['genID'])."'";
-                    $result = db_query($sql);
+                    $result = dbi_query($sql);
                     logGenera($id,1);
                 }
             } else {
@@ -154,8 +154,8 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                      LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
                      LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
                     WHERE genID = '$id'";
-            $result = db_query($sql);
-            $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            $row = mysqli_fetch_array($result);
             $res = $row['genus'] . " "
                  . $row['author'] . " "
                  . $row['family'] . " "
@@ -180,7 +180,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                          DallaTorreZusatzIDs = ".quoteString($_POST['DTZID']).",
                          accepted = ".(($_POST['accepted']) ? "'1'" : "'0'")."
                         WHERE genID = ".intval($_POST['genID']);
-                $result = db_query($sql);
+                $result = dbi_query($sql);
                 $id = intval($_POST['genID']);
                 logGenera($id,1);
             }
@@ -191,8 +191,8 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                      LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
                      LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
                     WHERE genID = '$id'";
-            $result = db_query($sql);
-            $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            $row = mysqli_fetch_array($result);
             $res = $row['genus'] . " "
                  . $row['author'] . " "
                  . $row['family'] . " "
@@ -231,9 +231,9 @@ if ($get_new) {
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
             WHERE genID = '$get_sel'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_genus    = $row['genus'];
         $p_genID    = $row['genID'];
         $p_DTID     = $row['DallaTorreIDs'];
@@ -308,8 +308,8 @@ if ($p_genID) {
              AND formaID IS NULL AND forma_authorID IS NULL
              AND subformaID IS NULL AND subforma_authorID IS NULL
              AND genID = '".intval($p_genID)."'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
     $cf->label(8,2,"edit Species","javascript:editSpecies('".$row['taxonID']."')");
 }
 

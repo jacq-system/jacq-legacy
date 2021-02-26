@@ -32,11 +32,11 @@ function clearExternal($table, $id)
         default: return;  // wrong keyword => nothing to do
     }
 
-    $result = db_query("SELECT external FROM $table WHERE $pid = $id");
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query("SELECT external FROM $table WHERE $pid = $id");
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         if ($row['external']) {
-            db_query("UPDATE $table SET external = 0 WHERE $pid = $id");
+            dbi_query("UPDATE $table SET external = 0 WHERE $pid = $id");
         }
     }
 }
@@ -78,9 +78,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
             WHERE taxonID = " . extractID($_GET['sel']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_taxonID      = $row['taxonID'];
 
         $p_species      = ($row['epithet']) ? $row['epithet'] : "";
@@ -217,9 +217,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                            OR ac.familyID = tf.familyID
                            OR ac.categoryID = tf.categoryID)
                          AND ac.userID = '" . $_SESSION['uid'] . "'";
-                $result = db_query($sql);
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query($sql);
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     if (!$row['update']) $blocked = true;  // no update access
                 } else {
                     $blocked = true;                       // no access at all
@@ -235,8 +235,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                        OR ac.familyID = tf.familyID
                        OR ac.categoryID = tf.categoryID)
                      AND ac.userID = '" . $_SESSION['uid'] . "'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result) == 0) $blocked = true; // no access
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) == 0) $blocked = true; // no access
         }
 
         if (!$blocked) {
@@ -264,7 +264,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                            annotation = "          . quoteString($_POST['annotation']) . ",
                            external = "            . (($p_external) ? 1 : 0) . "
                           WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
-                  $result = db_query($sql);
+                  $result = dbi_query($sql);
                   logSpecies($p_taxonID,1);
                   if (!$p_external) {
                       // check any used epitheta and authors and make them internal if still external
@@ -302,9 +302,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                          subformaID = " . makeInt($p_subformaIndex) . ",
                          subforma_authorID = " . makeInt($p_subforauthorIndex) . ",
                          annotation = " . quoteString($_POST['annotation']);
-                $result = db_query($sql);
+                $result = dbi_query($sql);
                 if ($result) {
-                    $p_taxonID = mysql_insert_id();
+                    $p_taxonID = dbi_insert_id();
                     logSpecies($p_taxonID, 0);
                 } else {
                     $taxonID = 0;
@@ -346,9 +346,9 @@ $sql = "SELECT com.common_name as 'common_name'
          AND tax.taxonID = '{$p_taxonID}'
         LIMIT 5";
 
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)){
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)){
         $comnames .= ", " . $row['common_name'];
     }
     $comnames=substr($comnames,2);
@@ -567,9 +567,9 @@ ORDER BY
 
 unset($rank);
 $sql = "SELECT rank, tax_rankID FROM tbl_tax_rank ORDER BY rank";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $rank[0][] = intval($row['tax_rankID']);
             $rank[1][] = $row['rank'];
         }
@@ -578,9 +578,9 @@ if ($result = db_query($sql)) {
 
 unset($status);
 $sql = "SELECT status, statusID FROM tbl_tax_status ORDER BY status";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $status[0][] = intval($row['statusID']);
             $status[1][] = $row['status'];
         }
@@ -591,10 +591,10 @@ if ($result = db_query($sql)) {
 $sql = "SELECT ts.taxonID, tst.status
         FROM tbl_tax_species ts
          LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-        WHERE taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_array($result);
+        WHERE taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_array($result);
     $display_head1 = $row['status'] . "&nbsp;&nbsp;" . getScientificName($row['taxonID'], false, false);
 } else {
     $display_head1 = "";
@@ -609,11 +609,11 @@ $sql ="SELECT paginae, figures,
         LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
         LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
         LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-       WHERE taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    if (mysql_num_rows($result) == 1) {
-        $row = mysql_fetch_array($result);
+       WHERE taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) == 1) {
+        $row = mysqli_fetch_array($result);
         $display_head2 = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
         if ($row['suptitel']) $display_head2 .= " in " . $row['editor'] . ": " . $row['suptitel'];
         if ($row['periodicalID']) $display_head2 .= " " . $row['periodical'];
@@ -632,11 +632,11 @@ $sql ="SELECT Sammler, Sammler_2, series, leg_nr, alternate_number, date, duplic
        FROM (tbl_tax_typecollections tt, tbl_collector c)
         LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID = c2.Sammler_2ID
        WHERE tt.SammlerID = c.SammlerID
-        AND taxonID = '" . mysql_escape_string($p_taxonID) . "'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    if (mysql_num_rows($result) == 1) {
-        $row=mysql_fetch_array($result);
+        AND taxonID = '" . dbi_escape_string($p_taxonID) . "'";
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) == 1) {
+        $row=mysqli_fetch_array($result);
         $display_head3 = $row['Sammler'];
         if ($row['Sammler_2']) {
             if (strstr($row['Sammler_2'], "&") === false) {
@@ -664,8 +664,8 @@ if (mysql_num_rows($result) > 0) {
                 LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID=c2.Sammler_2ID
                WHERE tt.SammlerID = c.SammlerID
                 AND taxonID = " . intval($p_basIndex);
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
             $display_head3 = "&rarr; Basionym"; // "-> Basionym" wenn im Basionym mindestens ein Typus eingetragen ist
         } else {
             $display_head3 = "&mdash;";
@@ -723,15 +723,15 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
-$res = mysql_query("SELECT COUNT(*)  FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
-$row1=mysql_fetch_row($res);
+$res = dbi_query("SELECT COUNT(*)  FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
+$row1=mysqli_fetch_row($res);
 
 if ($row1[0] > 0) {
     $cf->label(22.5, 5.5, "type specimens ({$row1[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
 }
 
 
-$res = mysql_query("SELECT COUNT(*) FROM
+$res = dbi_query("SELECT COUNT(*) FROM
  tbl_specimens s,
  tbl_tax_species ts,
  tbl_tax_genera tg,
@@ -744,7 +744,7 @@ WHERE
  AND mc.collectionID = s.collectionID
  AND ts.taxonID='$p_taxonID'");
 
-$row1=mysql_fetch_row($res);
+$row1=mysqli_fetch_row($res);
 if ($row1[0] > 0) {
 	$cf->label(29.5, 5.5, "specimens ({$row1[0]})", "javascript:listSpecimens('$p_taxonID')");
 }
