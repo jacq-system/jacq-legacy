@@ -9,23 +9,26 @@ function p($val) {
 
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
+ *
+ * TODO: replace dbi_escape_string with PDO-Method
+ *
  * @package clsAutocomplete
  * @subpackage classes
  */
 class clsAutocompleteCommonName {
-    /*     * ******************\
-      |					|
-      |  static variables  |
-      |					|
-      \******************* */
+    /********************\
+    |					 |
+    |  static variables  |
+    |					 |
+    \********************/
 
     private static $instance = null;
 
-    /*     * ******************\
-      |					|
-      |  static functions  |
-      |					|
-      \******************* */
+    /********************\
+    |					 |
+    |  static functions  |
+    |					 |
+    \********************/
 
     /**
      * instances the class clsAutocomplete
@@ -39,28 +42,28 @@ class clsAutocompleteCommonName {
         return self::$instance;
     }
 
-    /*     * ***********\
-      |			 |
-      |  variables  |
-      |			 |
-      \************ */
+    /*************\
+    |			  |
+    |  variables  |
+    |			  |
+    \*************/
 
 
-    /*     * *************\
-      |			   |
-      |  constructor  |
-      |			   |
-      \************** */
+    /***************\
+    |			    |
+    |  constructor  |
+    |			    |
+    \***************/
 
     protected function __construct() {
-        
+
     }
 
-    /*     * ******************\
-      |					|
-      |  public functions  |
-      |					|
-      \******************* */
+    /********************\
+    |					 |
+    |  public functions  |
+    |					 |
+    \********************/
 
     function getCacheOption() {
         global $_OPTIONS;
@@ -84,8 +87,8 @@ class clsAutocompleteCommonName {
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
 
@@ -141,8 +144,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
 
@@ -203,8 +206,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
 
@@ -215,7 +218,7 @@ SELECT
  com.common_id,
  trans.name as 'tranlit'
 FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam 
+ {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com on com.common_id=nam.name_id
  LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
 WHERE
@@ -262,8 +265,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -276,7 +279,7 @@ WHERE
                 if (substr($value['id'], 0, 1) == 'c') {
                     $id = substr($value['id'], 1);
                     $sql = "
-SELECT  
+SELECT
  trans.transliteration_id,
  trans.name
 FROM
@@ -329,8 +332,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -381,8 +384,8 @@ WHERE
         $results_intern = array();
         $fetched = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -542,8 +545,8 @@ WHERE
         $fetched = array();
 
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -676,20 +679,20 @@ WHERE
                     $sql = "
 SELECT
 {$f1}
- 
+
  l.name as 'n',
  l.`iso639-6` as 'i',
  l.language_id as 'id',
- 
+
 {$f2}
- 
+
  IF(l.`iso639-6`='$value',1,0) as 'sort',
  LOCATE('{$value['search']}',l.name) as 'sort2'
 FROM
  {$d}tbl_name_languages l
 {$j1}
 {$j2}
- 
+
 WHERE
 	l.name LIKE '%{$value['search']}%'
  or l.`iso639-6` LIKE '%{$value['search']}%'
@@ -881,8 +884,8 @@ ORDER BY
     public function cname_service($value) {
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -940,8 +943,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -996,8 +999,8 @@ WHERE
 
         $results = array();
         // Escape search string
-        if( isset($value['search']) ) $value['search'] = mysql_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = mysql_escape_string($value['exact']);
+        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
+        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -1042,17 +1045,17 @@ WHERE
         return $results;
     }
 
-    /*     * *********************\
-      |						|
-      |  protected functions  |
-      |						|
-      \********************** */
+    /***********************\
+    |						|
+    |  protected functions  |
+    |						|
+    \***********************/
 
-    /*     * *******************\
-      |					 |
-      |  private functions  |
-      |					 |
-      \******************** */
+    /*********************\
+    |					  |
+    |  private functions  |
+    |					  |
+    \*********************/
 
     private function __clone() {
     }

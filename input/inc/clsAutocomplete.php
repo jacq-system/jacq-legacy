@@ -5,6 +5,8 @@
  *
  * A singleton to supply various autocomplete methods
  *
+ * TODO: replace dbi_escape_string with PDO-Method
+ *
  * @author Johannes Schachner
  * @version 1.0
  * @package clsAutocomplete
@@ -76,8 +78,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -133,8 +135,8 @@ class clsAutocomplete {
      */
     public function litAuthor($value, $noExternals = false) {
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         $results = array();
         try {
@@ -192,8 +194,8 @@ class clsAutocomplete {
     public function collector($value, $second = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -264,8 +266,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -361,8 +363,8 @@ class clsAutocomplete {
     public function citation($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -447,8 +449,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -494,8 +496,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -539,8 +541,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -583,8 +585,8 @@ class clsAutocomplete {
     public function publisher($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -629,8 +631,8 @@ class clsAutocomplete {
     public function family($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -677,8 +679,8 @@ class clsAutocomplete {
     public function genus($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -734,8 +736,8 @@ class clsAutocomplete {
     public function epithet($value, $noExternals = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -813,8 +815,8 @@ class clsAutocomplete {
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -933,8 +935,8 @@ class clsAutocomplete {
     public function taxonWithHybrids($value, $noExternals = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $display = clsDisplay::Load();
@@ -1089,8 +1091,8 @@ class clsAutocomplete {
     public function series($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');

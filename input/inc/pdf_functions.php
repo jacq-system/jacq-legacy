@@ -112,7 +112,7 @@ function taxonWithHybrids ($row, $withNl = false)
         $sql = "SELECT parent_1_ID, parent_2_ID
                 FROM tbl_tax_hybrids
                 WHERE taxon_ID_fk = '" . $row['taxonID'] . "'";
-        $rowHybrid = mysql_fetch_array(mysql_query($sql));
+        $rowHybrid = dbi_query($sql)->fetch_array();
         $sql = "SELECT tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -133,7 +133,7 @@ function taxonWithHybrids ($row, $withNl = false)
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'";
-        $row1 = mysql_fetch_array(mysql_query($sql));
+        $row1 = dbi_query($sql)->fetch_array();
         $sql = "SELECT tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -154,7 +154,7 @@ function taxonWithHybrids ($row, $withNl = false)
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE taxonID = '" . $rowHybrid['parent_2_ID'] . "'";
-        $row2 = mysql_fetch_array(mysql_query($sql));
+        $row2 = dbi_query($sql)->fetch_array();
 
         return taxon($row1, $withNl) . " x " . taxon($row2, $withNl);
     } else {
