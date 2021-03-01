@@ -33,12 +33,12 @@ no_magic();
 /**
  * get addtl. Authors
  */
-$result = db_query("SELECT authorID, author FROM tbl_tax_authors");
+$result = dbi_query("SELECT authorID, author FROM tbl_tax_authors");
 $authorsKnown = array();
 $authorsUnknown = array();
 $authorsUnknownID = array();
 $ctrUnknown = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $author = $row['author'];
     if ($author[0] == '(' || strpos($author, ',') !== false || strpos($author, '&') !== false || strpos($author, 'ex') !== false) {
         $subparts = array();
@@ -51,9 +51,9 @@ while ($row = mysql_fetch_array($result)) {
         $parts = array_merge($parts, $subparts);
         foreach ($parts as $part) {
             if (strlen(trim($part)) > 0) {
-                $result2 = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . mysql_escape_string(trim($part)) . "'");
-                if (mysql_num_rows($result2)) {
-                    $row2 = mysql_fetch_array($result2);
+                $result2 = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . dbi_escape_string(trim($part)) . "'");
+                if (mysqli_num_rows($result2)) {
+                    $row2 = mysqli_fetch_array($result2);
                     $authorsKnown[$row2['authorID']] = trim($part);
                 } else {
                     $authorsUnknown[$ctrUnknown] = trim($part);

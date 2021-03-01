@@ -70,17 +70,17 @@ function parseAuthors ($text)
 /**
  * get addtl. lit authors
  */
-$result = db_query("SELECT autorID, autor FROM tbl_lit_authors");
+$result = dbi_query("SELECT autorID, autor FROM tbl_lit_authors");
 $authorsKnown = array();
 $authorsUnknown = array();
 $authorsUnknownID = array();
 $ctrUnknown = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $authors = parseAuthors($row['autor']);
     foreach ($authors as $author) {
-        $result2 = db_query("SELECT person_ID FROM tbl_person_alternative WHERE p_alternative = '" . mysql_real_escape_string($author) . "'");
-        if (mysql_num_rows($result2)) {
-            $row2 = mysql_fetch_array($result2);
+        $result2 = dbi_query("SELECT person_ID FROM tbl_person_alternative WHERE p_alternative = '" . dbi_escape_string($author) . "'");
+        if (mysqli_num_rows($result2)) {
+            $row2 = mysqli_fetch_array($result2);
             $authorsKnown[$row2['person_ID']] = $author;
         } else {
             $authorsUnknown[$ctrUnknown] = ($author) ? $author : '--';

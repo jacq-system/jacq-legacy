@@ -38,19 +38,19 @@ no_magic();
 /**
  * get addtl. Collectors
  */
-$result = db_query("SELECT Sammler_2ID, Sammler_2 FROM tbl_collector_2");
+$result = dbi_query("SELECT Sammler_2ID, Sammler_2 FROM tbl_collector_2");
 $collectorsKnown = array();
 $collectorsUnknown = array();
 $collectorsUnknownID = array();
 $ctrUnknown = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $coll2 = trim(strtr($row['Sammler_2'], '&', ','));
     $parts = explode(', ', $coll2);
     foreach ($parts as $part) {
         if (strlen(trim($part)) > 0) {
-            $result2 = db_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = '" . mysql_escape_string(trim($part)) . "'");
-            if (mysql_num_rows($result2)) {
-                $row2 = mysql_fetch_array($result2);
+            $result2 = dbi_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = '" . dbi_escape_string(trim($part)) . "'");
+            if (mysqli_num_rows($result2)) {
+                $row2 = mysqli_fetch_array($result2);
                 $collectorsKnown[$row2['SammlerID']] = trim($part);
             } else {
                 $collectorsUnknown[$ctrUnknown] = trim($part);

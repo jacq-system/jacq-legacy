@@ -33,20 +33,20 @@ no_magic();
 /**
  * get addtl. lit authors
  */
-$result = db_query("SELECT autorID, autor FROM tbl_lit_authors");
+$result = dbi_query("SELECT autorID, autor FROM tbl_lit_authors");
 $authorsKnown = array();
 $authorsUnknown = array();
 $authorsUnknownID = array();
 $ctrUnknown = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $parts = split('\., |\. & ', $row['autor']);
     if (count($parts) > 1) {
         foreach ($parts as $part) {
             if (strlen(trim($part)) > 0) {
                 if ($part[strlen($part)-1] != '.') $part .= ".";
-                $result2 = db_query("SELECT autorID FROM tbl_lit_authors WHERE autor = '" . mysql_escape_string(trim($part)) . "'");
-                if (mysql_num_rows($result2)) {
-                    $row2 = mysql_fetch_array($result2);
+                $result2 = dbi_query("SELECT autorID FROM tbl_lit_authors WHERE autor = '" . dbi_escape_string(trim($part)) . "'");
+                if (mysqli_num_rows($result2)) {
+                    $row2 = mysqli_fetch_array($result2);
                     $authorsKnown[$row2['autorID']] = trim($part);
                 } else {
                     $authorsUnknown[$ctrUnknown] = trim($part);
