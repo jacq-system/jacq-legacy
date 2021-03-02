@@ -44,14 +44,14 @@ function makeTaxon2($search)
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE ts.external = 0
-                 AND tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'\n";
+                 AND tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'\n";
         if (!empty($pieces[1])) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'\n";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'\n";
         }
         $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = (($row['synID']) ? '-' : '') . getScientificName($row['taxonID']);
                 }
             }
@@ -84,18 +84,18 @@ function makeTaxon2($search)
                  LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                 WHERE th.taxon_ID_fk = ts.taxonID
-                 AND (tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                  OR tgp1.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                  OR tgp2.genus LIKE '" . mysql_escape_string($pieces[0]) . "%')\n";
+                 AND (tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
+                  OR tgp1.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
+                  OR tgp2.genus LIKE '" . dbi_escape_string($pieces[0]) . "%')\n";
         if (!empty($pieces[1])) {
-            $sql .= "AND (tep1.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'
-                      OR tep2.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%')\n";
+            $sql .= "AND (tep1.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'
+                      OR tep2.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%')\n";
         }
         $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
 
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = (($row['synID']) ? '-' : '') . taxonWithHybrids($row);
                 }
             }
@@ -114,17 +114,17 @@ function makeSammler2($search, $nr)
         if ($nr == 2) {
             $sql = "SELECT Sammler_2, Sammler_2ID
                     FROM tbl_collector_2
-                    WHERE Sammler_2 LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                    WHERE Sammler_2 LIKE '" . dbi_escape_string($pieces[0]) . "%'
                     ORDER BY Sammler_2";
         } else {
             $sql = "SELECT Sammler, SammlerID
                     FROM tbl_collector
-                    WHERE Sammler LIKE '".mysql_escape_string($pieces[0])."%'
+                    WHERE Sammler LIKE '".dbi_escape_string($pieces[0])."%'
                     ORDER BY Sammler";
         }
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row=mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row=mysqli_fetch_array($result)) {
                     if ($nr == 2) {
                         $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
                     } else {
@@ -159,14 +159,14 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_collector c ON c.SammlerID = si.SammlerID
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = si.Sammler_2ID
                 WHERE specimen_ID = " . extractID($_GET['sel']);
-        $result = db_query($sql);
-        $resultValid = (mysql_num_rows($result)>0) ? true : false;
+        $result = dbi_query($sql);
+        $resultValid = (mysqli_num_rows($result)>0) ? true : false;
     } else {
         $resultValid = false;
     }
 
     if ($resultValid) {
-        $row = mysql_fetch_array($result);
+        $row = mysqli_fetch_array($result);
         $p_specimen_ID       = $row['specimen_ID'];
         $p_HerbNummer        = $row['HerbNummer'];
         $p_CollNummer        = $row['CollNummer'];
@@ -234,9 +234,9 @@ if (isset($_GET['sel'])) {
         if ($row['taxonID']) {
             $sql = "SELECT ts.external
                     FROM tbl_tax_species ts
-                    WHERE ts.taxonID = '" . mysql_escape_string($row['taxonID']) . "'";
-            $result2 = db_query($sql);
-            $row2 = mysql_fetch_array($result2);
+                    WHERE ts.taxonID = '" . dbi_escape_string($row['taxonID']) . "'";
+            $result2 = dbi_query($sql);
+            $row2 = mysqli_fetch_array($result2);
             $p_taxon  = getScientificName($row['taxonID']);
             $p_external = $row2['external'];
         } else {
@@ -259,7 +259,7 @@ if (isset($_GET['sel'])) {
         $p_institution = $_SESSION['sid'];
         if ($p_institution) {
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '$p_institution' ORDER BY collection";
-            $row = mysql_fetch_array(db_query($sql));
+            $row = mysqli_fetch_array(dbi_query($sql));
             $p_collection = $row['collectionID'];
         } else {
             $p_collection = "";
@@ -393,7 +393,7 @@ if (isset($_GET['sel'])) {
                     FROM tbl_specimens_import, tbl_management_collections
                     WHERE tbl_specimens_import.collectionID = tbl_management_collections.collectionID
                      AND specimen_ID = '" . intval($_POST['specimen_ID']) . "'";
-            $dummy = mysql_fetch_array(mysql_query($sql));
+            $dummy = dbi_query($sql)->fetch_array();
             $checkSource = ($dummy['source_id']==$_SESSION['sid']) ? true : false;
 
             $sql = "UPDATE tbl_specimens_import SET "
@@ -410,7 +410,7 @@ if (isset($_GET['sel'])) {
         }
         // check if user has access to the new collection
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
-        $rowCheck = mysql_fetch_array(mysql_query($sqlCheck));
+        $rowCheck = dbi_query($sqlCheck)->fetch_array();
         // allow write access to database if user is editor or is granted for both old and new collection
         if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
             $sqlDummy = "SELECT specimen_ID
@@ -420,18 +420,18 @@ if (isset($_GET['sel'])) {
                           AND (source_id = '1' OR source_id = '6' OR source_id = '4' OR source_id = '5')
                           AND source_id = '" . $rowCheck['source_id'] . "'
                           AND specimen_ID != '" . intval($_POST['specimen_ID']) . "'";
-            $dummy = db_query($sqlDummy);
-            if (mysql_num_rows($dummy) > 0) {
+            $dummy = dbi_query($sqlDummy);
+            if (mysqli_num_rows($dummy) > 0) {
                 $updateBlocked = true;
                 $blockCause = 1;  // HerbNummer and source_id already in database
-                $dummyRow = mysql_fetch_array($dummy);
+                $dummyRow = mysqli_fetch_array($dummy);
                 $blockSource = $dummyRow['specimen_ID'];
                 $edit = ($_POST['edit']) ? true : false;
                 $p_specimen_ID = $_POST['specimen_ID'];
             } else {
                 if ($updated) {
                     $p_specimen_ID = intval($_POST['specimen_ID']);
-                    $result = db_query($sql);
+                    $result = dbi_query($sql);
                 }
 
                 if (!empty($_POST['submitUpdateNew'])) {
@@ -716,9 +716,9 @@ if (isset($_GET['sel'])) {
 <?php
 unset($institution);
 $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $institution[0][] = $row['source_id'];
             $institution[1][] = substr($row['source_code'], 0, 3);
         }
@@ -737,9 +737,9 @@ if ($p_institution) {
             ORDER BY collection";
 }
 $collection[0][] = 0; $collection[1][] = "";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $collection[0][] = $row['collectionID'];
             $collection[1][] = $row['collection'];
         }
@@ -749,9 +749,9 @@ if ($result = db_query($sql)) {
 unset($typus);
 $typus[0][] = 0; $typus[1][] = "";
 $sql = "SELECT typus_lat, typusID FROM tbl_typi ORDER BY typus_lat";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $typus[0][] = $row['typusID'];
             $typus[1][] = $row['typus_lat'];
         }
@@ -761,9 +761,9 @@ if ($result = db_query($sql)) {
 unset($identstatus);
 $identstatus[0][] = 0; $identstatus[1][] = "";
 $sql = "SELECT identstatusID, identification_status FROM tbl_specimens_identstatus ORDER BY identification_status";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $identstatus[0][] = $row['identstatusID'];
             $identstatus[1][] = $row['identification_status'];
         }
@@ -773,9 +773,9 @@ if ($result = db_query($sql)) {
 unset($series);
 $series[0][] = 0; $series[1][] = "";
 $sql = "SELECT seriesID, series FROM tbl_specimens_series ORDER BY series";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $series[0][] = $row['seriesID'];
             $series[1][] = (strlen($row['series']) > 50) ? substr($row['series'], 0, 50) . "..." : $row['series'];
         }
@@ -785,9 +785,9 @@ if ($result = db_query($sql)) {
 unset($nation);
 $nation[0][] = 0; $nation[1][] = "";
 $sql = "SELECT nation_engl, nationID FROM tbl_geo_nation ORDER BY nation_engl";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $nation[0][] = $row['nationID'];
             $nation[1][] = $row['nation_engl'];
         }
@@ -799,9 +799,9 @@ $province[0][] = 0; $province[1][] = "";
 $sql = "SELECT provinz, provinceID FROM tbl_geo_province
         WHERE nationID = '" . intval($p_nation) . "'
         ORDER BY provinz";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $province[0][] = $row['provinceID'];
             $province[1][] = $row['provinz'];
         }
@@ -811,9 +811,9 @@ if ($result = db_query($sql)) {
 unset($voucher);
 $voucher[0][] = 0; $voucher[1][] = "";
 $sql = "SELECT voucherID, voucher FROM tbl_specimens_voucher ORDER BY voucher";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $voucher[0][] = $row['voucherID'];
             $voucher[1][] = $row['voucher'];
         }
@@ -878,7 +878,7 @@ $cf->labelMandatory(54.5, $y, 6, "accessible");     // meant just as a hint. "ac
 $cf->checkbox(54.5, $y, "accessible", $p_accessible);
 
 $y += 2;
-//$institution = mysql_fetch_array(mysql_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
+//$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
 $cf->label(9, $y, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $cf->dropdown(9, $y, "institution", $p_institution, $institution[0], $institution[1]);

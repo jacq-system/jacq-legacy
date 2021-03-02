@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
 
 if (!isset($_SESSION['txLinkList'])) $_SESSION['txLinkList'] = '';
 

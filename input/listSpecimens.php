@@ -35,6 +35,8 @@ if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
 if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sUserDate'])) $_SESSION['sUserDate'] = '';
 if (!isset($_SESSION['sLabelDate'])) $_SESSION['sLabelDate'] = '';
+if (!isset($_SESSION['sGeoGeneral'])) $_SESSION['sGeoGeneral'] = '';
+if (!isset($_SESSION['sGeoRegion'])) $_SESSION['sGeoRegion'] = '';
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
@@ -163,8 +165,8 @@ function makeDropdownInstitution()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
         if (-$_SESSION['wuCollection'] == $row['source_id']) echo " selected";
         echo ">" . htmlspecialchars($row['source_code']) . "</option>\n";
@@ -179,8 +181,8 @@ function makeDropdownCollection()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
         if ($_SESSION['wuCollection'] == $row['collectionID']) echo " selected";
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
@@ -196,10 +198,10 @@ function makeDropdownUsername()
             WHERE hu.userID=ls.userID
             GROUP BY hu.userID
             ORDER BY surname, firstname, username";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
         if ($_SESSION['sUserID'] == $row['userID']) echo " selected";
         echo ">";
@@ -225,14 +227,14 @@ function makeDropdownDate($label = false)
     }
     $sql .= "GROUP BY date
              ORDER BY date DESC";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<select size=\"1\" ";
     if ($label) {
         echo "name=\"label_date\" id=\"label_date\">\n";
     } else {
         echo "name=\"user_date\" id=\"user_date\">\n";
     }
-    while($row=mysql_fetch_array($result)) {
+    while($row=mysqli_fetch_array($result)) {
         echo "  <option ";
         if ((!$label && $_SESSION['sUserDate'] == $row['date']) || ($label && $_SESSION['sLabelDate'] == $row['date'])) echo " selected";
         echo ">" . htmlspecialchars($row['date']) . "</option>\n";
@@ -298,9 +300,9 @@ function getImportEntries($checked)
             FROM tbl_specimens_import
             WHERE userID = '" . intval($_SESSION['uid']) . "'
              AND " . (($checked) ? "checked > 0" : "checked = 0");
-    $result = db_query($sql);
+    $result = dbi_query($sql);
 
-    return mysql_num_rows($result);
+    return mysqli_num_rows($result);
 }
 
 
@@ -423,8 +425,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $sql = "SELECT geo_general
                 FROM tbl_geo_region
                 GROUP BY geo_general ORDER BY geo_general";
-        $result = mysql_query($sql);
-        while ($row=mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['sGeoGeneral'] == $row['geo_general']) echo " selected";
             echo ">" . $row['geo_general'] . "</option>\n";
@@ -440,8 +442,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $sql = "SELECT geo_region
                 FROM tbl_geo_region
                 ORDER BY geo_region";
-        $result = mysql_query($sql);
-        while ($row=mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['sGeoRegion'] == $row['geo_region']) echo " selected";
             echo ">" . $row['geo_region'] . "</option>\n";
@@ -525,8 +527,8 @@ if ($_SESSION['sType'] == 1) {
                 WHERE sent = '0'";
         if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
         $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
-        $result = db_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             $batchValue[] = $row['batchID'];
             $batchNr = " <" . (($row['source_code']) ? $row['source_code'] . "-" : "") . $row['batchnumber'] . "> ";
             $batchText[] = $newbatchText[] = $row['date_supplied'] . "$batchNr (" . htmlspecialchars(trim($row['remarks'])) . ")";
@@ -544,7 +546,7 @@ if ($_SESSION['sType'] == 1) {
                                 FROM tbl_specimens, tbl_management_collections
                                 WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                                  AND specimen_ID = '$id'";
-                        $row = mysql_fetch_array(db_query($sql));
+                        $row = dbi_query($sql)->fetch_array();
                         if ($row['source_id'] != $_SESSION['sid']) {
                             $blocked = true;
                         }
@@ -554,7 +556,7 @@ if ($_SESSION['sType'] == 1) {
                         $sql = "INSERT INTO api.tbl_api_specimens SET
                                  specimen_ID = '$id',
                                  batchID_fk = '$batch_id'";
-                        db_query($sql);
+                        dbi_query($sql);
                     }
 
                     // update or insert into update_tbl_api_units
@@ -612,12 +614,12 @@ if ($_SESSION['sType'] == 1) {
             $sql .= "AND ls.userID = '" . intval($_SESSION['sUserID']) . "' ";
         }
         if (strlen(trim($_SESSION['sUserDate']))) {
-            $searchDate = mysql_escape_string(trim($_SESSION['sUserDate']));
+            $searchDate = dbi_escape_string(trim($_SESSION['sUserDate']));
             $sql .= "AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1') ";
         }
         $sql .= "ORDER BY ls.timestamp, hu.surname, hu.firstname";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">User</th>";
@@ -626,7 +628,7 @@ if ($_SESSION['sType'] == 1) {
             echo "<th class=\"out\">updated</th>";
             echo "</tr>\n";
             $nr = 1;
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $row['specimenID'];
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                    . "<td class=\"out\">" . htmlspecialchars($row['firstname'] . " " . $row['surname']) . "</td>"
@@ -657,7 +659,7 @@ if ($_SESSION['sType'] == 1) {
              "<input type=\"button\" class=\"button\" value=\"make PDF (standard Labels)\" id=\"btMakeStandardLabelPdf\" onClick=\"showPDF('std')\"\n>";
         echo "<p>\n";
 
-        $searchDate = mysql_escape_string(trim($_SESSION['sLabelDate']));
+        $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
         $sql = "SELECT ls.specimenID, s.typusID, l.label,
                  tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -692,8 +694,8 @@ if ($_SESSION['sType'] == 1) {
                  AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
                 GROUP BY ls.specimenID
                 ORDER BY ".$_SESSION['sOrder'];
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">"
@@ -708,7 +710,7 @@ if ($_SESSION['sType'] == 1) {
             echo "<th class=\"out\">Standard Label</th>";
             echo "</tr>\n";
             $nr = 1;
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $id = $row['specimenID'];
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">\n";
                 echo "<td class=\"out\"><a href=\"editSpecimens.php?sel=" . htmlentities("<$id>") . "&nr=$nr\">" . htmlspecialchars(taxonItem($row)) . "</a></td>\n";

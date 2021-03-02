@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = intval($_GET['ID']);
 
@@ -79,8 +78,8 @@ $sql = "SELECT c.Sammler, c2.Sammler_2, ss.series, wg.series_number, ".
         "LEFT JOIN tbl_collector c ON c.SammlerID=wg.SammlerID ".
         "LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=wg.Sammler_2ID ".
        "WHERE specimen_ID='$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 echo "<b>Specimen:</b> ".collector($row)."\n<p>\n";
 $sql = "SELECT ts.taxonID, tg.genus, specimens_types_ID, annotations, tt.typus, ".
         "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
@@ -104,7 +103,7 @@ $sql = "SELECT ts.taxonID, tg.genus, specimens_types_ID, annotations, tt.typus, 
         "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
        "WHERE tt.typusID=tst.typusID ".
         "AND specimenID='$id' ORDER BY tg.genus";
-$result = db_query($sql);
+$result = dbi_query($sql);
 echo "<table class=\"out\" cellspacing=\"2\" cellpadding=\"2\">\n";
 echo "<tr class=\"out\">";
 echo "<th></th>";
@@ -112,8 +111,8 @@ echo "<th class=\"out\">&nbsp;status&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;taxon&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;annotations&nbsp;</th>";
 echo "</tr>\n";
-if (mysql_num_rows($result)>0) {
-  while ($row=mysql_fetch_array($result)) {
+if (mysqli_num_rows($result)>0) {
+  while ($row=mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\">".
          "<a href=\"javascript:editSpecimensTypes('<".$row['specimens_types_ID'].">',0)\">edit</a>".

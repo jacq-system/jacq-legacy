@@ -106,9 +106,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
              LEFT JOIN tbl_lit_periodicals tpe ON tpe.periodicalID = tl.periodicalID
              LEFT JOIN tbl_lit_publishers tpu ON tpu.publisherID = tl.publisherID
             WHERE citationID = " . extractID($_GET['sel']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_citationID = $row['citationID'];
         $p_jahr       = $row['jahr'];
         $p_code       = $row['code'];
@@ -225,8 +225,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                      category = " . quoteString($p_category);
             $updated = 0;
         }
-        $result = db_query($sql);
-        $p_citationID = (intval($_POST['citationID'])) ? intval($_POST['citationID']) : mysql_insert_id();
+        $result = dbi_query($sql);
+        $p_citationID = (intval($_POST['citationID'])) ? intval($_POST['citationID']) : dbi_insert_id();
         logLit($p_citationID, $updated);
         if ($_POST['submitUpdateNew']) {
             $location = "Location: editLit.php?sel=<0>&new=1";

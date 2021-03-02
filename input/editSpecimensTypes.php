@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
 
 
 function makeTaxon($search,$x,$y)
@@ -20,15 +19,15 @@ function makeTaxon($search,$x,$y)
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE ts.external = 0
-                 AND tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
+                 AND tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%' ";
         if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%' ";
         }
         $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " records found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " records found</b>");
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = taxon($row['taxonID']);
                 }
             }
@@ -104,8 +103,8 @@ if (isset($_GET['new'])) {
              LEFT JOIN tbl_collector c ON c.SammlerID = wg.SammlerID
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = wg.Sammler_2ID
             WHERE specimen_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    $p_specimen = makeCollector(mysql_fetch_array($result));
+    $result = dbi_query($sql);
+    $p_specimen = makeCollector(mysqli_fetch_array($result));
     $p_taxon = "";
     $p_typus = 7;
     $p_annotations = $p_specimens_types_ID = $p_typified_by = $p_typified_date = "";
@@ -114,15 +113,15 @@ if (isset($_GET['new'])) {
     $sql ="SELECT specimens_types_ID, taxonID, specimenID, typusID, annotations, typified_by_Person, typified_Date
            FROM tbl_specimens_types
            WHERE specimens_types_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_typus = $row['typusID'];
         $p_annotations = $row['annotations'];
         $p_specimens_types_ID = $row['specimens_types_ID'];
         $p_typified_by = $row['typified_by_Person'];
         $p_typified_date = $row['typified_Date'];
-        
+
         $p_taxonIndex = $row['taxonID'];
         $p_taxon = getScientificName( $p_taxonIndex );
 
@@ -133,8 +132,8 @@ if (isset($_GET['new'])) {
                  LEFT JOIN tbl_collector c ON c.SammlerID = wg.SammlerID
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = wg.Sammler_2ID
                 WHERE specimen_ID = '" . $row['specimenID'] . "'";
-        $result = db_query($sql);
-        $p_specimen = (mysql_num_rows($result) > 0) ? makeCollector(mysql_fetch_array($result)) : "";
+        $result = dbi_query($sql);
+        $p_specimen = (mysqli_num_rows($result) > 0) ? makeCollector(mysqli_fetch_array($result)) : "";
     } else {
         $p_taxon = $p_specimen = $p_annotations = $p_specimens_types_ID = $p_typified_by = $p_typified_date = "";
         $p_typus = 7;
@@ -155,8 +154,8 @@ if (isset($_GET['new'])) {
             $sql_data = "taxonID = " . extractID($p_taxon) . ",
                          specimenID = " . extractID($p_specimen) . ",
                          typusID = " . quoteString($p_typus) . ",
-                         typified_by_Person = '" . mysql_escape_string($p_typified_by) . "',
-                         typified_Date = '" . mysql_escape_string($p_typified_date) . "',
+                         typified_by_Person = '" . dbi_escape_string($p_typified_by) . "',
+                         typified_Date = '" . dbi_escape_string($p_typified_date) . "',
                          annotations = " . quoteString($p_annotations);
             if (intval($p_specimens_types_ID)) {
                 $sql = "UPDATE tbl_specimens_types SET
@@ -167,8 +166,8 @@ if (isset($_GET['new'])) {
                 $sql = "INSERT INTO tbl_specimens_types SET $sql_data";
                 $updated = 0;
             }
-            $result = db_query($sql);
-            $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : mysql_insert_id();
+            $result = dbi_query($sql);
+            $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
             logSpecimensTypes($id, $updated);
             if ($result) {
                 echo "<script language=\"JavaScript\">\n"
@@ -190,9 +189,9 @@ if (isset($_GET['new'])) {
 
 <?php
 unset($typus);
-$result = db_query("SELECT typus_lat, typusID FROM tbl_typi ORDER BY typus_lat");
-if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+$result = dbi_query("SELECT typus_lat, typusID FROM tbl_typi ORDER BY typus_lat");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         $typus[0][] = $row['typusID'];
         $typus[1][] = $row['typus_lat'];
     }

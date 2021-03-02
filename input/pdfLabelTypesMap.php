@@ -8,12 +8,7 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-no_magic();
 
-// BP, 08/2010: replace fpdf with tcpdf (PHP 5)
-/*define('FPDF_FONTPATH','inc/fpdf/font/');
-require('inc/fpdf/fpdf.php');
-require('inc/tagfpdf.php');*/
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
 // BP, 08/2010

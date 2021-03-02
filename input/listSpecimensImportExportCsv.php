@@ -44,11 +44,11 @@ function makeTaxon($taxonID) {
 
     // prepare query
     $sql = "SELECT `herbar_view`.GetScientificName( $taxonID, 0 ) AS `scientificName`";
-    $result = mysql_query($sql);
+    $result = dbi_query($sql);
 
     // check if we found a result
-    if(mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    if(mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $scientificName = $row['scientificName'];
     }
 
@@ -80,10 +80,10 @@ function makeTypus($ID) {
           WHERE tst.typusID=tt.typusID
            AND tst.taxonID=ts.taxonID
            AND specimenID='".intval($ID)."'";
-  $result = mysql_query($sql);
+  $result = dbi_query($sql);
 
   $text = "";
-  while ($row=mysql_fetch_array($result)) {
+  while ($row=mysqli_fetch_array($result)) {
     if ($row['synID']) {
       $sql3 = "SELECT ts.statusID, tg.genus,
                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -105,8 +105,8 @@ function makeTypus($ID) {
                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                WHERE taxonID=".$row['synID'];
-      $result3 = mysql_query($sql3);
-      $row3 = mysql_fetch_array($result3);
+      $result3 = dbi_query($sql3);
+      $row3 = mysqli_fetch_array($result3);
       $accName = taxonWithHybrids($row3);
     }
     else
@@ -119,10 +119,10 @@ function makeTypus($ID) {
               LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
               LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
              WHERE ti.taxonID='".$row['taxonID']."'";
-    $result2 = mysql_query($sql2);
+    $result2 = dbi_query($sql2);
 
     $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
-    while ($row2=mysql_fetch_array($result2))
+    while ($row2=mysqli_fetch_array($result2))
       $text .= protolog($row2)." ";
     if (strlen($accName)>0)
       $text .= "Current Name: $accName ";
@@ -184,9 +184,9 @@ if (empty($_SESSION['sSQLCondition'])) {
 } else {
     $sql_condition = $_SESSION['sSQLCondition'];
 }
-$resultSpecimens = mysql_query($sql . $sql_condition);
+$resultSpecimens = dbi_query($sql . $sql_condition);
 
-while( ($rowSpecimen = mysql_fetch_array($resultSpecimens)) !== false ) {
+while( ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) !== false ) {
   $sammler = collection($rowSpecimen['Sammler'],$rowSpecimen['Sammler_2'],$rowSpecimen['series'],$rowSpecimen['series_number'],
                       $rowSpecimen['Nummer'],$rowSpecimen['alt_number'],$rowSpecimen['Datum']);
 

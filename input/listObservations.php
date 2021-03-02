@@ -100,10 +100,10 @@ if (isset($_POST['search'])) {
 function makeDropdownCollection()
 {
     $sql =  "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<select size=\"1\" name=\"collection\">\n";
     echo "  <option value=\"0\"></option>\n";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
         if ($_SESSION['obsCollection'] == $row['collectionID']) echo " selected";
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
@@ -118,10 +118,10 @@ function makeDropdownUsername()
             WHERE hu.userID = ls.userID
             GROUP BY hu.userID
             ORDER BY surname, firstname, username";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
         if ($_SESSION['obsUserID'] == $row['userID']) echo " selected";
         echo ">";
@@ -141,9 +141,9 @@ function makeDropdownDate()
     if (intval($_SESSION['obsUserID'])) $sql .= "WHERE userID = '" . intval($_SESSION['obsUserID']) . "' ";
     $sql .= "GROUP BY date
              ORDER BY date";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<select size=\"1\" name=\"user_date\" id=\"user_date\">\n";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option ";
         if ($_SESSION['obsDate'] == $row['date']) echo " selected";
         echo ">" . htmlspecialchars($row['date']) . "</option>\n";
@@ -268,8 +268,8 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
         $sql = "SELECT geo_general
                 FROM tbl_geo_region
                 GROUP BY geo_general ORDER BY geo_general";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['obsGeoGeneral'] == $row['geo_general']) echo " selected";
             echo ">" . $row['geo_general'] . "</option>\n";
@@ -285,8 +285,8 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
         $sql = "SELECT geo_region
                 FROM tbl_geo_region
                 ORDER BY geo_region";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['obsGeoRegion'] == $row['geo_region']) echo " selected";
             echo ">" . $row['geo_region'] . "</option>\n";
@@ -354,8 +354,8 @@ if ($_SESSION['obsType']==1) {
                 FROM api.tbl_api_batches
                 WHERE sent = '0'
                 ORDER BY date_supplied DESC";
-        $result = db_query($sql);
-        while ($row=mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row=mysqli_fetch_array($result)) {
             $batchValue[] = $row['batchID'];
             $batchText[] = $row['date_supplied'] . " (" . trim($row['remarks']) . ")";
         }
@@ -368,7 +368,7 @@ if ($_SESSION['obsType']==1) {
                     $sql = "INSERT INTO api.tbl_api_specimens SET
                             specimen_ID = '$id',
                             batchID_fk = '$batch_id'";
-                    db_query($sql);
+                    dbi_query($sql);
                     // update or insert into update_tbl_api_units
                     $res = update_tbl_api_units($id);
                     update_tbl_api_units_identifications($id);
@@ -429,53 +429,53 @@ if ($_SESSION['obsType']==1) {
         $pieces = explode(" ", trim($_SESSION['obsTaxon']));
         $part1 = array_shift($pieces);
         $part2 = array_shift($pieces);
-        $sql .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+        $sql .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
         if ($part2) {
-            $sql .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .   "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .   "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .   "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+            $sql .= " AND (te.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .   "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .   "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .   "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
         }
     }
     if (trim($_SESSION['obsSeries'])) {
-        $sql .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['obsSeries'])) . "%'";
+        $sql .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['obsSeries'])) . "%'";
     }
     if (trim($_SESSION['obsCollection'])) {
         $sql .= " AND wg.collectionID=" . quoteString(trim($_SESSION['obsCollection']));
     }
     if (trim($_SESSION['obsNumber'])) {
-        $sql .= " AND wg.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['obsNumber'])) . "%'";
+        $sql .= " AND wg.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['obsNumber'])) . "%'";
     }
     if (trim($_SESSION['obsFamily'])) {
-        $sql .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['obsFamily'])) . "%'";
+        $sql .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['obsFamily'])) . "%'";
     }
     if (trim($_SESSION['obsCollector'])) {
-        $sql .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['obsCollector'])) . "%' OR
-                       c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['obsCollector'])) . "%')";
+        $sql .= " AND (c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['obsCollector'])) . "%' OR
+                       c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['obsCollector'])) . "%')";
     }
     if (trim($_SESSION['obsNumberC'])) {
-        $sql .= " AND wg.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['obsNumberC'])) . "%'";
+        $sql .= " AND wg.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['obsNumberC'])) . "%'";
     }
     if (trim($_SESSION['obsDate'])) {
-        $sql .= " AND wg.Datum LIKE '" . mysql_escape_string(trim($_SESSION['obsDate'])) . "%'";
+        $sql .= " AND wg.Datum LIKE '" . dbi_escape_string(trim($_SESSION['obsDate'])) . "%'";
     }
     if (trim($_SESSION['obsGeoGeneral'])) {
-        $sql .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['obsGeoGeneral'])) . "%'";
+        $sql .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['obsGeoGeneral'])) . "%'";
     }
     if (trim($_SESSION['obsGeoRegion'])) {
-        $sql .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['obsGeoRegion'])) . "%'";
+        $sql .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['obsGeoRegion'])) . "%'";
     }
     if (trim($_SESSION['obsCountry'])) {
-        $sql .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['obsCountry'])) . "%'";
+        $sql .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['obsCountry'])) . "%'";
     }
     if (trim($_SESSION['obsProvince'])) {
-        $sql .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['obsProvince'])) . "%'";
+        $sql .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['obsProvince'])) . "%'";
     }
     if (trim($_SESSION['obsLoc'])) {
-        $sql .= " AND wg.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['obsLoc'])) . "%'";
+        $sql .= " AND wg.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['obsLoc'])) . "%'";
     }
     if (trim($_SESSION['obsTaxonAlt'])) {
-        $sql .= " AND wg.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['obsTaxonAlt'])) . "%'";
+        $sql .= " AND wg.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['obsTaxonAlt'])) . "%'";
     }
     if ($_SESSION['obsTyp']) {
         $sql .= " AND wg.typusID != 0";
@@ -486,8 +486,8 @@ if ($_SESSION['obsType']==1) {
 
     $sql .= " ORDER BY " . $_SESSION['obsOrder'];
 
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
@@ -505,7 +505,7 @@ if ($_SESSION['obsType']==1) {
         if ($swBatch) echo "<th class=\"out\">Batch</th>";
         echo "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $row['specimen_ID'];
 
             if ($row['digital_image']) {
@@ -554,8 +554,8 @@ if ($_SESSION['obsType']==1) {
                .  htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
             if ($swBatch) {
                 echo "<td class=\"out\" style=\"text-align: center\">";
-                $resultDummy = db_query("SELECT batchID_fk FROM api.tbl_api_specimens WHERE specimen_ID = '" . $row['specimen_ID'] . "'");
-                if (mysql_num_rows($resultDummy) > 0) {
+                $resultDummy = dbi_query("SELECT batchID_fk FROM api.tbl_api_specimens WHERE specimen_ID = '" . $row['specimen_ID'] . "'");
+                if (mysqli_num_rows($resultDummy) > 0) {
                     echo "&radic;";
                 } else {
                     echo "<input type=\"checkbox\" name=\"batch_spec_" . $row['specimen_ID'] . "\">";
@@ -572,14 +572,14 @@ if ($_SESSION['obsType']==1) {
         echo "<b>nothing found!</b>\n";
     }
 } else if ($_SESSION['obsType'] == 2) {
-    $searchDate = mysql_escape_string(trim($_SESSION['obsUserDate']));
+    $searchDate = dbi_escape_string(trim($_SESSION['obsUserDate']));
     $sql = "SELECT *
             FROM herbarinput_log.log_specimens
-            WHERE userID = '" . mysql_escape_string($_SESSION['obsUserID']) . "'
+            WHERE userID = '" . dbi_escape_string($_SESSION['obsUserID']) . "'
              AND timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
             ORDER BY timestamp";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\">Timestamp</th>";
@@ -587,7 +587,7 @@ if ($_SESSION['obsType']==1) {
         echo "<th class=\"out\">updated</th>";
         echo "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $row['specimenID'];
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                . "<td class=\"out\">" . htmlspecialchars($row['timestamp']) . "</td>"

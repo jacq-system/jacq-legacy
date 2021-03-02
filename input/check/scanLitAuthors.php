@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("../inc/connect.php");
-no_magic();
 
 function parseAuthors ($text)
 {

@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -131,9 +130,9 @@ function makeLineFromID ($citationID, $preTitleText)
             LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
             LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
            WHERE citationID = '" . intval($citationID) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $linkList[$nr] = $row['citationID'];
 
         echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\"><td class=\"out\">";
@@ -194,10 +193,10 @@ function getChildrenOfParent ($parentID)
              LEFT JOIN tbl_lit l ON l.citationID = lc.citation_child_ID
             WHERE citation_parent_ID = '" . intval($parentID) . "'
             ORDER BY l.ppSort";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     $ret = array();
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $ret[] = array('id'       => $row['citation_child_ID'],
                            'children' => getChildrenOfParent($row['citation_child_ID']));
         }
@@ -212,9 +211,9 @@ function listContainer ($citationID)
         $sql = "SELECT citation_parent_ID
                 FROM tbl_lit_container
                 WHERE citation_child_ID = '$citationID'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $citationID = $row['citation_parent_ID'];
         } else {
             break;
@@ -233,9 +232,9 @@ function listContainer ($citationID)
 unset($bestand);
 $bestand[] = "everything";
 $sql = "SELECT bestand FROM tbl_lit GROUP BY bestand ORDER BY bestand";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $bestand[] = $row['bestand'];
         }
     }
@@ -244,9 +243,9 @@ if ($result = db_query($sql)) {
 unset($category);
 $category[] = "everything";
 $sql = "SELECT category FROM tbl_lit GROUP BY category ORDER BY category";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $category[] = $row['category'];
         }
     }
@@ -339,43 +338,43 @@ if ($_SESSION['litType']) {
     if ($_SESSION['litType'] == 4) {
         $sql .= "WHERE titel IS NULL";
     } else if ($_SESSION['litType'] == 3) {
-        $sql .= "WHERE autor LIKE '" . mysql_escape_string($_SESSION['litAutor']) . "%'";
+        $sql .= "WHERE autor LIKE '" . dbi_escape_string($_SESSION['litAutor']) . "%'";
     } else if ($_SESSION['litType'] == 2) {
-        $sql .= "WHERE titel LIKE '" . mysql_escape_string($_SESSION['litTitel']) . "%'";
+        $sql .= "WHERE titel LIKE '" . dbi_escape_string($_SESSION['litTitel']) . "%'";
     } else {
         $sql .= "WHERE 1";
         if (trim($_SESSION['litTitel'])) {
-            $sql .= " AND titel LIKE '%" . mysql_escape_string($_SESSION['litTitel']) . "%'";
+            $sql .= " AND titel LIKE '%" . dbi_escape_string($_SESSION['litTitel']) . "%'";
         }
         if (trim($_SESSION['litAutor'])) {
-            $sql .= " AND autor LIKE '%" . mysql_escape_string($_SESSION['litAutor']) . "%'";
+            $sql .= " AND autor LIKE '%" . dbi_escape_string($_SESSION['litAutor']) . "%'";
         }
         if (trim($_SESSION['litPeriod'])) {
-            $sql .= " AND periodical LIKE '%" . mysql_escape_string($_SESSION['litPeriod']) . "%'";
+            $sql .= " AND periodical LIKE '%" . dbi_escape_string($_SESSION['litPeriod']) . "%'";
         }
         if (trim($_SESSION['litJahr'])) {
-            $sql .= " AND jahr LIKE '" . mysql_escape_string($_SESSION['litJahr']) . "%'";
+            $sql .= " AND jahr LIKE '" . dbi_escape_string($_SESSION['litJahr']) . "%'";
         }
         if (trim($_SESSION['litVol'])) {
-            $sql .= " AND vol LIKE '" . mysql_escape_string($_SESSION['litVol']) . "'";
+            $sql .= " AND vol LIKE '" . dbi_escape_string($_SESSION['litVol']) . "'";
         }
         if (trim($_SESSION['litPp'])) {
-            $sql .= " AND pp LIKE '" . mysql_escape_string($_SESSION['litPp']) . "'";
+            $sql .= " AND pp LIKE '" . dbi_escape_string($_SESSION['litPp']) . "'";
         }
         if (trim($_SESSION['litKeywords'])) {
-            $sql .= " AND tl.keywords LIKE '%" . mysql_escape_string($_SESSION['litKeywords']) . "%'";
+            $sql .= " AND tl.keywords LIKE '%" . dbi_escape_string($_SESSION['litKeywords']) . "%'";
         }
         if ($_SESSION['litBestand'] != "everything" && $_SESSION['litBestand']) {
-            $sql .= " AND tl.bestand='" . mysql_escape_string($_SESSION['litBestand']) . "'";
+            $sql .= " AND tl.bestand='" . dbi_escape_string($_SESSION['litBestand']) . "'";
         }
         if ($_SESSION['litCategory'] != "everything" && $_SESSION['litCategory']) {
-            $sql .= " AND tl.category='" . mysql_escape_string($_SESSION['litCategory']) . "'";
+            $sql .= " AND tl.category='" . dbi_escape_string($_SESSION['litCategory']) . "'";
         }
     }
     $sql .= " ORDER BY " . $_SESSION['litOrder'];
 
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         if ($_SESSION['litType'] != 4) {
@@ -391,7 +390,7 @@ if ($_SESSION['litType']) {
         echo "</tr>\n";
         $nr = 1;
         if (!$_SESSION['litContainer']) {
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $row['citationID'];
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\"><td class=\"out\">";
                 if ($_SESSION['litType'] != 4) {
@@ -410,7 +409,7 @@ if ($_SESSION['litType']) {
                 $nr++;
             }
         } else {
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 if (!in_array($row['citationID'], $linkList)) {
                     listContainer($row['citationID']);
                 }

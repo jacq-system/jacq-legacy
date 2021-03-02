@@ -3,7 +3,6 @@ session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
 require_once('../inc/jsonRPCClient.php');
-no_magic();
 
 $authorMayBeEmpty = (!empty($_POST['authorEmpty'])) ? true : false;
 

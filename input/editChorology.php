@@ -41,25 +41,25 @@ function makeDropdown($name, $select, $value, $text, $onchange = '')
 //--------------------------
 
 $status = array('', 'everything');
-$result = db_query("SELECT status, statusID FROM tbl_tax_status ORDER BY status");
-if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+$result = dbi_query("SELECT status, statusID FROM tbl_tax_status ORDER BY status");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         $status[] = $row['status'] . " <" . $row['statusID'] . ">";
     }
 }
 
 $rank = array('');
-$result = db_query("SELECT rank, tax_rankID FROM tbl_tax_rank ORDER BY rank");
-if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+$result = dbi_query("SELECT rank, tax_rankID FROM tbl_tax_rank ORDER BY rank");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         $rank[] = $row['rank'] . " <" . $row['tax_rankID'] . ">";
     }
 }
 
 $projects = array('text' => array(''), 'value' => array(''));
-$result = db_query("SELECT project_name, project_ID FROM projects.tbl_projects ORDER BY project_name");
-if ($result && mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+$result = dbi_query("SELECT project_name, project_ID FROM projects.tbl_projects ORDER BY project_name");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         $projects['text'][]  = $row['project_name'];
         $projects['value'][] = $row['project_ID'];
     }

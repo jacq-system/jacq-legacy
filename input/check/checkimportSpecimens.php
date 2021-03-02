@@ -2,7 +2,6 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
-no_magic();
 
 
 /**
