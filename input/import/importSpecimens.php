@@ -56,7 +56,7 @@ function getTaxon($id, $withAuthors = true) {
            LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
            LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
           WHERE ts.taxonID = '" . intval($id) . "'";
-  $row = mysql_fetch_array(db_query($sql));
+  $row = dbi_query($sql)->fetch_array();
 
   $text = $row['genus'];
   if ($row['epithet0']) $text .= " "         . $row['epithet0'] . (($withAuthors) ? " " . $row['author0'] : '');
@@ -148,8 +148,8 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
     $parser = clsTaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxon);
 
-    $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($taxonParts['genus']));
-    if (mysql_num_rows($result) == 0) {
+    $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($taxonParts['genus']));
+    if (mysqli_num_rows($result) == 0) {
         if($insert_new_genera){
             // add nevertheles
             $genID = insertGenus($taxonParts['genus'], NULL, NULL, NULL, FALSE, TRUE, INCERTAE_SEDIS_IMPORT, NULL, NULL);
@@ -159,23 +159,23 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
             return $ret;
         }
     } else {
-        $row = mysql_fetch_array($result);
+        $row = mysqli_fetch_array($result);
         $genID = $row['genID'];
     }
 
   // find or insert the epithet if present
     if ($taxonParts['epithet']) {
-        $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($taxonParts['epithet']));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($taxonParts['epithet']));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $epithetID = $row['epithetID'];
         } else {
-            db_query("INSERT INTO tbl_tax_epithets SET
-                       epithet = " . quoteString($taxonParts['epithet']) . ",
-                       locked = 0,
-                       external = 1,
-                       externalID = " . quoteString($externalID));
-            $epithetID = mysql_insert_id();
+            dbi_query("INSERT INTO tbl_tax_epithets SET
+                        epithet = " . quoteString($taxonParts['epithet']) . ",
+                        locked = 0,
+                        external = 1,
+                        externalID = " . quoteString($externalID));
+            $epithetID = dbi_insert_id();
         }
     } else {
         $epithetID = null;
@@ -183,17 +183,17 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
 
     // find or insert the author if present
     if ($taxonParts['author']) {
-        $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($taxonParts['author']));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($taxonParts['author']));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $authorID = $row['authorID'];
         } else {
-            db_query("INSERT INTO tbl_tax_authors SET
-                       author = " . quoteString($taxonParts['author']) . ",
-                       locked = 0,
-                       external = 1,
-                       externalID = " . quoteString($externalID));
-            $authorID = mysql_insert_id();
+            dbi_query("INSERT INTO tbl_tax_authors SET
+                        author = " . quoteString($taxonParts['author']) . ",
+                        locked = 0,
+                        external = 1,
+                        externalID = " . quoteString($externalID));
+            $authorID = dbi_insert_id();
             logAuthors($authorID, 0);
         }
     } else {
@@ -202,17 +202,17 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
 
     // find or insert the subepithet if present
     if ($taxonParts['subepithet']) {
-        $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($taxonParts['subepithet']));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($taxonParts['subepithet']));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $subepithetID = $row['epithetID'];
         } else {
-            db_query("INSERT INTO tbl_tax_epithets SET
-                       epithet = " . quoteString($taxonParts['subepithet']) . ",
-                       locked = 0,
-                       external = 1,
-                       externalID = " . quoteString($externalID));
-            $subepithetID = mysql_insert_id();
+            dbi_query("INSERT INTO tbl_tax_epithets SET
+                        epithet = " . quoteString($taxonParts['subepithet']) . ",
+                        locked = 0,
+                        external = 1,
+                        externalID = " . quoteString($externalID));
+            $subepithetID = dbi_insert_id();
         }
     } else {
         $subepithetID = null;
@@ -220,17 +220,17 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
 
     // find or insert the subauthor if present
     if ($taxonParts['subauthor']) {
-        $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($taxonParts['subauthor']));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($taxonParts['subauthor']));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $subauthorID = $row['authorID'];
         } else {
-            db_query("INSERT INTO tbl_tax_authors SET
-                       author = " . quoteString($taxonParts['subauthor']) . ",
-                       locked = 0,
-                       external = 1,
-                       externalID = " . quoteString($externalID));
-            $subauthorID = mysql_insert_id();
+            dbi_query("INSERT INTO tbl_tax_authors SET
+                        author = " . quoteString($taxonParts['subauthor']) . ",
+                        locked = 0,
+                        external = 1,
+                        externalID = " . quoteString($externalID));
+            $subauthorID = dbi_insert_id();
             logAuthors($subauthorID, 0);
         }
     } else {
@@ -267,14 +267,14 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
             if ($subauthorID)  $sql .= ", subforma_authorID = $subauthorID";
             break;
     }
-    db_query($sql);
-    $ret['taxonID'] = mysql_insert_id();
+    dbi_query($sql);
+    $ret['taxonID'] = dbi_insert_id();
     logSpecies($ret['taxonID'], 0);
 
-    db_query("UPDATE tbl_external_import_content SET
-               externalID = $externalID,
-               taxonID    = " . $ret['taxonID'] . "
-              WHERE contentID = $contentID");
+    dbi_query("UPDATE tbl_external_import_content SET
+                externalID = $externalID,
+                taxonID    = " . $ret['taxonID'] . "
+               WHERE contentID = $contentID");
 
     return $ret;
 }
@@ -367,7 +367,7 @@ if ($run == 2) {  // file uploaded
         array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
     }
 
-    db_query("DELETE FROM tbl_external_import_content
+    dbi_query("DELETE FROM tbl_external_import_content
                WHERE specimen_ID IS NULL
                 AND externalID IS NULL
                 AND taxonID IS NULL");
@@ -385,8 +385,8 @@ if ($run == 2) {  // file uploaded
         /**
          * check if collection-ID exists
          */
-        $result = db_query("SELECT collection FROM tbl_management_collections WHERE collectionID = '" . intval($import[$i][1]) . "'");
-        if (mysql_num_rows($result) == 0) {
+        $result = dbi_query("SELECT collection FROM tbl_management_collections WHERE collectionID = '" . intval($import[$i][1]) . "'");
+        if (mysqli_num_rows($result) == 0) {
             $OK = false;
             $status[$i] .= "no_collection ";
             $data[$i]['collectionID'] = 0;
@@ -407,15 +407,15 @@ if ($run == 2) {  // file uploaded
             $sql = "SELECT source_id
                     FROM tbl_management_collections
                     WHERE collectionID = '" . $data[$i]['collectionID'] . "'";
-            $row = mysql_fetch_array(db_query($sql));
+            $row = mysqli_fetch_array(dbi_query($sql));
             $sql = "SELECT specimen_ID
                     FROM tbl_specimens, tbl_management_collections
                     WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                      AND source_id = '" . $row['source_id'] . "'
                      AND HerbNummer = " . quoteString($data[$i]['HerbNummer']);
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $OK = false;
                 $status[$i] .= "exists ";
                 $exists[$i] = $row['specimen_ID'];
@@ -431,9 +431,9 @@ if ($run == 2) {  // file uploaded
          * check if identstatus exists
          */
         if (trim($import[$i][3])) {
-            $result = db_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][3])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][3])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['identstatusID'] = $row['identstatusID'];
             } else {
                 $OK = false;
@@ -449,19 +449,19 @@ if ($run == 2) {  // file uploaded
         $taxonOK = false;
         $genusOK = false;
         $pieces = explode(' ', $import[$i][4], 3);
-        $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
+        if (mysqli_num_rows($result) > 0) {
             $genusOK = true;
-            $row = mysql_fetch_array($result);
+            $row = mysqli_fetch_array($result);
             $genID = $row['genID'];
             if (count($pieces) > 1) {
-                $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($pieces[1]));
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($pieces[1]));
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $epithetID = $row['epithetID'];
-                    $result = db_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
-                    if (mysql_num_rows($result) > 0) {
-                        while ($row = mysql_fetch_array($result)) {
+                    $result = dbi_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
+                    if (mysqli_num_rows($result) > 0) {
+                        while ($row = mysqli_fetch_array($result)) {
                           if (strcmp(trim(getTaxon($row['taxonID'])), trim($import[$i][4])) == 0) {
                               $taxonOK = true;
                               $data[$i]['taxonID'] = $row['taxonID'];
@@ -484,9 +484,9 @@ if ($run == 2) {  // file uploaded
                          AND subvarietyID IS NULL
                          AND formaID IS NULL
                          AND subformaID IS NULL";
-                $result = db_query($sql);
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query($sql);
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $taxonOK = true;
                     $data[$i]['taxonID'] = $row['taxonID'];
                     //break;
@@ -544,14 +544,14 @@ if ($run == 2) {  // file uploaded
             $collector = trim($parts[0]);
             $collector2 = trim(substr(trim($import[$i][5]), strlen($collector) + 2));
         }
-        $result = db_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $collectorID = $row['SammlerID'];
             if (strlen($collector2) > 0) {
-                $result = db_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $collectorsOK = true;
                     $data[$i]['SammlerID'] = $collectorID;
                     $data[$i]['Sammler_2ID'] = $row['Sammler_2ID'];
@@ -571,9 +571,9 @@ if ($run == 2) {  // file uploaded
          * check if series exists
          */
         if (trim($import[$i][6])) {
-          $result = db_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][6])));
-          if (mysql_num_rows($result) > 0) {
-              $row = mysql_fetch_array($result);
+          $result = dbi_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][6])));
+          if (mysqli_num_rows($result) > 0) {
+              $row = mysqli_fetch_array($result);
               $data[$i]['seriesID'] = $row['seriesID'];
           } else {
               $OK = false;
@@ -622,9 +622,9 @@ if ($run == 2) {  // file uploaded
          * check if type exists
          */
         if (isset($import[$i][14]) && trim($import[$i][14])) {
-            $result = db_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][14])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][14])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['typusID'] = $row['typusID'];
             } else {
                 $OK = false;
@@ -643,9 +643,9 @@ if ($run == 2) {  // file uploaded
          * check if nation exists
          */
         if (isset($import[$i][16]) && trim($import[$i][16])) {
-            $result = db_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][16])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][16])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['NationID'] = $row['nationID'];
             } else {
                 $OK = false;
@@ -664,9 +664,9 @@ if ($run == 2) {  // file uploaded
                     FROM tbl_geo_province
                     WHERE provinz = " . quoteString(trim($import[$i][17])) . "
                      AND nationID = '" . intval($data[$i]['NationID']) . "'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['provinceID'] = $row['provinceID'];
             } else {
                 $OK = false;
@@ -747,13 +747,13 @@ if ($run == 2) {  // file uploaded
         /**
          * finished -> log the file contents and processing errors (if any)
          */
-        db_query("INSERT INTO tbl_external_import_content SET
-                   filename = " . quoteString($_FILES['userfile']['name']) . ",
-                   linenumber = " . makeInt($import[$i]['linenumber']) . ",
-                   line = " . quoteString(var_export($import[$i], true)) . ",
-                   processingError = " . quoteString($status[$i]) . ",
-                   userID = " . quoteString($_SESSION['uid']));
-        $data[$i]['contentID'] = mysql_insert_id();
+        dbi_query("INSERT INTO tbl_external_import_content SET
+                    filename = " . quoteString($_FILES['userfile']['name']) . ",
+                    linenumber = " . makeInt($import[$i]['linenumber']) . ",
+                    line = " . quoteString(var_export($import[$i], true)) . ",
+                    processingError = " . quoteString($status[$i]) . ",
+                    userID = " . quoteString($_SESSION['uid']));
+        $data[$i]['contentID'] = dbi_insert_id();
 
         if ($OK) {
             $status[$i] = "OK";
@@ -783,8 +783,8 @@ if ($run == 2) {  // file uploaded
         echo "If taxa will be imported use this external-ID: "
            . "<select name='externalID'>\n"
            . "<option value='0'></option>\n";
-        $result = db_query("SELECT externalID, description FROM tbl_external_import WHERE used = 0 ORDER BY externalID");
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query("SELECT externalID, description FROM tbl_external_import WHERE used = 0 ORDER BY externalID");
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option value='" . $row['externalID'] . "'>" . htmlspecialchars($row['description']) . "&nbsp;&lt;" . $row['externalID'] . "&gt;</option>\n";
         }
         echo "</select><br>\n";
@@ -1064,8 +1064,8 @@ if ($run == 2) {  // file uploaded
                     }
                 }
             }
-            $result = db_query($sql);
-            if (mysql_num_rows($result) == 0) {
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) == 0) {
                 $sqlInsert = "INSERT INTO tbl_specimens_import SET
                                HerbNummer = "    . quoteString($data[$i]['HerbNummer'])    . ",
                                collectionID = "  . quoteString($data[$i]['collectionID'])  . ",
@@ -1112,12 +1112,12 @@ if ($run == 2) {  // file uploaded
                                digital_image_obs = " . quoteString($data[$i]['digital_image_obs']) . ",
                                observation = "   . quoteString($data[$i]['observation'])   . ",
                                userID = "        . quoteString($_SESSION['uid']);
-                db_query($sqlInsert);
-                $specimen_ID = mysql_insert_id();
-                db_query("UPDATE tbl_external_import_content SET
-                           specimen_ID = $specimen_ID,
-                           pending = 1
-                          WHERE contentID = " . makeInt($data[$i]['contentid']));
+                dbi_query($sqlInsert);
+                $specimen_ID = dbi_insert_id();
+                dbi_query("UPDATE tbl_external_import_content SET
+                            specimen_ID = $specimen_ID,
+                            pending = 1
+                           WHERE contentID = " . makeInt($data[$i]['contentid']));
                 $imported++;
             }
         }

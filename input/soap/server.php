@@ -16,6 +16,7 @@ private $host = "";     // hostname
 private $db   = "";   // database
 private $user = "";
 private $pass = "";
+private $dbLink;
 
 
 /***************\
@@ -27,15 +28,15 @@ private $pass = "";
 public function __construct ()
 {
     global $_CONFIG;
-    
+
     $this->host = $_CONFIG['DATABASE']['INPUT']['host'];
     $this->db   = $_CONFIG['DATABASE']['INPUT']['name'];
     $this->user = $_CONFIG['DATABASE']['INPUT']['readonly']['user'];
     $this->pass = $_CONFIG['DATABASE']['INPUT']['readonly']['pass'];
 
-    @mysql_connect($this->host, $this->user, $this->pass);
-    @mysql_select_db($this->db);
-    @mysql_query("SET character set utf8");
+    $this->dbLink = new mysqli($this->host, $this->user, $this->pass, $this->db);
+    $this->dbLink->set_charset('utf8');
+
 }
 
 
@@ -92,22 +93,22 @@ public function getTaxon($search)
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
              LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID
              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-            WHERE genus LIKE '" . mysql_escape_string($genus) . "%'
+            WHERE genus LIKE '" . $this->dbLink->real_escape_string($genus) . "%'
              AND ts.external = 0";
     if (strlen($species) > 0) {
-        $sql .= " AND te.epithet LIKE '" . mysql_escape_string($species) . "%'";
+        $sql .= " AND te.epithet LIKE '" . $this->dbLink->real_escape_string($species) . "%'";
     }
     if (strlen($other) > 0) {
-        $sql .= " AND (te1.epithet LIKE '" . mysql_escape_string($other) . "%'
-                    OR te2.epithet LIKE '" . mysql_escape_string($other) . "%'
-                    OR te3.epithet LIKE '" . mysql_escape_string($other) . "%'
-                    OR te4.epithet LIKE '" . mysql_escape_string($other) . "%'
-                    OR te5.epithet LIKE '" . mysql_escape_string($other) . "%')";
+        $sql .= " AND (te1.epithet LIKE '" . $this->dbLink->real_escape_string($other) . "%'
+                    OR te2.epithet LIKE '" . $this->dbLink->real_escape_string($other) . "%'
+                    OR te3.epithet LIKE '" . $this->dbLink->real_escape_string($other) . "%'
+                    OR te4.epithet LIKE '" . $this->dbLink->real_escape_string($other) . "%'
+                    OR te5.epithet LIKE '" . $this->dbLink->real_escape_string($other) . "%')";
     }
     $sql .= "ORDER BY genus, epithet, author, epithet1, author1, epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
-    $result = mysql_query($sql);
+    $result = $this->dbLink->query($sql);
     $return = "";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         $return .= $row['taxonID'] . " " . $this->_taxon($row) . "\n";
     }
 
@@ -128,9 +129,10 @@ public function getSynonyms($id, $short)
         $short = false; // taxon and protolog in 2 lines
     }
 
-    $result = mysql_query("SELECT taxonID, synID FROM tbl_tax_species WHERE taxonID='".mysql_escape_string($id)."'");
-    $row = mysql_fetch_array($result);
-    if (!empty($row['synID'])) $id = $row['synID'];
+    $row = $this->dbLink->query("SELECT taxonID, synID FROM tbl_tax_species WHERE taxonID='" . $this->dbLink->real_escape_string($id) . "'")->fetch_array();
+    if (!empty($row['synID'])) {
+        $id = $row['synID'];
+    }
 
     $order = " ORDER BY genus, epithet, author, epithet1, author1, epithet2, author2, epithet3, author3";
 
@@ -154,12 +156,12 @@ public function getSynonyms($id, $short)
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
              LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID
              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-            WHERE taxonID='".mysql_escape_string($id)."'";
-    $result = mysql_query($sql);
+            WHERE taxonID='" . $this->dbLink->real_escape_string($id) . "'";
+    $result = $this->dbLink->query($sql);
 
     $return = "";
-    if (mysql_num_rows($result)>0) {
-        $row = mysql_fetch_array($result);
+    if (mysqli_num_rows($result)>0) {
+        $row = mysqli_fetch_array($result);
 
         if ($short) {
             $return .= "<b>" . $this->_taxonList($row) . "</b>" . $this->_protologList($row['taxonID'],true) . "<br>\n";
@@ -191,38 +193,38 @@ public function getSynonyms($id, $short)
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                  LEFT JOIN tbl_tax_status tst ON tst.statusID=ts.statusID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                WHERE synID='".mysql_escape_string($id)."' ";
+                WHERE synID='" . $this->dbLink->real_escape_string($id) . "' ";
         if (empty($row['basID'])) {
-            $result2 = mysql_query($sql."AND basID='".mysql_escape_string($id)."'");
+            $result2 = $this->dbLink->query($sql."AND basID='" . $this->dbLink->real_escape_string($id) . "'");
         } else {
-            $result2 = mysql_query($sql."AND (basID IS NULL OR basID='".mysql_escape_string($id)."') AND taxonID='".$row['basID']."'");
+            $result2 = $this->dbLink->query($sql."AND (basID IS NULL OR basID='" . $this->dbLink->real_escape_string($id) . "') AND taxonID='".$row['basID']."'");
         }
 
-        while ($row2 = mysql_fetch_array($result2)) {
+        while ($row2 = mysqli_fetch_array($result2)) {
             $return .= $tableStart;
             $return .= $this->_item(20,$row2,$short,"&equiv;");
             $return .= $this->_typusList($row2['taxonID'],true);
             $return .= "</table>\n";
-            $result3 = mysql_query($sql."AND basID='".$row2['taxonID']."'".$order);
-            while ($row3 = mysql_fetch_array($result3)) {
+            $result3 = $this->dbLink->query($sql."AND basID='".$row2['taxonID']."'".$order);
+            while ($row3 = mysqli_fetch_array($result3)) {
                 $return .= $tableStart;
                 $return .= $this->_item(40,$row3,$short,"&equiv;");
                 $return .= "</table>\n";
             }
         }
         if (empty($row['basID'])) {
-            $result2 = mysql_query($sql."AND basID IS NULL".$order);
+            $result2 = $this->dbLink->query($sql."AND basID IS NULL" . $order);
         } else {
-            $result2 = mysql_query($sql."AND (basID IS NULL OR basID='".mysql_escape_string($id)."') AND taxonID!='".$row['basID']."'".$order);
+            $result2 = $this->dbLink->query($sql . "AND (basID IS NULL OR basID='" . $this->dbLink->real_escape_string($id) . "') AND taxonID!='" . $row['basID'] . "'" . $order);
         }
 
-        while ($row2 = mysql_fetch_array($result2)) {
+        while ($row2 = mysqli_fetch_array($result2)) {
             $return .= $tableStart;
             $return .= $this->_item(20,$row2,$short);
             $return .= $this->_typusList($row2['taxonID'],true);
             $return .= "</table>\n";
-            $result3 = mysql_query($sql."AND basID='".$row2['taxonID']."'".$order);
-            while ($row3 = mysql_fetch_array($result3)) {
+            $result3 = $this->dbLink->query($sql."AND basID='".$row2['taxonID']."'".$order);
+            while ($row3 = mysqli_fetch_array($result3)) {
                 $return .= $tableStart;
                 $return .= $this->_item(40,$row3,$short,"&equiv;");
                 $return .= "</table>\n";
@@ -255,12 +257,12 @@ private function _italics($text)
 private function _taxon($row)
 {
     $text = $row['genus'];
-    if ($row['epithet']) $text .= " " . $row['epithet'] . " " . $row['author'];
-    if ($row['epithet1']) $text .= " subsp. " . $row['epithet1'] . " " . $row['author1'];
-    if ($row['epithet2']) $text .= " var. " . $row['epithet2'] . " " . $row['author2'];
-    if ($row['epithet3']) $text .= " subvar. " . $row['epithet3'] . " " . $row['author3'];
-    if ($row['epithet4']) $text .= " forma " . $row['epithet4'] . " " . $row['author4'];
-    if ($row['epithet5']) $text .= " subforma " . $row['epithet5'] . " " . $row['author5'];
+    if ($row['epithet'])  { $text .= " " . $row['epithet'] . " " . $row['author']; }
+    if ($row['epithet1']) { $text .= " subsp. " . $row['epithet1'] . " " . $row['author1']; }
+    if ($row['epithet2']) { $text .= " var. " . $row['epithet2'] . " " . $row['author2']; }
+    if ($row['epithet3']) { $text .= " subvar. " . $row['epithet3'] . " " . $row['author3']; }
+    if ($row['epithet4']) { $text .= " forma " . $row['epithet4'] . " " . $row['author4']; }
+    if ($row['epithet5']) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
 
     return $text;
 }
@@ -273,11 +275,11 @@ private function _taxonList($row)
     } else {
         $text .= htmlspecialchars(chr(194).chr(183));
     }
-    if ($row['epithet1']) $text .= " subsp. ".$this->_italics($row['epithet1'])." ".$this->_smallCaps($row['author1']);
-    if ($row['epithet2']) $text .= " var. ".$this->_italics($row['epithet2'])." ".$this->_smallCaps($row['author2']);
-    if ($row['epithet3']) $text .= " subvar. ".$this->_italics($row['epithet3'])." ".$this->_smallCaps($row['author3']);
-    if ($row['epithet4']) $text .= " forma ".$this->_italics($row['epithet4'])." ".$this->_smallCaps($row['author4']);
-    if ($row['epithet5']) $text .= " subforma ".$this->_italics($row['epithet5'])." ".$this->_smallCaps($row['author5']);
+    if ($row['epithet1']) { $text .= " subsp. ".$this->_italics($row['epithet1'])." ".$this->_smallCaps($row['author1']); }
+    if ($row['epithet2']) { $text .= " var. ".$this->_italics($row['epithet2'])." ".$this->_smallCaps($row['author2']); }
+    if ($row['epithet3']) { $text .= " subvar. ".$this->_italics($row['epithet3'])." ".$this->_smallCaps($row['author3']); }
+    if ($row['epithet4']) { $text .= " forma ".$this->_italics($row['epithet4'])." ".$this->_smallCaps($row['author4']); }
+    if ($row['epithet5']) { $text .= " subforma ".$this->_italics($row['epithet5'])." ".$this->_smallCaps($row['author5']); }
 
     return $text;
 }
@@ -292,18 +294,26 @@ private function _protologList($taxon,$short=false)
            LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
            LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID
            LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
-          WHERE taxonID='".mysql_escape_string($taxon)."'";
-    $result = mysql_query($sql);
+          WHERE taxonID='" . $this->dbLink->real_escape_string($taxon) . "'";
+    $result = $this->dbLink->query($sql);
     $display = "";
-    if (mysql_num_rows($result)>0) {
-        while ($row=mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result)>0) {
+        while ($row = mysqli_fetch_array($result)) {
             $display = ($short) ? "" : $this->_smallCaps($row['autor'])." (".htmlspecialchars(substr($row['jahr'], 0, 4)).")";
-            if ($row['suptitel']) $display .= " in ".htmlspecialchars($row['editor']).": ".htmlspecialchars($row['suptitel']);
-            if ($row['periodicalID']) $display .= " ".htmlspecialchars($row['periodical']);
+            if ($row['suptitel']) {
+                $display .= " in ".htmlspecialchars($row['editor']).": ".htmlspecialchars($row['suptitel']);
+            }
+            if ($row['periodicalID']) {
+                $display .= " ".htmlspecialchars($row['periodical']);
+            }
             $display .= " ".htmlspecialchars($row['vol']);
-            if ($row['part']) $display .= " (".htmlspecialchars($row['part']).")";
+            if ($row['part']) {
+                $display .= " (".htmlspecialchars($row['part']).")";
+            }
             $display .= ": ".htmlspecialchars($row['paginae']).". ".htmlspecialchars($row['figures']);
-            if ($short) $display .= " (".htmlspecialchars(substr($row['jahr'], 0, 4)).")";
+            if ($short) {
+                $display .= " (".htmlspecialchars(substr($row['jahr'], 0, 4)).")";
+            }
         }
     } else if (!$short) {
         $display = "&mdash;";
@@ -318,11 +328,11 @@ private function _typusList($taxon,$sw)
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON tt.Sammler_2ID=c2.Sammler_2ID
            WHERE tt.SammlerID=c.SammlerID
-            AND taxonID='".mysql_escape_string($taxon)."'";
-    $result = mysql_query($sql);
+            AND taxonID='" . $this->dbLink->real_escape_string($taxon) . "'";
+    $result = $this->dbLink->query($sql);
     $return = "";
-    if (mysql_num_rows($result)>0) {
-        while ($row=mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row=mysqli_fetch_array($result)) {
             $display = $row['Sammler'];
             if ($row['Sammler_2']) {
                 if (strstr($row['Sammler_2'],"&")===false) {
@@ -331,8 +341,12 @@ private function _typusList($taxon,$sw)
                     $display .= " et al.";
                 }
             }
-            if ($row['series']) $display .= " ".$row['series'];
-            if ($row['leg_nr']) $display .= " ".$row['leg_nr'];
+            if ($row['series']) {
+                $display .= " ".$row['series'];
+            }
+            if ($row['leg_nr']) {
+                $display .= " ".$row['leg_nr'];
+            }
             if ($row['alternate_number']) {
                 $display .= " ".$row['alternate_number'];
                 if (strstr($row['alternate_number'],"s.n.")!==false) {
@@ -340,7 +354,9 @@ private function _typusList($taxon,$sw)
                 }
             }
             $display .= "; ".$row['duplicates'];
-            if ($sw) $return .= "<tr><td colspan=\"2\"></td><td>";
+            if ($sw) {
+                $return .= "<tr><td colspan=\"2\"></td><td>";
+            }
             $return .= htmlspecialchars($display);
             if ($sw) {
                 $return .= "</td></tr>\n";
