@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 if (isset($_GET['order'])) {
     if ($_GET['order'] == "b") {
@@ -67,8 +66,8 @@ $sql = "SELECT hu.*, hg.group_name, hg.group_description
          LEFT JOIN herbarinput_log.tbl_herbardb_groups hg on hu.groupID = hg.groupID
         WHERE active = '1'
         ORDER BY " . $_SESSION['userOrder'];
-$result = db_query($sql);
-while ($row = mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row = mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\">"
        . "<a href=\"editUser.php?sel=" . $row['userID'] . "\">" . htmlspecialchars($row['username']) . "</a></td>";
@@ -86,8 +85,8 @@ $sql = "SELECT hu.*, hg.group_name, hg.group_description
          LEFT JOIN herbarinput_log.tbl_herbardb_groups hg on hu.groupID = hg.groupID
         WHERE active = '0'
         ORDER BY " . $_SESSION['userOrder'];
-$result = db_query($sql);
-while ($row = mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row = mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\">"
        . "<a href=\"editUser.php?sel=" . $row['userID'] . "\">" . htmlspecialchars($row['username']) . "</a></td>";

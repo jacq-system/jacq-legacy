@@ -127,8 +127,8 @@ function makeDropdownInstitution()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\">" . htmlspecialchars($row['source_code']) . "</option>\n";
     }
 }
@@ -290,8 +290,8 @@ function collectionItem($coll)
         $sql = "SELECT geo_general
                 FROM tbl_geo_region
                 GROUP BY geo_general ORDER BY geo_general";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['labelGeoGeneral'] == $row['geo_general']) echo " selected";
             echo ">" . $row['geo_general'] . "</option>\n";
@@ -307,8 +307,8 @@ function collectionItem($coll)
         $sql = "SELECT geo_region
                 FROM tbl_geo_region
                 ORDER BY geo_region";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['labelGeoRegion'] == $row['geo_region']) echo " selected";
             echo ">" . $row['geo_region'] . "</option>\n";
@@ -437,16 +437,16 @@ if ($_SESSION['labelType'] == 1) { ?>
         $pieces = explode(" ", trim($_SESSION['labelTaxon']));
         $part1 = array_shift($pieces);
         $part2 = array_shift($pieces);
-        $sql .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+        $sql .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
         if ($part2) {
-            $sql .= " AND (te.epithet LIKE '". mysql_escape_string($part2) . "%' "
-                  .  "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .  "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .  "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+            $sql .= " AND (te.epithet LIKE '". dbi_escape_string($part2) . "%' "
+                  .  "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .  "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .  "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
         }
     }
     if (trim($_SESSION['labelSeries'])) {
-        $sql .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['labelSeries'])) . "%'";
+        $sql .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['labelSeries'])) . "%'";
     }
     if (trim($_SESSION['labelCollection'])) {
         if (trim($_SESSION['labelCollection']) > 0) {
@@ -456,37 +456,37 @@ if ($_SESSION['labelType'] == 1) { ?>
         }
     }
     if (trim($_SESSION['labelNumber'])) {
-        $sql .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['labelNumber'])) . "%'";
+        $sql .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['labelNumber'])) . "%'";
     }
     if (trim($_SESSION['labelFamily'])) {
-        $sql .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['labelFamily'])) . "%'";
+        $sql .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['labelFamily'])) . "%'";
     }
     if (trim($_SESSION['labelCollector'])) {
-        $sql .= " AND c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['labelCollector'])) . "%'";
+        $sql .= " AND c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['labelCollector'])) . "%'";
     }
     if (trim($_SESSION['labelNumberC'])) {
-        $sql .= " AND s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['labelNumberC'])) . "%'";
+        $sql .= " AND s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['labelNumberC'])) . "%'";
     }
     if (trim($_SESSION['labelDate'])) {
-        $sql .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['labelDate'])) . "%'";
+        $sql .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['labelDate'])) . "%'";
     }
     if (trim($_SESSION['labelGeoGeneral'])) {
-        $sql .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['labelGeoGeneral'])) . "%'";
+        $sql .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['labelGeoGeneral'])) . "%'";
     }
     if (trim($_SESSION['labelGeoRegion'])) {
-        $sql .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['labelGeoRegion'])) . "%'";
+        $sql .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['labelGeoRegion'])) . "%'";
     }
     if (trim($_SESSION['labelCountry'])) {
-        $sql .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['labelCountry'])) . "%'";
+        $sql .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['labelCountry'])) . "%'";
     }
     if (trim($_SESSION['labelProvince'])) {
-        $sql .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['labelProvince'])) . "%'";
+        $sql .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['labelProvince'])) . "%'";
     }
     if (trim($_SESSION['labelLoc'])) {
-        $sql .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['labelLoc'])) . "%'";
+        $sql .= " AND s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['labelLoc'])) . "%'";
     }
     if (trim($_SESSION['labelTaxonAlt'])) {
-        $sql .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['labelTaxonAlt'])) . "%'";
+        $sql .= " AND s.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['labelTaxonAlt'])) . "%'";
     }
     if ($_SESSION['labelTyp']) {
         $sql .= " AND s.typusID != 0";
@@ -498,8 +498,8 @@ if ($_SESSION['labelType'] == 1) { ?>
     $sql .= " ORDER BY " . $_SESSION['labelOrder'];
     $_SESSION['labelSQL'] = $sql;
 
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class='out' cellspacing='0'>\n"
            . "<tr class='out'>"
            . "<th class='out'></th>"
@@ -520,7 +520,7 @@ if ($_SESSION['labelType'] == 1) { ?>
            . "<th class='out'>Standard Label</th>"
            . "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $id = $row['specimen_ID'];
 
             if ($row['digital_image']) {

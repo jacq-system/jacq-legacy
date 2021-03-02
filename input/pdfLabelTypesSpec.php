@@ -8,7 +8,6 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-no_magic();
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
@@ -46,16 +45,16 @@ function generateSynonymsList($id)
     $id = intval($id);
     $synonymsList = array();
 
-    $result = db_query("SELECT synID FROM tbl_tax_species WHERE taxonID = '$id'");
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query("SELECT synID FROM tbl_tax_species WHERE taxonID = '$id'");
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         if (empty($row['synID'])) {
             $parentID = intval($id);
         } else {
             $parentID = $row['synID'];
         }
 
-        $parent = mysql_fetch_array(mysql_query("SELECT taxonID, basID, synID FROM tbl_tax_species WHERE taxonID='$parentID'"));
+        $parent = dbi_query("SELECT taxonID, basID, synID FROM tbl_tax_species WHERE taxonID='$parentID'")->fetch_array();
         $synonymsList[] = array('layer'   => 1,
                                 'taxonID' => $parent['taxonID'],
                                 'synID'   => $parent['synID'],
@@ -82,17 +81,17 @@ function generateSynonymsList($id)
                 WHERE synID = '$parentID'";
 
         if (empty($parent['basID'])) {
-            $result2 = db_query($sql . " AND basID = '$parentID'");
+            $result2 = dbi_query($sql . " AND basID = '$parentID'");
         } else {
-            $result2 = db_query($sql . " AND (basID IS NULL OR basID = '$parentID') AND taxonID = '{$parent['basID']}'");
+            $result2 = dbi_query($sql . " AND (basID IS NULL OR basID = '$parentID') AND taxonID = '{$parent['basID']}'");
         }
-        while ($second = mysql_fetch_array($result2)) {
+        while ($second = mysqli_fetch_array($result2)) {
             $synonymsList[] = array('layer'   => 2,
                                     'taxonID' => $second['taxonID'],
                                     'synID'   => $second['synID'],
                                     'basID'   => $second['basID']);
-            $result3 = db_query($sql . " AND basID = '{$second['taxonID']}' $ord");
-            while ($third = mysql_fetch_array($result3)) {
+            $result3 = dbi_query($sql . " AND basID = '{$second['taxonID']}' $ord");
+            while ($third = mysqli_fetch_array($result3)) {
                 $synonymsList[] = array('layer'   => 3,
                                         'taxonID' => $third['taxonID'],
                                         'synID'   => $third['synID'],
@@ -101,17 +100,17 @@ function generateSynonymsList($id)
         }
 
         if (empty($parent['basID'])) {
-            $result2 = db_query($sql . " AND basID IS NULL $ord");
+            $result2 = dbi_query($sql . " AND basID IS NULL $ord");
         } else {
-            $result2 = db_query($sql . " AND (basID IS NULL OR basID = '$parentID') AND taxonID != '{$parent['basID']}' $ord");
+            $result2 = dbi_query($sql . " AND (basID IS NULL OR basID = '$parentID') AND taxonID != '{$parent['basID']}' $ord");
         }
-        while ($second = mysql_fetch_array($result2)) {
+        while ($second = mysqli_fetch_array($result2)) {
             $synonymsList[] = array('layer'   => 2,
                                     'taxonID' => $second['taxonID'],
                                     'synID'   => $second['synID'],
                                     'basID'   => $second['basID']);
-            $result3 = db_query($sql . " AND basID = '{$second['taxonID']}' $ord");
-            while ($third = mysql_fetch_array($result3)) {
+            $result3 = dbi_query($sql . " AND basID = '{$second['taxonID']}' $ord");
+            while ($third = mysqli_fetch_array($result3)) {
                 $synonymsList[] = array('layer'   => 3,
                                         'taxonID' => $third['taxonID'],
                                         'synID'   => $third['synID'],
@@ -161,9 +160,9 @@ function makeText($id, $sub)
              AND s.collectionID=mc.collectionID
              AND tst.specimenID='".intval($id)."'
             LIMIT $sub,1";
-    $result = mysql_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
 
         $text['typus_lat']  = $row['typus_lat'];
         // BP, 08/2010: TODO: taxonWithHybrids expects $row['statusID'], but $row does not contain it. Problem???
@@ -204,8 +203,7 @@ function makeText($id, $sub)
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID = '$synID'";
-            $result3 = mysql_query($sql3);
-            $row3 = mysql_fetch_array($result3);
+            $row3 = dbi_query($sql3)->fetch_array();
             $text['accName'] = " = " . taxonWithHybrids($row3);
         } else {
             $text['accName'] = "";
@@ -218,9 +216,9 @@ function makeText($id, $sub)
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
                   LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
                  WHERE ti.taxonID = '" . $row['taxonID'] . "'";
-        $result2 = mysql_query($sql2);
+        $result2 = dbi_query($sql2);
         $text['protolog'] = "";
-        while ($row2 = mysql_fetch_array($result2)) {
+        while ($row2 = mysqli_fetch_array($result2)) {
             $text['protolog'] .= protolog($row2) . "\n";
         }
         $text['protolog'] = substr($text['protolog'],0,-1);
@@ -231,8 +229,7 @@ function makeText($id, $sub)
                   LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
                   LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
                  WHERE specimen_ID = '".intval($id)."'";
-        $result2 = mysql_query($sql2);
-        $row2 = mysql_fetch_array($result2);
+        $row2 = dbi_query($sql2)->fetch_array();
         $text['collector'] = $row2['Sammler'];
         if (strstr($row2['Sammler_2'], "&") || strstr($row2['Sammler_2'], "et al.")) {
             $text['collector'] .= " et al.";
@@ -374,8 +371,8 @@ $pdf->SetY(290);  // page at the Beginning
 $pdf->SetFont('freesans','',10);
 $pdf->SetCellHeightRatio(1.2);     // BP, 08/2010: there was too much space between the lines (? default changed to 1.25 ?)
 
-$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&2)>'0' AND userID='".$_SESSION['uid']."'");
-while ($row_ID=mysql_fetch_array($result_ID)) {
+$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&2)>'0' AND userID='".$_SESSION['uid']."'");
+while ($row_ID=mysqli_fetch_array($result_ID)) {
     $subCounter = 0;
     while ($subCounter >= 0) {
         $labelText = makeText($row_ID['specimen_ID'], $subCounter);

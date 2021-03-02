@@ -8,7 +8,6 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-no_magic();
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
@@ -30,8 +29,7 @@ function makeText($id)
             WHERE s.collectionID = mc.collectionID
              AND mc.source_id = m.source_id
              AND s.specimen_ID = '$id'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $row = dbi_query($sql)->fetch_array();
 
     $text['UnitID'] = formatUnitID($row['specimen_ID']);   // needs connect.php
     $text['abbr'] = $row['source_abbr_engl'];
@@ -45,8 +43,7 @@ function makePreText($sourceID, $number)
     $sql = "SELECT source_code, source_abbr_engl
             FROM herbarinput.meta
             WHERE source_id = '" . intval($sourceID) . "'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $row = dbi_query($sql)->fetch_array();
 
     $text['UnitID'] = formatPreUnitID($sourceID, $number);   // needs connect.php
     $text['abbr'] = $row['source_abbr_engl'];
@@ -150,9 +147,9 @@ if (empty($_POST['collection'])) {
              AND mc.collectionID = s.collectionID
              AND (l.label & 4) > '0'
              ORDER BY " . $_SESSION['labelOrder'];
-    $result_ID = mysql_query($sql);
-    //$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
-    while ($row_ID=mysql_fetch_array($result_ID)) {
+    $result_ID = dbi_query($sql);
+    //$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
+    while ($row_ID=mysqli_fetch_array($result_ID)) {
         $labelText = makeText($row_ID['specimen_ID']);
         if (count($labelText)>0) {
             $pdf->Cell(55, 0, $labelText['abbr'], 0, 1, 'C');

@@ -2,15 +2,14 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 if (isset($_GET['sel'])) {
     $sql = "SELECT *
             FROM herbarinput_log.tbl_herbardb_groups
             WHERE groupID = '" . intval($_GET['sel']) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
         $p_rights = array();
         foreach ($row as $key => $val) {
             switch ($key) {
@@ -28,9 +27,9 @@ if (isset($_GET['sel'])) {
     	    }
         }
     } else {
-        $result = db_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
+        $result = dbi_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
         $p_rights = array();
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             switch ($row['Field']) {
                 case 'groupID':
                     $p_groupID = 0;
@@ -47,9 +46,9 @@ if (isset($_GET['sel'])) {
         }
     }
 } else {
-    $result = db_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
+    $result = dbi_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
     $p_rights = array();
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         switch ($row['Field']) {
             case 'groupID':
                 $p_groupID = $_POST['groupID'];
@@ -66,9 +65,9 @@ if (isset($_GET['sel'])) {
     }
 
     if ($_POST['submitUpdate'] && checkRight('admin')) {
-        $result = db_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
+        $result = dbi_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
         $sqldata = array();
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             switch ($row['Field']) {
                 case 'groupID':
                     break;
@@ -87,7 +86,7 @@ if (isset($_GET['sel'])) {
         } else {
             $sql = "INSERT INTO herbarinput_log.tbl_herbardb_groups SET " . implode(", ", $sqldata);
         }
-        db_query($sql);
+        dbi_query($sql);
 
         //$location = "Location: listGroups.php";
         //if (SID) $location = $location . "?" . SID;
@@ -95,9 +94,9 @@ if (isset($_GET['sel'])) {
     }
 }
 
-$result = db_query("SELECT `column`, description FROM tbl_descriptions WHERE `table` = 'tbl_herbardb_groups'");
+$result = dbi_query("SELECT `column`, description FROM tbl_descriptions WHERE `table` = 'tbl_herbardb_groups'");
 $rightDescription = array();
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $rightDescription[$row['column']] = $row['description'];
 }
 

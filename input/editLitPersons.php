@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 
 if (isset($_GET['new'])) {
@@ -14,8 +13,8 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
            WHERE citationID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    $p_citation = protolog(mysql_fetch_array($result));
+    $result = dbi_query($sql);
+    $p_citation = protolog(mysqli_fetch_array($result));
     $p_citationIndex = extractID($_GET['ID']);
     $p_person = $p_annotations = $p_lit_persons_ID = $p_personIndex = "";
     $p_timestamp = "";
@@ -25,9 +24,9 @@ if (isset($_GET['new'])) {
             FROM tbl_lit_persons lp
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lp.userID = hu.userID
             WHERE lit_persons_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_lit_persons_ID  = $row['lit_persons_ID'];
         $p_annotations     = $row['annotations'];
         $p_timestamp       = $row['timestamp'];
@@ -39,14 +38,14 @@ if (isset($_GET['new'])) {
                 LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                 LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = '" . $row['citationID_fk'] . "'";
-        $result = db_query($sql);
-        $p_citation = protolog(mysql_fetch_array($result));
+        $result = dbi_query($sql);
+        $p_citation = protolog(mysqli_fetch_array($result));
         $p_citationIndex = $row['citationID_fk'];
 
         $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
                 FROM tbl_person
                 WHERE person_ID = '" . $row['personID_fk'] . "'";
-        $row2 = mysql_fetch_array(db_query($sql));
+        $row2 = dbi_query($sql)->fetch_array();
         $p_person = $row2['p_familyname'] . ", " . $row2['p_firstname']
                   . " (" . $row2['p_birthdate'] . " - " . $row2['p_death'] . ") <" . $row2['person_ID'] . ">";
         $p_personIndex = $row['personID_fk'];
@@ -74,8 +73,8 @@ if (isset($_GET['new'])) {
                 $sqldata";
         $updated = 0;
     }
-    $result = db_query($sql);
-        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ? intval($_POST['lit_persons_ID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ? intval($_POST['lit_persons_ID']) : dbi_insert_id();
         logLitTax($p_lit_persons_ID, $updated);
     if ($result) {
         echo "<html><head>\n"

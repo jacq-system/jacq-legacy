@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
 
 $get_update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 $get_new    = (isset($_GET['new'])) ? intval($_GET['new']) : 0;

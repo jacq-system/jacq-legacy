@@ -3,9 +3,8 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -19,10 +18,10 @@ no_magic();
 <?php
 if ($_POST['submitUpdate'] && intval($_POST['ID']) && (($_SESSION['editControl'] & 0x2000)!=0)) {
   $sql = "UPDATE tbl_specimens ".
-         "SET ncbi_accession='".mysql_escape_string($_POST['ncbi'])."' ".
+         "SET ncbi_accession='".dbi_escape_string($_POST['ncbi'])."' ".
          "WHERE specimen_ID=".intval($_POST['ID']);
-  $result = mysql_query($sql);
-  $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
+  $result = dbi_query($sql);
+  $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
   logSpecimen($id,1);
 
   echo "<script language=\"JavaScript\">\n";
@@ -33,9 +32,9 @@ else {
   echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
   $sql = "SELECT specimen_ID, ncbi_accession FROM tbl_specimens ".
-         "WHERE specimen_ID='".mysql_escape_string(intval($_GET['id']))."'";
-  $result = db_query($sql);
-  $row = mysql_fetch_array($result);
+         "WHERE specimen_ID='".dbi_escape_string(intval($_GET['id']))."'";
+  $result = dbi_query($sql);
+  $row = mysqli_fetch_array($result);
 
   $cf = new CSSF();
 

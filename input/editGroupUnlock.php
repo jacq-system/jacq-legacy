@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_groupID = intval($_GET['id']);
@@ -11,9 +10,9 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
     $sql = "SELECT *
             FROM herbarinput_log.tbl_herbardb_unlock
             WHERE ID = '$p_accessID'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_table = $row['table'];
     } else {
         $p_table = "";
@@ -28,16 +27,16 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
                     `table` = " . quoteString($p_table);
         if (intval($p_accessID))  {
             $sql = "UPDATE herbarinput_log.tbl_herbardb_unlock SET " . $sqldata . " WHERE ID = '" . intval($p_accessID) . "'";
-            db_query($sql);
+            dbi_query($sql);
         } else {
             $sql = "INSERT INTO herbarinput_log.tbl_herbardb_unlock SET " . $sqldata;
-            db_query($sql);
-            $p_accessID = mysql_insert_id();
+            dbi_query($sql);
+            $p_accessID = dbi_insert_id();
         }
     }
 }
 
-$row = mysql_fetch_array(db_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID = '$p_groupID'"));
+$row = dbi_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID = '$p_groupID'")->fetch_array();
 $groupname = $row['group_name'];
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"

@@ -2,12 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
-
 
 $id = intval($_GET['ID']);
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -54,15 +52,15 @@ $sql = "SELECT taxonID, tg.genus, ".
         "LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID ".
         "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
        "WHERE taxonID='$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 echo "<b>taxon:</b> ".taxon($row)."\n<p>\n";
 $sql ="SELECT typecollID, series, leg_nr, alternate_number, date, duplicates, annotation, ".
        "Sammler ".
       "FROM tbl_tax_typecollections tt ".
        "LEFT JOIN tbl_collector c ON c.SammlerID=tt.SammlerID ".
       "WHERE taxonID='$id' ORDER BY typecollID";
-$result = db_query($sql);
+$result = dbi_query($sql);
 echo "<table class=\"out\" cellspacing=\"2\" cellpadding=\"2\">\n";
 echo "<tr class=\"out\">";
 echo "<th></th>";
@@ -73,8 +71,8 @@ echo "<th class=\"out\">&nbsp;alt.&nbsp;number&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;date&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;duplicates&nbsp;</th>";
 echo "</tr>\n";
-if (mysql_num_rows($result)>0) {
-  while ($row=mysql_fetch_array($result)) {
+if (mysqli_num_rows($result)>0) {
+  while ($row=mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\">".
          "<a href=\"javascript:editType('<".$row['typecollID'].">',0)\">edit</a>".

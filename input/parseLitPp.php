@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 
 function rom2arab ($r)
@@ -71,9 +70,9 @@ function parsePp ($pp)
 }
 
 
-$result = mysql_query("SELECT * FROM tbl_lit WHERE pp IS NOT NULL");
-while ($row = mysql_fetch_array($result)) {
-    mysql_query("UPDATE tbl_lit SET
-                  ppSort = " . quoteString(parsePp($row['pp'])) . "
-                 WHERE citationID = " . $row['citationID']);
+$result = dbi_query("SELECT * FROM tbl_lit WHERE pp IS NOT NULL");
+while ($row = mysqli_fetch_array($result)) {
+    dbi_query("UPDATE tbl_lit SET
+                ppSort = " . quoteString(parsePp($row['pp'])) . "
+               WHERE citationID = " . $row['citationID']);
 }

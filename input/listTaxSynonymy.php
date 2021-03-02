@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -50,9 +49,9 @@ try {
 
 	$dbst = $db->prepare("SELECT * FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon WHERE taxonID=:taxonID");
 	$dbst->execute(array(":taxonID" => $id));
-		
+
 	$row = $dbst->fetch();
-	
+
 	echo "<b>protolog:</b> " . getScientificName($row['taxonID'], true, false) . "\n<p>\n";
 
 	$dbst = $db->prepare("SELECT * FROM {$_CONFIG['DATABASE']['INPUT']['name']}.tbl_tax_synonymy tts
@@ -60,11 +59,11 @@ try {
         WHERE tts.taxonID = :taxonID ORDER BY :orderby");
 	$dbst->execute(array(":taxonID" => $id, 'orderby'=>$_SESSION['taxSynOrder']));
 	$rows = $dbst->fetchAll();
-	
+
 }catch (Exception $e) {
 	exit($e->getMessage());
-}	
-	
+}
+
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
@@ -110,8 +109,8 @@ if(count($rows)>0){
 	foreach($rows  as $row){
 		$radic=(($row['preferred_taxonomy']) ? "&radic;" : "") ;
 		$taxon=getScientificName($row['taxonID']);
-		
-		$display=clsDisplay::Load();		
+
+		$display=clsDisplay::Load();
 		$ref=$display->SynonymyReference(0,$row);
 
 		echo<<<EOF
@@ -121,7 +120,7 @@ if(count($rows)>0){
  <td class="out" align="center>"{$radic}</td>
  <td class="out">{$row['annotations']}</td>
  <td class="out">{$ref}</td>
-</tr>	
+</tr>
 EOF;
 
 

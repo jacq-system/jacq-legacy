@@ -1,18 +1,17 @@
 <?php
 session_start();
 require("inc/connect.php");
-no_magic();
 
 if (empty($_GET['sel'])) die();
 
 $userID = intval($_GET['sel']);
-$row = mysql_fetch_array(db_query("SELECT username FROM herbarinput_log.tbl_herbardb_users WHERE userID = '$userID'"));
+$row = dbi_query("SELECT username FROM herbarinput_log.tbl_herbardb_users WHERE userID = '$userID'")->fetch_array();
 $username = $row['username'];
 
 if (isset($_GET['del']) && intval($_GET['del']) && checkRight('admin')) {
     $sql = "DELETE FROM herbarinput_log.tbl_herbardb_access
             WHERE ID = '" . intval($_GET['del']) . "'";
-    db_query($sql);
+    dbi_query($sql);
 }
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -55,8 +54,8 @@ $sql = "SELECT ha.ID, ha.update, sc.category, sc.cat_description, f.family, g.ge
          LEFT JOIN tbl_tax_families f ON f.familyID = ha.familyID
          LEFT JOIN tbl_tax_genera g ON g.genID = ha.genID
         WHERE ha.userID = '$userID'";
-$result = db_query($sql);
-while ($row = mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row = mysqli_fetch_array($result)) {
     $id = $row['userID'];
 
     echo "<tr class=\"out\">"

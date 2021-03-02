@@ -10,31 +10,24 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
         header("Location: login.php");
         exit();
     }  // TODO: remove the remaining lines up to $dbLink... when removing the mysql-part
-} else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-    if (substr(getcwd(), -5) == "/ajax") {
-        die();
-    } else {
-        header("Location: login.php");
-        exit();
-    }
-} else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
-    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-       . "<html>\n"
-       . "<head><titel>Sorry, no connection ...</title></head>\n"
-       . "<body><p>Sorry, no connection to database ...</p></body>\n"
-       . "</html>\n";
-    exit();
 }
-
-mysql_query("SET character set utf8");
-
-function no_magic()   // PHP >= 4.1, depricated
-{
-    if (get_magic_quotes_gpc()) {
-        foreach($_GET as $k => $v)  $_GET["$k"] = stripslashes($v);
-        foreach($_POST as $k => $v) $_POST["$k"] = stripslashes($v);
-    }
-}
+//else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
+//    if (substr(getcwd(), -5) == "/ajax") {
+//        die();
+//    } else {
+//        header("Location: login.php");
+//        exit();
+//    }
+//} else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
+//    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
+//       . "<html>\n"
+//       . "<head><titel>Sorry, no connection ...</title></head>\n"
+//       . "<body><p>Sorry, no connection to database ...</p></body>\n"
+//       . "</html>\n";
+//    exit();
+//}
+//
+//mysql_query("SET character set utf8");
 // remove up to here
 
 /** @var mysqli $dbLink */
@@ -107,23 +100,23 @@ function dbi_query($sql, $debug=false)
  * @return resource
  *
  */
-function db_query($sql, $debug=false)
-{
-    global $_OPTIONS;
-
-    if($debug || $_OPTIONS['debug'] == 1) {
-        $debug=true;
-    }
-
-    $res = mysql_query($sql);
-
-    if(!$res && $debug) {
-        echo $sql;
-        echo mysql_errno() . ": " . mysql_error() . "<br>\n";
-    }
-
-    return $res;
-}
+//function db_query($sql, $debug=false)
+//{
+//    global $_OPTIONS;
+//
+//    if($debug || $_OPTIONS['debug'] == 1) {
+//        $debug=true;
+//    }
+//
+//    $res = mysql_query($sql);
+//
+//    if(!$res && $debug) {
+//        echo $sql;
+//        echo mysql_errno() . ": " . mysql_error() . "<br>\n";
+//    }
+//
+//    return $res;
+//}
 
 
 /**

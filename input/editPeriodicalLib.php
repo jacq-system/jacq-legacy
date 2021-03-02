@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -26,8 +25,8 @@ if (isset($_GET['new'])) {
     $sql = "SELECT periodical, periodicalID
             FROM tbl_lit_periodicals
             WHERE periodicalID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
     $p_periodical = $row['periodical'] . " <" . $row['periodicalID'] . ">";
     $p_library = $p_signature = $p_bestand = $p_url = $p_lib_period_ID = "";
 } elseif (extractID($_GET['ID']) !== "NULL") {
@@ -35,9 +34,9 @@ if (isset($_GET['new'])) {
             FROM tbl_lit_lib_period, tbl_lit_periodicals
             WHERE tbl_lit_lib_period.periodicalID = tbl_lit_periodicals.periodicalID
              AND lib_period_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result)>0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result)>0) {
+        $row = mysqli_fetch_array($result);
         $p_lib_period_ID = $row['lib_period_ID'];
         $p_library       = $row['library_ID'];
         $p_periodical    = $row['periodical'] . " <" . $row['periodicalID'] . ">";
@@ -67,7 +66,7 @@ if (isset($_GET['new'])) {
                  bestand = " . quoteString($bestand).",
                  url = " . quoteString($url);
     }
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     if ($result) {
         echo "<script language=\"JavaScript\">\n"
            . "  window.opener.document.f.reload.click()\n"
@@ -89,9 +88,9 @@ if (isset($_GET['new'])) {
 <?php
 unset($library);
 $sql = "SELECT library, library_ID FROM tbl_lit_libraries ORDER BY library";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $library[0][] = $row['library_ID'];
             $library[1][] = $row['library'];
         }

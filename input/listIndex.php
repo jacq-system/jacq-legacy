@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 function displayButtons($type, $id)
 {
@@ -126,7 +125,7 @@ if ($type == 1) {
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
            WHERE taxonID = '$id' ORDER BY l.citationID";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<table class=\"out\" cellspacing=\"2\" cellpadding=\"2\">\n";
     echo "<tr class=\"out\">";
     echo "<th></th>";
@@ -135,8 +134,8 @@ if ($type == 1) {
     echo "<th class=\"out\">&nbsp;figures&nbsp;</th>";
     echo "<th class=\"out\">&nbsp;annotations&nbsp;</th>";
     echo "</tr>\n";
-    if (mysql_num_rows($result)>0) {
-        while ($row=mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result)>0) {
+        while ($row=mysqli_fetch_array($result)) {
             echo "<tr class=\"out\">";
             echo "<td class=\"out\">"
                . "<a href=\"javascript:editIndex($type,'<" . $row['taxindID'] . ">',0)\">edit</a>"
@@ -159,8 +158,8 @@ if ($type == 1) {
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
            WHERE citationID = '$id'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
     echo "<b>protolog:</b> " . protolog($row) . "\n<p>\n";
 
     displayButtons($type, $id);
@@ -194,7 +193,7 @@ if ($type == 1) {
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
             WHERE citationID = '$id'
             ORDER BY " . $_SESSION['indOrder'];
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     echo "<table class=\"out\" cellspacing=\"2\" cellpadding=\"2\">\n";
     echo "<tr class=\"out\">";
     echo "<th></th>";
@@ -215,8 +214,8 @@ if ($type == 1) {
     echo "<th class=\"out\">&nbsp;figures&nbsp;</th>";
     echo "<th class=\"out\">&nbsp;annotations&nbsp;</th>";
     echo "</tr>\n";
-    if (mysql_num_rows($result) > 0) {
-        while ($row=mysql_fetch_array($result)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row=mysqli_fetch_array($result)) {
             echo "<tr class=\"out\">";
             echo "<td class=\"out\">"
                . "<a href=\"javascript:editIndex($type,'<" . $row['taxindID'] . ">',0)\">edit</a>"

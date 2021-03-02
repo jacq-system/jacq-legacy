@@ -2,10 +2,8 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -32,12 +30,12 @@ no_magic();
 $sql = "SELECT groupID, group_name, group_description
         FROM herbarinput_log.tbl_herbardb_groups
         ORDER BY group_name";
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row = mysqli_fetch_array($result)) {
   echo "<tr class=\"out\">";
   echo "<td class=\"out\">".
-       "<a href=\"editGroup.php?sel=".$row['groupID']."\">".htmlspecialchars($row['group_name'])."</a></td>";
-  echo "<td class=\"out\">".htmlspecialchars($row['group_description'])."</td>";
+       "<a href=\"editGroup.php?sel=".$row['groupID']."\">" . htmlspecialchars($row['group_name']) . "</a></td>";
+  echo "<td class=\"out\">" . htmlspecialchars($row['group_description']) . "</td>";
   echo "</tr>\n";
 }
 ?>

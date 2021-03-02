@@ -56,9 +56,9 @@ $sql = "SELECT wu.specimen_ID, wu.HerbNummer, si.identification_status, wu.check
          LEFT JOIN tbl_labels l ON (wu.specimen_ID=l.specimen_ID AND l.userID='{$_SESSION['uid']}')
         WHERE wu.SammlerID=c.SammlerID
          AND wu.specimen_ID=$db_specimen_ID";
-$result = db_query($sql);
-if (mysql_num_rows($result)>0) {
-  $row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+if (mysqli_num_rows($result)>0) {
+  $row = mysqli_fetch_array($result);
   $p_specimen_ID   = $row['specimen_ID'];
   $p_HerbNummer    = $row['HerbNummer'];
   $p_identstatus   = $row['identification_status'];

@@ -3,9 +3,8 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -23,8 +22,8 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40)!=0)) {
          "FROM tbl_lit_authors ".
          "WHERE autor=".quoteString($_POST['autor'])." ".
           "AND autorID!='".intval($_POST['ID'])."'";
-  $result = db_query($sql);
-  while (($row=mysql_fetch_array($result)) && $sw) {
+  $result = dbi_query($sql);
+  while (($row=mysqli_fetch_array($result)) && $sw) {
     if ($row['autor']==$_POST['autor']) {
       echo "<script language=\"JavaScript\">\n";
       echo "alert('Author \"".$row['autor']."\" already present with ID ".$row['autorID']."');\n";
@@ -48,8 +47,8 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40)!=0)) {
              quoteString($autorsystbot).")";
       $updated = 0;
     }
-    $result = mysql_query($sql);
-    $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+    $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
     logLitAuthors($id,$updated);
 
     echo "<script language=\"JavaScript\">\n";
@@ -73,9 +72,9 @@ else {
 echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
 $sql = "SELECT autorID, autor, autorsystbot ".
-       "FROM tbl_lit_authors WHERE autorID='".mysql_escape_string($id)."'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+       "FROM tbl_lit_authors WHERE autorID='".dbi_escape_string($id)."'";
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 

@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
 
 
 function makeSammler($search, $x, $y, $nr)
@@ -17,18 +16,18 @@ function makeSammler($search, $x, $y, $nr)
         if ($nr == 2) {
             $sql = "SELECT Sammler_2, Sammler_2ID
                     FROM tbl_collector_2
-                    WHERE Sammler_2 LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                    WHERE Sammler_2 LIKE '" . dbi_escape_string($pieces[0]) . "%'
                     ORDER BY Sammler_2";
         } else {
             $sql = "SELECT Sammler, SammlerID
                     FROM tbl_collector
-                    WHERE Sammler LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                    WHERE Sammler LIKE '" . dbi_escape_string($pieces[0]) . "%'
                     ORDER BY Sammler";
         }
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " record" . ((mysql_num_rows($result) != 1) ? "s" : "") . " found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " record" . ((mysqli_num_rows($result) != 1) ? "s" : "") . " found</b>");
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     if ($nr == 2) {
                         $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
                     } else {
@@ -106,9 +105,9 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = tt.Sammler_2ID
            WHERE c.SammlerID = tt.SammlerID
             AND typecollID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_typecollID       = $row['typecollID'];
         $p_series           = $row['series'];
         $p_leg_nr           = $row['leg_nr'];
@@ -161,8 +160,8 @@ if (isset($_GET['new'])) {
                  annotation = " . quoteString($annotation);
         $updated = 0;
     }
-    $result = db_query($sql);
-    $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+    $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
     logTypecollections($id,$updated);
     if ($result) {
         echo "<script language=\"JavaScript\">\n";

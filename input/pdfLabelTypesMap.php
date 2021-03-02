@@ -55,9 +55,9 @@ function makeText($id, $sub)  {
            AND tst.specimenID='".intval($id) . "'
            LIMIT $sub,1
   ";
-  $result = mysql_query($sql);
-  if (mysql_num_rows($result)>0) {
-    $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  if (mysqli_num_rows($result)>0) {
+    $row = mysqli_fetch_array($result);
 
     $text['typus_lat'] = utf8_decode($row['typus_lat']);
     $text['taxon'] = taxonWithHybrids($row, true);
@@ -101,8 +101,8 @@ function makeText($id, $sub)  {
                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                WHERE taxonID=".$row['synID'];
-      $result3 = mysql_query($sql3);
-      $row3 = mysql_fetch_array($result3);
+      $result3 = dbi_query($sql3);
+      $row3 = mysqli_fetch_array($result3);
       // BP, 08/2010: TODO: taxonWithHybrids expects $row['statusID'], but $row does not contain it. Problem???
       $text['accName'] = "Annotationen: = ".taxonWithHybrids($row3);
     }
@@ -116,9 +116,9 @@ function makeText($id, $sub)  {
               LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
               LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
              WHERE ti.taxonID='".$row['taxonID']."'";
-    $result2 = mysql_query($sql2);
+    $result2 = dbi_query($sql2);
     $text['protolog'] = "";
-    while ($row2=mysql_fetch_array($result2))
+    while ($row2=mysqli_fetch_array($result2))
       $text['protolog'] .= protolog($row2)."\n";
     $text['protolog'] = substr($text['protolog'],0,-1);
   }
@@ -299,8 +299,8 @@ $pdf->Open();
 $pdf->SetFont('Arial','',10);
 $pdf->SetCellHeightRatio(1.0);     // BP, 08/2010: there was too much space between the lines (? default changed to 1.25 ?)
 
-$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&1)>'0' AND userID='".$_SESSION['uid']."'");
-while ($row_ID=mysql_fetch_array($result_ID)) {
+$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&1)>'0' AND userID='".$_SESSION['uid']."'");
+while ($row_ID=mysqli_fetch_array($result_ID)) {
   $subCounter = 0;
   while ($subCounter >= 0) {
       $labelText = makeText($row_ID['specimen_ID'],$subCounter);

@@ -8,7 +8,6 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-no_magic();
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
@@ -46,7 +45,7 @@ function makeText($id)  {
            LEFT JOIN tbl_geo_province gp ON gp.provinceID=wu.provinceID
           WHERE wu.SammlerID=c.SammlerID
            AND specimen_ID='".intval($id)."'";
-  $row = mysql_fetch_array(mysql_query($sql));
+  $row = dbi_query($sql)->fetch_array();
 
   $pieces = explode(',', $row['nation_engl']);  // cut of exessive text to shorten header
   $text['nation']      = $pieces[0];
@@ -166,8 +165,8 @@ function makeText($id)  {
            LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
            LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
            LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
-          WHERE ts.taxonID='".mysql_escape_string($row['taxonID'])."'";
-  $row = mysql_fetch_array(mysql_query($sql));
+          WHERE ts.taxonID='".dbi_escape_string($row['taxonID'])."'";
+  $row = dbi_query($sql)->fetch_array();
 
   $text['taxon'] = taxonWithHybrids($row, true);
   $text['family'] = $row['family'];
@@ -277,8 +276,8 @@ $pdf->Open();
 $pdf->SetFont('freesans','',10);
 $pdf->SetCellHeightRatio(1.0);     // BP, 08/2010: there was too much space between the lines (? default changed to 1.25 ?)
 
-$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&240)>'0' AND userID='".$_SESSION['uid']."'");
-while ($row_ID=mysql_fetch_array($result_ID)) {
+$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&240)>'0' AND userID='".$_SESSION['uid']."'");
+while ($row_ID=mysqli_fetch_array($result_ID)) {
   $ctr = ($row_ID['label'] & 0xf0) / 16;
   for ($i=0; $i<$ctr; $i++) {
     $labelText = makeText($row_ID['specimen_ID']);

@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -23,8 +22,8 @@ if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
             FROM tbl_specimens_series
             WHERE series = " . quoteString($_POST['series']) . "
              AND seriesID != '" . intval($_POST['ID']) . "'";
-    $result = db_query($sql);
-    while (($row = mysql_fetch_array($result)) && $sw) {
+    $result = dbi_query($sql);
+    while (($row = mysqli_fetch_array($result)) && $sw) {
         if ($row['series'] == $_POST['series']) {
             echo "<script language=\"JavaScript\">\n";
             echo "alert('Series \"" . $row['series'] . "\" already present with ID " . $row['seriesID'] . "');\n";
@@ -36,16 +35,16 @@ if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
     if ($sw) {
         if (intval($_POST['ID'])) {
             $sql = "UPDATE tbl_specimens_series SET
-                     series = '" . mysql_escape_string($_POST['series']) . "'
+                     series = '" . dbi_escape_string($_POST['series']) . "'
                     WHERE seriesID = " . intval($_POST['ID']);
             $updated = 1;
         } else {
             $sql = "INSERT INTO tbl_specimens_series (series)
-                    VALUES ('" . mysql_escape_string($_POST['series']) . "')";
+                    VALUES ('" . dbi_escape_string($_POST['series']) . "')";
             $updated = 0;
         }
-        $result = db_query($sql);
-        $id = (intval($_POST['ID'])) ? intval($_POST['ID']) : mysql_insert_id();
+        $result = dbi_query($sql);
+        $id = (intval($_POST['ID'])) ? intval($_POST['ID']) : dbi_insert_id();
         logSpecimensSeries($id, $updated);
 
         if ($result) {
@@ -67,9 +66,9 @@ else {
 <?php
 $sql = "SELECT seriesID, series
         FROM tbl_specimens_series
-        WHERE seriesID = '" . mysql_escape_string($id) . "'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+        WHERE seriesID = '" . dbi_escape_string($id) . "'";
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 

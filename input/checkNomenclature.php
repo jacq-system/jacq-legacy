@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -60,8 +59,8 @@ no_magic();
           FROM tbl_management_collections, herbarinput.meta
           WHERE tbl_management_collections.source_id = herbarinput.meta.source_id
           GROUP BY source_name ORDER BY source_name";
-  $result = db_query($sql);
-  while ($row = mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row = mysqli_fetch_array($result)) {
       echo "<option value=\"{$row['source_id']}\"";
       if ($_POST['source_id'] == $row['source_id']) echo " selected";
       echo ">{$row['source_name']}</option>\n";
@@ -104,21 +103,21 @@ if (isset($_POST['btnCheck']) && $_POST['btnCheck']) {
              AND s.typusID IS NOT NULL
              AND st.specimens_types_ID IS NULL";
     if (intval($_POST['source_id'])) $sql .= " AND mc.source_id = '" . intval($_POST['source_id']) . "'";
-    if (trim($_POST['family'])) $sql .= " AND tf.family LIKE '" . mysql_escape_string(trim($_POST['family'])) . "%'";
-    if (trim($_POST['genus'])) $sql .= " AND tg.genus LIKE '" . mysql_escape_string(trim($_POST['genus'])) . "%'";
+    if (trim($_POST['family'])) $sql .= " AND tf.family LIKE '" . dbi_escape_string(trim($_POST['family'])) . "%'";
+    if (trim($_POST['genus'])) $sql .= " AND tg.genus LIKE '" . dbi_escape_string(trim($_POST['genus'])) . "%'";
     if (trim($_POST['author'])) {
-        $sql .= " AND (   ta.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta1.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta2.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta3.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta4.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta5.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%' )";
+        $sql .= " AND (   ta.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta1.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta2.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta3.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta4.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta5.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%' )";
     }
-    if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . mysql_escape_string(trim($_POST['collector'])) . "%'";
+    if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . dbi_escape_string(trim($_POST['collector'])) . "%'";
     $sql .= " ORDER BY coll_short, specimen_ID";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     unset($themesMissing);
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         $themesMissing[$row['specimen_ID']] = htmlspecialchars($row['coll_short'])
                                             . " &mdash; "
                                             . htmlspecialchars($row['specimen_ID']);
@@ -144,21 +143,21 @@ if (isset($_POST['btnCheck']) && $_POST['btnCheck']) {
              AND mc.collectionID = s.collectionID
              AND ti.citationID IS NULL";
     if (intval($_POST['source_id'])) $sql .= " AND mc.source_id = '" . intval($_POST['source_id']) . "'";
-    if (trim($_POST['family'])) $sql .= " AND tf.family LIKE '%" . mysql_escape_string(trim($_POST['family'])) . "%'";
-    if (trim($_POST['genus'])) $sql .= " AND tg.genus LIKE '" . mysql_escape_string(trim($_POST['genus'])) . "%'";
+    if (trim($_POST['family'])) $sql .= " AND tf.family LIKE '%" . dbi_escape_string(trim($_POST['family'])) . "%'";
+    if (trim($_POST['genus'])) $sql .= " AND tg.genus LIKE '" . dbi_escape_string(trim($_POST['genus'])) . "%'";
     if (trim($_POST['author'])) {
-        $sql .= " AND (   ta.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta1.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta2.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta3.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta4.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%'
-                       OR ta5.author LIKE '%" . mysql_escape_string(trim($_POST['author'])) . "%' )";
+        $sql .= " AND (   ta.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta1.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta2.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta3.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta4.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%'
+                       OR ta5.author LIKE '%" . dbi_escape_string(trim($_POST['author'])) . "%' )";
     }
-    if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . mysql_escape_string(trim($_POST['collector'])) . "%'";
+    if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . dbi_escape_string(trim($_POST['collector'])) . "%'";
     $sql .= " GROUP BY st.taxonID ORDER BY st.taxonID";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     unset($protologMissing);
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         $protologMissing[$row['taxonID']] = htmlspecialchars($row['taxonID'] . " (" . $row['cnt'] . " specimens)");
     }
 ?>

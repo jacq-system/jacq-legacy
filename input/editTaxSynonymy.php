@@ -31,8 +31,7 @@ if (isset($_GET['new'])) {
          epithet,epithet1,epithet2,epithet3,epithet4,epithet5
         FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
         WHERE taxonID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    $p_taxon = taxon(mysql_fetch_array($result));
+    $p_taxon = taxon(dbi_query($sql)->fetch_array());
     $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
     $p_preferred = 0;
     $p_source = "person";
@@ -54,9 +53,9 @@ if (isset($_GET['new'])) {
             FROM tbl_tax_synonymy ts
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON ts.userID = hu.userID
             WHERE tax_syn_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_tax_syn_ID  = $row['tax_syn_ID'];
         $p_preferred = ($row['preferred_taxonomy']) ? 1 : 0;
         $p_annotations = $row['annotations'];
@@ -65,29 +64,26 @@ if (isset($_GET['new'])) {
         $p_ref_date=dateconvert($row['ref_date']);
 
         $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-         author, author1, author2, author3, author4, author5,
-         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-        WHERE taxonID = '" . $row['taxonID'] . "'";
-        $result = db_query($sql);
-        $p_taxon = taxon(mysql_fetch_array($result));
+                 author,  author1,  author2,  author3,  author4,  author5,
+                 epithet, epithet1, epithet2, epithet3, epithet4, epithet5
+                FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+                WHERE taxonID = '" . $row['taxonID'] . "'";
+        $p_taxon = taxon(dbi_query($sql)->fetch_array());
 
         $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-         author, author1, author2, author3, author4, author5,
-         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-        WHERE taxonID = '" . $row['acc_taxon_ID'] . "'";
-        $result = db_query($sql);
-        $p_taxonAcc = taxon(mysql_fetch_array($result));
+                 author, author1, author2, author3, author4, author5,
+                 epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+                FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+                WHERE taxonID = '" . $row['acc_taxon_ID'] . "'";
+        $p_taxonAcc = taxon(dbi_query($sql)->fetch_array());
         $p_taxonAccIndex = $row['acc_taxon_ID'];
 
  	   $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-         author, author1, author2, author3, author4, author5,
-         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-        WHERE taxonID = '" . $row['source_specimenID'] . "'";
-        $result = db_query($sql);
-        $p_source_specimen=taxon(mysql_fetch_array($result));
+                author, author1, author2, author3, author4, author5,
+                epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+               FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+               WHERE taxonID = '" . $row['source_specimenID'] . "'";
+        $p_source_specimen = taxon(dbi_query($sql)->fetch_array());
         $p_source_specimenIndex=$row['source_specimenID'];
 
         $p_source = $row['source'];
@@ -98,8 +94,7 @@ if (isset($_GET['new'])) {
                      LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                      LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                     WHERE citationID = '" . $row['source_citationID'] . "'";
-            $result = db_query($sql);
-            $p_sourceLit = protolog(mysql_fetch_array($result));
+            $p_sourceLit = protolog(dbi_query($sql)->fetch_array());
             $p_sourceLitIndex = $row['source_citationID'];
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = $p_sourceService = "";
         } elseif ($p_source == "service") {
@@ -109,7 +104,7 @@ if (isset($_GET['new'])) {
             $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
                     FROM tbl_person
                     WHERE person_ID = '" . $row['source_person_ID'] . "'";
-            $row2 = mysql_fetch_array(db_query($sql));
+            $row2 = mysqli_fetch_array(dbi_query($sql));
             $p_sourcePers = $row2['p_familyname'] . ", " . $row2['p_firstname']
                           . " (" . $row2['p_birthdate'] . " - " . $row2['p_death'] . ") <" . $row2['person_ID'] . ">";
             $p_sourcePersIndex = $row['source_person_ID'];
@@ -128,7 +123,7 @@ if (isset($_GET['new'])) {
 } elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
 
    if (!empty($_POST['preferred'])) {
-        db_query("UPDATE tbl_tax_synonymy SET
+        dbi_query("UPDATE tbl_tax_synonymy SET
                    preferred_taxonomy = 0
                   WHERE taxonID = " . extractID($_POST['taxon']));
     }
@@ -166,8 +161,8 @@ if (isset($_GET['new'])) {
                 $sqldata";
         $updated = 0;
     }//echo $sql;exit;
-    $result = db_query($sql);
-    $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+    $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : dbi_insert_id();
     logTbl_tax_synonymy($p_tax_syn_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
@@ -290,9 +285,9 @@ if (isset($_GET['new'])) {
 unset($service);
 $service[0][] = 0; $service[1][] = "";
 $sql = "SELECT name, serviceID FROM tbl_nom_service ORDER BY name";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $service[0][] = $row['serviceID'];
             $service[1][] = $row['name'];
         }

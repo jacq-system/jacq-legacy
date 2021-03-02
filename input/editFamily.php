@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
 
 $update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 

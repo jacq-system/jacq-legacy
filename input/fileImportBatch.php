@@ -3,8 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/api_functions.php");
 
-no_magic();
-
 //---------- check every input ----------
 if (!checkRight('batch')) {                 // only user with right "api" can change API
     echo "<html><head></head><body>\n"
@@ -14,8 +12,8 @@ if (!checkRight('batch')) {                 // only user with right "api" can ch
     die();
 }
 if (!checkRight('batchAdmin')) {
-    $result = db_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
-    if (mysql_num_rows($result) == 0) {
+    $result = dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
+    if (mysqli_num_rows($result) == 0) {
         echo "<html><head></head><body>\n"
            . "<h1>Error</h1>\n"
            . "Your institution is not in the batch database.\n"
@@ -55,9 +53,9 @@ $batchID = (isset($_POST['batch'])) ? intval($_POST['batch']) : 0;
         $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
     }
     $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     $selects = "";
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         $selects .= "  <option value='" . $row['batchID'] . "'" . (($batchID == $row['batchID']) ? " selected" : '') . ">"
                   . $row['date_supplied']
                   . htmlspecialchars(' <' . (($row['source_code']) ? $row['source_code'] . '-' : '') . $row['batchnumber'] . '> (' . trim($row['remarks']) . ')')
@@ -98,8 +96,8 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
     $check = $lines[0];
     $coll_short_prj = '';
     for ($i = 1; $i <= strlen($check); $i++) {
-        $result = db_query("SELECT collectionID FROM tbl_management_collections WHERE coll_short_prj LIKE '" . substr($check, 0, $i) . "%'");
-        if (mysql_num_rows($result) > 0) {
+        $result = dbi_query("SELECT collectionID FROM tbl_management_collections WHERE coll_short_prj LIKE '" . substr($check, 0, $i) . "%'");
+        if (mysqli_num_rows($result) > 0) {
             $coll_short_prj = substr($check, 0, $i);
         } else {
             break;
@@ -121,19 +119,19 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
             if ($coll_short_prj == 'w' && strlen($herbNummer) == 11) {
                 $herbNummer = substr($herbNummer, 0, 4) . '-' . substr($herbNummer, 4);
             }
-            $result = db_query("SELECT s.specimen_ID
-                                FROM tbl_specimens s, tbl_management_collections mc
-                                WHERE s.collectionID = mc.collectionID
-                                 AND mc.coll_short_prj LIKE '$coll_short_prj'
-                                 AND s.HerbNummer = '$herbNummer'");
-            if (mysql_num_rows($result) == 0) {
+            $result = dbi_query("SELECT s.specimen_ID
+                                 FROM tbl_specimens s, tbl_management_collections mc
+                                 WHERE s.collectionID = mc.collectionID
+                                  AND mc.coll_short_prj LIKE '$coll_short_prj'
+                                  AND s.HerbNummer = '$herbNummer'");
+            if (mysqli_num_rows($result) == 0) {
                 $import[$key]['error'] = 'specimen not found';
                 $errors++;
-            } elseif (mysql_num_rows($result) > 1) {
+            } elseif (mysqli_num_rows($result) > 1) {
                 $import[$key]['error'] = 'multi specimen found';
                 $errors++;
             } else {
-                $row = mysql_fetch_array($result);
+                $row = mysqli_fetch_array($result);
                 $import[$key]['specimenID'] = $row['specimen_ID'];
                 $linesToImport++;
             }
@@ -154,13 +152,13 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
             echo "</div>";
         }
         if ($linesToImport) {
-            db_query("DELETE FROM api.tbl_api_specimens WHERE batchID_fk = '$batchID'");
+            dbi_query("DELETE FROM api.tbl_api_specimens WHERE batchID_fk = '$batchID'");
             echo "<div>";
             foreach ($import as $key => $val) {
                 if ($val['specimenID']) {
-                    db_query("INSERT INTO api.tbl_api_specimens SET
-                               specimen_ID = '" . $val['specimenID'] . "',
-                               batchID_fk  = '$batchID'");
+                    dbi_query("INSERT INTO api.tbl_api_specimens SET
+                                specimen_ID = '" . $val['specimenID'] . "',
+                                batchID_fk  = '$batchID'");
                     update_tbl_api_units($val['specimenID']);
                     update_tbl_api_units_identifications($val['specimenID']);
                     echo $key . ": " . $val['line'] . " - <" . $val['specimenID'] . "> imported<br>\n";
