@@ -108,6 +108,16 @@ $app->get('/uuid/{type}/{id}', function (Request $request, Response $response, a
     return $jsonResponse;
 });
 
+$app->get('/ids/{uuid}', function (Request $request, Response $response, array $args)
+{
+//    $this->logger->addInfo("called id with <" . trim(filter_var($args['uuid'], FILTER_SANITIZE_STRING)) . ">");
+
+    $mapper = new IdentifierMapper($this->db);
+    $ids = $mapper->getIDs(trim(filter_var($args['uuid'], FILTER_SANITIZE_STRING)));
+    $jsonResponse = $response->withJson($ids);
+    return $jsonResponse;
+});
+
 $app->get('/[{name}]', function (Request $request, Response $response, array $args)
 {
     // Sample log message
