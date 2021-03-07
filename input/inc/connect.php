@@ -70,6 +70,8 @@ function doQuotes(&$obj, $mode)
 }
 
 /**
+ * do a mysql query
+ *
  * @param $sql
  * @param bool|FALSE $debug
  * @return mysqli_result
@@ -376,8 +378,8 @@ function formatPreUnitID($sourceID, $number)
 function echoSpecial($name, $type)
 {
     switch ($type) {
-        case 'GET':     echo (isset($_GET[$name]))     ? htmlspecialchars($_GET[$name])     : ''; break;
-        case 'POST':    echo (isset($_POST[$name]))    ? htmlspecialchars($_POST[$name])    : ''; break;
+        case 'GET':     echo htmlspecialchars(filter_input(INPUT_GET, $name));                    break;
+        case 'POST':    echo htmlspecialchars(filter_input(INPUT_POST, $name));                   break;
         case 'SESSION': echo (isset($_SESSION[$name])) ? htmlspecialchars($_SESSION[$name]) : ''; break;
     }
 }

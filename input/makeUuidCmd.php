@@ -19,7 +19,7 @@ $dbLinkJacq->set_charset('utf8');
  *
  * @global mysqli $dbLinkJacq link to database
  * @param string $sql query string
- * @return mixed mysqli_result or false if error
+ * @return mysqli_result
  */
 function dbi_query($sql)
 {

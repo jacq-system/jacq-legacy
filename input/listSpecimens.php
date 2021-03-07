@@ -26,13 +26,12 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
-if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';
+if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = 0;
 if (!isset($_SESSION['sTyp'])) $_SESSION['sTyp'] = '';
 if (!isset($_SESSION['sType'])) $_SESSION['sType'] = 0;
 if (!isset($_SESSION['sImages'])) $_SESSION['sImages'] = '';
-if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
 if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
-if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = 0;
+if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = -1;
 if (!isset($_SESSION['sUserDate'])) $_SESSION['sUserDate'] = '';
 if (!isset($_SESSION['sLabelDate'])) $_SESSION['sLabelDate'] = '';
 if (!isset($_SESSION['sGeoGeneral'])) $_SESSION['sGeoGeneral'] = '';
@@ -46,7 +45,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 1;
 	if(isset($_GET['taxonID'])){
 		$_SESSION['taxonID'] = intval($_GET['taxonID']);
-		$_SESSION['wuCollection']='';// = $_POST['collection'];
+		$_SESSION['wuCollection']=0; // = $_POST['collection'];
 		$_SESSION['sNumber']='';//      = $_POST['number'];
 		$_SESSION['sSeries']='' ;//     = $_POST['series'];
 		$_SESSION['sFamily']='' ;//     = $_POST['family'];
@@ -92,7 +91,8 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['labelOrder'] = $_SESSION['sOrder'];
 } else if (isset($_POST['selectUser'])) {
     $_SESSION['sType'] = 2;
-    $_SESSION['wuCollection'] = $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
+    $_SESSION['wuCollection'] = 0;
+    $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
@@ -102,7 +102,8 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sUserDate'] = $_POST['user_date'];
 } else if (isset($_POST['prepareLabels'])) {
     $_SESSION['sType'] = 3;
-    $_SESSION['wuCollection'] = $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
+    $_SESSION['wuCollection'] = 0;
+    $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
@@ -168,7 +169,9 @@ function makeDropdownInstitution()
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
-        if (-$_SESSION['wuCollection'] == $row['source_id']) echo " selected";
+        if (-$_SESSION['wuCollection'] == $row['source_id']) {
+            echo " selected";
+        }
         echo ">" . htmlspecialchars($row['source_code']) . "</option>\n";
     }
 
@@ -193,17 +196,20 @@ function makeDropdownCollection()
 
 function makeDropdownUsername()
 {
-    $sql = "SELECT hu.userID, hu.firstname, hu.surname, hu.username
-            FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.log_specimens ls
-            WHERE hu.userID=ls.userID
-            GROUP BY hu.userID
+    $sql = "SELECT userID, firstname, surname, username
+            FROM herbarinput_log.tbl_herbardb_users
+            WHERE userID IN
+             (SELECT userID FROM herbarinput_log.log_specimens GROUP BY userID)
             ORDER BY surname, firstname, username";
     $result = dbi_query($sql);
-    echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
-    echo "  <option value=\"0\"></option>";
+    echo "<select size='1' name='userID' onchange='jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)'>\n";
+    echo "  <option value='-1'></option>\n";
+    echo "  <option value='0'" . (($_SESSION['sUserID'] == 0) ? " selected" : '') . ">--- all users ---</option>\n";
     while ($row = mysqli_fetch_array($result)) {
-        echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
-        if ($_SESSION['sUserID'] == $row['userID']) echo " selected";
+        echo "  <option value='" . htmlspecialchars($row['userID']) . "'";
+        if ($_SESSION['sUserID'] == $row['userID']) {
+            echo " selected";
+        }
         echo ">";
         if (trim($row['firstname']) || trim($row['surname'])) {
             echo htmlspecialchars($row['firstname']) . " " . htmlspecialchars($row['surname']);
@@ -217,26 +223,32 @@ function makeDropdownUsername()
 
 function makeDropdownDate($label = false)
 {
-    $sql = "SELECT DATE(timestamp) as date
-            FROM herbarinput_log.log_specimens
-            WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 7120 ";
-    if (intval($label)) {
-        $sql .= "AND userID='" . intval($_SESSION['uid']) . "' ";
-    } elseif (intval($_SESSION['sUserID'])) {
-        $sql .= "AND userID='" . intval($_SESSION['sUserID']) . "' ";
-    }
-    $sql .= "GROUP BY date
-             ORDER BY date DESC";
-    $result = dbi_query($sql);
-    echo "<select size=\"1\" ";
-    if ($label) {
-        echo "name=\"label_date\" id=\"label_date\">\n";
+    if ($label || intval($_SESSION['sUserID']) >= 0) {
+        $sql = "SELECT DATE(timestamp) as date
+                FROM herbarinput_log.log_specimens
+                WHERE TIMESTAMPDIFF(MONTH, timestamp, NOW()) < 7120 ";
+        if ($label) {
+            $sql .= "AND userID='" . intval($_SESSION['uid']) . "' ";
+        } elseif (intval($_SESSION['sUserID']) > 0) {
+            $sql .= "AND userID='" . intval($_SESSION['sUserID']) . "' ";
+        }
+        $sql .= "GROUP BY date
+                 ORDER BY date DESC";
+        $rows = dbi_query($sql)->fetch_all(MYSQLI_ASSOC);
     } else {
-        echo "name=\"user_date\" id=\"user_date\">\n";
+        $rows = array();
     }
-    while($row=mysqli_fetch_array($result)) {
+    echo "<select size='1' ";
+    if ($label) {
+        echo "name='label_date' id='label_date'>\n";
+    } else {
+        echo "name='user_date' id='user_date'>\n";
+    }
+    foreach ($rows as $row) {
         echo "  <option ";
-        if ((!$label && $_SESSION['sUserDate'] == $row['date']) || ($label && $_SESSION['sLabelDate'] == $row['date'])) echo " selected";
+        if ((!$label && $_SESSION['sUserDate'] == $row['date']) || ($label && $_SESSION['sLabelDate'] == $row['date'])) {
+            echo " selected";
+        }
         echo ">" . htmlspecialchars($row['date']) . "</option>\n";
     }
     echo "  </select>\n";
@@ -606,11 +618,11 @@ if ($_SESSION['sType'] == 1) {
     </script>
     <?php
 } else if ($_SESSION['sType'] == 2) {
-    if (intval($_SESSION['sUserID']) || strlen(trim($_SESSION['sUserDate'])) > 0) {
+    if (intval($_SESSION['sUserID']) >= 0 || strlen(trim($_SESSION['sUserDate'])) > 0) {
         $sql = "SELECT ls.specimenID, ls.updated, ls.timestamp, hu.firstname, hu.surname
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users hu
                 WHERE ls.userID = hu.userID ";
-        if (intval($_SESSION['sUserID'])) {
+        if (intval($_SESSION['sUserID']) > 0) {
             $sql .= "AND ls.userID = '" . intval($_SESSION['sUserID']) . "' ";
         }
         if (strlen(trim($_SESSION['sUserDate']))) {
