@@ -2,11 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require_once 'inc/password_compat/lib/password.php';
-no_magic();
 
 $error = "";
-if ($_POST['submitUpdate']) {
+if (!empty($_POST['submitUpdate'])) {
     if (!$_POST['password_1'] || !$_POST['password_2']) {
         $error = "Fill in both password-lines";
     } else if ($_POST['password_1'] != $_POST['password_2']) {
@@ -15,25 +13,25 @@ if ($_POST['submitUpdate']) {
         $sql = "SELECT *
                 FROM herbarinput_log.tbl_herbardb_users
                 WHERE userID='".intval($_SESSION['uid'])."'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result)>0) {
-            $row = mysql_fetch_array($result, MYSQL_ASSOC);
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result)>0) {
+            $row = mysqli_fetch_assoc($result);
 
-            $key = $row['username'] . " " . $_POST['password_1'];
-            $input = $_SESSION['username'] . "%%" . $_SESSION['password'];
-            $td = mcrypt_module_open('rijndael-256', '', 'cfb', '');
-            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
-            mcrypt_generic_init($td, $key, $iv);
-            $encrypted_data = mcrypt_generic($td, $input);
-            mcrypt_generic_deinit($td);
-            mcrypt_module_close($td);
+//            $key = $row['username'] . " " . $_POST['password_1'];
+//            $input = $_SESSION['username'] . "%%" . $_SESSION['password'];
+//            $td = mcrypt_module_open('rijndael-256', '', 'cfb', '');
+//            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
+//            mcrypt_generic_init($td, $key, $iv);
+//            $encrypted_data = mcrypt_generic($td, $input);
+//            mcrypt_generic_deinit($td);
+//            mcrypt_module_close($td);
 
-            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
-                     iv=" . quoteString(base64_encode($iv)) . ",
-                     secret=" . quoteString(base64_encode($encrypted_data)) . ",
-                     pw='" . password_hash(trim($_POST['password_1']), PASSWORD_DEFAULT) . "'
-                    WHERE userID='" . intval($_SESSION['uid']) . "'";
-            db_query($sql);
+            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET "
+//                 . " iv=" . quoteString(base64_encode($iv)) . ", "
+//                 . " secret=" . quoteString(base64_encode($encrypted_data)) . ", "
+                 . " pw='" . password_hash(trim($_POST['password_1']), PASSWORD_DEFAULT) . "' "
+                 . "WHERE userID = '" . intval($_SESSION['uid']) . "'";
+            dbi_query($sql);
 
             echo "<html><head></head>\n<body>\n";
             echo "<script language=\"JavaScript\">\n";

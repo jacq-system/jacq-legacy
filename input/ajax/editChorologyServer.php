@@ -79,9 +79,9 @@ function getChorology ($taxonID, $source, $nationID, $provinceID = 0)
         $sql .= " AND provinceID_fk IS NULL";
     }
 
-    $result = db_query($sql);
-    if ($result && mysql_num_rows($result) > 0) {
-        return mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if ($result && mysqli_num_rows($result) > 0) {
+        return mysqli_fetch_array($result);
     } else {
         return array();
     }
@@ -94,7 +94,7 @@ function getChorology ($taxonID, $source, $nationID, $provinceID = 0)
  */
 function logChorologyStatus ($ID)
 {
-    db_query("INSERT INTO herbarinput_log.log_tax_chorol_status
+    dbi_query("INSERT INTO herbarinput_log.log_tax_chorol_status
               ( SELECT NULL, tax_chorol_status_ID, taxonID_fk, citationID_fk, personID_fk, serviceID_fk, chorol_status,
                        NationID_fk, provinceID_fk, dateLastEdited, locked, '" . $_SESSION['uid'] . "', NULL
                 FROM tbl_tax_chorol_status
@@ -109,9 +109,9 @@ function logChorologyStatus ($ID)
  */
 function getNationCode ($nationID)
 {
-    $result = db_query("SELECT iso_alpha_2_code FROM tbl_geo_nation WHERE nationID = '" . intval($nationID) . "'");
-    if ($result && mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query("SELECT iso_alpha_2_code FROM tbl_geo_nation WHERE nationID = '" . intval($nationID) . "'");
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         return $row['iso_alpha_2_code'];
     } else {
         return '';
@@ -127,13 +127,13 @@ function getNationCode ($nationID)
  */
 function getProvincesCode ($nationID)
 {
-    $result = db_query("SELECT provinceID, provinz_code
+    $result = dbi_query("SELECT provinceID, provinz_code
                         FROM tbl_geo_province
                         WHERE nationID = '" . intval($nationID) . "'
                         ORDER BY provinz");
     $provinces = array();
-    if ($result && mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $provinces[$row['provinceID']] = $row['provinz_code'];
         }
     }
@@ -179,12 +179,12 @@ function makeSearchQuery ($formValues)
     }
     if ($formValues['status'] != "everything") {
         if ($formValues['species']) {
-            $sql .= "AND (    te.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%'
-                          OR te1.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%'
-                          OR te2.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%'
-                          OR te3.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%'
-                          OR te4.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%'
-                          OR te5.epithet LIKE '" . mysql_real_escape_string($formValues['species']) . "%') ";
+            $sql .= "AND (    te.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%'
+                          OR te1.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%'
+                          OR te2.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%'
+                          OR te3.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%'
+                          OR te4.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%'
+                          OR te5.epithet LIKE '" . dbi_escape_string($formValues['species']) . "%') ";
         } else {
             $sql .= "AND te.epithet IS NULL ";
         }
@@ -196,23 +196,23 @@ function makeSearchQuery ($formValues)
         $sql .= "AND ts.tax_rankID = " . extractID($formValues['rank']) . " ";
     }
     if (!empty($_SESSION['editFamily'])) {
-        $sql .= "AND family LIKE '" . mysql_escape_string($_SESSION['editFamily']) . "%' ";
+        $sql .= "AND family LIKE '" . dbi_escape_string($_SESSION['editFamily']) . "%' ";
     } elseif ($formValues['family']) {
-        $sql .= "AND family LIKE '" . mysql_escape_string($formValues['family']) . "%' ";
+        $sql .= "AND family LIKE '" . dbi_escape_string($formValues['family']) . "%' ";
     }
     if ($formValues['genus']) {
-        $sql .= "AND genus LIKE '" . mysql_escape_string($formValues['genus']) . "%' ";
+        $sql .= "AND genus LIKE '" . dbi_escape_string($formValues['genus']) . "%' ";
     }
     if ($formValues['author']) {
-        $sql .= "AND (    ta.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%'
-                      OR ta1.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%'
-                      OR ta2.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%'
-                      OR ta3.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%'
-                      OR ta4.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%'
-                      OR ta5.author LIKE '%" . mysql_real_escape_string($formValues['author']) . "%') ";
+        $sql .= "AND (    ta.author LIKE '%" . dbi_escape_string($formValues['author']) . "%'
+                      OR ta1.author LIKE '%" . dbi_escape_string($formValues['author']) . "%'
+                      OR ta2.author LIKE '%" . dbi_escape_string($formValues['author']) . "%'
+                      OR ta3.author LIKE '%" . dbi_escape_string($formValues['author']) . "%'
+                      OR ta4.author LIKE '%" . dbi_escape_string($formValues['author']) . "%'
+                      OR ta5.author LIKE '%" . dbi_escape_string($formValues['author']) . "%') ";
     }
     if ($formValues['annotation']) {
-        $sql .= "AND ts.annotation LIKE '%" . mysql_real_escape_string($formValues['annotation']) . "%' ";
+        $sql .= "AND ts.annotation LIKE '%" . dbi_escape_string($formValues['annotation']) . "%' ";
     }
     $sql .= "ORDER BY genus, family, epithet, author, epithet1, author1, epithet2, author2,
                       epithet3, author3, epithet4, author4, epithet5, author5
@@ -234,9 +234,9 @@ function makeChorologyDropdowns ($chorology, $taxonID, $provinceID = 0)
             FROM chorology.tbl_chorol_status
             WHERE combinations IS NOT NULL
             ORDER BY chorol_stat_ID";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
     unset($children);
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         $elements[$row['chorol_stat_ID']] = $row['chorol_status'];
         $parts = explode('/', $row['combinations']);
         foreach ($parts as $part) {
@@ -313,7 +313,7 @@ function projectChanged ($formValues)
                   . "  <option></option>\n";
 
     // first list all possible literatures
-    $result = db_query("SELECT l.citationID, l.suptitel, l.periodicalID, l.vol, l.part, l.jahr, l.pp,
+    $result = dbi_query("SELECT l.citationID, l.suptitel, l.periodicalID, l.vol, l.part, l.jahr, l.pp,
                          le.autor as editor, la.autor, lp.periodical
                         FROM projects.tbl_project_references pj, tbl_lit l
                          LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
@@ -322,8 +322,8 @@ function projectChanged ($formValues)
                         WHERE pj.source_citationID = l.citationID
                          AND project_ID = '" . intval($formValues['project']) . "'
                         ORDER BY la.autor, jahr, lp.periodical, vol, part, pp");
-    if ($result && mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $selectSource .= "  <option value='literature_" . $row['citationID'] . "'>literature: "
                            . htmlspecialchars(protolog($row))
                            . "</option>\n";
@@ -331,13 +331,13 @@ function projectChanged ($formValues)
     }
 
     // next all possible persons
-    $result = db_query("SELECT p.person_ID, p_familyname, p_firstname, p_birthdate, p_death
+    $result = dbi_query("SELECT p.person_ID, p_familyname, p_firstname, p_birthdate, p_death
                         FROM projects.tbl_project_references pj, tbl_person p
                         WHERE pj.source_person_ID = p.person_ID
                          AND project_ID = '" . intval($formValues['project']) . "'
                         ORDER BY p_familyname, p_firstname, p_birthdate, p_death");
-    if ($result && mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $selectSource .= "  <option value='person_" . $row['person_ID'] . "'>person: "
                            . htmlspecialchars($row['p_familyname'] . ", " . $row['p_firstname']
                                             . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">")
@@ -346,13 +346,13 @@ function projectChanged ($formValues)
     }
 
     // and finally all possible services
-    $result = db_query("SELECT name, s.serviceID
+    $result = dbi_query("SELECT name, s.serviceID
                         FROM projects.tbl_project_references pj, tbl_nom_service s
                         WHERE pj.source_serviceID = s.serviceID
                          AND project_ID = '" . intval($formValues['project']) . "'
                         ORDER BY name");
-    if ($result && mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $selectSource .= "  <option value='service_" . $row['serviceID'] . "'>service: "
                            . htmlspecialchars($row['name'])
                            . "</option>\n";
@@ -368,13 +368,13 @@ function projectChanged ($formValues)
     $selectNation = "<select name='projectNation' onchange=\"jaxon_projectDataChanged(jaxon.getFormValues('f'));\">\n"
                   . "  <option></option>\n";
 
-    $result = db_query("SELECT nation, iso_alpha_2_code, n.nationID
+    $result = dbi_query("SELECT nation, iso_alpha_2_code, n.nationID
                         FROM projects.tbl_project_countries pc, tbl_geo_nation n
                         WHERE pc.nationID = n.nationID
                          AND project_ID = '" . intval($formValues['project']) . "'
                         ORDER BY nation");
-    if ($result && mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $selectNation .= "  <option value='" . $row['nationID'] . "'>"
                            . htmlspecialchars($row['nation'] . " (" . $row['iso_alpha_2_code'] . ")")
                            . "</option>\n";
@@ -435,10 +435,10 @@ function editDistribution ($formValues)
             || !empty($formValues['annotation'])) {
 
             // execute the query and process the results
-            $result = db_query(makeSearchQuery($formValues));
-            if (mysql_num_rows($result) > 1000) {
+            $result = dbi_query(makeSearchQuery($formValues));
+            if (mysqli_num_rows($result) > 1000) {
                 $ret = "<b>no more than 1000 results allowed</b>\n";
-            } elseif (mysql_num_rows($result) > 0) {
+            } elseif (mysqli_num_rows($result) > 0) {
                 $nation    = getNationCode($formValues['projectNation']);
                 $provinces = getProvincesCode($formValues['projectNation']);
 
@@ -458,7 +458,7 @@ function editDistribution ($formValues)
                     }
                 }
                 $ret .= "</tr>\n";
-                while ($row = mysql_fetch_array($result)) {
+                while ($row = mysqli_fetch_array($result)) {
                     $ret .= "<tr class='out'>"
                           . "<td class='out'>" . taxonLocal($row) . "<input type='hidden' name='ID[]' value='" . $row['taxonID'] . "'></td>";
                     if ($nation) {
@@ -544,10 +544,10 @@ function updateDistribution($formValues)
                 if ($chorol && !$chorol['locked']) {
                     if ((!$province && !$cb_n) || ($province && !$cb_p)) {
                         logChorologyStatus($chorol['ID']);
-                        db_query("DELETE FROM tbl_tax_chorol_status WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");
+                        dbi_query("DELETE FROM tbl_tax_chorol_status WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");
                     } elseif ($chorol['province_debatable'] != $debatable) {
                         logChorologyStatus($chorol['ID']);
-                        db_query("UPDATE tbl_tax_chorol_status SET province_debatable = '$debatable' WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");
+                        dbi_query("UPDATE tbl_tax_chorol_status SET province_debatable = '$debatable' WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");
                     }
                 } elseif ((!$province && $cb_n) || ($province && $cb_p)) {
                     $sql = "INSERT INTO tbl_tax_chorol_status SET
@@ -565,7 +565,7 @@ function updateDistribution($formValues)
                     if ($province) {
                         $sql .= ", provinceID_fk = '$province'";
                     }
-                    db_query($sql);
+                    dbi_query($sql);
                 }
             }
         }
@@ -600,10 +600,10 @@ function editChorology($formValues)
             || !empty($formValues['annotation'])) {
 
             // execute the query and process the results
-            $result = db_query(makeSearchQuery($formValues));
-            if (mysql_num_rows($result) > 1000) {
+            $result = dbi_query(makeSearchQuery($formValues));
+            if (mysqli_num_rows($result) > 1000) {
                 $ret = "<b>no more than 1000 results allowed</b>\n";
-            } elseif (mysql_num_rows($result) > 0) {
+            } elseif (mysqli_num_rows($result) > 0) {
                 $nation    = getNationCode($formValues['projectNation']);
                 $provinces = getProvincesCode($formValues['projectNation']);
 
@@ -617,7 +617,7 @@ function editChorology($formValues)
                       . "<th class='out'>Taxon</th>"
                       . "<th class='out' colspan='3'>Chorology</th>"
                       . "</tr>\n";
-                while ($row = mysql_fetch_array($result)) {
+                while ($row = mysqli_fetch_array($result)) {
                     $chorology = getChorology($row['taxonID'], $formValues['projectSource'], $formValues['projectNation']);
                     if ($chorology) {
                         $retC = "<td class='out'>$nation</td>"
@@ -696,7 +696,7 @@ function updateChorology($formValues)
                     $newDebatable = (!empty($formValues["debatable_{$taxonID}_{$province}"])) ? 1 : 0;
                     if (($chorol['status'] != $newChorolStatus || $chorol['status_debatable'] != $newDebatable) && !$chorol['locked']) {
                         logChorologyStatus($chorol['ID']);
-                        db_query("UPDATE tbl_tax_chorol_status SET
+                        dbi_query("UPDATE tbl_tax_chorol_status SET
                                    chorol_status = " . (($newChorolStatus) ? "'$newChorolStatus'" : "NULL") . ",
                                    status_debatable = '$newDebatable'
                                   WHERE tax_chorol_status_ID = '" . $chorol['ID'] . "'");

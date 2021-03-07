@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -22,8 +21,8 @@ if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
            "FROM tbl_specimens_voucher ".
            "WHERE voucher=".quoteString($_POST['voucher'])." ".
             "AND voucherID!='".intval($_POST['ID'])."'";
-    $result = db_query($sql);
-    while (($row = mysql_fetch_array($result)) && $sw) {
+    $result = dbi_query($sql);
+    while (($row = mysqli_fetch_array($result)) && $sw) {
         if ($row['voucher'] == $_POST['voucher']) {
             echo "<script language=\"JavaScript\">\n"
                . "alert('Voucher \"" . $row['voucher'] . "\" already present with ID " . $row['voucherID'] . "');\n"
@@ -35,13 +34,13 @@ if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
     if ($sw) {
         if (intval($_POST['ID'])) {
             $sql = "UPDATE tbl_specimens_voucher SET
-                     voucher = '" . mysql_escape_string($_POST['voucher']) . "'
+                     voucher = '" . dbi_escape_string($_POST['voucher']) . "'
                     WHERE voucherID = " . intval($_POST['ID']);
         } else {
             $sql = "INSERT INTO tbl_specimens_voucher (voucher)
-                    VALUES ('" . mysql_escape_string($_POST['voucher']) . "')";
+                    VALUES ('" . dbi_escape_string($_POST['voucher']) . "')";
         }
-        $result = mysql_query($sql);
+        $result = dbi_query($sql);
 
         echo "<script language=\"JavaScript\">\n"
            . "  window.opener.document.f.reload.click()\n"
@@ -59,9 +58,9 @@ if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
 <?php
 $sql = "SELECT voucherID, voucher
         FROM tbl_specimens_voucher
-        WHERE voucherID = '" . mysql_escape_string($id) . "'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+        WHERE voucherID = '" . dbi_escape_string($id) . "'";
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 

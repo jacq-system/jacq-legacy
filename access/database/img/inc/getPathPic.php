@@ -26,8 +26,8 @@ function getData($id) {
             WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
              AND tbl_management_collections.source_id = tbl_img_definition.source_id_fk
              AND specimen_ID = '" . intval($id) . "'";
-    $result = mysql_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
 
     return $row;
 }
@@ -107,8 +107,8 @@ else {
             FROM tbl_management_collections mc, tbl_img_definition id
             WHERE mc.source_id=id.source_id_fk
              AND coll_short_prj='".$pieces[0]."'";
-    $result = mysql_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
     $picture->basepath = $row['img_directory']."/";
     $picture->pic = $row['coll_short_prj']."_".$pieces[1];
   }

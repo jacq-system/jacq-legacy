@@ -2,9 +2,8 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -39,11 +38,11 @@ if ($_POST['submit']) {
 
   $sql = "SELECT autor, autorID ".
          "FROM tbl_lit_authors ".
-         "WHERE autor LIKE '%".mysql_escape_string($_POST['autor'])."%' ".
+         "WHERE autor LIKE '%".dbi_escape_string($_POST['autor'])."%' ".
          "ORDER BY autor";
-  if ($result = db_query($sql)) {
-    if (mysql_num_rows($result)>0) {
-      while ($row=mysql_fetch_array($result)) {
+  if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result)>0) {
+      while ($row=mysqli_fetch_array($result)) {
         $show = $row['autor']." <".$row['autorID'].">";
         echo "<a href=\"\" onClick=\"sendAuthor('".addslashes($show)."')\">".htmlentities($show)."</a><br>\n";
       }

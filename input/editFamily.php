@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
 
 $update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 
@@ -29,9 +28,9 @@ if (!empty($_POST['submitUpdate'])) {
                     WHERE tf.familyID = '" . intval($_POST['ID']) . "'
                      AND ac.categoryID = tf.categoryID
                      AND ac.userID = '" . $_SESSION['uid'] . "'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 if (!$row['update']) $blocked = true;  // no update access
             } else {
                 $blocked = true;                       // no access at all
@@ -41,10 +40,10 @@ if (!empty($_POST['submitUpdate'])) {
         // check if user has access to the new categoryID
         $sql = "SELECT ac.update
                 FROM herbarinput_log.tbl_herbardb_access ac
-                WHERE ac.categoryID = '" . mysql_escape_string($_POST['category']) . "'
+                WHERE ac.categoryID = '" . dbi_escape_string($_POST['category']) . "'
                  AND ac.userID = '" . $_SESSION['uid']."'";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) == 0) $blocked = true; // no access
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) == 0) $blocked = true; // no access
     }
 
     if (!checkRight('unlock_tbl_tax_families') && isLocked('tbl_tax_families', $_POST['ID'])) $blocked = true;
@@ -63,7 +62,7 @@ if (!empty($_POST['submitUpdate'])) {
                          categoryID = " . makeInt($_POST['category']) . "
                          $lock
                         WHERE familyID = '" . intval($_POST['ID']) . "'";
-                $result = db_query($sql);
+                $result = dbi_query($sql);
                 logFamilies($id, 1);
             }
         } else {
@@ -71,9 +70,9 @@ if (!empty($_POST['submitUpdate'])) {
                      family = " . quoteString($_POST['family']) . ",
                      categoryID = " . makeInt($_POST['category']) . "
                      $lock";
-            $result = db_query($sql);
+            $result = dbi_query($sql);
             if ($result) {
-                $id = mysql_insert_id();
+                $id = dbi_insert_id();
                 logFamilies($id,0);
             } else {
                 $id = 0;
@@ -84,8 +83,8 @@ if (!empty($_POST['submitUpdate'])) {
                 FROM tbl_tax_families tf
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
                 WHERE familyID = '$id'";
-        $result = db_query($sql);
-        $row = mysql_fetch_array($result);
+        $result = dbi_query($sql);
+        $row = mysqli_fetch_array($result);
         $ret = $row['family'] . " " . $row['category'];
 
         echo "<script language=\"JavaScript\">\n";
@@ -110,8 +109,8 @@ if (!empty($_GET['new'])) {
     $sql = "SELECT family, familyID, categoryID, locked
             FROM tbl_tax_families
             WHERE familyID = " . intval($_GET['sel']);
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    $row = mysqli_fetch_array($result);
 
     $p_family = $row['family'];
     $p_familyID = $row['familyID'];
@@ -126,9 +125,9 @@ if (!empty($_GET['new'])) {
 
 unset($category);
 $sql = "SELECT category, categoryID, cat_description FROM tbl_tax_systematic_categories ORDER BY category";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $category[0][] = $row['categoryID'];
             $category[1][] = $row['category'] . " (" . $row['cat_description'] . ")";
         }

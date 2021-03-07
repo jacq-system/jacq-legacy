@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("../inc/connect.php");
-no_magic();
 
 $scanIPNI = false;
 $scanTblPerson = true;
@@ -49,8 +48,8 @@ if ($scanIPNI) {
             } else {
                 $date1 = $date2 = NULL;
             }
-            $result = db_query("SELECT person_ID FROM tbl_person WHERE IPNIauthor_IDfk = '" . $parts[0] . "'");
-            if (mysql_num_rows($result) == 0) {
+            $result = dbi_query("SELECT person_ID FROM tbl_person WHERE IPNIauthor_IDfk = '" . $parts[0] . "'");
+            if (mysqli_num_rows($result) == 0) {
                 $id       = $parts[0];
                 $version  = $parts[1];
                 $abbrev   = strtr(strtr($parts[2], array("." => ". ")), array(". -" => ".-"));
@@ -58,32 +57,32 @@ if ($scanIPNI) {
                 $surname  = $parts[4];
 
                 $sql = "INSERT INTO tbl_person SET
-                        IPNIauthor_IDfk = '" . mysql_real_escape_string($id) . "',
-                        IPNI_version = '" . mysql_real_escape_string($version) . "',
-                        p_abbrev = '" . mysql_real_escape_string($abbrev) . "',
-                        p_firstname = '" . mysql_real_escape_string($forename) . "',
-                        p_familyname = '" . mysql_real_escape_string($surname) . "'";
+                        IPNIauthor_IDfk = '" . dbi_escape_string($id) . "',
+                        IPNI_version = '" . dbi_escape_string($version) . "',
+                        p_abbrev = '" . dbi_escape_string($abbrev) . "',
+                        p_firstname = '" . dbi_escape_string($forename) . "',
+                        p_familyname = '" . dbi_escape_string($surname) . "'";
                 if ($date1) {
-                    $sql .= ", p_birthdate = '" . mysql_real_escape_string($date1) . "'";
+                    $sql .= ", p_birthdate = '" . dbi_escape_string($date1) . "'";
                 }
                 if ($date2) {
-                    $sql .= ", p_death = '" . mysql_real_escape_string($date2) . "'";
+                    $sql .= ", p_death = '" . dbi_escape_string($date2) . "'";
                 }
-                mysql_query($sql);
+                dbi_query($sql);
                 $missing++;
             } else {
-                $row = mysql_fetch_array($result);
+                $row = mysqli_fetch_array($result);
                 if ($date1 || $date2) {
                     $sql = "UPDATE tbl_person SET ";
                     if ($date1) {
-                        $sql .= "p_birthdate = '" . mysql_real_escape_string($date1) . "'";
+                        $sql .= "p_birthdate = '" . dbi_escape_string($date1) . "'";
                         if ($date2) $sql .= ", ";
                     }
                     if ($date2) {
-                        $sql .= "p_death = '" . mysql_real_escape_string($date2) . "'";
+                        $sql .= "p_death = '" . dbi_escape_string($date2) . "'";
                     }
                     $sql .= " WHERE person_ID = " . $row['person_ID'];
-                    mysql_query($sql);
+                    dbi_query($sql);
                 }
                 $found++;
             }
@@ -95,9 +94,9 @@ if ($scanIPNI) {
 }
 
 if ($scanTblPerson) {
-    mysql_query('DELETE FROM tbl_person_alternative');
-    $result = mysql_query("SELECT person_ID, p_firstname, p_familyname FROM tbl_person");
-    while ($row = mysql_fetch_array($result)) {
+    dbi_query('DELETE FROM tbl_person_alternative');
+    $result = dbi_query("SELECT person_ID, p_firstname, p_familyname FROM tbl_person");
+    while ($row = mysqli_fetch_array($result)) {
         $alternative = $row['p_familyname'];
         if (trim($row['p_firstname'])) {
             $text = trim($row['p_firstname']);
@@ -116,7 +115,7 @@ if ($scanTblPerson) {
             $alternative .= ", " . implode(' ', $parts);
         }
 
-        mysql_query("INSERT INTO tbl_person_alternative SET person_ID = " . $row['person_ID'] . ", p_alternative = '" . mysql_real_escape_string($alternative) . "'");
+        dbi_query("INSERT INTO tbl_person_alternative SET person_ID = " . $row['person_ID'] . ", p_alternative = '" . dbi_escape_string($alternative) . "'");
     }
 }
 ?>

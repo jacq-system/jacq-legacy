@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -21,9 +20,9 @@ if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlo
             FROM tbl_tax_epithets
             WHERE epithet = " . quoteString($_POST['epithet']) . "
              AND epithetID != " . intval($_POST['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         echo "<script language=\"JavaScript\">\n";
         echo "alert('Epithet \"" . $row['epithet'] . "\" already present with ID " . $row['epithetID'] . "');\n";
         echo "</script>\n";
@@ -36,17 +35,17 @@ if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlo
         }
         if (intval($_POST['ID'])) {
             $sql = "UPDATE tbl_tax_epithets SET
-                     epithet = '" . mysql_escape_string($_POST['epithet']) . "',
+                     epithet = '" . dbi_escape_string($_POST['epithet']) . "',
                      external = " . ((!empty($_POST['external'])) ? 1 : 0) . "
                      $lock
                     WHERE epithetID = " . intval($_POST['ID']);
         } else {
             $sql = "INSERT INTO tbl_tax_epithets SET
-                     epithet = '" . mysql_escape_string($_POST['epithet']) . "'
+                     epithet = '" . dbi_escape_string($_POST['epithet']) . "'
                      $lock";
         }
-        $result = mysql_query($sql);
-        $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
+        $result = dbi_query($sql);
+        $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
 
         echo "<script language=\"JavaScript\">\n";
         switch ($_REQUEST['typ']) {
@@ -83,8 +82,8 @@ echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\
 $sql = "SELECT epithet, epithetID, locked, external
         FROM tbl_tax_epithets
         WHERE epithetID = " . intval($id);
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 

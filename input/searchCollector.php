@@ -2,9 +2,8 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -39,11 +38,11 @@ if ($_POST['submit']) {
 
   $sql = "SELECT Sammler, SammlerID ".
          "FROM tbl_collector ".
-         "WHERE Sammler LIKE '%".mysql_escape_string($_POST['sammler'])."%' ".
+         "WHERE Sammler LIKE '%".dbi_escape_string($_POST['sammler'])."%' ".
          "ORDER BY sammler";
-  if ($result = db_query($sql)) {
-    if (mysql_num_rows($result)>0) {
-      while ($row=mysql_fetch_array($result)) {
+  if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result)>0) {
+      while ($row=mysqli_fetch_array($result)) {
         $show = $row['Sammler']." <".$row['SammlerID'].">";
         echo "<a href=\"\" onClick=\"sendCollector('".addslashes($show)."')\">".htmlspecialchars($show)."</a><br>\n";
       }

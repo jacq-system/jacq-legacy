@@ -10,3 +10,4 @@ input/install.php
 /input.services/composer.lock
 /input/vendor/
 /input/composer.lock
+/access/inc/variables..php

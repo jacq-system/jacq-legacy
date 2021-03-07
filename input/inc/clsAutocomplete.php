@@ -5,6 +5,8 @@
  *
  * A singleton to supply various autocomplete methods
  *
+ * TODO: replace dbi_escape_string with PDO-Method
+ *
  * @author Johannes Schachner
  * @version 1.0
  * @package clsAutocomplete
@@ -16,19 +18,19 @@
  * @subpackage classes
  */
 class clsAutocomplete {
-    /*     * ******************\
-      |				|
-      |  static variables  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  static variables  |
+    |                    |
+    \********************/
 
     private static $instance = null;
 
-    /*     * ******************\
-      |				|
-      |  static functions  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  static functions  |
+    |                    |
+    \********************/
 
     /**
      * instances the class clsAutocomplete
@@ -42,28 +44,28 @@ class clsAutocomplete {
         return self::$instance;
     }
 
-    /*     * ***********\
-      |		 |
-      |  variables  |
-      |		 |
-      \************ */
+    /*************\
+    |             |
+    |  variables  |
+    |             |
+    \*************/
 
 
-    /*     * *************\
-      |	|
-      |  constructor  |
-      |	|
-      \************** */
+    /***************\
+    |               |
+    |  constructor  |
+    |               |
+    \***************/
 
     protected function __construct() {
-        
+
     }
 
-    /*     * ******************\
-      |				|
-      |  public functions  |
-      |				|
-      \******************* */
+    /********************\
+    |                    |
+    |  public functions  |
+    |                    |
+    \********************/
 
     /** W
      * autocomplete a taxonomy author entry field
@@ -76,14 +78,14 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
             $sql = "SELECT author, authorID, Brummit_Powell_full
 			FROM tbl_tax_authors
-			WHERE 
+			WHERE
 		";
             if (!empty($value['id'])) {
                 $sql.=" authorID='{$value['id']}'";
@@ -133,15 +135,15 @@ class clsAutocomplete {
      */
     public function litAuthor($value, $noExternals = false) {
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         $results = array();
         try {
             $db = clsDbAccess::Connect('INPUT');
             $sql = "SELECT autor, autorID
                 FROM tbl_lit_authors
-			WHERE 
+			WHERE
 		";
 
             if (!empty($value['id'])) {
@@ -192,8 +194,8 @@ class clsAutocomplete {
     public function collector($value, $second = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -201,7 +203,7 @@ class clsAutocomplete {
 
                 $sql = "SELECT Sammler_2 AS Sammler, Sammler_2ID AS SammlerID
 				FROM tbl_collector_2
-				WHERE 
+				WHERE
 				";
 
                 if (!empty($value['id'])) {
@@ -214,7 +216,7 @@ class clsAutocomplete {
             } else {
                 $sql = "SELECT Sammler, SammlerID
 				FROM tbl_collector
-				WHERE 
+				WHERE
 				";
                 if (!empty($value['id'])) {
                     $sql.=" SammlerID='{$value['id']}'";
@@ -264,8 +266,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -361,8 +363,8 @@ class clsAutocomplete {
     public function citation($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -447,8 +449,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -494,8 +496,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -539,8 +541,8 @@ class clsAutocomplete {
         $results = array();
 
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -583,8 +585,8 @@ class clsAutocomplete {
     public function publisher($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -629,8 +631,8 @@ class clsAutocomplete {
     public function family($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -677,8 +679,8 @@ class clsAutocomplete {
     public function genus($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -734,8 +736,8 @@ class clsAutocomplete {
     public function epithet($value, $noExternals = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -813,8 +815,8 @@ class clsAutocomplete {
 
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -861,7 +863,7 @@ class clsAutocomplete {
                 } else {
                     $sql.=" AND te0.epithet IS NULL";
                 }
-                
+
                 // Check if we filter the resulting taxons using some extra condition(s)
                 if(!empty($extraCondition)) {
                     $sql .= $extraCondition;
@@ -933,8 +935,8 @@ class clsAutocomplete {
     public function taxonWithHybrids($value, $noExternals = false) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $display = clsDisplay::Load();
@@ -1089,8 +1091,8 @@ class clsAutocomplete {
     public function series($value) {
         $results = array();
         // Escape search string
-        $value['search'] = mysql_escape_string($value['search']);
-        $value['exact'] = mysql_escape_string($value['exact']);
+        $value['search'] = dbi_escape_string($value['search']);
+        $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -1122,7 +1124,7 @@ class clsAutocomplete {
 
         return $results;
     }
-    
+
     /**
      * Auto-completer for taxon but limited to a certain citation
      * @param string $value taxon name to search for
@@ -1136,7 +1138,7 @@ class clsAutocomplete {
         // Check if a valid citation was passed
         if ($citationID > 0) {
             $db = clsDbAccess::Connect('INPUT');
-            
+
             // Find all taxon name IDs for the current citation
             // but do not use already assigned ones
             $extraCondition = "
@@ -1151,7 +1153,7 @@ class clsAutocomplete {
                 ts.`source_citationID` IN ( " . implode(', ', $citationIDs) . " )
                 )
             ";
-            
+
             // Do the actual taxon name matching
             $results = $this->taxon($value,false,false,true,$extraCondition);
         }
@@ -1161,39 +1163,40 @@ class clsAutocomplete {
     }
 
 
-    /*     * *********************\
-      |			|
-      |  protected functions  |
-      |			|
-      \********************** */
+    /***********************\
+    |                       |
+    |  protected functions  |
+    |                       |
+    \***********************/
 
-    /*     * *******************\
-      |				 |
-      |  private functions  |
-      |				 |
-      \******************** */
+    /*********************\
+    |                     |
+    |  private functions  |
+    |                     |
+    \*********************/
 
     private function __clone() {
-        
+
     }
 
 
     /**
      * Find all parent citations for a given citationID
      * @param int $p_citationID ID of citation to look for
-     * @return array list of citation IDs (including the passed one) 
+     * @return array list of citation IDs (including the passed one)
      */
-    private function findParents( $p_citationID ) {
-        $p_citationID = intval($p_citationID);
-        $results = array($p_citationID);
-        
+    private function findParents ($p_citationID)
+    {
+        $p_citationID_filter = intval($p_citationID);
+        $results = array($p_citationID_filter);
+
         $db = clsDbAccess::Connect('INPUT');
 
         // Find the parent(s) for a citation
         $sql = "
             SELECT `citation_parent_ID`
             FROM `tbl_lit_container`
-            WHERE `citation_child_ID` = '$p_citationID'
+            WHERE `citation_child_ID` = '$p_citationID_filter'
             ";
         $dbst = $db->query($sql);
         $rows = $dbst->fetchAll();

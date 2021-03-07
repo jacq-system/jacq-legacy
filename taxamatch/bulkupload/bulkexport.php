@@ -7,7 +7,7 @@ include('inc/connect.php');
 
 if (empty($_SESSION['uid'])) die();
 
-$result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
+$result = dbi_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
 if ($result->num_rows == 0) die();
 $row = $result->fetch_array();
 $jobID = $row['jobID'];
@@ -58,7 +58,7 @@ function prettyPrintSynonymEntry($synonym,$indent=1) {
 
 $header = "\"search for\"\t\"result\"\t\"Dist.\"\t\"Ratio\"";
 
-$result = db_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr");
+$result = dbi_query("SELECT * FROM tblqueries WHERE jobID = '$jobID' ORDER BY lineNr");
 //$displayOnlyParts = (!empty($_GET['short']) || $result->num_rows > 50) ? 1 : 0;
 $displayOnlyParts = (!empty($_GET['short'])) ? 1 : 0;
 

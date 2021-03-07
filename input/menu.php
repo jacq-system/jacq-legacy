@@ -1,13 +1,15 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/menuServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("checkChats");
-$xajax->registerFunction("checkJacqLogin");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/menuServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkChats");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkJacqLogin");
 
 $_SESSION['litType'] = 0;
 $_SESSION['taxType'] = 0;
@@ -22,7 +24,7 @@ $sql = "SELECT username, group_name
         FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.tbl_herbardb_groups hg
         WHERE hu.groupID=hg.groupID
          AND hu.userID='".intval($_SESSION['uid'])."'";
-$userdata = mysql_fetch_array(mysql_query($sql));
+$userdata = mysqli_fetch_array(dbi_query($sql));
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -36,11 +38,11 @@ $userdata = mysql_fetch_array(mysql_query($sql));
     #info { position:absolute; top:1em; left:1em }
     #jacqThumb { position:absolute; top:15em; left:1em; }
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" language="JavaScript">
     function timer(){
-      window.setInterval("xajax_checkChats()",5000); //reload timer
-      window.setInterval("xajax_checkJacqLogin()",5000); //reload timer
+      window.setInterval("jaxon_checkChats()",5000); //reload timer
+      window.setInterval("jaxon_checkJacqLogin()",5000); //reload timer
     }
 
     function openWindow(target,name) {
@@ -153,7 +155,6 @@ $userdata = mysql_fetch_array(mysql_query($sql));
       <tr align="left"><td>
         <input class="button" type="button" value="change password" onclick="changePassword()">
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
-      </tr>
     </table>
   </form>
 </div>

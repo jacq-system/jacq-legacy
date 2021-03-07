@@ -10,12 +10,12 @@ $_CONFIG['DATABASE'] = array(
             'pass' => ''
         )
     ),
-    
+
     // Names databases (doesn't need a own user actually, but instead it uses the login user)
     'NAME' => array(
         'name' => 'names',
     ),
-    
+
     // Log database containing journal + user data
     'LOG' => array(
         'host' => 'localhost',
@@ -25,7 +25,7 @@ $_CONFIG['DATABASE'] = array(
             'pass' => ''
         )
     ),
-    
+
     // Database containing the views
     'VIEWS' => array(
         'name' => 'view',
@@ -44,8 +44,6 @@ $_OPTIONS['internMDLDService'] = array(
 /*
  * Older settings start here (need to be changed to the new config structure)
  */
-$_OPTIONS['DB']['INPUT']['HOST'] = $_CONFIG['DATABASE']['INPUT']['host'];    // hostname of herbarinput
-$_OPTIONS['DB']['INPUT']['NAME'] = $_CONFIG['DATABASE']['INPUT']['name'];  // database of herbarinput
 // Taxamatch JSON-RPC service
 $_OPTIONS['serviceTaxamatch'] = 'http://www.website.com/taxamatch/json_rpc_taxamatchMdld.php';
 
@@ -63,9 +61,6 @@ $_OPTIONS['TYPINGCACHE']['SETTING'] = array(
 
 // Enable debug mode
 $_OPTIONS['debug'] = 0;
-
-//  Use TCPDF 4.5 or 5.8
-$_OPTIONS['tcpdf_5_8'] = false;
 
 $_OPTIONS['HERBAROUTPUTURL'] = "http://herbarium.univie.ac.at";
 

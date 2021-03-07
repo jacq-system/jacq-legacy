@@ -9,12 +9,12 @@ include('inc/connect.php');
 
 if (empty($_SESSION['uid'])) die();
 
-$result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
+$result = dbi_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($_GET['id']) . "' AND uid = '" . $_SESSION['uid'] . "'");
 if ($result->num_rows == 0) die();
 $row = $result->fetch_array();
 $jobID = $row['jobID'];
 
-$result = db_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($jobID) . "' ");
+$result = dbi_query("SELECT * FROM tbljobs WHERE jobID = '" . intval($jobID) . "' ");
 if ($result->num_rows == 0) die();
 $row = $result->fetch_array();
 echo<<<EOF

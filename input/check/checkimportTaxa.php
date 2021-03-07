@@ -2,7 +2,6 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
-no_magic();
 
 
 /**
@@ -52,7 +51,7 @@ function getTaxon($id)
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
             WHERE taxonID = '" . intval($id) . "'";
-    $row = mysql_fetch_array(db_query($sql));
+    $row = dbi_query($sql)->fetch_array();
 
     $text = $row['genus'];
     if ($row['epithet'])  $text .= " " . $row['epithet'] . " " . $row['author'];
@@ -137,9 +136,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
         $OK = true;
 
         // check if genus exists
-        $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($import[$i][0]));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($import[$i][0]));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $genID = $row['genID'];
         } else {
             $status[$i] = "no_genera";
@@ -148,9 +147,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
 
         if ($OK) {
             // check if species exists
-            $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][1]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][1]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $epithetID = $row['epithetID'];
             } else {
                 $status[$i] = "no_species";
@@ -160,9 +159,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
 
         if ($OK) {
             // check if author exists
-            $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][2]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][2]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $authorID = $row['authorID'];
             } else {
                 $status[$i] = "no_author";
@@ -172,9 +171,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
 
         if ($OK && trim($import[$i][3])) {
             // check if sub/var/... species exists
-            $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][4]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][4]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $subepithetID = $row['epithetID'];
             } else {
                 $status[$i] = "no_subspecies";
@@ -184,9 +183,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
 
         if ($OK && trim($import[$i][3])) {
             // check if sub/var/... author exists
-            $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][5]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][5]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $subauthorID = $row['authorID'];
             } else {
                 $status[$i] = "no_subauthor";
@@ -238,16 +237,16 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
                                    AND formaID IS NULL AND forma_authorID IS NULL
                                    AND subformaID IS NULL AND subforma_authorID IS NULL";
             }
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $result2 = db_query($sql.$sql2);
-                if (mysql_num_rows($result2) > 0) {
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $result2 = dbi_query($sql.$sql2);
+                if (mysqli_num_rows($result2) > 0) {
                     $status[$i] = "exists";
                 } else {
                     $status[$i] = "collision";
                 }
                 $parts = array();
-                while ($row = mysql_fetch_array($result)) {
+                while ($row = mysqli_fetch_array($result)) {
                     $parts[] = $row['taxonID'];
                 }
                 $exists[$i] = $parts;
@@ -267,9 +266,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
                     FROM tbl_tax_species
                     WHERE genID = $genID
                      AND speciesID = $epithetID";
-            $result = db_query($sql);
+            $result = dbi_query($sql);
             $parts = array();
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
               $parts[] = $row['taxonID'];
             }
             if (count($parts) > 0) {

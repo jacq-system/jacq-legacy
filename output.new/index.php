@@ -422,11 +422,11 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                       <div class="switch">
                           <label>
                               Incl. synonym search
-                              <input type="checkbox" id="checkbox_synoynm">
+                              <input type="checkbox" id="checkbox_synonym">
                               <span class="lever"></span>
                           </label>
                       </div>
-                      <input type="hidden" name="synonym" value="all">
+                      <input type="hidden" name="synonym" value="only">
                   </div>
               </div>
               <!-- Submission -->

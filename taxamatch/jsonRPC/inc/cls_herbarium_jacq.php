@@ -19,13 +19,15 @@
  */
 require_once('inc/variables.php');
 
-class cls_herbarium_jacq extends cls_herbarium_base {
-
+class cls_herbarium_jacq extends cls_herbarium_base
+{
     private $matches = array();    // result of getMatches() are stored here
     private $currSynonyms20;       // holds temporary list of synonyms20 for current species
     private $counterSyns20 = 0;    // counter20 for temporary list
-    var $block_limit = 2;
-    var $limit = 4;
+    public $block_limit = 2;
+    public $limit = 4;
+
+    private $dbLink = false;
 
     /*     * *****************\
       |                   |
@@ -51,11 +53,14 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         $matches = array('error' => '',
             'result' => array());
 
-        if (!@mysql_connect($options['hrdb']['dbhost'], $options['hrdb']['dbuser'], $options['hrdb']['dbpass']) || !@mysql_select_db($options['hrdb']['dbname'])) {
-            $matches['error'] = 'no database connection';
-            return $matches;
+        if (!$this->dbLink) {
+            $this->dbLink = mysqli_connect($options['hrdb']['dbhost'], $options['hrdb']['dbuser'], $options['hrdb']['dbpass'], $options['hrdb']['dbname']);
+            if (!$this->dbLink) {
+                $matches['error'] = 'no database connection';
+                return $matches;
+            }
+            $this->dbLink->query("SET character set utf8");
         }
-        mysql_query("SET character set utf8");
 
         // split the input at newlines into several queries
         $searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
@@ -83,19 +88,18 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                 }
 
                 // first compare with the genera
-                $res = mysql_query("SELECT g.genus, f.family, g.genID, a.author, s.taxonID,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
-                                    FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
-                                    WHERE g.familyID = f.familyID
-                                     AND g.authorID = a.authorID
-                                     AND g.`genID` = s.`genID`
-                                     AND s.`tax_rankID` = 7
-                                     ");
+                $res = $this->dbLink->query("SELECT g.genus, f.family, g.genID, a.author, s.taxonID,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
+                                             FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
+                                             WHERE g.familyID = f.familyID
+                                              AND g.authorID = a.authorID
+                                              AND g.`genID` = s.`genID`
+                                              AND s.`tax_rankID` = 7");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['genus'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                         $searchresult[] = array('genus' => $row['genus'],
@@ -111,18 +115,17 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                 }
 
                 // then with the families
-                $res = mysql_query("SELECT f.`family`,  f.`familyID`, s.`taxonID`,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', f.`family`, 2, 4) AS mdld
-                                    FROM tbl_tax_families f, tbl_tax_genera g, tbl_tax_species s
-                                    WHERE
-                                    f.`familyID` = g.`familyID` AND f.`family` = g.`genus` AND
-                                    s.`genID` = g.`genID` AND s.`tax_rankID` = 9
-                                    ");
+                $res = $this->dbLink->query("SELECT f.`family`,  f.`familyID`, s.`taxonID`,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', f.`family`, 2, 4) AS mdld
+                                             FROM tbl_tax_families f, tbl_tax_genera g, tbl_tax_species s
+                                             WHERE f.`familyID` = g.`familyID`
+                                              AND f.`family` = g.`genus`
+                                              AND s.`genID` = g.`genID` AND s.`tax_rankID` = 9");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['family'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {            // 2nd limit of the search
                         $searchresult[] = array('genus' => '',
@@ -183,20 +186,19 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                  */
                 for ($i = 0; $i < 2; $i++) {
                     // do the normal search
-                    $res = mysql_query("SELECT g.genus, f.family, s.genID, a.author, s.taxonID,
-                                         mdld('" . mysql_real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
-                                        FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
-                                        WHERE g.familyID = f.familyID
-                                         AND g.authorID = a.authorID
-                                         AND g.`genID` = s.`genID`
-                                         AND s.`tax_rankID` = 7
-                                         ");
+                    $res = $this->dbLink->query("SELECT g.genus, f.family, s.genID, a.author, s.taxonID,
+                                                  mdld('" . $this->dbLink->real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
+                                                 FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a, tbl_tax_species s
+                                                 WHERE g.familyID = f.familyID
+                                                  AND g.authorID = a.authorID
+                                                  AND g.`genID` = s.`genID`
+                                                  AND s.`tax_rankID` = 7");
 
                     /**
                      * do the actual calculation of the distances
                      * and decide if the result should be kept
                      */
-                    while ($row = mysql_fetch_array($res)) {
+                    while ($row = mysqli_fetch_array($res)) {
                         $limit = min($lenGenus[$i], strlen($row['genus'])) / 2;     // 1st limit of the search
                         if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                             $lev[] = array('genus' => $row['genus'],
@@ -236,9 +238,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                          ta0.author author0, ta1.author author1, ta2.author author2,
                          ta3.author author3, ta4.author author4, ta5.author author5";
                     if ($epithet) {  // if an epithet was given, use it
-                        $sql .= ", mdld('" . mysql_real_escape_string($epithet) . "', te0.epithet, 4, 5)  as mdld";
+                        $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet) . "', te0.epithet, 4, 5)  as mdld";
                         if ($epithet2 && $rank) {  // if a subepithet was given, use it
-                            $sql .= ", mdld('" . mysql_real_escape_string($epithet2) . "', te{$rank}.epithet, 4, 5) as mdld2";
+                            $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet2) . "', te{$rank}.epithet, 4, 5) as mdld2";
                         }
                     }
                     $sql .= " FROM tbl_tax_species ts
@@ -255,8 +257,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                            LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
                            LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
                           WHERE ts.genID = '" . $val['ID'] . "'";
-                    $res = mysql_query($sql);
-                    while ($row = mysql_fetch_array($res)) {
+                    $res = $this->dbLink->query($sql);
+                    while ($row = mysqli_fetch_array($res)) {
                         $name = trim($row['epithet0']);
                         $found = false;
                         if ($epithet) {
@@ -305,9 +307,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                      LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                                      LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                                      LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                                    WHERE ts.taxonID = '" . mysql_escape_string($row['synID']) . "'";
-                                $result2 = mysql_query($sql);
-                                $row2 = mysql_fetch_array($result2);
+                                    WHERE ts.taxonID = '" . $this->dbLink->real_escape_string($row['synID']) . "'";
+                                $result2 = $this->dbLink->query($sql);
+                                $row2 = mysqli_fetch_array($result2);
                                 $syn = $row2['genus'];
                                 if ($row2['epithet0'])
                                     $syn .= " " . $row2['epithet0'] . " " . $row2['author0'];
@@ -369,8 +371,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 LEFT JOIN `herbar_names`.`tbl_name_webservices` nwe ON nwe.`webservice_id` = nr.`reference_id`
                                 WHERE nt.`taxonID` = '$taxonID' AND nc.`common_name` IS NOT NULL
                             ";
-                                $result_cn = mysql_query($sql_cn);
-                                while ($row_cn = mysql_fetch_array($result_cn)) {
+                                $result_cn = $this->dbLink->query($sql_cn);
+                                while ($row_cn = mysqli_fetch_array($result_cn)) {
                                     // get the reference name for the given common name entry
                                     $reference = 'jacq';
                                     switch ($row_cn['source_type']) {
@@ -474,11 +476,14 @@ class cls_herbarium_jacq extends cls_herbarium_base {
         $matches = array('error' => '',
             'result' => array());
 
-        if (!@mysql_connect($options['hrdb']['dbhost'], $options['hrdb']['dbuser'], $options['hrdb']['dbpass']) || !@mysql_select_db($options['hrdb']['dbname'])) {
-            $matches['error'] = 'no database connection';
-            return $matches;
+        if (!$this->dbLink) {
+            $this->dbLink = mysqli_connect($options['hrdb']['dbhost'], $options['hrdb']['dbuser'], $options['hrdb']['dbpass'], $options['hrdb']['dbname']);
+            if (!$this->dbLink) {
+                $matches['error'] = 'no database connection';
+                return $matches;
+            }
+            $this->dbLink->query("SET character set utf8");
         }
-        mysql_query("SET character set utf8");
 
         // split the input at newlines into several queries
         $searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
@@ -512,9 +517,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                   mdld('{$commonName}',common_name, {$this->block_limit}, {$this->limit}) <  LEAST(CHAR_LENGTH(common_name)/2,{$lenlim})
                  ";
 
-            $res = mysql_query($query);
+            $res = $this->dbLink->query($query);
             $s = "";
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
                 $s.="," . $row['common_id'] . "";
             }
             $s = substr($s, 1);
@@ -536,10 +541,10 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                  com.common_id IN({$s})
                  ";
 
-            $res = mysql_query($query);
+            $res = $this->dbLink->query($query);
             /**
              */
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
 
                 // we've found something, so let's put everything together
                 // distances and ratios of genus and species are both set to the distance and ratio found for the common name
@@ -673,10 +678,10 @@ class cls_herbarium_jacq extends cls_herbarium_base {
              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-            WHERE ts.taxonID = '" . mysql_escape_string($taxonID) . "'";
-        $result = mysql_query($sql);
+            WHERE ts.taxonID = '" . $this->dbLink->real_escape_string($taxonID) . "'";
+        $result = $this->dbLink->query($sql);
         if ($result) {
-            return mysql_fetch_array($result);
+            return mysqli_fetch_array($result);
         }
         else {
             return array();
@@ -694,11 +699,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
             FROM tbl_tax_species s, tbl_tax_genera g
 			LEFT JOIN  tbl_tax_authors a   ON (a.authorID =g.authorID )
             WHERE s.genID = g.genID
-             AND s.taxonID = '" . mysql_escape_string($taxonID) . "'";
-        $result = mysql_query($sql);
+             AND s.taxonID = '" . $this->dbLink->real_escape_string($taxonID) . "'";
+        $result = $this->dbLink->query($sql);
 
         if ($result) {
-            return mysql_fetch_array($result);
+            return mysqli_fetch_array($result);
         }
         else {
             return array();
@@ -717,11 +722,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
 			LEFT JOIN tbl_tax_authors a ON (a.authorID = f.authorID )
             WHERE s.genID = g.genID
              AND g.familyID = f.familyID
-             AND s.taxonID = '" . mysql_escape_string($taxonID) . "'";
+             AND s.taxonID = '" . $this->dbLink->real_escape_string($taxonID) . "'";
 
-        $result = mysql_query($sql);
+        $result = $this->dbLink->query($sql);
         if ($result) {
-            return mysql_fetch_array($result);
+            return mysqli_fetch_array($result);
         }
         else {
             return array();
@@ -738,15 +743,9 @@ class cls_herbarium_jacq extends cls_herbarium_base {
      * @param no parameters (makes all changes to $this->matches)
      * @return void (writes synonyms directly into $this->matches)
      */
-    private function _getSynonyms() {
+    private function _getSynonyms()
+    {
         global $options;
-
-        // connect to DB
-        if (!@mysql_connect($options['hrdb']['dbhost'], $options['hrdb']['dbuser'], $options['hrdb']['dbpass']) || !@mysql_select_db($options['hrdb']['dbname'])) {
-            $this->matches['error'] = 'no database connection';
-            return;
-        }
-        mysql_query("SET character set utf8");
 
         // iterate through result-array
         for ($i = 0; $i < count($this->matches['result']); $i++) {   // better: foreach ($this->matches['result'] as $i => $resultArr)
@@ -781,10 +780,10 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                          LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                          LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                          LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                        WHERE taxonID = '" . mysql_escape_string($id) . "'";
-                    $result = mysql_query($sql);
-                    if (mysql_num_rows($result) > 0) {
-                        $row = mysql_fetch_array($result);
+                        WHERE taxonID = '" . $this->dbLink->real_escape_string($id) . "'";
+                    $result = $this->dbLink->query($sql);
+                    if (mysqli_num_rows($result) > 0) {
+                        $row = mysqli_fetch_array($result);
 
                         $repeatCtr = 10;
                         // 1 = x (hybrid name), 96 = acc (accepted name), 97 = prov. acc. (provisionally accepted name), 103 = appl. incert. (application uncertain)
@@ -796,29 +795,29 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                         }
 
                         do {
-                            $result = mysql_query("SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status, tst.statusID,
-                                             ta0.author author0, ta1.author author1, ta2.author author2,
-                                             ta3.author author3, ta4.author author4, ta5.author author5,
-                                             te0.epithet epithet0, te1.epithet epithet1, te2.epithet epithet2,
-                                             te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5
-                                            FROM tbl_tax_species ts
-                                             LEFT JOIN tbl_tax_authors ta0 ON ta0.authorID = ts.authorID
-                                             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                                             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                                             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                                             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                                             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                                             LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
-                                             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                                             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                                             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                                             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                                             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                                             LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-                                             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                            WHERE taxonID = '" . intval($id) . "'");
-                            if (mysql_num_rows($result) > 0) {
-                                $row = mysql_fetch_array($result);
+                            $result = $this->dbLink->query("SELECT ts.taxonID, ts.basID, ts.synID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tst.status, tst.statusID,
+                                                             ta0.author author0, ta1.author author1, ta2.author author2,
+                                                             ta3.author author3, ta4.author author4, ta5.author author5,
+                                                             te0.epithet epithet0, te1.epithet epithet1, te2.epithet epithet2,
+                                                             te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5
+                                                            FROM tbl_tax_species ts
+                                                             LEFT JOIN tbl_tax_authors ta0 ON ta0.authorID = ts.authorID
+                                                             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                                                             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                                                             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                                                             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                                                             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                                                             LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                                                             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                                                             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                                                             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                                                             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                                                             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                                                             LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
+                                                             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                                                            WHERE taxonID = '" . intval($id) . "'");
+                            if (mysqli_num_rows($result) > 0) {
+                                $row = mysqli_fetch_array($result);
 
                                 $repeat = false;
                                 if (!empty($row['synID']) && $repeatCtr > 0) {
@@ -847,12 +846,12 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                      LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                                      LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
                                      LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                                    WHERE synID = '" . mysql_escape_string($id) . "' ";
+                                    WHERE synID = '" . $this->dbLink->real_escape_string($id) . "' ";
                                 if (empty($row['basID'])) {
-                                    $result2 = mysql_query($sql . "AND basID = '" . mysql_escape_string($id) . "'");
+                                    $result2 = $this->dbLink->query($sql . "AND basID = '" . $this->dbLink->real_escape_string($id) . "'");
                                 }
                                 else {
-                                    $result2 = mysql_query($sql . "AND (basID IS NULL OR basID = '" . mysql_escape_string($id) . "') AND taxonID = '" . $row['basID'] . "'");
+                                    $result2 = $this->dbLink->query($sql . "AND (basID IS NULL OR basID = '" . $this->dbLink->real_escape_string($id) . "') AND taxonID = '" . $row['basID'] . "'");
                                 }
 
                                 $this->currSynonyms20 = array();
@@ -861,10 +860,10 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                                 $this->_appendSynDetails($result2, $sql, $order, "&equiv;");
 
                                 if (empty($row['basID'])) {
-                                    $result2 = mysql_query($sql . "AND basID IS NULL" . $order);
+                                    $result2 = $this->dbLink->query($sql . "AND basID IS NULL" . $order);
                                 }
                                 else {
-                                    $result2 = mysql_query($sql . "AND (basID IS NULL OR basID = '" . mysql_escape_string($id) . "') AND taxonID != '" . $row['basID'] . "'" . $order);
+                                    $result2 = $this->dbLink->query($sql . "AND (basID IS NULL OR basID = '" . $this->dbLink->real_escape_string($id) . "') AND taxonID != '" . $row['basID'] . "'" . $order);
                                 }
 
                                 $this->_appendSynDetails($result2, $sql, $order);
@@ -902,11 +901,11 @@ class cls_herbarium_jacq extends cls_herbarium_base {
      * @return void (writes synonyms directly into $this->currSynonyms20)
      */
     private function _appendSynDetails($result, $sql, $order, $equalSign = "=") {
-        while ($row2 = mysql_fetch_array($result)) {
-            $result3 = mysql_query($sql . "AND basID = '" . $row2['taxonID'] . "'" . $order);
+        while ($row2 = mysqli_fetch_array($result)) {
+            $result3 = $this->dbLink->query($sql . "AND basID = '" . $row2['taxonID'] . "'" . $order);
             $counter40 = 0;
             $synonyms40 = array();
-            while ($row3 = mysql_fetch_array($result3)) {
+            while ($row3 = mysqli_fetch_array($result3)) {
                 $synonyms40[$counter40++] = array(
                     'equalsSign' => "&equiv;",
                     'name' => $this->_taxon($row3),
@@ -968,8 +967,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
                 WHERE `serviceID` = '{$serviceID}'
             ";
 
-        $result = mysql_query($sql);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->dbLink->query($sql);
+        $row = mysqli_fetch_assoc($result);
 
         return "{$row['name']} ({$row['serviceID']}, {$row['url_head']})";
     }
@@ -990,8 +989,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
             WHERE `person_ID` = '{$person_ID}'
             ";
 
-        $result = mysql_query($sql);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->dbLink->query($sql);
+        $row = mysqli_fetch_assoc($result);
         return $row['p_familyname'] . ", " . $row['p_firstname'] . " (" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
     }
 
@@ -1007,8 +1006,8 @@ class cls_herbarium_jacq extends cls_herbarium_base {
 
         $sql = "SELECT `herbar_view`.GetProtolog({$citationID}) AS 'citation'";
 
-        $result = mysql_query($sql);
-        $row = mysql_fetch_assoc($result);
+        $result = $this->dbLink->query($sql);
+        $row = mysqli_fetch_assoc($result);
         return $row['citation'];
     }
 

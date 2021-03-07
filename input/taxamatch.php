@@ -54,14 +54,14 @@ if (!empty($_POST['searchGenus'])) {
             FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
             WHERE g.familyID = f.familyID
              AND g.authorID = a.authorID";
-    $res = mysql_query($sql);
+    $res = dbi_query($sql);
     $type = 'genus';
 } else if (!empty($_POST['searchFamily'])) {
     $searchTextEnding = $_POST['searchtextEnding'];
     $searchText = $_POST['searchtext'];
     $sql = "SELECT family AS name, familyID
             FROM tbl_tax_families";
-    $res = mysql_query($sql);
+    $res = dbi_query($sql);
     $type = 'family';
 } else if (!empty($_POST['searchSpecies'])) {
     $searchTextEnding = '';
@@ -70,7 +70,7 @@ if (!empty($_POST['searchGenus'])) {
             FROM tbl_tax_genera g, tbl_tax_families f, tbl_tax_authors a
             WHERE g.familyID = f.familyID
              AND g.authorID = a.authorID";
-    $res = mysql_query($sql);
+    $res = dbi_query($sql);
     $type = 'species';
 } else {
     $searchTextEnding = '';
@@ -86,7 +86,7 @@ if ($type) {
     if ($limit < 2) $limit = 2;
     $lenSearchText = strlen($parts[0] . $searchTextEnding);
     $ctr = 0;
-    while ($row = mysql_fetch_array($res)) {
+    while ($row = mysqli_fetch_array($res)) {
         $distance = DamerauLevenshteinDistance($parts[0] . $searchTextEnding, $row['name']);
         if ($distance < $limit) {
             $ratio = 1 - $distance / max(strlen($row['name']), $lenSearchText);
@@ -150,8 +150,8 @@ if ($type == 'species') {
                      LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
                      LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
                     WHERE ts.genID = '" . $val['genID'] . "'";
-            $res = mysql_query($sql);
-            while ($row = mysql_fetch_array($res)) {
+            $res = dbi_query($sql);
+            while ($row = mysqli_fetch_array($res)) {
                 $distance = -1;
                 for ($i = 0; $i <= 5; $i++) {
                     if ($row['epithet' . $i]) {
@@ -179,9 +179,9 @@ if ($type == 'species') {
                                          LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
                                          LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                                          LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                                        WHERE ts.taxonID='".mysql_escape_string($row['synID'])."'";
-                                $result2 = db_query($sql);
-                                $row2 = mysql_fetch_array($result2);
+                                        WHERE ts.taxonID='".dbi_escape_string($row['synID'])."'";
+                                $result2 = dbi_query($sql);
+                                $row2 = mysqli_fetch_array($result2);
                                 $syn = $row2['genus'];
                                 if ($row2['epithet'])  $syn .= " ".$row2['epithet']." ".$row2['author'];
                                 if ($row2['epithet1']) $syn .= " subsp. ".$row2['epithet1']." ".$row2['author1'];
@@ -235,10 +235,10 @@ $stop = microtime(true);
 $sql = "SELECT bot_rank_suffix, zoo_rank_suffix
         FROM tbl_tax_rank
         WHERE rank = 'family'";
-$res = db_query($sql);
+$res = dbi_query($sql);
 $dropdownEnding = "<select name='searchtextEnding'>\n"
                 . "<option value=''" . (($searchTextEnding == '') ? ' selected' : '') . ">-</option>\n";
-while ($row = mysql_fetch_array($res)) {
+while ($row = mysqli_fetch_array($res)) {
     $dropdownEnding .= "<option value='"
                      . substr($row['bot_rank_suffix'], 1)
                      . "'" . (($searchTextEnding == substr($row['bot_rank_suffix'], 1)) ? ' selected' : '')

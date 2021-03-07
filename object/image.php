@@ -1,6 +1,5 @@
 <?php
-
-@session_start();
+session_start();
 require_once("./inc/functions.php");
 
 /*
@@ -397,8 +396,10 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0) {
 }
 
 // request: can be specimen ID or filename
-function getPicDetails($request) {
-    global $debug, $_CONFIG;
+function getPicDetails($request)
+{
+    /** @var mysqli $dbLink */
+    global $debug, $_CONFIG, $dbLink;
 
     $specimenID = 0;
     $originalFilename = null;
@@ -444,12 +445,12 @@ function getPicDetails($request) {
                 `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
                 LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc
                 ON mc.`collectionID` = s.`collectionID`
-                WHERE (s.`HerbNummer` = '" . mysql_real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . mysql_real_escape_string($HerbNummerAlternative) . "' ) AND mc.`coll_short_prj` = '" . mysql_real_escape_string($matches[1]) . "'
+                WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' ) AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($matches[1]) . "'
                 ";
 
-            $result = mysql_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result, MYSQL_ASSOC);
+            $result = $dbLink->query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_assoc($result);
                 $specimenID = $row['specimen_ID'];
             }
         }
@@ -470,7 +471,7 @@ function getPicDetails($request) {
             ON mc.`collectionID` = s.`collectionID`
             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_img_definition` id
             ON id.`source_id_fk` = mc.`source_id`
-            WHERE s.`specimen_ID` = '" . mysql_real_escape_string($specimenID) . "'
+            WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'
             ";
 
     if ($debug) {
@@ -478,9 +479,9 @@ function getPicDetails($request) {
     }
 
     // Fetch information for this image
-    $result = mysql_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+    $result = $dbLink->query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
         if ($debug) {
             print_r($row);
         }

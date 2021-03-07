@@ -2,14 +2,15 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editUserAccessServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("getFamilyDropdown");
-$xajax->registerFunction("getGenusDropdown");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editUserAccessServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getFamilyDropdown");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getGenusDropdown");
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_userID = intval($_GET['id']);
@@ -18,9 +19,9 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
     $sql = "SELECT *
             FROM herbarinput_log.tbl_herbardb_access
             WHERE ID = '$p_accessID'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_categoryID = $row['categoryID'];
         $p_familyID   = $row['familyID'];
         $p_genID      = $row['genID'];
@@ -44,16 +45,16 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
                     `update` = '" . (($p_update) ? 1 : 0) . "'";
         if (intval($p_accessID))  {
             $sql = "UPDATE herbarinput_log.tbl_herbardb_access SET " . $sqldata . " WHERE ID = '" . intval($p_accessID) . "'";
-            db_query($sql);
+            dbi_query($sql);
         } else {
             $sql = "INSERT INTO herbarinput_log.tbl_herbardb_access SET " . $sqldata;
-            db_query($sql);
-            $p_accessID = mysql_insert_id();
+            dbi_query($sql);
+            $p_accessID = dbi_insert_id();
         }
     }
 }
 
-$row = mysql_fetch_array(db_query("SELECT username FROM herbarinput_log.tbl_herbardb_users WHERE userID = '$p_userID'"));
+$row = dbi_query("SELECT username FROM herbarinput_log.tbl_herbardb_users WHERE userID = '$p_userID'")->fetch_array();
 $username = $row['username'];
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -63,13 +64,13 @@ $username = $row['username'];
   <title>herbardb - edit User access</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" language="JavaScript">
     function call_getFamilyDropdown() {
-      xajax_getFamilyDropdown(xajax.getFormValues('f',0,'categoryID'));
+      jaxon_getFamilyDropdown(jaxon.getFormValues('f',0,'categoryID'));
     }
     function call_getGenusDropdown() {
-      xajax_getGenusDropdown(xajax.getFormValues('f',0,'familyID'));
+      jaxon_getGenusDropdown(jaxon.getFormValues('f',0,'familyID'));
     }
   </script>
 </head>
@@ -81,9 +82,9 @@ $username = $row['username'];
 unset($category);
 $category[0][] = 0; $category[1][] = "";
 $sql = "SELECT categoryID, category, cat_description FROM tbl_tax_systematic_categories ORDER BY category";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $category[0][] = $row['categoryID'];
             $category[1][] = $row['category'] . " (" . $row['cat_description'] . ")";
         }
@@ -93,9 +94,9 @@ if ($result = db_query($sql)) {
 unset($family);
 $family[0][] = 0; $family[1][] = "";
 $sql = "SELECT familyID, family FROM tbl_tax_families WHERE categoryID = '" . intval($p_categoryID) . "' ORDER BY family";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $family[0][] = $row['familyID'];
             $family[1][] = $row['family'];
         }
@@ -105,9 +106,9 @@ if ($result = db_query($sql)) {
 unset($genus);
 $genus[0][] = 0; $genus[1][] = "";
 $sql = "SELECT genID, genus FROM tbl_tax_genera WHERE familyID = '" . intval($p_familyID) . "' ORDER BY genus";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $genus[0][] = $row['genID'];
             $genus[1][] = $row['genus'];
         }

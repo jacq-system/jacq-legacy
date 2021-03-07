@@ -13,15 +13,7 @@ if ($dbLink->connect_errno) {
 }
 $dbLink->set_charset('utf8');
 
-function no_magic()   // PHP >= 4.1
-{
-    if (get_magic_quotes_gpc()) {
-        foreach($_GET as $k => $v)  $_GET["$k"] = stripslashes($v);
-        foreach($_POST as $k => $v) $_POST["$k"] = stripslashes($v);
-    }
-}
-
-function db_query($sql)
+function dbi_query($sql)
 {
     global $dbLink;
 

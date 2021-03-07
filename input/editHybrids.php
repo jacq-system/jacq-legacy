@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 
 function makeParent($search) {
@@ -15,14 +14,14 @@ function makeParent($search) {
                 FROM tbl_tax_species ts
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'\n";
+                WHERE tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'\n";
         if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'\n";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'\n";
         }
         $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = getScientificName( $row['taxonID'] );
                 }
             }
@@ -45,7 +44,7 @@ if (isset($_GET['ID'])) {
     $sql = "SELECT taxon_ID_fk, parent_1_ID, parent_2_ID
             FROM tbl_tax_hybrids
             WHERE taxon_ID_fk = '$id'";
-    $row = mysql_fetch_array(db_query($sql));
+    $row = dbi_query($sql)->fetch_array();
     $newHybrid = ($row['taxon_ID_fk']) ? false : true;
 
     $sql = "SELECT ts.taxonID, tg.genus,
@@ -86,7 +85,7 @@ if (isset($_GET['ID'])) {
     $p_parent_1_ID = $_POST['parent_1_ID'];
     $p_parent_2_ID = $_POST['parent_2_ID'];
 
-    $row = mysql_fetch_array(db_query("SELECT taxon_ID_fk FROM tbl_tax_hybrids WHERE taxon_ID_fk = '$id'"));
+    $row = mysqli_fetch_array(dbi_query("SELECT taxon_ID_fk FROM tbl_tax_hybrids WHERE taxon_ID_fk = '$id'"));
     $newHybrid = ($row['taxon_ID_fk']) ? false : true;
 
     if ($_POST['submitUpdate'] && $_SESSION['editorControl']) {
@@ -101,7 +100,7 @@ if (isset($_GET['ID'])) {
                      parent_2_ID = ".extractID($p_parent_2_ID) . "
                     WHERE taxon_ID_fk = '$id'";
         }
-        $result = db_query($sql);
+        $result = dbi_query($sql);
 
         echo "<html><head></head>\n<body>\n"
            . "<script language=\"JavaScript\">\n"

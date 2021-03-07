@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -50,12 +49,12 @@ if (!empty($_POST['submit'])) {
     $sql = "SELECT author, authorID, Brummit_Powell_full, IPNIauthor_IDfk
             FROM tbl_tax_authors
              LEFT JOIN tbl_person ON tbl_tax_authors.author = tbl_person.p_abbrev
-            WHERE Brummit_Powell_full LIKE '%" . mysql_escape_string($_POST['autor']) . "%'
+            WHERE Brummit_Powell_full LIKE '%" . dbi_escape_string($_POST['autor']) . "%'
             ORDER BY author";
-    if ($result = db_query($sql)) {
-        if (mysql_num_rows($result) > 0) {
+    if ($result = dbi_query($sql)) {
+        if (mysqli_num_rows($result) > 0) {
             echo "<table cellpadding=\"0\" cellspacing=\"0\">\n";
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 echo "<tr><td>";
                 if ($row['IPNIauthor_IDfk']) echo "<a href=\"http://www.ipni.org/ipni/idAuthorSearch.do?id=" . $row['IPNIauthor_IDfk'] . "\" target=\"_blank\"><b><i>IPNI</i></b></a>&nbsp;&nbsp;&nbsp;";
                 $show = $row['author'];

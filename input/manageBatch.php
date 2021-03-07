@@ -6,8 +6,6 @@ require("inc/api_functions.php");
 require("inc/clsDbAccess.php");
 require("inc/jacqServletJsonRPCClient.php");
 
-no_magic();
-
 //---------- check every input ----------
 if (!checkRight('batch')) { // only user with right "api" can change API
     echo "<html><head></head><body>\n"
@@ -17,8 +15,8 @@ if (!checkRight('batch')) { // only user with right "api" can change API
     die();
 }
 if (!checkRight('batchAdmin')) {
-    $result = db_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
-    if (mysql_num_rows($result) == 0) {
+    $result = dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
+    if (mysqli_num_rows($result) == 0) {
         echo "<html><head></head><body>\n"
            . "<h1>Error</h1>\n"
            . "Your institution is not in the batch database.\n"
@@ -34,7 +32,7 @@ $batchID = (isset($_GET['ID'])) ? intval($_GET['ID']) : 0;
 function showList($link, $withID=true)
 {
     global $batchID;
-    
+
     echo "<ul>\n";
     $sql = "SELECT remarks, date_supplied, batchID, batchnumber, source_code
             FROM api.tbl_api_batches
@@ -42,8 +40,8 @@ function showList($link, $withID=true)
             WHERE sent = '0'";
     if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
     $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         $batchNr = " &lt;" . (($row['source_code']) ? $row['source_code'] . "-" : "") . $row['batchnumber'] . "&gt; ";
         echo "<li><a href=\"$link" . (($withID) ? $row['batchID'] : "") . "\">"
            . $row['date_supplied'] . "$batchNr (" . htmlspecialchars(trim($row['remarks'])) . ")</a>";
@@ -61,22 +59,22 @@ function showEditFields($date_supplied, $remarks = "", $batchID = 0,$exclude_tab
         if (checkRight('batchAdmin')) {
             $chooseInstitution = "<select name=\"{$pre}sourceID_fk\" size=\"1\">"
                                . "<option value=\"0\" selected>General use</option>";
-            $result = db_query("SELECT source_id, source_name FROM herbarinput.meta ORDER BY source_name");
-            while ($row = mysql_fetch_array($result)) {
+            $result = dbi_query("SELECT source_id, source_name FROM herbarinput.meta ORDER BY source_name");
+            while ($row = mysqli_fetch_array($result)) {
                 $chooseInstitution .= "<option value=\"" . $row['source_id'] . "\">" . $row['source_name'] . "</option>";
             }
             $chooseInstitution .= "</select>\n";
         } else {
-            $row = mysql_fetch_array(db_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']));
+            $row = mysqli_fetch_array(dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']));
             $chooseInstitution = $row['source_name'];
         }
     }
     else {
         $pre = "";
         $btn = "update";
-        $row = mysql_fetch_array(db_query("SELECT sourceID_fk FROM api.tbl_api_batches WHERE batchID = $batchID"));
+        $row = mysqli_fetch_array(dbi_query("SELECT sourceID_fk FROM api.tbl_api_batches WHERE batchID = $batchID"));
         if ($row['sourceID_fk']) {
-            $row = mysql_fetch_array(db_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $row['sourceID_fk']));
+            $row = mysqli_fetch_array(dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $row['sourceID_fk']));
             $chooseInstitution = $row['source_name'];
         } else {
             $chooseInstitution = "General use";
@@ -138,15 +136,15 @@ if ($type == 2 && isset($_POST['new_insert']) && $_POST['new_insert']) {
               SELECT MAX(batchnumber)+1
               FROM api.tbl_api_batches
               WHERE sourceID_fk = $institutionID";
-    db_query($sql);
-    $id = mysql_insert_id();
+    dbi_query($sql);
+    $id = dbi_insert_id();
     $sql = "UPDATE api.tbl_api_batches SET
              sourceID_fk = '$institutionID',
              date_supplied = " . quoteString($_POST['new_date_supplied']) . ",
              remarks = " . quoteString($_POST['new_remarks']) . ",
              `exclude_tab_obs` = " . (($_POST['new_exclude_tab_obs']) ? "1" : "0" ) . "
             WHERE batchID = $id";
-    db_query($sql);
+    dbi_query($sql);
 }
 ?>
 
@@ -159,12 +157,12 @@ if ($type == 4 && $batchID) { // update an unsent batch
               remarks = ".quoteString($_POST['remarks']) . ",
               `exclude_tab_obs` = " . (($_POST['exclude_tab_obs']) ? "1" : "0" ) . "
              WHERE batchID = $batchID";
-    db_query($sql);
+    dbi_query($sql);
 }
 if ($type == 3 && $batchID) { // edit the unsent batch
     echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "?type=4&ID=$batchID\" Method=\"POST\" name=\"f2\">\n";
-    $result = db_query("SELECT * FROM api.tbl_api_batches WHERE batchID = $batchID");
-    $row = mysql_fetch_array($result);
+    $result = dbi_query("SELECT * FROM api.tbl_api_batches WHERE batchID = $batchID");
+    $row = mysqli_fetch_array($result);
     showEditFields($row['date_supplied'], $row['remarks'], $batchID, $row['exclude_tab_obs']);
     echo "</form>\n";
 } else {
@@ -182,10 +180,10 @@ if ($type == 1 && $batchID) {  // update database
             WHERE (sent = '0' OR sent IS NULL)
              AND batchID = " . quoteString($batchID);
     if (!checkRight('batchAdmin')) $sql .= " AND sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {  // only unsent batches may be processed
-        $result = db_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk = " . quoteString($batchID));
-        while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {  // only unsent batches may be processed
+        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk = " . quoteString($batchID));
+        while ($row = mysqli_fetch_array($result)) {
             update_tbl_api_units($row['specimen_ID']);
             update_tbl_api_units_identifications($row['specimen_ID']);
         }
@@ -209,16 +207,16 @@ showList( $_SERVER['PHP_SELF'] . "?type=5&ID=", true );
 
 if( $type == 5 && $batchID ) {
     $db = clsDbAccess::Connect('INPUT');
-    
+
     // Fetch image server information
     $dbstmt = $db->query( '
         SELECT id.*, ab.`exclude_tab_obs`
-        FROM `api`.`tbl_api_batches` ab 
+        FROM `api`.`tbl_api_batches` ab
         LEFT JOIN `herbarinput`.`tbl_img_definition` id ON ab.`sourceID_fk` = id.`source_id_fk`
         WHERE ab.`batchID` = ' . $batchID );
-    
+
     $serverInfo = $dbstmt->fetch();
-    
+
     // Check if we found an entry & if it is a djatoka server
     if( $serverInfo && $serverInfo['is_djatoka'] == 1 ) {
         // Fetch all specimens to export
@@ -227,17 +225,17 @@ if( $type == 5 && $batchID ) {
             FROM `api`.`tbl_api_specimens` aas
             WHERE aas.`batchID_fk` = ' . $batchID . '
             ');
-        
+
         // Create a service instance and send requests to jacq-servlet
         try {
             $service = new jacqServletJsonRPCClient( $serverInfo['imgserver_IP'] );
-            
+
             // Create a list of objects which hold all the specimens to look for
             $exportSpecimens = array();
             while( ($row = $dbstmt->fetch()) != false ) {
                 // Ask image server for fitting entries
                 $entries = $service->listSpecimenImages( $row['specimen_ID'], $row['filename'], ($serverInfo['exclude_tab_obs']) ? true : false );
-                
+
                 if( count($entries) > 0 ) {
                     // Store fitting entries in internal list
                     $exportSpecimens = array_merge($exportSpecimens, $entries);
@@ -247,9 +245,9 @@ if( $type == 5 && $batchID ) {
                     $exportSpecimens[] = $row['filename'];
                 }
             }
-        
+
             $thread_id = $service->exportImages( $exportSpecimens );
-            
+
             if( $thread_id > 0 ) {
                 echo "Batch export successfully started";
             }

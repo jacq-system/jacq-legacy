@@ -82,7 +82,8 @@ function DamerauLevenshteinDistance($srcString, $destString)
 
 function showLev($initType, $formData)
 {
-    global $objResponse;
+    /** @var mysqli $dbLink */
+    global $objResponse, $dbLink;
 
     $start = microtime(true);
 
@@ -112,7 +113,7 @@ function showLev($initType, $formData)
                     WHERE g.familyID = f.familyID
                      AND g.authorID = a.authorID";
         }
-        $res = mysql_query($sql);
+        $res = dbi_query($sql);
         $type = 'genus';
     } else if ($initType == 'family') {
         $searchTextEnding = $formData['searchtextEnding'];
@@ -131,7 +132,7 @@ function showLev($initType, $formData)
             $sql = "SELECT family AS name, familyID, dld('" . $parts[0] . "$searchTextEnding', family) as lev
                     FROM tbl_tax_families";
         }
-        $res = mysql_query($sql);
+        $res = dbi_query($sql);
         $type = 'family';
     } else if ($initType == 'species') {
         $searchTextEnding = '';
@@ -153,7 +154,7 @@ function showLev($initType, $formData)
                     WHERE g.familyID = f.familyID
                      AND g.authorID = a.authorID";
         }
-        $res = mysql_query($sql);
+        $res = dbi_query($sql);
         $type = 'species';
     } else {
         $searchTextEnding = '';
@@ -169,7 +170,7 @@ function showLev($initType, $formData)
         if ($limit < 4) $limit = 4;
         $lenSearchText = strlen($parts[0] . $searchTextEnding);
         $ctr = 0;
-        while ($row = mysql_fetch_array($res)) {
+        while ($row = mysqli_fetch_array($res)) {
             if ($formData['method'] == 'lev') {
                 $distance = levenshtein($parts[0] . $searchTextEnding, $row['name']);
             } else if ($formData['method'] == 'php') {
@@ -245,8 +246,8 @@ function showLev($initType, $formData)
                          LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
                          LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
                         WHERE ts.genID = '" . $val['genID'] . "'";
-                $res = mysql_query($sql);
-                while ($row = mysql_fetch_array($res)) {
+                $res = dbi_query($sql);
+                while ($row = mysqli_fetch_array($res)) {
                     $distance = -1;
                     for ($i = 0; $i <= 5; $i++) {
                         if ($row['epithet' . $i]) {
@@ -255,8 +256,8 @@ function showLev($initType, $formData)
                             } else if ($formData['method'] == 'php') {
                                 $distance = DamerauLevenshteinDistance($parts[1], $row['epithet' . $i]);
                             } else {
-                                //$reslev = mysql_query("SELECT dld('" . $parts[1] . "', '" . $row['epithet' . $i] . "') as lev");
-                                //$rowlev = mysql_fetch_array($reslev);
+                                //$reslev = dbi_query("SELECT dld('" . $parts[1] . "', '" . $row['epithet' . $i] . "') as lev");
+                                //$rowlev = mysqli_fetch_array($reslev);
                                 //$distance = $rowlev['lev'];
                                 $distance = $row['lev' . $i];
                             }
@@ -283,9 +284,9 @@ function showLev($initType, $formData)
                                              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
                                              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                                              LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                                            WHERE ts.taxonID='".mysql_escape_string($row['synID'])."'";
-                                    $result2 = db_query($sql);
-                                    $row2 = mysql_fetch_array($result2);
+                                            WHERE ts.taxonID='" . $dbLink->real_escape_string($row['synID'])."'";
+                                    $result2 = dbi_query($sql);
+                                    $row2 = mysqli_fetch_array($result2);
                                     $syn = $row2['genus'];
                                     if ($row2['epithet'])  $syn .= " ".$row2['epithet']." ".$row2['author'];
                                     if ($row2['epithet1']) $syn .= " subsp. ".$row2['epithet1']." ".$row2['author1'];

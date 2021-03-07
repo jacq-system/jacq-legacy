@@ -1,12 +1,11 @@
 <?php
 session_start();
 require("inc/connect.php");
-no_magic();
 
 if (empty($_GET['sel'])) die();
 
-$result = mysql_query("SELECT specimenID FROM herbarinput_log.log_specimens WHERE specimenID = '" . intval($_GET['sel']) . "'");
-if (mysql_num_rows($result) == 0) die();
+$result = dbi_query("SELECT specimenID FROM herbarinput_log.log_specimens WHERE specimenID = '" . intval($_GET['sel']) . "'");
+if (mysqli_num_rows($result) == 0) die();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -27,9 +26,9 @@ if (mysql_num_rows($result) == 0) die();
   <th class="out">Timestamp</th>
   <th class="out">updated</th>
 <?php
-$result = db_query("SHOW COLUMNS FROM herbarinput_log.log_specimens");
+$result = dbi_query("SHOW COLUMNS FROM herbarinput_log.log_specimens");
 $fields = array();
-while ($row=mysql_fetch_array($result)) {
+while ($row=mysqli_fetch_array($result)) {
     if ($row['Field'] != 'log_specimensID' && $row['Field'] != 'specimenID' && $row['Field'] != 'userID' && $row['Field'] != 'updated' && $row['Field'] != 'timestamp') {
         $fields[] = $row['Field'];
         echo "  <th class=\"out\">" . htmlspecialchars($row['Field']) . "</th>\n";
@@ -41,8 +40,8 @@ $sql = "SELECT ls.*, hu.firstname, hu.surname
         FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users hu
         WHERE ls.userID = hu.userID
          AND ls.specimenID = '" . intval($_GET['sel']) . "'";
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row=mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">\n"
        . "  <td class=\"out\">" . htmlspecialchars($row['firstname'] . " " . $row['surname']) . "</td>\n"
        . "  <td class=\"out\">" . htmlspecialchars($row['timestamp']) . "</td>\n"
@@ -54,8 +53,8 @@ while ($row=mysql_fetch_array($result)) {
 }
 echo "<tr class=\"out\"><td class=\"out\" colspan=\"" . (count($fields) + 3) . "\">&nbsp;</td></tr>\n";
 
-$result = db_query("SELECT * FROM tbl_specimens WHERE specimen_ID = '" . intval($_GET['sel']) . "'");
-$row = mysql_fetch_array($result);
+$result = dbi_query("SELECT * FROM tbl_specimens WHERE specimen_ID = '" . intval($_GET['sel']) . "'");
+$row = mysqli_fetch_array($result);
 echo "<tr class=\"out\">\n"
    . "  <td class=\"out\">active set</td>\n"
    . "  <td class=\"out\"></td>\n"

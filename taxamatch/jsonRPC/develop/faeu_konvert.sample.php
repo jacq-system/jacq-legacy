@@ -6,11 +6,10 @@ $db   = 'dbname';
 
 if (!isset($_GET['secret']) || $_GET['secret'] != '55AA') die();
 
-mysql_connect($host, $user, $pass);
-mysql_select_db($db);
+$dbLink = mysqli_connect($host, $user, $pass, $db);
 
-$result = mysql_query("SELECT * FROM scientific_names");
-while ($row = mysql_fetch_array($result)) {
+$result = $dbLink->query("SELECT * FROM scientific_names");
+while ($row = $result->fetch_array()) {
     $offset  = strlen($row['GENUS_NAME']) + 1
              + (($row['INFRAGENUS_NAME']) ? strlen($row['INFRAGENUS_NAME']) + 3 : 0)
              + (($row['SPECIES_EPITHET']) ? strlen($row['SPECIES_EPITHET']) + 1 : 0)
@@ -32,11 +31,11 @@ while ($row = mysql_fetch_array($result)) {
         $year = trim(substr($authorYear, $posComma + 1));
     }
 
-    mysql_query("UPDATE scientific_names SET
-                  author = '" . mysql_real_escape_string($author) . "',
-                  year = '" . mysql_real_escape_string($year) . "',
-                  brackets = '$brackets'
-                 WHERE pid = " . $row['pid']);
+    $dbLink->query("UPDATE scientific_names SET
+                     author = '" . $dbLink->real_escape_string($author) . "',
+                     year = '" . $dbLink->real_escape_string($year) . "',
+                     brackets = '$brackets'
+                    WHERE pid = " . $row['pid']);
 }
 
 echo "done";

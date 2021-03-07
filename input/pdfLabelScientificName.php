@@ -7,7 +7,7 @@ if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
 }
 
 session_start();
-require("inc/connect7.php");
+require("inc/connect.php");
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
@@ -39,7 +39,7 @@ function makeText($id, $uuid)
             $text['scientificName1'] .= " " . $row['@author'];
             $text['longName'] = $text['scientificName1'];
         }
-        error_log("Author: " . $row['@author']);
+//        error_log("Author: " . $row['@author']);
     }
 
     return $text;

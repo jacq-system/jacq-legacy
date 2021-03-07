@@ -3,9 +3,8 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -29,8 +28,8 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x100)!=0)) {
            "VALUES (".quoteString($publisher).")";
     $updated = 0;
   }
-  $result = mysql_query($sql);
-  $id = ($_POST['ID']) ? intval($_POST['ID']) : mysql_insert_id();
+  $result = dbi_query($sql);
+  $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
   logLitPublishers($id,$updated);
 
   echo "<script language=\"JavaScript\">\n";
@@ -44,10 +43,7 @@ else {
 
   $pieces = explode("<",$HTTP_GET_VARS['sel']);
   $pieces = explode(">",$pieces[1]);
-  $sql = "SELECT publisherID, publisher ".
-         "FROM tbl_lit_publishers WHERE publisherID='".mysql_escape_string($pieces[0])."'";
-  $result = db_query($sql);
-  $row = mysql_fetch_array($result);
+  $row = dbi_query("SELECT publisherID, publisher FROM tbl_lit_publishers WHERE publisherID = '" . dbi_escape_string($pieces[0]) . "'")->fetch_array();
 
   $cf = new CSSF();
 

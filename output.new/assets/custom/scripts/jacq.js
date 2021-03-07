@@ -123,6 +123,11 @@ $(function() {
             $("[name='images']").val($(this).prop("checked") ? "only" : "all");
         });
 
+    $("#checkbox_synonym")
+        .change(function() {
+            $("[name='synonym']").val($(this).prop("checked") ? "all" : "only");
+        });
+
     $("#ajax_source_name")
         .change(function(){
             $.ajax( {
@@ -159,9 +164,12 @@ $(function() {
             $("input[type='text']").val('');
             $("select").val('');
             $("select").formSelect();
-            $("[name=synonym]").prop('checked', true);
-            $("#checkbox_type").prop('checked', false);
-            $("#checkbox_images").prop('checked', false);
+            $('input[type=checkbox]').prop('checked',false);
+            $("[name=type]").val('all');
+            $("[name=images]").val('all');
+            $("[name=synonym]").val('only');
+            //$("#checkbox_type").prop('checked', false);
+            //$("#checkbox_images").prop('checked', false);
             $("#ajax_nation_engl").html(countryInput);
             $("#ajax_provinz").html(provinceInput);
         });

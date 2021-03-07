@@ -24,15 +24,15 @@ class Picture {
 
 $picture = new Picture();
 
-$sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, img_directory, img_obs_directory, img_tab_directory, HerbNummerNrDigits, 
+$sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, img_directory, img_obs_directory, img_tab_directory, HerbNummerNrDigits,
          tbl_specimens.collectionID, tbl_management_collections.source_id
         FROM tbl_specimens, tbl_management_collections, tbl_img_definition
         WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
          AND tbl_management_collections.source_id = tbl_img_definition.source_id_fk
          AND specimen_ID = '$id'";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-      $row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+      $row = mysqli_fetch_array($result);
 
       // ----- pictures of specimen -----
       $picture->path = $row['img_directory'] . "/";
@@ -55,7 +55,7 @@ if (mysql_num_rows($result) > 0) {
 $transfer['output'] = ob_get_clean();
 $transfer['pics'] = array();
 
-if (mysql_num_rows($result) > 0) {
+if (mysqli_num_rows($result) > 0) {
     //foreach(glob($path.$pic."*") as $v)
     //  print basename($v)."\n";
     foreach($picture->getPicturePaths() as $v)

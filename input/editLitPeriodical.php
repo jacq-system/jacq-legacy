@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -67,8 +66,8 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x80) != 0)) 
                  $sqldata";
         $updated = 0;
     }
-    $result = mysql_query($sql);
-    $id = (intval($_POST['ID'])) ? intval($_POST['ID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+    $id = (intval($_POST['ID'])) ? intval($_POST['ID']) : dbi_insert_id();
     logLitPeriodicals($id, $updated);
 
     echo "<script language=\"JavaScript\">\n";
@@ -84,17 +83,16 @@ echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\
 $sql = "SELECT periodicalID, periodical, periodical_full, tl2_number, bph_number, ipni_ID, successor_ID
         FROM tbl_lit_periodicals
         WHERE periodicalID = '$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$row = dbi_query($sql)->fetch_array();
 
 $p_successor = $p_successorIndex = '';
 if ($row['successor_ID']) {
     $sql = "SELECT periodical, periodicalID
             FROM tbl_lit_periodicals
             WHERE periodicalID  = '" . intval($row['successor_ID']) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $rowSuccessor = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $rowSuccessor = mysqli_fetch_array($result);
         $p_successor      = $rowSuccessor['periodical'] . " <" . $rowSuccessor['periodicalID'] . ">";
         $p_successorIndex = $rowSuccessor['periodicalID'];
     }
@@ -104,12 +102,10 @@ $predecessors = array();
 $preID = intval($row['periodicalID']);
 do {
     $found = false;
-    $result = db_query("SELECT periodicalID FROM tbl_lit_periodicals WHERE successor_ID  = '$preID'");
-    if (mysql_num_rows($result) > 0) {
-        $rowPre = mysql_fetch_array($result);
-        $preID = intval($rowPre['periodicalID']);
-        $result = db_query("SELECT periodical, periodicalID FROM tbl_lit_periodicals WHERE periodicalID  = '$preID'");
-        $rowPre = mysql_fetch_array($result);
+    $result = dbi_query("SELECT periodicalID FROM tbl_lit_periodicals WHERE successor_ID  = '$preID'");
+    if (mysqli_num_rows($result) > 0) {
+        $preID  = intval($result->fetch_array()['periodicalID']);
+        $rowPre = dbi_query("SELECT periodical, periodicalID FROM tbl_lit_periodicals WHERE periodicalID  = '$preID'")->fetch_array();
         $predecessors[] = array('text' => $rowPre['periodical'] . " <" . $rowPre['periodicalID'] . ">",
                                 'id'   => $rowPre['periodicalID']);
         $found = true;

@@ -4,13 +4,12 @@ require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
 require_once('../inc/log_functions.php');
 require_once('mapLines.php');
-no_magic();
 
 //debug
 foreach($_GET as $k=>$v){
 	$params[$k]=$v;
 }
-	
+
 class MapLines_editLit extends MapLines{
 	var $pagination=10;
 
@@ -29,7 +28,7 @@ class MapLines_editLit extends MapLines{
 
 		return $ret;
 	}
-	
+
     function RemoveMapLine($params) {
         // make parameters save
         $citid = intval($params['citationID']);
@@ -49,14 +48,14 @@ class MapLines_editLit extends MapLines{
         }
 
         // check if we find a fitting entry
-        $result2 = db_query($sql2);
-        if ($result2 && $row2 = mysql_fetch_array($result2)) {
+        $result2 = dbi_query($sql2);
+        if ($result2 && $row2 = mysqli_fetch_array($result2)) {
             $tax_syn_ID = $row2['tax_syn_ID'];
-            
+
             // check if synonymy entry is still used in classification
             $classification_sql = "SELECT `classification_id` FROM `herbarinput`.`tbl_tax_classification` WHERE `tax_syn_ID` = {$tax_syn_ID}";
-            $classification_res = db_query($classification_sql);
-            if( $classification_res && mysql_num_rows($classification_res) > 0 ) {
+            $classification_res = dbi_query($classification_sql);
+            if( $classification_res && mysqli_num_rows($classification_res) > 0 ) {
                 $res = 2;
                 $msg = "Delete from Classification first!";
             }
@@ -64,7 +63,7 @@ class MapLines_editLit extends MapLines{
             else {
                 logTbl_tax_synonymy($tax_syn_ID, 2);
                 $sql3 = "DELETE FROM `herbarinput`.`tbl_tax_synonymy` WHERE `tax_syn_ID` = {$tax_syn_ID}";
-                $res3 = db_query($sql3);
+                $res3 = dbi_query($sql3);
                 if ($res3) {
                     $res = 1;
                 }
@@ -79,22 +78,22 @@ class MapLines_editLit extends MapLines{
     function LoadMapLines($params){
 		$citid=$params['citationID'];
 
-		
+
 		$page=$params['pageIndex'];
 		$pbegin=$page*$this->pagination;
-		
+
 		$where="";
 		$where2="";
 		$where1="
  sy.source_citationID='{$citid}'
 ";
-		
+
 		// Switch Search
 		// species...
 		if(isset($params['speciesSearch']) && strlen($params['speciesSearch'])>0){
 			$params['speciesSearch']=trim(removeID($params['speciesSearch']));
 			$params['genusSearch']=trim(removeID($params['genusSearch']));
-			
+
 			$pieces=explode(chr(194) . chr(183), $params['speciesSearch']);
 			$v=explode(" ",$pieces[0]);
 			if(strlen($params['genusSearch'])>0 && !isset($v[1])){
@@ -104,7 +103,7 @@ class MapLines_editLit extends MapLines{
 				$spec="'{$v[1]}%'";
 				$gen="'{$v[0]}%'";
 			}
-			
+
 			$where2="
 AND (
     te01.epithet LIKE {$spec}
@@ -128,11 +127,11 @@ AND(
 ";
 		// genus...
 		}else if(isset($params['genusSearch']) && strlen($params['genusSearch'])>0){
-			$gen=mysql_escape_string($params['genusSearch']) . '%';
-			
+			$gen=dbi_escape_string($params['genusSearch']) . '%';
+
 			$where2="
 AND(
- (			
+ (
     ts1.speciesID IS NULL
   AND ts1.subspeciesID IS NULL AND ts1.subspecies_authorID IS NULL
   AND ts1.varietyID IS NULL AND ts1.variety_authorID IS NULL
@@ -154,7 +153,7 @@ AND(
 		//mdld
 		}else if(isset($params['mdldSearch']) && strlen($params['mdldSearch'])>0){
 			$params['mdldSearch']=strtolower(trim(removeID($params['mdldSearch'])));
-		
+
 			global $_OPTIONS;
 			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
@@ -186,9 +185,9 @@ WHERE
  AND subformaID IS NULL AND subforma_authorID IS NULL
  AND genID in ({$lookup})
 ";
-				$result = db_query($sql);
+				$result = dbi_query($sql);
 				if(	$result){
-					while($row=mysql_fetch_array($result)){
+					while($row=mysqli_fetch_array($result)){
 						$ids[]=$row['taxonID'];
 					}
 					$ids="'".implode("','",$ids)."'";
@@ -202,17 +201,17 @@ AND(
 			}catch (Exception $e) {
 				$out =  "Fehler " . nl2br($e);
 			}
-		
+
 		}
 
-		// Join Tables		
+		// Join Tables
 		$sqlbottom="
 FROM
  tbl_tax_synonymy sy
- 
+
  LEFT JOIN tbl_tax_species ts1 ON ts1.taxonID = sy.taxonID
  LEFT JOIN tbl_tax_species ts2 ON ts2.taxonID = sy.acc_taxon_ID
- 
+
  LEFT JOIN tbl_tax_genera tg1 ON tg1.genID = ts1.genID
  LEFT JOIN tbl_tax_authors ta01 ON ta01.authorID = ts1.authorID
  LEFT JOIN tbl_tax_authors ta11 ON ta11.authorID = ts1.subspecies_authorID
@@ -241,13 +240,13 @@ FROM
  LEFT JOIN tbl_tax_epithets te42 ON te42.epithetID = ts2.formaID
  LEFT JOIN tbl_tax_epithets te52 ON te52.epithetID = ts2.subformaID
  ";
-		
+
 		// Query Fields...
 		$sql="
-SELECT 
+SELECT
  sy.taxonID as 'taxonID1',
  sy.acc_taxon_ID  as 'taxonID2',
- 
+
 
  tg1.genus as 'genus1',
  ta01.author as 'author01',
@@ -262,8 +261,8 @@ SELECT
  te31.epithet as 'epithet31',
  te41.epithet as 'epithet41',
  te51.epithet as 'epithet51',
- 
- 
+
+
  tg2.genus as 'genus2',
  ta01.author as 'author01',
  ta02.author as 'author02',
@@ -291,22 +290,22 @@ LIMIT
  {$pbegin},{$this->pagination}
 ";
 //echo $sql;exit;
-		
+
 		// get Ids
  		$ac_taxinit=array();
-		if($result = db_query($sql)) {
-			while ($row = mysql_fetch_array($result)) {
+		if($result = dbi_query($sql)) {
+			while ($row = mysqli_fetch_array($result)) {
 				 // Make taxons (much faster than loading it via display::taxon because fields are already there)
 				$t1=$this->taxon1($row,1);
 				$t2=$this->taxon1($row,2);
-				
+
 				$ac_taxinit[]=array($row['taxonID1'],$t1,$row['taxonID2'],$t2);
 			}
 		}
-		
+
 		// get count of results
 		$sqlcountsearch="
-SELECT 
+SELECT
  COUNT(*) as 'c'
 {$sqlbottom}
 WHERE
@@ -315,43 +314,45 @@ WHERE
  ";
 		$row1['c']=0;
 		$row2['c']=0;
-		if($result = db_query($sqlcountsearch)){
-			$row1 = mysql_fetch_array($result);
+		if($result = dbi_query($sqlcountsearch)){
+			$row1 = mysqli_fetch_array($result);
 		}
-		
+
 		// get all counts..
 		$sqlcountall="
-SELECT 
+SELECT
  COUNT(*) as 'c'
 FROM
 tbl_tax_synonymy sy
 WHERE
 {$where1}
  ";
-		if($result = db_query($sqlcountall)){
-			$row2 = mysql_fetch_array($result);
+		if($result = dbi_query($sqlcountall)){
+			$row2 = mysqli_fetch_array($result);
 		}
-		
+
 		// return it.
 		$res=array('cf'=>$row1['c'],'ca'=>$row2['c'],'syns'=>$ac_taxinit);
-		
+
 		return $res;
 	}
-	
+
 	// Save new pairs...
-	function SaveMapLines($params){
-	
+	function SaveMapLines($params)
+    {
+        global $dbLink;
+
 		$citid=$params['citationID'];
 		$uid=$_SESSION['uid'];
-		
+
 		$new=$this->getMapLines($params,1,0);
-		
+
 		// todo: review...
 		$sql="
 INSERT INTO  herbarinput.tbl_tax_synonymy
 (taxonID,acc_taxon_ID,ref_date,preferred_taxonomy,annotations,locked,source,source_citationID,source_person_ID,source_serviceID,source_specimenID,userID)
-VALUES 
-";	
+VALUES
+";
 		$val='';
 		$notdone=array();
 		$successx=array();
@@ -368,26 +369,26 @@ VALUES
 					// If not in database yet, add it
 					$row2=array();
 					$sql2="SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and IFNULL(acc_taxon_ID,0)='{$acctaxonID}' LIMIT 1";
-					$result2=db_query($sql2);
+					$result2=dbi_query($sql2);
 					if($result2){
-						$row2=mysql_fetch_array($result2);
+						$row2=mysqli_fetch_array($result2);
 						if($row2['c']==0){
 							$sql2 = $sql." ('{$taxonID}',".(($acctaxonID==0)?'null':"'{$acctaxonID}'").",null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
-							$result2 = db_query($sql2);
+							$result2 = dbi_query($sql2);
 							if($result2){
-								$tax_syn_ID=mysql_insert_id();
+								$tax_syn_ID = dbi_insert_id();
 								logTbl_tax_synonymy($tax_syn_ID,0);
 								$successx[]=array($x,$taxonID,$acctaxonID);
 								continue;
 							}else{
-								$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
+								$notdone[]=array($x,$taxonID,$acctaxonID,$dblink->error);
 							}
 						}else{
 							$existed=(isset($row2['c']) && $row2['c']>0);
 							$notdone[]=array($x,$taxonID,$acctaxonID,$existed?1:'unknown');
 						}
 					}else{
-						$notdone[]=array($x,$taxonID,$acctaxonID,mysql_error());
+						$notdone[]=array($x,$taxonID,$acctaxonID,$dblink->error);
 					}
 				}
 			}
@@ -403,6 +404,6 @@ VALUES
 	}
 }
 
-		
+
 $mapLines=new MapLines_editLit();
 $mapLines->execFunction($_POST['function'],$_POST);

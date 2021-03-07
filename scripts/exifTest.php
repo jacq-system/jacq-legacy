@@ -1,14 +1,19 @@
-<?php 
+<?php
 
 // Todo, 3.8.2011!
 // ghomolka
 require("../inc/variables.php");
 
-if (!@mysql_connect($_CONFIG['DATABASE']['INPUT']['host'], $_CONFIG['DATABASE']['INPUT']['readonly']['user'],$_CONFIG['DATABASE']['INPUT']['readonly']['pass']) || !@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])){
-	echo 'no database connection';
-	exit;
+/** @var mysqli $dbLink */
+$dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
+                     $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
+                     $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],
+                     $_CONFIG['DATABASE']['INPUT']['name']);
+if ($dbLink->connect_errno) {
+    echo 'no database connection';
+	exit();
 }
-mysql_query("SET character set utf8");// <= do not use it!
+$dbLink->set_charset('utf8');
 
 $bpath='C:\Users\gunther\Desktop\sqls1\exiv2';
 $pic='C:\Users\gunther\Desktop\sqls1\exiv2\wu_0038434.tif';
@@ -30,7 +35,7 @@ $extractData=array(
  //'Exif.Image.ExifTag'=>	array('type'=>'Long','val'=>	$row['269462540']	),	//	269462540
  //'Iptc.Envelope.CharacterSet'=>	array('type'=>'String','val'=>	$row['?%G']	),	//	?%G
  //'Iptc.Application2.RecordVersion'=>	array('type'=>'Short','val'=>	$row['10664']	),	//	10664
- 
+
  'Exif.Image.ImageWidth'=>	array('type'=>'Short','val'=>	''	),	//	7912
  'Exif.Image.ImageLength'=>	array('type'=>'Short','val'=>	''	),	//	11351
  'Iptc.Application2.DateCreated'=>	array('type'=>'Date','val'=>	''	),	//	40858
@@ -58,7 +63,7 @@ if($r==0){
 		if(isset($extractData[$key])){
 			$val=substr($line,60);
 			$res[$key]=$val;
-		
+
 		}
 	}
 	echo "<pre>";
@@ -72,7 +77,7 @@ if($r==0){
 exit;
 $row=array();
 
-		
+
 		$query="
 SELECT
  sp.*,
@@ -86,15 +91,15 @@ SELECT
  rank.*,
  col1.*,
  col2.*,
- 
+
  tg.genus,
  te.epithet,ta.author,
  te1.epithet epithet1, ta1.author author1,
- te2.epithet epithet2, ta2.author author2, 
+ te2.epithet epithet2, ta2.author author2,
  te3.epithet epithet3, ta3.author author3,
  te4.epithet epithet4, ta4.author author4,
  te5.epithet epithet5, ta5.author author5,
- 
+
  lit.citationID, lit.suptitel, le.autor AS editor, la.autor, lp.periodicalID, lp.periodical
 
 FROM
@@ -135,33 +140,33 @@ LEFT JOIN tbl_collector_2 col2 ON col2.Sammler_2ID=sp.Sammler_2ID
 WHERE filename='wu_0020014';
 ";
 	//echo $query;exit;
-	$res = mysql_query($query);
-	while($row = mysql_fetch_array($res)){
+	$res = $dbLink->query($query);
+	while($row = mysqli_fetch_array($res)){
 
 
 
 # 'annotations ophyte aption'=>	array('type'=>'String','val'=>	$row['type']	),	//	type ??
 #	//'Xmp.iptcExt.DigitalSourceType'=>	array('type'=>'XmpText','val'=>	 'http://cv.iptc.org/newscodes/digitalsourcetype/positiveFilm'	),	//	http://cv.iptc.org/newscodes/digitalsourcetype/positiveFilm
- 
+
  /*
-   	$row['specimen_ID']	$row['HerbNummer']	$row['collectionID']	$row['CollNummer']	$row['identstatusID']	$row['checked']	$row['accessible']	
-	$row['taxonID']	$row['SammlerID']	$row['Sammler_2ID']	$row['seriesID']	$row['series_number']	$row['Nummer']	$row['alt_number']	$row['Datum']	
-	$row['Datum2']	$row['det']	$row['typified']	$row['typusID']	$row['taxon_alt']	$row['NationID']	$row['provinceID']	$row['Bezirk']	
-	
-		$row['quadrant']	$row['quadrant_sub']	$row['exactness']	$row['altitude_min']		
+   	$row['specimen_ID']	$row['HerbNummer']	$row['collectionID']	$row['CollNummer']	$row['identstatusID']	$row['checked']	$row['accessible']
+	$row['taxonID']	$row['SammlerID']	$row['Sammler_2ID']	$row['seriesID']	$row['series_number']	$row['Nummer']	$row['alt_number']	$row['Datum']
+	$row['Datum2']	$row['det']	$row['typified']	$row['typusID']	$row['taxon_alt']	$row['NationID']	$row['provinceID']	$row['Bezirk']
+
+		$row['quadrant']	$row['quadrant_sub']	$row['exactness']	$row['altitude_min']
  2009-11-09 16:50:24
 
 
  1866-02-17
-	
-		$row['habitat']	$row['habitus']	$row['Bemerkungen']	$row['aktualdatum']	$row['eingabedatum']	$row['digital_image']	
+
+		$row['habitat']	$row['habitus']	$row['Bemerkungen']	$row['aktualdatum']	$row['eingabedatum']	$row['digital_image']
 	$row['garten']	$row['voucherID']	$row['ncbi_accession']	$row['foreign_db_ID']	$row['label']	$row['observation']	$row['digital_image_obs']	$row['filename']
 
-	$row['source_id_fk']	$row['supplier_supplied_when']	$row['supplier_organisation']	$row['supplier_organisation_code']	$row['supplier_person']	$row['supplier_url']	
-	$row['supplier_adress']	$row['supplier_telephone']	$row['supplier_email']	$row['legal_owner_organisation']	$row['legal_owner_organisation_code']	$row['legal_owner_person']	
-	$row['legal_owner_adress']	$row['legal_owner_telephone']	$row['legal_owner_email']	$row['legal_owner_url']	$row['terms_of_use']	$row['acknowledgement']	$row['description']	
+	$row['source_id_fk']	$row['supplier_supplied_when']	$row['supplier_organisation']	$row['supplier_organisation_code']	$row['supplier_person']	$row['supplier_url']
+	$row['supplier_adress']	$row['supplier_telephone']	$row['supplier_email']	$row['legal_owner_organisation']	$row['legal_owner_organisation_code']	$row['legal_owner_person']
+	$row['legal_owner_adress']	$row['legal_owner_telephone']	$row['legal_owner_email']	$row['legal_owner_url']	$row['terms_of_use']	$row['acknowledgement']	$row['description']
 	$row['disclaimer']	$row['restrictions']	$row['logo_url']	$row['statement_url']	$row['copyright']	$row['ipr']	$row['rights_url']
-//date("c",mktime(hour,min,sec,month,days,year)	
+//date("c",mktime(hour,min,sec,month,days,year)
 
 */
 		// todo: date can also be only a year...
@@ -176,8 +181,8 @@ WHERE filename='wu_0020014';
  #'Xmp.dc.subject'=>	array('type'=>'XmpBag','val'=>	$row['stichworte']	),	//	stichworte
  #'Iptc.Application2.TransmissionReference'=>	array('type'=>'String','val'=>	$row['Jobkennung']	),	//	Jobkennung
  #'Iptc.Application2.Keywords'=>	array('type'=>'String','val'=>	$row['stichworte']	),	//	stichworte
- 
- 
+
+
  'Exif.Image.Artist'=>	array('type'=>'Ascii','val'=>	$row['supplier_organisation']	),	//	supplier_organisation
  'Exif.Image.Copyright'=>	array('type'=>'Ascii','val'=>	$row['legal_owner_adress']	),	//	legal_owner_adress
  'Iptc.Application2.Writer'=>	array('type'=>'String','val'=>	$row['supplier_person']	),	//	supplier_person
@@ -193,26 +198,26 @@ WHERE filename='wu_0020014';
  'Iptc.Application2.CountryName'=>	array('type'=>'String','val'=>	$row['nation_engl']	),	//	land
  'Iptc.Application2.CountryCode'=>	array('type'=>'String','val'=>	$row['iso_alpha_3_code']	),	//	ISO
  'Iptc.Application2.Copyright'=>	array('type'=>'String','val'=>	$row['legal_owner_organisation'].' '.$row['legal_owner_adress']	),	//	legal_owner_adress
- 'Xmp.xmp.CreatorTool'=>	array('type'=>'XmpText','val'=>	'EXIV2'	),	//	Adobe Photoshop CS5 Windows mktime( 
+ 'Xmp.xmp.CreatorTool'=>	array('type'=>'XmpText','val'=>	'EXIV2'	),	//	Adobe Photoshop CS5 Windows mktime(
  'Xmp.xmp.ModifyDate'=>	array('type'=>'XmpText','val'=>	date("c",mktime($date2[3],$date2[4],$date2[5],$date2[1],$date2[2],$date2[0])) ),	//	2011-08-12T19:54:01+02:00
  'Xmp.xmp.CreateDate'=>	array('type'=>'XmpText','val'=>	date("c",mktime(12,0,0,$date[1],$date[2],$date[0])) ),	//	2011-08-12T17:15:33+02:00
- 'Xmp.xmp.MetadataDate'=>	array('type'=>'XmpText','val'=>	date("c")	),	//	2011-08-12T19:54:01+02:00 c	ISO 8601 Datum (hinzugefügt in PHP 5) 2004-02-12T15:19:21+00:00
+ 'Xmp.xmp.MetadataDate'=>	array('type'=>'XmpText','val'=>	date("c")	),	//	2011-08-12T19:54:01+02:00 c	ISO 8601 Datum (hinzugefï¿½gt in PHP 5) 2004-02-12T15:19:21+00:00
  'Xmp.dc.rights'=>	array('type'=>'LangAlt lang="x-default','val'=>	$row['legal_owner_organisation'].' '.$row['legal_owner_adress']	),	//	legal_owner_adress
  'Xmp.dc.creator'=>	array('type'=>'XmpSeq','val'=>	$row['supplier_organisation']	),	//	supplier_organisation
  'Xmp.iptc.Location'=>	array('type'=>'XmpText','val'=>	$row['Bezirk']	),	//	Ortdetail
  'Xmp.iptc.CountryCode'=>	array('type'=>'XmpText','val'=>	$row['iso_alpha_3_code']	),	//	ISOCODE
- 'Xmp.iptc.CreatorContactInfo'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	
+ 'Xmp.iptc.CreatorContactInfo'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//
  'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrExtadr'=>	array('type'=>'XmpText','val'=>	$row['supplier_adress']	),	//	supplier_adress
  'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiTelWork'=>	array('type'=>'XmpText','val'=>	$row['supplier_telephone']	),	//	supplier_telephone
  'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiUrlWork'=>	array('type'=>'XmpText','val'=>	$row['supplier_url']	),	//	supplier_url
  'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiEmailWork'=>	array('type'=>'XmpText','val'=>	$row['supplier_email']	),	//	supplier_email
- 'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCtry'=>	array('type'=>'XmpText','val'=>	'Austria'	),	//	Österreich
+ 'Xmp.iptc.CreatorContactInfo/Iptc4xmpCore:CiAdrCtry'=>	array('type'=>'XmpText','val'=>	'Austria'	),	//	ï¿½sterreich
  'Xmp.xmpRights.Marked'=>	array('type'=>'XmpText','val'=>	'TRUE'	),	//	TRUE
  'Xmp.xmpRights.WebStatement'=>	array('type'=>'XmpText','val'=>	$row['legal_owner_url']	),	//	legal_owner_url
  'Xmp.xmpRights.UsageTerms'=>	array('type'=>'LangAlt lang="x-default"','val'=>	$row['terms_of_use']	),	//	terms_of_use
- 
+
  'Xmp.iptcExt.PersonInImage'=>	array('type'=>'XmpBag','val'=>	$row['genus'].' '.$row['epithet'].' '.$row['author'].' ' ),	//	taxon
- 
+
  'Xmp.iptcExt.LocationCreated'=>	array('type'=>'XmpText type="Bag"','val'=>	 '0'	),	//	0
  'Xmp.iptcExt.LocationCreated[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
  'Xmp.iptcExt.LocationCreated[1]/Iptc4xmpExt:Sublocation'=>	array('type'=>'XmpText','val'=>	 '1'	),	//	1
@@ -221,7 +226,7 @@ WHERE filename='wu_0020014';
  'Xmp.iptcExt.LocationCreated[1]/Iptc4xmpExt:CountryName'=>	array('type'=>'XmpText','val'=>	 '4'	),	//	4
  'Xmp.iptcExt.LocationCreated[1]/Iptc4xmpExt:CountryCode'=>	array('type'=>'XmpText','val'=>	 '5'	),	//	5
  'Xmp.iptcExt.LocationCreated[1]/Iptc4xmpExt:WorldRegion'=>	array('type'=>'XmpText','val'=>	 '6'	),	//	6
- 
+
  'Xmp.iptcExt.LocationShown'=>	array('type'=>'XmpText type="Bag"','val'=>	 '0'	),	//	0
  'Xmp.iptcExt.LocationShown[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
  'Xmp.iptcExt.LocationShown[1]/Iptc4xmpExt:Sublocation'=>	array('type'=>'XmpText','val'=>	$row['Bezirk']	),	//	Ortsdetaik
@@ -235,16 +240,16 @@ WHERE filename='wu_0020014';
  'Xmp.iptcExt.RegistryId[1]'=>	array('type'=>'XmpText type="Struct" ','val'=>	 '0'	),	//	0
  'Xmp.iptcExt.RegistryId[1]/Iptc4xmpExt:RegOrgId'=>	array('type'=>'XmpText','val'=>	$row['source_code']	),	//	source_code
  'Xmp.iptcExt.RegistryId[1]/Iptc4xmpExt:RegItemId'=>	array('type'=>'XmpText','val'=>	$row['specimen_ID']	),	//	specimenID
- 
+
  'Xmp.plus.ImageSupplierImageID'=>	array('type'=>'XmpText','val'=>	$row['specimen_ID']	),	//	specimenID
  'Xmp.plus.PropertyReleaseStatus'=>	array('type'=>'XmpText','val'=>	'Unlimited Property Releases'	),	//	Unlimited Property Releases
  'Xmp.plus.Version'=>	array('type'=>'XmpText','val'=>	'36557'	),	//	36557
- 
+
  'Xmp.plus.ImageSupplier'=>	array('type'=>'XmpText type="Seq"','val'=>	 '0'	),	//	0
  'Xmp.plus.ImageSupplier[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
  'Xmp.plus.ImageSupplier[1]/plus:ImageSupplierName'=>	array('type'=>'XmpText','val'=>	$row['source_name']	),	//	source_name
  'Xmp.plus.ImageSupplier[1]/plus:ImageSupplierID'=>	array('type'=>'XmpText','val'=>	$row['source_code']	),	//	source_code
- 
+
 
  'Xmp.plus.ImageCreator'=>	array('type'=>'XmpText type="Seq"','val'=>	 '0'	),	//	0
  'Xmp.plus.ImageCreator[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
@@ -255,13 +260,13 @@ WHERE filename='wu_0020014';
  'Xmp.plus.ImageCreator[2]/plus:ImageCreatorName'=>	array('type'=>'XmpText','val'=>	$row['Sammler_2']	),	//	Wien
  'Xmp.plus.ImageCreator[2]/plus:ImageCreatorID'=>	array('type'=>'XmpText','val'=>	$row['Sammler_2_FN_list']	),	//	thomas 1
 
- 
+
  'Xmp.plus.CopyrightOwner'=>	array('type'=>'XmpText type="Seq"','val'=>	 '0'	),	//	0
  'Xmp.plus.CopyrightOwner[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
  'Xmp.plus.CopyrightOwner[1]/plus:CopyrightOwnerName'=>	array('type'=>'XmpText','val'=>	$row['source_code']	),	//	copy1
  'Xmp.plus.CopyrightOwner[1]/plus:CopyrightOwnerID'=>	array('type'=>'XmpText','val'=>	$row['source_name']	),	//	copyval1
- 
- 
+
+
  'Xmp.plus.Licensor'=>	array('type'=>'XmpText type="Seq"','val'=>	 '0'	),	//	0
  'Xmp.plus.Licensor[1]'=>	array('type'=>'XmpText type="Struct"','val'=>	 '0'	),	//	0
  'Xmp.plus.Licensor[1]/plus:LicensorName'=>	array('type'=>'XmpText','val'=>	$row['legal_owner_person']	),	//	lizenz1
@@ -270,7 +275,7 @@ WHERE filename='wu_0020014';
  'Xmp.plus.Licensor[1]/plus:LicensorEmail'=>	array('type'=>'XmpText','val'=>	$row['legal_owner_email']	),	//	email1
  'Xmp.plus.Licensor[1]/plus:LicensorURL'=>	array('type'=>'XmpText','val'=>	$row['legal_owner_url']	),	//	url1
  ));
- 
+
 	/*
 	 // Todo: GPS
 	if($row['Coord_W']!='' || $row['Coord_E']!=''||$row['Coord_S']!='' || $row['Coord_N']!=''){
@@ -278,7 +283,7 @@ WHERE filename='wu_0020014';
 			'Exif.GPSInfo.GPSVersionID'=>	array('type'=>'Byte','val'=>	'02000000.H'	),	//	02000000.H
 			'Exif.GPSInfo.GPSTimeStamp'=>	array('type'=>'Rational','val'=>	date("H:i:s",mktime(12,0,0,$date[1],$date[2],$date[0])) ),	//	14:00:47
 			'Exif.GPSInfo.GPSAltitude'=>	array('type'=>'Rational','val'=>	$row['altitude_in']	),	//	RATIONAL value in meters
-			'Exif.GPSInfo.GPSAltitudeRef'=>	array('type'=>'Byte','val'=>	'0'	),	//	above/under sea level: 0/1 
+			'Exif.GPSInfo.GPSAltitudeRef'=>	array('type'=>'Byte','val'=>	'0'	),	//	above/under sea level: 0/1
 		));
 	}
 
@@ -287,13 +292,13 @@ WHERE filename='wu_0020014';
 		if($row['Coord_W']!=''){
 			$newData=array_merge($newData,array(
 				'Exif.GPSInfo.GPSLongitudeRef'=>	array('type'=>'Ascii','val'=>	$row['W']	),	//	E or W
-				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_W'],$row['W_Min'],$row['W_Sec'] )	),	//	dd/1,mm/1,ss/1	
+				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_W'],$row['W_Min'],$row['W_Sec'] )	),	//	dd/1,mm/1,ss/1
 			));
-			
+
 		 }else if($row['Coord_E']!=''){
 			$newData=array_merge($newData,array(
 				'Exif.GPSInfo.GPSLongitudeRef'=>	array('type'=>'Ascii','val'=>	$row['E']	),	//	E or W
-				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_E'],$row['E_Min'],$row['E_Sec'] )	),	//	dd/1,mm/1,ss/1	
+				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_E'],$row['E_Min'],$row['E_Sec'] )	),	//	dd/1,mm/1,ss/1
 			));
 		 }
 	}
@@ -303,23 +308,23 @@ WHERE filename='wu_0020014';
 		if($row['Coord_S']!=''){
 			$newData=array_merge($newData,array(
 				'Exif.GPSInfo.GPSLongitudeRef'=>	array('type'=>'Ascii','val'=>	$row['S']	),	//	E or W
-				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_S'],$row['S_Min'],$row['S_Sec'] )	),	//	dd/1,mm/1,ss/1	
+				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_S'],$row['S_Min'],$row['S_Sec'] )	),	//	dd/1,mm/1,ss/1
 			));
-			
+
 		 }else if($row['Coord_N']!=''){
 			$newData=array_merge($newData,array(
 				'Exif.GPSInfo.GPSLongitudeRef'=>	array('type'=>'Ascii','val'=>	$row['N']	),	//	E or W
-				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_N'],$row['N_Min'],$row['N_Sec'] )	),	//	dd/1,mm/1,ss/1	
+				'Exif.GPSInfo.GPSLongitude'=>	array('type'=>'Rational','val'=>sprintf ("%2d/1,%2d/1,%2d/1", $row['Coord_N'],$row['N_Min'],$row['N_Sec'] )	),	//	dd/1,mm/1,ss/1
 			));
 		 }
 	}*/
-	
+
 		echo "<pre>";
 		print_r($row);
 		print_r($newData);
 		echo "</pre>";
 	}
 
-		
-		
+
+
 ?>

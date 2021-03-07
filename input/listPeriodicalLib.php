@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = intval($_GET['ID']);
 
@@ -43,14 +42,14 @@ function makePeriodical($row) {
 $sql = "SELECT periodical, periodicalID ".
        "FROM tbl_lit_periodicals ".
        "WHERE periodicalID='$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 echo "<b>Periodical:</b> ".$row['periodical']." <".$row['periodicalID'].">\n<p>\n";
 $sql = "SELECT lib_period_ID, signature, bestand, url, library ".
        "FROM tbl_lit_lib_period, tbl_lit_libraries ".
        "WHERE tbl_lit_lib_period.library_ID=tbl_lit_libraries.library_ID ".
         "AND periodicalID='$id' ORDER BY library";
-$result = db_query($sql);
+$result = dbi_query($sql);
 echo "<table class=\"out\" cellspacing=\"2\" cellpadding=\"2\">\n";
 echo "<tr class=\"out\">";
 echo "<th></th>";
@@ -58,8 +57,8 @@ echo "<th class=\"out\">&nbsp;library&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;signature&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;stock&nbsp;</th>";
 echo "</tr>\n";
-if (mysql_num_rows($result)>0) {
-  while ($row=mysql_fetch_array($result)) {
+if (mysqli_num_rows($result)>0) {
+  while ($row=mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\">".
          "<a href=\"javascript:editPeriodicalLib('<".$row['lib_period_ID'].">',0)\">edit</a>".

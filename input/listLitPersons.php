@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = intval($_GET['ID']);
 
@@ -32,21 +31,20 @@ $id = intval($_GET['ID']);
 <body>
 
 <?php
-$sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
-       FROM tbl_lit l
-        LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
-        LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
-        LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-       WHERE citationID = '$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$sql = "SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
+        FROM tbl_lit l
+         LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
+         LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
+         LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
+        WHERE citationID = '$id'";
+$row = dbi_query($sql)->fetch_array();
 echo "<b>protolog:</b> " . protolog($row) . "\n<p>\n";
 $sql = "SELECT lp.lit_persons_ID, lp.annotations, p.person_ID, p.p_firstname, p.p_familyname, p.p_birthdate, p.p_death
         FROM tbl_lit_persons lp, tbl_person p
         WHERE lp.personID_fk = p.person_ID
          AND lp.citationID_fk = '$id'
         ORDER BY p.p_familyname";
-$result = db_query($sql);
+$result = dbi_query($sql);
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
@@ -69,8 +67,8 @@ echo "<tr class=\"out\">"
    . "<th class=\"out\">&nbsp;Name&nbsp;</th>"
    . "<th class=\"out\">&nbsp;annotations&nbsp;</th>"
    . "</tr>\n";
-if (mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+if (mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "<tr class=\"out\">"
            . "<td class=\"out\">"
            . "<a href=\"javascript:editLitPersons('<" . $row['lit_persons_ID'] . ">',0)\">edit</a>"

@@ -4,7 +4,6 @@ require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
 require_once('../inc/log_functions.php');
 require_once('../inc/mapLines.php');
-no_magic();
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;
@@ -34,35 +33,35 @@ function taxon1($row,$t=0){
 // todo: check ab hier...
 if(isset($_POST['function']) ){
 	$p_citationID=extractID($_POST['sel']);
-	
+
 	// RemoveTaxSynLines
 	if($_POST['function']=='RemoveMapLine'){
 		$citid=$p_citationID;
 		$taxonID=$_POST['leftID'];
 		$acc_taxon_ID=$_POST['rightID'];
 		$res=0;
-		
+
 		$sql2 = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acc_taxon_ID}' LIMIT 1";
-		$result2 = db_query($sql2);
-		if($result2 && $row2 = mysql_fetch_array($result2)){
+		$result2 = dbi_query($sql2);
+		if($result2 && $row2 = mysqli_fetch_array($result2)){
 			logTbl_tax_synonymy($row2['tax_syn_ID'],2);
 			$sql3 = "DELETE FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID='{$row2['tax_syn_ID']}' LIMIT 1";
-			$res3 = db_query($sql3);
+			$res3 = dbi_query($sql3);
 			if($res3){
-				$res=1;			
+				$res=1;
 			}
 		}
-		
+
 		$res=array('success'=>$res);
-		
+
 		$res=json_encode($res);
-		
+
 		echo $res;
 		exit;
-	
+
 	// Load/Search TaxSyns
 	}else if($_POST['function']=='LoadMapLines'){
-		
+
 		$where="";
 		$mdldSearch=isset($_POST['search'])?$_POST['search']:'';
 		$page=$_POST['pageIndex'];
@@ -71,14 +70,14 @@ if(isset($_POST['function']) ){
 		$where2="";
 		$where1="
  sy.source_citationID=$p_citationID
- 
+
 ";
 		// Switch Search
 		// species...
 		if(isset($_POST['speciesSearch']) && strlen($_POST['speciesSearch'])>0){
-			$spec="'".mysql_escape_string($_POST['speciesSearch']) . "%'";
-			$gen="'".mysql_escape_string($_POST['genusSearch']) . "%'";
-			
+			$spec="'".dbi_escape_string($_POST['speciesSearch']) . "%'";
+			$gen="'".dbi_escape_string($_POST['genusSearch']) . "%'";
+
 			$where2="
 AND (
     te01.epithet LIKE {$spec}
@@ -102,11 +101,11 @@ AND(
 ";
 		// genus...
 		}else if(isset($_POST['genusSearch']) && strlen($_POST['genusSearch'])>0){
-			$gen=mysql_escape_string($_POST['genusSearch']) . '%';
-			
+			$gen=dbi_escape_string($_POST['genusSearch']) . '%';
+
 			$where2="
 AND(
- (			
+ (
     ts1.speciesID IS NULL
   AND ts1.subspeciesID IS NULL AND ts1.subspecies_authorID IS NULL
   AND ts1.varietyID IS NULL AND ts1.variety_authorID IS NULL
@@ -157,9 +156,9 @@ WHERE
  AND subformaID IS NULL AND subforma_authorID IS NULL
  AND genID in ({$lookup})
 ";
-				$result = db_query($sql);
+				$result = dbi_query($sql);
 				if(	$result){
-					while($row=mysql_fetch_array($result)){
+					while($row=mysqli_fetch_array($result)){
 						$ids[]=$row['taxonID'];
 					}
 					$ids="'".implode("','",$ids)."'";
@@ -173,17 +172,17 @@ AND(
 			}catch (Exception $e) {
 				$out =  "Fehler " . nl2br($e);
 			}
-		
+
 		}
 
-		// Join Tables		
+		// Join Tables
 		$sqlbottom="
 FROM
  tbl_tax_synonymy sy
- 
+
  LEFT JOIN tbl_tax_species ts1 ON ts1.taxonID = sy.taxonID
  LEFT JOIN tbl_tax_species ts2 ON ts2.taxonID = sy.acc_taxon_ID
- 
+
  LEFT JOIN tbl_tax_genera tg1 ON tg1.genID = ts1.genID
  LEFT JOIN tbl_tax_authors ta01 ON ta01.authorID = ts1.authorID
  LEFT JOIN tbl_tax_authors ta11 ON ta11.authorID = ts1.subspecies_authorID
@@ -212,13 +211,13 @@ FROM
  LEFT JOIN tbl_tax_epithets te42 ON te42.epithetID = ts2.formaID
  LEFT JOIN tbl_tax_epithets te52 ON te52.epithetID = ts2.subformaID
  ";
-		
+
 		// Query Fields...
 		$sql="
-SELECT 
+SELECT
  sy.taxonID as 'taxonID1',
  sy.acc_taxon_ID  as 'taxonID2',
- 
+
 
  tg1.genus as 'genus1',
  ta01.author as 'author01',
@@ -233,8 +232,8 @@ SELECT
  te31.epithet as 'epithet31',
  te41.epithet as 'epithet41',
  te51.epithet as 'epithet51',
- 
- 
+
+
  tg2.genus as 'genus2',
  ta01.author as 'author01',
  ta02.author as 'author02',
@@ -261,22 +260,22 @@ LIMIT
  {$pbegin},{$pagination}
 ";
 //echo $sql;exit;
-		
+
 		// get Ids
  		$ac_taxinit=array();
-		if($result = db_query($sql)) {
-			while ($row = mysql_fetch_array($result)) {
+		if($result = dbi_query($sql)) {
+			while ($row = mysqli_fetch_array($result)) {
 				 // Make taxons (much faster than loading it via display::taxon because fields are already there)
 				$t1=taxon1($row,1);
 				$t2=taxon1($row,2);
-				
+
 				$ac_taxinit[]=array($row['taxonID1'],$t1,$row['taxonID2'],$t2);
 			}
 		}
-		
+
 		// get count of results
 		$sqlcountsearch="
-SELECT 
+SELECT
  COUNT(*) as 'c'
 {$sqlbottom}
 WHERE
@@ -285,48 +284,48 @@ WHERE
  ";
 		$row1['c']=0;
 		$row2['c']=0;
-		if($result = db_query($sqlcountsearch)){
-			$row1 = mysql_fetch_array($result);
+		if($result = dbi_query($sqlcountsearch)){
+			$row1 = mysqli_fetch_array($result);
 		}
-		
+
 		// get all counts..
 		$sqlcountall="
-SELECT 
+SELECT
  COUNT(*) as 'c'
 FROM
 tbl_tax_synonymy sy
 WHERE
 {$where1}
  ";
-		if($result = db_query($sqlcountall)){
-			$row2 = mysql_fetch_array($result);
+		if($result = dbi_query($sqlcountall)){
+			$row2 = mysqli_fetch_array($result);
 		}
-		
+
 		// return it.
 		$res=array('cf'=>$row1['c'],'ca'=>$row2['c'],'syns'=>$ac_taxinit);
-		
-		
+
+
 		$res=json_encode($res);
-		
+
 		echo $res;
 		exit;
-	
+
 	// Save new pairs...
 	}else if($_POST['function']=='SaveMapLines'){
 
 
-		
+
 		$uid=d($_SESSION['uid']);
 		$citid=$p_citationID;
-		
+
 		$new=getMapLines($_POST,1);
-		
+
 		// todo: review...
 		$sql="
 INSERT INTO  herbarinput.tbl_tax_synonymy
 (taxonID,acc_taxon_ID,ref_date,preferred_taxonomy,annotations,locked,source,source_citationID,source_person_ID,source_serviceID,source_specimenID,userID)
-VALUES 
-";	
+VALUES
+";
 		$val="";
 		$notdone=array();
 		foreach($new as $taxonID=>$obj){
@@ -334,13 +333,13 @@ VALUES
 				// If not in database yet, add it
 				$row2=array();
 				$sql2 = "SELECT COUNT(*) as 'c' FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acctaxonID}' LIMIT 1";
-				$result2 = db_query($sql2);
-				if($result2 && $row2 = mysql_fetch_array($result2)){
+				$result2 = dbi_query($sql2);
+				if($result2 && $row2 = mysqli_fetch_array($result2)){
 					if($row2['c']==0){
 						$sql2 = $sql." ('{$taxonID}','{$acctaxonID}',null,'0','','1','literature',{$citid},null,null,null,'{$uid}') ";
-						$result2 = db_query($sql2);
+						$result2 = dbi_query($sql2);
 						if($result2){
-							$tax_syn_ID=mysql_insert_id();
+							$tax_syn_ID = dbi_insert_id();
 							logTbl_tax_synonymy($tax_syn_ID,0);
 							continue;
 						}
@@ -356,7 +355,7 @@ VALUES
 			$res=array('success'=>1);
 		}
 		$res=json_encode($res);
-		
+
 		echo $res;
 		exit;
 	}

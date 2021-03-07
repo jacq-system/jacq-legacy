@@ -1,16 +1,15 @@
 <?php
 session_start();
 require("inc/connect.php");
-no_magic();
 
 $groupID = intval($_GET['sel']);
-$row = mysql_fetch_array(db_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID='$groupID'"));
+$row = dbi_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID='$groupID'")->fetch_array();
 $groupname = $row['group_name'];
 
 if (isset($_GET['del']) && intval($_GET['del']) && checkRight('admin')) {
     $sql = "DELETE FROM herbarinput_log.tbl_herbardb_unlock
             WHERE ID = '" . intval($_GET['del']) . "'";
-    db_query($sql);
+    dbi_query($sql);
 }
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -47,8 +46,8 @@ if (isset($_GET['del']) && intval($_GET['del']) && checkRight('admin')) {
 $sql = "SELECT ID, `table`
         FROM herbarinput_log.tbl_herbardb_unlock
         WHERE groupID = '$groupID'";
-$result = db_query($sql);
-while ($row=mysql_fetch_array($result)) {
+$result = dbi_query($sql);
+while ($row=mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">";
     echo "<td class=\"out\"><a href=\"listGroupUnlock.php?sel=$groupID&del=" . $row['ID'] . "\" style=\"background-color:red\">del {$row['table']}</a></td>";
     echo "<td class=\"out\"><a href=\"editGroupUnlock.php?id=$groupID&sel=" . $row['ID'] . "\">edit {$row['table']}</a></td>";

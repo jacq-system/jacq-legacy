@@ -18,25 +18,25 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
 
     // first find a specific entry with source_id and collectionID if there is one
     if (!empty($collection_id)) {
-        $result_meta_stblid = db_query("SELECT `text`, `table_column`, `pattern`, `replacement`
-                                        FROM `meta_stblid`
-                                        WHERE `source_id` = '$source_id'
-                                         AND `collectionID` = '$collection_id'
-                                        ORDER BY `sequence`");
+        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`
+                                         FROM `meta_stblid`
+                                         WHERE `source_id` = '$source_id'
+                                          AND `collectionID` = '$collection_id'
+                                         ORDER BY `sequence`");
     } else {
         $result_meta_stblid = false;
     }
-    if ($result_meta_stblid && mysql_num_rows($result_meta_stblid) > 0) {
-        $rows_meta_stblid = mysql_fetch_all($result_meta_stblid);
+    if ($result_meta_stblid && $result_meta_stblid->num_rows > 0) {
+        $rows_meta_stblid = $result_meta_stblid->fetch_all(MYSQLI_ASSOC);
     } else {
         // no luck, so we search an entry which is valid for any collection of a given source_id
-        $result_meta_stblid = db_query("SELECT `text`, `table_column`, `pattern`, `replacement`
-                                        FROM `meta_stblid`
-                                        WHERE `source_id` = '$source_id'
-                                         AND `collectionID` IS NULL
-                                        ORDER BY `sequence`");
-        if ($result_meta_stblid && mysql_num_rows($result_meta_stblid) > 0) {
-            $rows_meta_stblid = mysql_fetch_all($result_meta_stblid);
+        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`
+                                         FROM `meta_stblid`
+                                         WHERE `source_id` = '$source_id'
+                                          AND `collectionID` IS NULL
+                                         ORDER BY `sequence`");
+        if ($result_meta_stblid && $result_meta_stblid->num_rows > 0) {
+            $rows_meta_stblid = $result_meta_stblid->fetch_all(MYSQLI_ASSOC);
         } else {
             // still nothing found, so there's nothing to do
             $rows_meta_stblid = array();
@@ -50,15 +50,14 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
                 $table = $parts[0];
                 $column = $parts[1];
 
-                $result = db_query("show index from $table where Key_name = 'PRIMARY'");
-                $row = mysql_fetch_array($result);
+                $row = dbi_query("show index from $table where Key_name = 'PRIMARY'")->fetch_array();
                 $primaryKey = $row['Column_name'];
 
-                $result = db_query("SELECT $column
-                                    FROM $table
-                                    WHERE $primaryKey = '" . $constraints[$primaryKey] . "'");
-                if ($result && mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query("SELECT $column
+                                     FROM $table
+                                     WHERE $primaryKey = '" . $constraints[$primaryKey] . "'");
+                if ($result && $result->num_rows > 0) {
+                    $row = $result->fetch_array();
                     if (trim($row[$column])) {
                         $stblid .= preg_replace($row_meta_stblid['pattern'], $row_meta_stblid['replacement'], $row[$column]);
                     } else {
@@ -89,13 +88,13 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
  */
 function getStableIdentifier($specimenID)
 {
-    $result = db_query("SELECT stableIdentifier
-                        FROM tbl_specimens_stblid
-                        WHERE specimen_ID = '" . intval($specimenID) . "'
-                        ORDER BY timestamp DESC
-                        LIMIT 1");
-    if ($result && mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query("SELECT stableIdentifier
+                         FROM tbl_specimens_stblid
+                         WHERE specimen_ID = '" . intval($specimenID) . "'
+                         ORDER BY timestamp DESC
+                         LIMIT 1");
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_array();
         return $row['stableIdentifier'];
     } else {
         return "";

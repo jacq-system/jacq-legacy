@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -62,8 +61,7 @@ $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID
        LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
        LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
        WHERE citationID = '$id'";
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$row = dbi_query($sql)->fetch_array();
 echo "<b>protolog:</b> " . protolog($row) . "\n<p>\n";
 $sql = "SELECT lit_tax_ID, annotations,
          ts.taxonID, tg.genus, ta.author, ta1.author author1, ta2.author author2,
@@ -105,7 +103,7 @@ $sql = "SELECT lit_tax_ID, annotations,
          LEFT JOIN tbl_tax_epithets te5_a ON te5_a.epithetID = ts_a.subformaID
          LEFT JOIN tbl_tax_genera tg_a ON tg_a.genID = ts_a.genID
         WHERE citationID = '$id' ORDER BY " . $_SESSION['taxaOrder'];
-$result = db_query($sql);
+$result = dbi_query($sql);
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
@@ -142,8 +140,8 @@ if ($_SESSION['taxaOrTyp'] == 2) {
 echo "&nbsp;</th>";
 echo "<th class=\"out\">&nbsp;annotations&nbsp;</th>";
 echo "</tr>\n";
-if (mysql_num_rows($result) > 0) {
-    while ($row = mysql_fetch_array($result)) {
+if (mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "<tr class=\"out\">";
         echo "<td class=\"out\">"
            . "<a href=\"javascript:editLitTaxa('<" . $row['lit_tax_ID'] . ">',0)\">edit</a>"

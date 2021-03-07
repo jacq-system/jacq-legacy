@@ -1,4 +1,4 @@
 # Enable Rewriting
 RewriteEngine on
-
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^/?([a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+-[a-fA-F0-9]+)$ resolve.php?uuid=$1 [L]

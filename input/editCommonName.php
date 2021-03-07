@@ -4,8 +4,7 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
-error_reporting(E_ALL);
+
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
@@ -98,8 +97,8 @@ FROM
 WHERE
  com.common_id='{$_dvar['common_nameIndex']}'";
 
-	$result = doDBQuery($sql);
-	if($row=mysql_fetch_array($result)){
+	$result = dbi_query($sql);
+	if($row=mysqli_fetch_array($result)){
 		$_dvar['common_name']=$row['common_name'];
 		$_dvar['new_common_name']=$row['common_name'];
 		$_dvar['transliteration']=$row['tranlit'];
@@ -198,7 +197,7 @@ $cf->inputMapLines(12,14,0,'edit CommonNames Equal',$title,'index_jq_autocomplet
 <?php
 
 function UpdateCommonName(&$_dvar){
-	global $dbprefix;
+	global $dbprefix, $dbLink;
 
 	$msg=array();
 	if(($_SESSION['editControl'] & 0x10000) == 0){
@@ -214,16 +213,16 @@ function UpdateCommonName(&$_dvar){
 	}
 
 	// Already the same???
-	$result=doDBQuery("SELECT common_id, common_name FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
-	if($result && $row=mysql_fetch_array($result)){
+	$result=dbi_query("SELECT common_id, common_name FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['new_common_name']}'");
+	if($result && $row=mysqli_fetch_array($result)){
 
 		if($_dvar['common_nameIndex']!=$row['common_id']){
 			return array("The typed in Common Name is already in the Database.",0);
 		}
 	}else{
-		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}', locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
+		$result = dbi_query("UPDATE {$dbprefix}tbl_name_commons SET common_name='{$_dvar['new_common_name']}', locked='{$_dvar['locked']}' WHERE common_id='{$_dvar['common_nameIndex']}'");
 		if(!$result){
-			return array("mysql error: Update CommonName".mysql_error(),0);
+			return array("mysql error: Update CommonName" . $dbLink->error, 0);
 		}
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],1);
@@ -233,42 +232,25 @@ function UpdateCommonName(&$_dvar){
 		return array("Ttransliteration too short, not considert.",0);
 	}
 
-	$result = doDBQuery("SELECT transliteration_id FROM {$dbprefix}tbl_name_transliterations WHERE name='{$_dvar['transliteration']}'");
-	if($result && $row=mysql_fetch_assoc($result)){
+	$result = dbi_query("SELECT transliteration_id FROM {$dbprefix}tbl_name_transliterations WHERE name='{$_dvar['transliteration']}'");
+	if($result && $row=mysqli_fetch_assoc($result)){
 		$_dvar['transliterationIndex']=$row['transliteration_id'];
 	}else{
-		$result = doDBQuery("INSERT INTO {$dbprefix}tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}')");
-		$_dvar['transliterationIndex']=mysql_insert_id();
+		$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}')");
+		$_dvar['transliterationIndex'] = dbi_insert_id();
 	}
 
-	$result=doDBQuery("SELECT nam.name_id FROM {$dbprefix}tbl_name_commons  com LEFT JOIN {$dbprefix}tbl_name_names nam on nam.name_id=com.common_id WHERE com.common_id='{$_dvar['common_nameIndex']}'");
+	$result=dbi_query("SELECT nam.name_id FROM {$dbprefix}tbl_name_commons  com LEFT JOIN {$dbprefix}tbl_name_names nam on nam.name_id=com.common_id WHERE com.common_id='{$_dvar['common_nameIndex']}'");
 
-	if($result && $row=mysql_fetch_array($result)){
+	if($result && $row=mysqli_fetch_array($result)){
 		$_dvar['nameIndex']=$row['name_id'];
-		$result = doDBQuery("UPDATE {$dbprefix}tbl_name_names SET transliteration_id='{$_dvar['transliterationIndex']}' WHERE name_id='{$_dvar['nameIndex']}'");
+		$result = dbi_query("UPDATE {$dbprefix}tbl_name_names SET transliteration_id='{$_dvar['transliterationIndex']}' WHERE name_id='{$_dvar['nameIndex']}'");
 		if(!$result){
-			return array("mysql error Update Transliteration: ".mysql_error(),0);
+			return array("mysql error Update Transliteration: " . $dbLink->error, 0);
 		}
 		logNamesCommonName($_dvar['nameIndex'],1);
 	}
 	return array(0,"Successfully updated");
 }
 
-/**
- * doDBQuery:
- * @param
- * @param
- * @return sql string
- */
-function doDBQuery($sql,$debug=false){
-	if($debug){
-		echo $sql;
-	}
-	$res=db_query($sql);
-
-	if(!$res){
-		echo mysql_errno() . ": " . mysql_error() . "\n";
-	}
-	return $res;
-}
 ?>

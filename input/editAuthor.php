@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -23,8 +22,8 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
             FROM tbl_tax_authors
             WHERE author = " . quoteString($_POST['author']) . "
              AND authorID != '" . intval($_POST['ID']) . "'";
-    $result = db_query($sql);
-    while (($row = mysql_fetch_array($result)) && $sw) {
+    $result = dbi_query($sql);
+    while (($row = mysqli_fetch_array($result)) && $sw) {
         if ($row['author'] == $_POST['author']) {
             echo "<script language=\"JavaScript\">\n";
             echo "alert('Author \"" . $row['author'] . "\" already present with ID " . $row['authorID'] . "');\n";
@@ -50,7 +49,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
                          external = " . ((!empty($_POST['external'])) ? 1 : 0) . "
                          $lock
                         WHERE authorID = " . intval($_POST['ID']);
-                $result = db_query($sql);
+                $result = dbi_query($sql);
                 logAuthors($id, 1);
             }
         } else {
@@ -58,9 +57,9 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
                      author = " . quoteString($_POST['author']) . ",
                      Brummit_Powell_full = " . quoteString($bpf) . "
                      $lock";
-            $result = db_query($sql);
+            $result = dbi_query($sql);
             if ($result) {
-                $id = mysql_insert_id();
+                $id = dbi_insert_id();
                 logAuthors($id, 0);
             } else {
                 $id = 0;
@@ -106,8 +105,8 @@ echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\
 $sql = "SELECT authorID, author, Brummit_Powell_full, locked, external
         FROM tbl_tax_authors
         WHERE authorID = " . intval($id);
-$result = db_query($sql);
-$row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 

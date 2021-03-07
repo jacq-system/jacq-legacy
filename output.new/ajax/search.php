@@ -158,7 +158,7 @@ if (!empty($_POST['submit'])) {
 //        echo "<pre>" . var_export($str_sub_taxonID, true) . "<br>" . var_export($str_sub_basID, true) . "<br>" . var_export($str_sub_synID, true) . "</pre>"; die();
     }
 
-    if (!$_POST['synonym']) {
+     if ($_POST['synonym'] != 'all') {
         if (!empty($str_sub_taxonID)) {
             $_SESSION['s_query'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (
                                     ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . " GROUP BY specimen_ID)

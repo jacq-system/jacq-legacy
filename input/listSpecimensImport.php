@@ -5,25 +5,27 @@ require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listWUServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("makeDropdownInstitution");
-$xajax->registerFunction("makeDropdownCollection");
-$xajax->registerFunction("getUserDate");
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("checkStandardLabelPdfButton");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listWUServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
 if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = '';  //wird von listSpecimens und listSpecimensImport gemeinsam benutzt
 if (!isset($_SESSION['siTyp'])) $_SESSION['siTyp'] = '';
@@ -31,6 +33,8 @@ if (!isset($_SESSION['siType'])) $_SESSION['siType'] = 0;
 if (!isset($_SESSION['siImages'])) $_SESSION['siImages'] = '';
 if (!isset($_SESSION['siExternal'])) $_SESSION['siExternal'] = 0;
 if (!isset($_SESSION['siLinkList'])) $_SESSION['siLinkList'] = array();
+if (!isset($_SESSION['siGeoGeneral'])) $_SESSION['siGeoGeneral'] = '';
+if (!isset($_SESSION['siGeoRegion'])) $_SESSION['siGeoRegion'] = '';
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -44,8 +48,8 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
   $importable_specimens_sql = "SELECT si.* FROM tbl_specimens_import as si
         LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
         WHERE checked > 0 AND " . user_where_clause();
-    $result = db_query($importable_specimens_sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($importable_specimens_sql);
+    while ($row = mysqli_fetch_array($result)) {
         $sql = "SELECT specimen_ID FROM tbl_specimens WHERE 1 = 1";
         foreach ($columns as $column) {
             if (strlen($row[$column]) > 0) {
@@ -54,17 +58,17 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                 $sql .= " AND $column IS NULL";
             }
         }
-        $resultCheck = db_query($sql);
-        if (mysql_num_rows($resultCheck) == 0) {
+        $resultCheck = dbi_query($sql);
+        if (mysqli_num_rows($resultCheck) == 0) {
             $sql = "INSERT INTO tbl_specimens SET ";
             foreach ($columns as $column) {
                 $sql .= "`" . $column . "` = " . quoteString($row[$column]) . ", ";
             }
             $sql .= "observation = '0'";
-            db_query($sql);
-            $specimen_ID = mysql_insert_id();
+            dbi_query($sql);
+            $specimen_ID = dbi_insert_id();
             logSpecimen($specimen_ID, 0);
-            db_query("UPDATE tbl_external_import_content SET
+            dbi_query("UPDATE tbl_external_import_content SET
                        specimen_ID = $specimen_ID,
                        pending = 0
                       WHERE specimen_ID = " . quoteString($row['specimen_ID']) . "
@@ -74,13 +78,13 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                       WHERE si.specimen_ID = " . quoteString($row['specimen_ID']) . "
                        AND checked > 0
                        AND " . user_where_clause();
-            db_query($delete_sql);
+            dbi_query($delete_sql);
         } else {
           print ("<div class=\"error\"> Specimen " . $row['specimen_ID'] . " could not be imported since it already exists in the database.</div>");
         }
     }
 } elseif (isset($_POST['deleteNow']) && $_POST['deleteNow']) {
-    db_query("DELETE si, si_u FROM tbl_specimens_import as si
+    dbi_query("DELETE si, si_u FROM tbl_specimens_import as si
       LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
       WHERE checked = 0 AND " . user_where_clause());
 }
@@ -162,7 +166,7 @@ if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] &
             }
         }
         $sql = "INSERT INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
-        $result = db_query($sql);
+        $result = dbi_query($sql);
     }
     if($_POST['action'] == 'remove') {
         $values = array();
@@ -172,7 +176,7 @@ if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] &
             }
         }
         $sql = "DELETE FROM tbl_specimens_import_users WHERE " . implode('OR ', $values) . " ;";
-        $result = db_query($sql);
+        $result = dbi_query($sql);
     }
 }
 
@@ -184,7 +188,7 @@ if(isset($_POST['taxon_action_do']) && is_numeric($_POST['taxonIndex']) && is_ar
       $sp_ids[] = $id;
     }
     $sql = "UPDATE tbl_specimens_import SET taxonID=" . $_POST['taxonIndex'] . " WHERE specimen_ID in (" . join(',', $sp_ids) . ") ;";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
   }
 }
 
@@ -195,8 +199,8 @@ function makeDropdownInstitution()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
         if (-$_SESSION['wuCollection'] == $row['source_id']) echo " selected";
         echo ">" . htmlspecialchars($row['source_code']) . "</option>\n";
@@ -211,8 +215,8 @@ function makeDropdownCollection()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
         if ($_SESSION['wuCollection'] == $row['collectionID']) echo " selected";
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
@@ -227,8 +231,8 @@ function makeDropdownUsers()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT userID, username FROM herbarinput_log.tbl_herbardb_users ORDER BY username";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . $row['userID'] . "\"".
             ">" . htmlspecialchars($row['username']) . "</option>\n";
     }
@@ -294,9 +298,9 @@ function getImportEntries($checked)
             LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
             WHERE ". user_where_clause() .
             " AND " . (($checked) ? "checked > 0" : "checked = 0");
-    $result = db_query($sql);
+    $result = dbi_query($sql);
 
-    return mysql_num_rows($result);
+    return mysqli_num_rows($result);
 }
 
 /**
@@ -341,8 +345,8 @@ function listEditors($specimen_ID){
       LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
       LEFT JOIN herbarinput_log.tbl_herbardb_users as u ON si_u.user_ID = u.userID
       WHERE si_u.user_ID IS NOT NULL AND si.specimen_ID = " . $specimen_ID . " ;";
-    $result = mysql_query($sql);
-    while ($row=mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row=mysqli_fetch_array($result)) {
         $editors[$row['userID']] = $row['username'];
     }
     return $editors;
@@ -388,7 +392,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     /***************************************/
 
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
@@ -399,10 +403,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         } else {
             swInstitutionCollection = 1;
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         }
     }
   </script>
@@ -443,8 +447,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $sql = "SELECT geo_general
                 FROM tbl_geo_region
                 GROUP BY geo_general ORDER BY geo_general";
-        $result = mysql_query($sql);
-        while ($row=mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['siGeoGeneral'] == $row['geo_general']) echo " selected";
             echo ">" . $row['geo_general'] . "</option>\n";
@@ -460,8 +464,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $sql = "SELECT geo_region
                 FROM tbl_geo_region
                 ORDER BY geo_region";
-        $result = mysql_query($sql);
-        while ($row=mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['siGeoRegion'] == $row['geo_region']) echo " selected";
             echo ">" . $row['geo_region'] . "</option>\n";
@@ -585,16 +589,16 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $pieces = explode(" ", trim($_SESSION['siTaxon']));
         $part1 = array_shift($pieces);
         $part2 = array_shift($pieces);
-        $sql2 .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+        $sql2 .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
         if ($part2) {
-            $sql2 .= " AND (te.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' ".
-                      "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+            $sql2 .= " AND (te.epithet LIKE '" . dbi_escape_string($part2) . "%' ".
+                      "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' ".
+                      "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' ".
+                      "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
         }
     }
     if (trim($_SESSION['siSeries'])) {
-        $sql2 .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['siSeries'])) . "%'";
+        $sql2 .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['siSeries'])) . "%'";
     }
     if (trim($_SESSION['wuCollection'])) {
         if (trim($_SESSION['wuCollection']) > 0) {
@@ -604,43 +608,43 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         }
     }
     if (trim($_SESSION['siNumber'])) {
-        $sql2 .= " AND si.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['siNumber'])) . "%'";
+        $sql2 .= " AND si.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['siNumber'])) . "%'";
     }
     if (trim($_SESSION['siFamily'])) {
-        $sql2 .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['siFamily'])) . "%'";
+        $sql2 .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['siFamily'])) . "%'";
     }
     if (trim($_SESSION['siCollector'])) {
-        $sql2 .= " AND (c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['siCollector'])) . "%' OR
-                       c2.Sammler_2 LIKE '%" . mysql_escape_string(trim($_SESSION['siCollector'])) . "%')";
+        $sql2 .= " AND (c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['siCollector'])) . "%' OR
+                       c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['siCollector'])) . "%')";
     }
     if (trim($_SESSION['siNumberC'])) {
-        $sql2 .= " AND (si.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['siNumberC'])) . "%' OR
-                        si.alt_number LIKE '%" . mysql_escape_string(trim($_SESSION['siNumberC'])) . "%' OR
-                        si.series_number LIKE '" . mysql_escape_string(trim($_SESSION['siNumberC'])) . "%') ";
+        $sql2 .= " AND (si.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['siNumberC'])) . "%' OR
+                        si.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['siNumberC'])) . "%' OR
+                        si.series_number LIKE '" . dbi_escape_string(trim($_SESSION['siNumberC'])) . "%') ";
     }
     if (trim($_SESSION['siDate'])) {
-        $sql2 .= " AND si.Datum LIKE '" . mysql_escape_string(trim($_SESSION['siDate'])) . "%'";
+        $sql2 .= " AND si.Datum LIKE '" . dbi_escape_string(trim($_SESSION['siDate'])) . "%'";
     }
     if (trim($_SESSION['siGeoGeneral'])) {
-        $sql2 .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['siGeoGeneral'])) . "%'";
+        $sql2 .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['siGeoGeneral'])) . "%'";
     }
     if (trim($_SESSION['siGeoRegion'])) {
-        $sql2 .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['siGeoRegion'])) . "%'";
+        $sql2 .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['siGeoRegion'])) . "%'";
     }
     if (trim($_SESSION['siCountry'])) {
-        $sql2 .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['siCountry'])) . "%'";
+        $sql2 .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['siCountry'])) . "%'";
     }
     if (trim($_SESSION['siProvince'])) {
-        $sql2 .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['siProvince'])) . "%'";
+        $sql2 .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['siProvince'])) . "%'";
     }
     if (trim($_SESSION['siLoc'])) {
-        $sql2 .= " AND si.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['siLoc'])) . "%'";
+        $sql2 .= " AND si.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['siLoc'])) . "%'";
     }
     if (trim($_SESSION['siBemerkungen'])) {
-        $sql2 .= " AND si.Bemerkungen LIKE '%" . mysql_escape_string(trim($_SESSION['siBemerkungen'])) . "%'";
+        $sql2 .= " AND si.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['siBemerkungen'])) . "%'";
     }
     if (trim($_SESSION['siTaxonAlt'])) {
-        $sql2 .= " AND si.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['siTaxonAlt'])) . "%'";
+        $sql2 .= " AND si.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['siTaxonAlt'])) . "%'";
     }
     if ($_SESSION['siTyp']) {
         $sql2 .= " AND si.typusID != 0";
@@ -656,10 +660,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 
     $sql3 = " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001";
 
-    $result = db_query($sql . $sql2 . " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001");
-    if (mysql_num_rows($result) > 1000) {
+    $result = dbi_query($sql . $sql2 . " ORDER BY " . $_SESSION['siOrder'] . " LIMIT 1001");
+    if (mysqli_num_rows($result) > 1000) {
         echo "<b>no more than 1000 results allowed</b>\n";
-    } elseif (mysql_num_rows($result) > 0) {
+    } elseif (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
@@ -679,7 +683,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         echo "<th class=\"out\"><input id=\"check_all\" type=\"checkbox\" name=\"check_all\" value=\"op\" /></th>";
         echo "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $row['specimen_ID'];
 
             if ($row['digital_image']) {

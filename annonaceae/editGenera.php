@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-no_magic();
 
 
 function makeAuthor($search, $x, $y)
@@ -15,12 +14,12 @@ function makeAuthor($search, $x, $y)
     if ($search && strlen($search) > 1) {
         $sql = "SELECT author, authorID, Brummit_Powell_full
                 FROM tbl_tax_authors
-                WHERE author LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                WHERE author LIKE '" . dbi_escape_string($pieces[0]) . "%'
                 ORDER BY author";
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " records found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " records found</b>");
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $res = $row['author'] . " <" . $row['authorID'] . ">";
                     if ($row['Brummit_Powell_full']) {
                         $res .= " [" . replaceNewline($row['Brummit_Powell_full']) . "]";
@@ -45,12 +44,12 @@ function makeFamily($search, $x, $y)
         $sql = "SELECT family, familyID, category
                 FROM tbl_tax_families tf
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID
-                WHERE family LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                WHERE family LIKE '" . dbi_escape_string($pieces[0]) . "%'
                 ORDER BY family";
-        if ($result = db_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysql_num_rows($result) . " records found</b>");
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " records found</b>");
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">";
                 }
             }
@@ -88,14 +87,14 @@ function makeTaxon2($search)
                  LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                WHERE tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%' ";
+                WHERE tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%' ";
         if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%' ";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%' ";
         }
         $sql .= "ORDER BY tg.genus, te.epithet, epithet1, epithet2, epithet3";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = taxon($row);
                 }
             }
@@ -148,9 +147,9 @@ $sql = "SELECT tg.genID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
          LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
          LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID = tf.categoryID
         WHERE genID = $p_genID";
-$result = db_query($sql);
-if (mysql_num_rows($result) > 0) {
-    $row = mysql_fetch_array($result);
+$result = dbi_query($sql);
+if (mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_array($result);
     $p_genus    = $row['genus'];
     $p_genID    = $row['genID'];
     $p_DTID     = $row['DallaTorreIDs'];
@@ -183,9 +182,9 @@ if (mysql_num_rows($result) > 0) {
                  LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE ts.taxonID = '" . mysql_escape_string($row['fk_taxonID']) . "'";
-        $result2 = db_query($sql);
-        $row2 = mysql_fetch_array($result2);
+                WHERE ts.taxonID = '" . dbi_escape_string($row['fk_taxonID']) . "'";
+        $result2 = dbi_query($sql);
+        $row2 = mysqli_fetch_array($result2);
         $p_taxon  = taxon($row2);
     } else {
         $p_taxon = "";
@@ -214,8 +213,8 @@ if ($p_genID) {
            AND formaID IS NULL AND forma_authorID IS NULL
            AND subformaID IS NULL AND subforma_authorID IS NULL
            AND genID = '" . intval($p_genID) . "'";
-  $result = db_query($sql);
-  $row = mysql_fetch_array($result);
+  $result = dbi_query($sql);
+  $row = mysqli_fetch_array($result);
   $cf->label(8, 2, "edit Species", "javascript:editSpecies('" . $row['taxonID'] . "')");
 }
 $cf->label(8, 4, "Genus");

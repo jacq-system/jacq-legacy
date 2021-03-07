@@ -3,7 +3,6 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/api_functions.php");
-no_magic();
 
 //---------- check every input ----------
 $lock = false;
@@ -68,12 +67,12 @@ case 1: // delete all unsent batches
            AND (sent='0' OR sent IS NULL)
            AND specimen_ID='$id'";
   if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
-  $result = db_query($sql);
-  while ($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row=mysqli_fetch_array($result)) {
     $sql = "DELETE FROM api.tbl_api_specimens
             WHERE specimen_ID='".$row['specimen_ID']."'
              AND batchID_fk='".$row['batchID_fk']."'";
-    db_query($sql);
+    dbi_query($sql);
   }
 
   // garbage collection: if tbl_api_specimens is empty -> delete tbl_api_units and tbl_api_units_identifications
@@ -92,14 +91,14 @@ case 2: // edit the entries or insert new ones
            AND (sent='0' OR sent IS NULL)
            AND specimen_ID='$id'";
   if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
-  $result = db_query($sql);
-  while ($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row=mysqli_fetch_array($result)) {
     $bid = 'batch'.$row['api_specimensID'];
     if (isset($_POST[$bid]) && intval($_POST[$bid])!=$row['batchID_fk']) {
       $sql = "UPDATE api.tbl_api_specimens
               SET batchID_fk='".intval($_POST[$bid])."'
               WHERE api_specimensID='".$row['api_specimensID']."'";
-      db_query($sql);
+      dbi_query($sql);
     }
   }
 
@@ -111,7 +110,7 @@ case 2: // edit the entries or insert new ones
               FROM tbl_specimens, tbl_management_collections
               WHERE tbl_specimens.collectionID=tbl_management_collections.collectionID
                AND specimen_ID='$id'";
-      $row = mysql_fetch_array(db_query($sql));
+      $row = dbi_query($sql)->fetch_array();
       if ($row['source_id'] != $_SESSION['sid'])
         $blocked = true;
     }
@@ -120,7 +119,7 @@ case 2: // edit the entries or insert new ones
       $sql = "INSERT INTO api.tbl_api_specimens SET
                specimen_ID='$id',
                batchID_fk='$batch_id'";
-      db_query($sql);
+      dbi_query($sql);
     }
   }
 
@@ -142,13 +141,13 @@ case 3: // delete single entry
             WHERE batchID=batchID_fk
              AND api_specimensID='$del_id'
              AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
-    $result = db_query($sql);
-    $lock = (mysql_num_rows($result)>0) ? false : true;
+    $result = dbi_query($sql);
+    $lock = (mysqli_num_rows($result)>0) ? false : true;
   }
   else
     $lock = false;
   if (!$lock) {   // user may delete
-    db_query("DELETE FROM api.tbl_api_specimens WHERE api_specimensID='$del_id'");
+    dbi_query("DELETE FROM api.tbl_api_specimens WHERE api_specimensID='$del_id'");
     garbageCollection($id);
   }
   // no break, type 3 acts like type 4 after deleting the single entry
@@ -166,8 +165,8 @@ case 4: // standard
           WHERE sent='0'";
   if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
   $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
-  $result = db_query($sql);
-  while ($row=mysql_fetch_array($result)) {
+  $result = dbi_query($sql);
+  while ($row=mysqli_fetch_array($result)) {
     $batchValue[] = $newbatchValue[] = $row['batchID'];
     $batchNr = " <".(($row['source_code']) ? $row['source_code']."-" : "").$row['batchnumber']."> ";
     $batchText[] = $newbatchText[] = $row['date_supplied']."$batchNr (".htmlspecialchars(trim($row['remarks'])).")";
@@ -186,9 +185,9 @@ case 4: // standard
           WHERE batchID=batchID_fk
            AND specimen_ID='$id'";
   if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
-  $result = db_query($sql);
+  $result = dbi_query($sql);
   $y = 2;
-  while ($row=mysql_fetch_array($result)) {
+  while ($row=mysqli_fetch_array($result)) {
     $cf->label(8,$y,"Batch");
     if ($row['sent'])
       $cf->text(8,$y,"&nbsp;".$row['date_supplied']." (".trim($row['remarks']).")");

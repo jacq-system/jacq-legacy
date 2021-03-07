@@ -10,7 +10,6 @@ session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
 require_once 'inc/stableIdentifierFunctions.php';
-no_magic();
 
 define('TCPDF','1');
 require_once('inc/tcpdf_6_3_2/tcpdf.php');
@@ -47,8 +46,7 @@ function makeText($id)
             WHERE s.collectionID = mc.collectionID
              AND mc.source_id = m.MetadataID
              AND s.specimen_ID = '$id'";
-    $result = db_query($sql);
-    $row = mysql_fetch_array($result);
+    $row = dbi_query($sql)->fetch_assoc();
 
     $text['Herbarium']  = $row['QR_code_header'];
     $text['Collection'] = ($row['collection']) ? 'Herbarium ' . $row['collection'] : "";
@@ -68,12 +66,9 @@ function makeText($id)
  */
 function makePreText($sourceID, $collectionID, $number)
 {
-    $result_source = db_query("SELECT QR_code_header, SourceInstitutionID FROM herbarinput.metadata WHERE MetadataID = '$sourceID'");
-    $row_source = mysql_fetch_array($result_source);
-    $text['Herbarium'] = $row_source['QR_code_header'];
+    $text['Herbarium'] = dbi_query("SELECT QR_code_header, SourceInstitutionID FROM herbarinput.metadata WHERE MetadataID = '$sourceID'")->fetch_assoc()['QR_code_header'];
 
-    $result_coll = db_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'");
-    $row_coll = mysql_fetch_array($result_coll);
+    $row_coll = dbi_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'")->fetch_assoc();
     $text['Collection'] = ($row_coll['collection']) ? 'Herbarium ' . $row_coll['collection'] : "";
 
     $text['UnitID'] = makeUnitID($number, $row_source['SourceInstitutionID']);
@@ -269,9 +264,9 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
              AND mc.collectionID = s.collectionID
              AND (l.label & 4) > '0'
              ORDER BY " . $_SESSION['labelOrder'];
-    $result_ID = mysql_query($sql);
-    //$result_ID = mysql_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
-    while ($row_ID = mysql_fetch_array($result_ID)) {
+    $result_ID = dbi_query($sql);
+    //$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
+    while ($row_ID = $result_ID->fetch_array()) {
         $labelText = makeText($row_ID['specimen_ID']);
         if (count($labelText) > 0) {
             $pdf->makeLabel($labelText);
@@ -281,8 +276,8 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
     $pdf->AddPage();
     $pdf->SetFont('helvetica', '', 8);
-    mysql_data_seek($result_ID, 0);
-    while ($row_ID = mysql_fetch_array($result_ID)) {
+    $result_ID->data_seek(0);
+    while ($row_ID = $result_ID->fetch_array()) {
         $labelText = makeText($row_ID['specimen_ID']);
         if (count($labelText) > 0) {
             $pdf->makeSmallLabel($labelText);
@@ -297,9 +292,9 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
             WHERE replace_char IS NULL
              AND collectionID_fk IS NULL
              AND sourceID_fk = '$sourceID'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array();
         $digits = $row['digits'];
     } else {
         $digits = 0;

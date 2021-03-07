@@ -4,7 +4,6 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -58,8 +57,7 @@ if (isset($_GET['new'])) {
                LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = " . extractID($_GET['ID']);
-        $result = db_query($sql);
-        $row = mysql_fetch_array($result);
+        $row = dbi_query($sql)->fetch_array();
         $p_citation = protolog($row);
         $p_citationIndex = intval($row['citationID']);
         $p_taxon = "";
@@ -76,9 +74,9 @@ if (isset($_GET['new'])) {
     $sql ="SELECT taxindID, taxonID, citationID, paginae, figures, annotations
            FROM tbl_tax_index
            WHERE taxindID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_paginae     = $row['paginae'];
         $p_figures     = $row['figures'];
         $p_annotations = $row['annotations'];
@@ -94,8 +92,7 @@ if (isset($_GET['new'])) {
                 LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                 LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = '" . $row['citationID'] . "'";
-        $result2 = db_query($sql);
-        $row2 = mysql_fetch_array($result2);
+        $row2 = dbi_query($sql)->fetch_array();
         $p_citation = protolog($row2);
         $p_citationIndex = intval($row2['citationID']);
     } else {
@@ -132,8 +129,8 @@ if (isset($_GET['new'])) {
                 $sql = "INSERT INTO tbl_tax_index SET $sql_data";
                 $updated = 0;
             }
-            $result = db_query($sql);
-            $id = (intval($p_taxindID)) ? intval($p_taxindID) : mysql_insert_id();
+            $result = dbi_query($sql);
+            $id = (intval($p_taxindID)) ? intval($p_taxindID) : dbi_insert_id();
             logIndex($id, $updated);
             if ($result) {
                 echo "<script language=\"JavaScript\">\n";

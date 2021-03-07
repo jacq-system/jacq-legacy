@@ -11,10 +11,10 @@ $xajax->registerFunction("dispatcher");
 $sql = "SELECT bot_rank_suffix, zoo_rank_suffix
         FROM tbl_tax_rank
         WHERE rank = 'family'";
-$res = db_query($sql);
+$res = dbi_query($sql);
 $dropdownEnding = "<select name='searchtextEnding'>\n"
                 . "<option value=''>-</option>\n";
-while ($row = mysql_fetch_array($res)) {
+while ($row = mysqli_fetch_array($res)) {
     $dropdownEnding .= "<option value='" . substr($row['bot_rank_suffix'], 1) . "'>"
                      . $row['bot_rank_suffix'] . "</option>\n";
     $dropdownEnding .= "<option value='" . substr($row['zoo_rank_suffix'], 1) . "'>"

@@ -19,8 +19,8 @@ function listInstitutions($formData)
              AND tbl_management_collections.source_id = tbl_img_definition.source_id_fk
              AND imgserver_IP = " . quoteString($formData['serverIP']) . "
             GROUP BY source_name ORDER BY source_name";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         $text .= "<option value=\"{$row['source_id']}\"";
         if ($_POST['source_id'] == $row['source_id']) $text .=  " selected";
         $text .=  ">{$row['source_name']}";
@@ -35,7 +35,7 @@ function listInstitutions($formData)
 
 function rescanPictureServer($formData)
 {
-    global $objResponse;
+    global $objResponse, $dbLink;
 
     if ($formData['serverIP'] == "131.130.131.9") {
         $url = "http://" . $formData['serverIP'] . "/database/scanPicturesStart.php?key=DKsuuewwqsa32czucuwqdb576i12";
@@ -44,11 +44,11 @@ function rescanPictureServer($formData)
         $sql = "SELECT ID, start
                 FROM herbar_pictures.scans
                 WHERE finish IS NULL
-                 AND IP = '" . mysql_real_escape_string($formData['serverIP']) . "'";
-        $result = mysql_query($sql);
-        $bla = mysql_error();
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+                 AND IP = '" . dbi_escape_string($formData['serverIP']) . "'";
+        $result = dbi_query($sql);
+        $bla = $dbLink->error;
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $objResponse->alert("scan in progress (started " . $row['start'] . " UTC)");
         }
     } else {
@@ -67,12 +67,12 @@ function getLastScan($formData)
     if ($formData['serverIP'] == "131.130.131.9") {
         $sql = "SELECT start, finish
                 FROM herbar_pictures.scans
-                WHERE IP = '" . mysql_real_escape_string($formData['serverIP']) . "'
+                WHERE IP = '" . dbi_escape_string($formData['serverIP']) . "'
                 ORDER BY start DESC
                 LIMIT 1";
-        $result = mysql_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             if (!$row['finish']) {
                 $response = "scan in progress (started " . $row['start'] . " UTC)";
             } else {

@@ -17,7 +17,9 @@
  */
 require_once('inc/variables.php');
 
-class cls_herbarium_faeu extends cls_herbarium_base {
+class cls_herbarium_faeu extends cls_herbarium_base
+{
+    private $dbLink;
 
 /*******************\
 |                   |
@@ -43,11 +45,12 @@ public function getMatches ($searchtext, $withNearMatch = false)
     $matches = array('error'       => '',
                      'result'      => array());
 
-    if (!@mysql_connect($options['fe']['dbhost'], $options['fe']['dbuser'], $options['fe']['dbpass']) || !@mysql_select_db($options['fe']['dbname'])) {
+    $this->dbLink = mysqli_connect($options['fe']['dbhost'], $options['fe']['dbuser'], $options['fe']['dbpass'], $options['fe']['dbname']);
+    if (!$this->dbLink) {
         $matches['error'] = 'no database connection';
         return $matches;
     }
-    mysql_query("SET character set utf8");
+	$this->dbLink->query("SET character set utf8");
 
     // split the input at newlines into several queries
     $searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
@@ -71,14 +74,14 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 $lenUninomial        = mb_strlen(trim($searchItem), "UTF-8");
             }
 
-            $res = mysql_query("SELECT GENUS_ID, GENUS_NAME,
-                                 mdld('" . mysql_real_escape_string($uninomial) . "', GENUS_NAME, 2, 4) AS mdld
-                                FROM genera");
+            $res = $this->dbLink->query("SELECT GENUS_ID, GENUS_NAME,
+                                          mdld('" . $this->dbLink->real_escape_string($uninomial) . "', GENUS_NAME, 2, 4) AS mdld
+                                         FROM genera");
             /**
              * do the actual calculation of the distances
              * and decide if the result should be kept
              */
-            while ($row = mysql_fetch_array($res)) {
+            while ($row = mysqli_fetch_array($res)) {
                 $limit = min($lenUninomial, strlen($row['GENUS_NAME'])) / 2;     // 1st limit of the search
                 if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                     $searchresult[] = array('genus'    => $row['GENUS_NAME'],
@@ -131,15 +134,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
              * first do the search for the genus and subgenus
              */
             for ($i = 0; $i < 2; $i++) {
-                $res = mysql_query("SELECT GENUS_ID, GENUS_NAME,
-                                     mdld('" . mysql_real_escape_string($genus[$i]) . "', GENUS_NAME, 2, 4) AS mdld
-                                    FROM genera");
+                $res = $this->dbLink->query("SELECT GENUS_ID, GENUS_NAME,
+                                              mdld('" . $this->dbLink->real_escape_string($genus[$i]) . "', GENUS_NAME, 2, 4) AS mdld
+                                             FROM genera");
 
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenGenus[$i], strlen($row['GENUS_NAME'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                         $lev[] = array('genus'    => $row['GENUS_NAME'],
@@ -173,9 +176,9 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 $lev2 = array();
                 $sql = "SELECT FULLNAMECACHE, SPECIES_EPITHET, INFRASPECIES_EPITHET";
                 if ($epithet) {  // if an epithet was given, use it
-                    $sql .= ", mdld('" . mysql_real_escape_string($epithet) . "', SPECIES_EPITHET, 4, 5)  as mdld";
+                    $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet) . "', SPECIES_EPITHET, 4, 5)  as mdld";
                     if ($epithet2 && $rank) {  // if a subepithet was given, use it
-                        $sql .= ", mdld('" . mysql_real_escape_string($epithet2) . "', INFRASPECIES_EPITHET, 4, 5) as mdld2";
+                        $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet2) . "', INFRASPECIES_EPITHET, 4, 5) as mdld2";
                     }
                 }
                 $sql .= " FROM scientific_names
@@ -183,8 +186,8 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 if (!$epithet2 && $rank) {
                     $sql .= " AND (INFRASPECIES_EPITHET IS NULL OR INFRASPECIES_EPITHET = '')";
                 }
-                $res = mysql_query($sql);
-                while ($row = mysql_fetch_array($res)) {
+                $res = $this->dbLink->query($sql);
+                while ($row = mysqli_fetch_array($res)) {
                     $name = trim($row['SPECIES_EPITHET']);
                     $found = false;
                     if ($epithet) {

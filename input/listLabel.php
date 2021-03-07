@@ -2,29 +2,30 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/listLabelServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("makeDropdownInstitution");
-$xajax->registerFunction("makeDropdownCollection");
-$xajax->registerFunction("changeDropdownCollectionQR");
-$xajax->registerFunction("toggleTypeLabelMap");
-$xajax->registerFunction("toggleTypeLabelSpec");
-$xajax->registerFunction("toggleBarcodeLabel");
-$xajax->registerFunction("clearTypeLabelsMap");
-$xajax->registerFunction("clearTypeLabelsSpec");
-$xajax->registerFunction("clearBarcodeLabels");
-$xajax->registerFunction("checkTypeLabelMapPdfButton");
-$xajax->registerFunction("checkTypeLabelSpecPdfButton");
-$xajax->registerFunction("checkBarcodeLabelPdfButton");
-$xajax->registerFunction("updtStandardLabel");
-$xajax->registerFunction("clearStandardLabels");
-$xajax->registerFunction("checkStandardLabelPdfButton");
-$xajax->registerFunction("setAll");
-$xajax->registerFunction("clearAll");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/listLabelServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeDropdownCollectionQR");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleTypeLabelSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleBarcodeLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsMap");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearTypeLabelsSpec");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearBarcodeLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelMapPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkTypeLabelSpecPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkBarcodeLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearStandardLabels");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editLabel.php?sel=<" . $_POST['specimen'] . ">";
@@ -126,8 +127,8 @@ function makeDropdownInstitution()
     echo "  <option value=\"0\"></option>\n";
 
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\">" . htmlspecialchars($row['source_code']) . "</option>\n";
     }
 }
@@ -191,7 +192,7 @@ function collectionItem($coll)
   <title>herbardb - list Labels</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
@@ -199,34 +200,34 @@ function collectionItem($coll)
 
     function initInstitutionCollection() {
         if (swInstitutionCollection) {
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         } else {
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         }
     }
 
     function toggleInstitutionCollection() {
         if (swInstitutionCollection) {
             swInstitutionCollection = 0;
-            xajax_makeDropdownInstitution();
+            jaxon_makeDropdownInstitution();
         } else {
             swInstitutionCollection = 1;
-            xajax_makeDropdownCollection();
+            jaxon_makeDropdownCollection();
         }
     }
 
     function toggleLabelWrapper(sel, id) {
       switch (sel) {
-        case 1: xajax_toggleTypeLabelMap(id);
+        case 1: jaxon_toggleTypeLabelMap(id);
                 break;
-        case 2: xajax_toggleTypeLabelSpec(id);
+        case 2: jaxon_toggleTypeLabelSpec(id);
                 break;
-        case 3: xajax_toggleBarcodeLabel(id);
+        case 3: jaxon_toggleBarcodeLabel(id);
                 break;
       }
     }
     function updtLabelWrapper(id, data) {
-      xajax_updtStandardLabel(id, data);
+      jaxon_updtStandardLabel(id, data);
     }
 
     function check_all() {
@@ -248,10 +249,10 @@ function collectionItem($coll)
       MeinFenster.focus();
     }
 
-    xajax_checkTypeLabelMapPdfButton();
-    xajax_checkTypeLabelSpecPdfButton();
-    xajax_checkStandardLabelPdfButton();
-    xajax_checkBarcodeLabelPdfButton();
+    jaxon_checkTypeLabelMapPdfButton();
+    jaxon_checkTypeLabelSpecPdfButton();
+    jaxon_checkStandardLabelPdfButton();
+    jaxon_checkBarcodeLabelPdfButton();
   </script>
 </head>
 
@@ -289,8 +290,8 @@ function collectionItem($coll)
         $sql = "SELECT geo_general
                 FROM tbl_geo_region
                 GROUP BY geo_general ORDER BY geo_general";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['labelGeoGeneral'] == $row['geo_general']) echo " selected";
             echo ">" . $row['geo_general'] . "</option>\n";
@@ -306,8 +307,8 @@ function collectionItem($coll)
         $sql = "SELECT geo_region
                 FROM tbl_geo_region
                 ORDER BY geo_region";
-        $result = mysql_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['labelGeoRegion'] == $row['geo_region']) echo " selected";
             echo ">" . $row['geo_region'] . "</option>\n";
@@ -353,7 +354,7 @@ function collectionItem($coll)
 <form action="pdfLabelQRCode.php" target="_blank" method="POST" name="f2">
   <table cellspacing="2" cellpadding="0"><tr><td>
     <b>Institution:</b>
-        <select size="1" name="institution_QR" id="institution_QR" onchange="xajax_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
+        <select size="1" name="institution_QR" id="institution_QR" onchange="jaxon_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
         <?php makeDropdownInstitution(); ?></select>&nbsp;
     <b>Collection:</b> <select size="1" name="collection_QR" id="collection_QR"><option value="0"></option></select>&nbsp;
     <b>start number:</b> <input type="text" name="start" size="10">&nbsp;
@@ -380,7 +381,7 @@ function collectionItem($coll)
 if ($_SESSION['labelType'] == 1) { ?>
   <table cellpadding="0" cellspacing="4">
     <tr>
-      <td align="center"><input type="button" class="button" value=" set all " onclick="xajax_setAll()"></td>
+      <td align="center"><input type="button" class="button" value=" set all " onclick="jaxon_setAll()"></td>
       <td><input type="button" class="button" value="make PDF (Type map)" id="btMakeTypeLabelMapPdf" onClick="showPDF('typeMap')"></td>
       <td><input type="button" class="button" value="make PDF (Type spec)" id="btMakeTypeLabelSpecPdf" onClick="showPDF('typeSpec')"></td>
       <td><input type="button" class="button" value="make PDF (barcode)" id="btMakeBarcodeLabelPdf" onClick="showPDF('barcode')"></td>
@@ -388,11 +389,11 @@ if ($_SESSION['labelType'] == 1) { ?>
       <td><input type="button" class="button" value="make PDF (standard)" id="btMakeStandardLabelPdf" onClick="showPDF('std')"></td>
     </tr>
     <tr>
-      <td><input type="button" class="button" value=" clear all " onclick="xajax_clearAll()"></td>
-      <td align="center"><input type="button" class="button" value="clear all Type map" id="btClearTypeMapLabels" onClick="xajax_clearTypeLabelsMap(); return false;"></td>
-      <td align="center"><input type="button" class="button" value="clear all Type spec" id="btClearTypeSpecLabels" onClick="xajax_clearTypeLabelsSpec(); return false;"></td>
-      <td align="center" colspan="2"><input type="button" class="button" value="clear all Barcode" id="btClearBarcodeLabels" onClick="xajax_clearBarcodeLabels(); return false;"></td>
-      <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="xajax_clearStandardLabels(); return false;"></td>
+      <td><input type="button" class="button" value=" clear all " onclick="jaxon_clearAll()"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type map" id="btClearTypeMapLabels" onClick="jaxon_clearTypeLabelsMap(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all Type spec" id="btClearTypeSpecLabels" onClick="jaxon_clearTypeLabelsSpec(); return false;"></td>
+      <td align="center" colspan="2"><input type="button" class="button" value="clear all Barcode" id="btClearBarcodeLabels" onClick="jaxon_clearBarcodeLabels(); return false;"></td>
+      <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="jaxon_clearStandardLabels(); return false;"></td>
     </tr>
   </table>
   <p>
@@ -436,16 +437,16 @@ if ($_SESSION['labelType'] == 1) { ?>
         $pieces = explode(" ", trim($_SESSION['labelTaxon']));
         $part1 = array_shift($pieces);
         $part2 = array_shift($pieces);
-        $sql .= " AND tg.genus LIKE '" . mysql_escape_string($part1) . "%'";
+        $sql .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
         if ($part2) {
-            $sql .= " AND (te.epithet LIKE '". mysql_escape_string($part2) . "%' "
-                  .  "OR te1.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .  "OR te2.epithet LIKE '" . mysql_escape_string($part2) . "%' "
-                  .  "OR te3.epithet LIKE '" . mysql_escape_string($part2) . "%')";
+            $sql .= " AND (te.epithet LIKE '". dbi_escape_string($part2) . "%' "
+                  .  "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .  "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' "
+                  .  "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
         }
     }
     if (trim($_SESSION['labelSeries'])) {
-        $sql .= " AND ss.series LIKE '%" . mysql_escape_string(trim($_SESSION['labelSeries'])) . "%'";
+        $sql .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['labelSeries'])) . "%'";
     }
     if (trim($_SESSION['labelCollection'])) {
         if (trim($_SESSION['labelCollection']) > 0) {
@@ -455,37 +456,37 @@ if ($_SESSION['labelType'] == 1) { ?>
         }
     }
     if (trim($_SESSION['labelNumber'])) {
-        $sql .= " AND s.HerbNummer LIKE '%" . mysql_escape_string(trim($_SESSION['labelNumber'])) . "%'";
+        $sql .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['labelNumber'])) . "%'";
     }
     if (trim($_SESSION['labelFamily'])) {
-        $sql .= " AND tf.family LIKE '" . mysql_escape_string(trim($_SESSION['labelFamily'])) . "%'";
+        $sql .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['labelFamily'])) . "%'";
     }
     if (trim($_SESSION['labelCollector'])) {
-        $sql .= " AND c.Sammler LIKE '" . mysql_escape_string(trim($_SESSION['labelCollector'])) . "%'";
+        $sql .= " AND c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['labelCollector'])) . "%'";
     }
     if (trim($_SESSION['labelNumberC'])) {
-        $sql .= " AND s.Nummer LIKE '" . mysql_escape_string(trim($_SESSION['labelNumberC'])) . "%'";
+        $sql .= " AND s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['labelNumberC'])) . "%'";
     }
     if (trim($_SESSION['labelDate'])) {
-        $sql .= " AND s.Datum LIKE '" . mysql_escape_string(trim($_SESSION['labelDate'])) . "%'";
+        $sql .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['labelDate'])) . "%'";
     }
     if (trim($_SESSION['labelGeoGeneral'])) {
-        $sql .= " AND r.geo_general LIKE '" . mysql_escape_string(trim($_SESSION['labelGeoGeneral'])) . "%'";
+        $sql .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['labelGeoGeneral'])) . "%'";
     }
     if (trim($_SESSION['labelGeoRegion'])) {
-        $sql .= " AND r.geo_region LIKE '" . mysql_escape_string(trim($_SESSION['labelGeoRegion'])) . "%'";
+        $sql .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['labelGeoRegion'])) . "%'";
     }
     if (trim($_SESSION['labelCountry'])) {
-        $sql .= " AND n.nation_engl LIKE '" . mysql_escape_string(trim($_SESSION['labelCountry'])) . "%'";
+        $sql .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['labelCountry'])) . "%'";
     }
     if (trim($_SESSION['labelProvince'])) {
-        $sql .= " AND p.provinz LIKE '" . mysql_escape_string(trim($_SESSION['labelProvince'])) . "%'";
+        $sql .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['labelProvince'])) . "%'";
     }
     if (trim($_SESSION['labelLoc'])) {
-        $sql .= " AND s.Fundort LIKE '%" . mysql_escape_string(trim($_SESSION['labelLoc'])) . "%'";
+        $sql .= " AND s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['labelLoc'])) . "%'";
     }
     if (trim($_SESSION['labelTaxonAlt'])) {
-        $sql .= " AND s.taxon_alt LIKE '%" . mysql_escape_string(trim($_SESSION['labelTaxonAlt'])) . "%'";
+        $sql .= " AND s.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['labelTaxonAlt'])) . "%'";
     }
     if ($_SESSION['labelTyp']) {
         $sql .= " AND s.typusID != 0";
@@ -497,8 +498,8 @@ if ($_SESSION['labelType'] == 1) { ?>
     $sql .= " ORDER BY " . $_SESSION['labelOrder'];
     $_SESSION['labelSQL'] = $sql;
 
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
         echo "<table class='out' cellspacing='0'>\n"
            . "<tr class='out'>"
            . "<th class='out'></th>"
@@ -519,7 +520,7 @@ if ($_SESSION['labelType'] == 1) { ?>
            . "<th class='out'>Standard Label</th>"
            . "</tr>\n";
         $nr = 1;
-        while ($row = mysql_fetch_array($result)) {
+        while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $id = $row['specimen_ID'];
 
             if ($row['digital_image']) {

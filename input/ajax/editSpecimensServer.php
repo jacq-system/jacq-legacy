@@ -2,11 +2,14 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-require_once ("../inc/xajax/xajax_core/xajax.inc.php");
+require __DIR__ . '/../vendor/autoload.php';
 
-$xajax = new xajax();
+use Jaxon\Jaxon;
+use Jaxon\Response\Response;
 
-$objResponse = new xajaxResponse();
+$jaxon = jaxon();
+
+$response = new Response();
 
 function dec2min($angle, $type = '', $print = true)
 {
@@ -35,7 +38,9 @@ function makeInstitutionDropdown($institution, $selected, $id)
     $dropdown = "<select class=\"cssf\" name=\"linkInstitution_$id\" id=\"linkInstitution_$id\">";
     for ($i = 0; $i < count($institution[0]); $i++) {
         $dropdown .= "<option value=\"" . $institution[0][$i] . "\"";
-        if ($selected == $institution[0][$i]) $dropdown .= " selected";
+        if ($selected == $institution[0][$i]) {
+            $dropdown .= " selected";
+        }
         $dropdown .= ">" . htmlspecialchars($institution[1][$i]) . "</option>";
     }
     $dropdown .= "</select>\n";
@@ -44,15 +49,15 @@ function makeInstitutionDropdown($institution, $selected, $id)
 }
 
 /**
- * xajax-function toggleLanguage
+ * jaxon-function toggleLanguage
  *
  * changes the apropriate Fields from local language to english
  *
- * @return xajaxResponse
+ * @return Response
  */
 function toggleLanguage($formData)
 {
-    global $objResponse;
+    global $response;
 
     $Fundort1 = $formData['Fundort2'];
     $Fundort2 = $formData['Fundort1'];
@@ -64,17 +69,17 @@ function toggleLanguage($formData)
         $labelText = 'engl. Locality';
     }
 
-    $objResponse->assign('Fundort1', 'value', $Fundort1);
-    $objResponse->assign('Fundort2', 'value', $Fundort2);
-    $objResponse->assign('toggleLanguage', 'value', $toggleLanguage);
-    $objResponse->assign("labelLocality", "innerHTML", $labelText);
+    $response->assign('Fundort1', 'value', $Fundort1);
+    $response->assign('Fundort2', 'value', $Fundort2);
+    $response->assign('toggleLanguage', 'value', $toggleLanguage);
+    $response->assign("labelLocality", "innerHTML", $labelText);
 
-    return $objResponse;
+    return $response;
 }
 
 function searchGeonames($searchtext)
 {
-    global $objResponse;
+    global $response;
 
     if (trim($searchtext)) {
         $sql = "SELECT grg.geonameid, grg.name, grg.alternatenames, grg.latitude, grg.longitude,
@@ -85,11 +90,11 @@ function searchGeonames($searchtext)
                 WHERE grg.name LIKE " . quoteString($searchtext) . "
                  OR grg.asciiname LIKE " . quoteString($searchtext) . "
                 ORDER BY grg.geonameid";
-        $result = db_query($sql);
-        $num = mysql_num_rows($result);
+        $result = dbi_query($sql);
+        $num = mysqli_num_rows($result);
         if ($num > 0) {
             $ret = "<b>found " . $num . (($num > 1) ? " entries" : " entry") . "</b><br>\n";
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $admin1Code = $row['admin1_code'];
                 if ($row['admin1_code'] && $row['admin1_code'] != '00') {
                     $sql = "SELECT name
@@ -97,16 +102,16 @@ function searchGeonames($searchtext)
                             WHERE `country code` = " . quoteString($row['country_code']) . "
                              AND `admin1 code` = " . quoteString($row['admin1_code']) . "
                              AND `feature code` = 'ADM1'";
-                    $result2 = db_query($sql);
+                    $result2 = dbi_query($sql);
                     $admin1Code .= '-';
-                    if (mysql_num_rows($result2) > 0) {
-                        $row2 = mysql_fetch_array($result2);
+                    if (mysqli_num_rows($result2) > 0) {
+                        $row2 = mysqli_fetch_array($result2);
                         $admin1Code = $row2['name'] . " (" . $row['admin1_code'] . ")";
                     }
                 }
                 $ret .= "<hr>\n"
                       . "<b>geonameID:</b> " . $row['geonameid'] . "     "
-                      .  "<input type=\"button\" value=\" use this \" onclick=\"xajax_useGeoname('" . $row['geonameid'] . "');\"><br>\n"
+                      .  "<input type=\"button\" value=\" use this \" onclick=\"jaxon_useGeoname('" . $row['geonameid'] . "');\"><br>\n"
                       . "<b>name:</b> " . $row['name'] . "<br>\n"
                       . (($row['alternatenames']) ? "<b>alternatenames:</b> " . $row['alternatenames'] . "<br>\n" : "")
                       . "<b>lat/lon:</b> " . dec2min($row['latitude'], 'lat') . " / " . dec2min($row['longitude'], 'lon') . "   "
@@ -118,42 +123,42 @@ function searchGeonames($searchtext)
             $ret = "nothing found";
         }
 
-        $objResponse->assign('iBox_content', 'innerHTML', $ret);
-        $objResponse->script('$("#iBox_content").dialog("option", "title", "search");');
-        $objResponse->script('$("#iBox_content").dialog("open");');
+        $response->assign('iBox_content', 'innerHTML', $ret);
+        $response->script('$("#iBox_content").dialog("option", "title", "search");');
+        $response->script('$("#iBox_content").dialog("open");');
     }
 
-    return $objResponse;
+    return $response;
 }
 
 function useGeoname($geonameid)
 {
-    global $objResponse;
+    global $response;
 
     $sql = "SELECT grg.geonameid, grg.name, grg.alternatenames, grg.latitude, grg.longitude, grg.`admin1 code`,
              gn.nationID, gn.nation_engl, gn.iso_alpha_2_code
             FROM tbl_geo_ref_geonames grg
              LEFT JOIN tbl_geo_nation gn ON gn.iso_alpha_2_code = grg.`country code`
             WHERE grg.geonameid = " . quoteString($geonameid);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $lat = dec2min($row['latitude'], 'lat', false);
         $lon = dec2min($row['longitude'], 'lon', false);
-        $objResponse->script("fillLocation('" . $lon['deg'] . "', '" . $lon['min'] . "', '" . $lon['sec'] . "', '" . $lon['dir'] . "', '"
+        $response->script("fillLocation('" . $lon['deg'] . "', '" . $lon['min'] . "', '" . $lon['sec'] . "', '" . $lon['dir'] . "', '"
                                                  . $lat['deg'] . "', '" . $lat['min'] . "', '" . $lat['sec'] . "', '" . $lat['dir'] . "', '"
                                                  . $row['nationID'] . "')");
     }
 
     //Hide the iBox module on return
-    $objResponse->script('$("#iBox_content").dialog("close");');
+    $response->script('$("#iBox_content").dialog("close");');
 
-    return $objResponse;
+    return $response;
 }
 
 function makeLinktext($specimenID)
 {
-    global $objResponse;
+    global $response;
 
     $specimenID = intval($specimenID);
 
@@ -172,8 +177,8 @@ function makeLinktext($specimenID)
                           FROM tbl_specimens_links
                           WHERE specimen1_ID = '$searchID' )
                         ORDER BY specimenID";
-                $result = db_query($sql);
-                while ($row = mysql_fetch_array($result)) {
+                $result = dbi_query($sql);
+                while ($row = mysqli_fetch_array($result)) {
                     if (empty($checkedLinks[$row['specimens_linkID']]) && $row['specimenID'] != $specimenID) {
                         $foundIDs[$row['specimenID']] = true;
                         $searchIDs[$row['specimenID']] = true;
@@ -192,29 +197,29 @@ function makeLinktext($specimenID)
                         WHERE s.collectionID = mc.collectionID
                          AND mc.source_id = m.source_id
                          AND s.specimen_ID = '$foundID'";
-                $row2 = mysql_fetch_array(db_query($sql));
+                $row2 = mysqli_fetch_array(dbi_query($sql));
                 $ret .= "<li><a href=\"editSpecimens.php?sel=" . htmlentities("<$foundID>") . "&ptid=0\">"
                       . $row2['source_code'] . $row2['HerbNummer'] . ": " . getScientificName($row2['taxonID'], false, false) . "</a></li>";
             }
             $ret .= "</ul>";
 
-            $objResponse->script("linktext = '" . $ret . "';");
+            $response->script("linktext = '" . $ret . "';");
         }
     }
 
-    return $objResponse;
+    return $response;
 }
 
 function editLink($specimenID)
 {
-    global $objResponse;
+    global $response;
 
     $specimenID = intval($specimenID);
 
     unset($institution);
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         $institution[0][] = $row['source_id'];
         $institution[1][] = substr($row['source_code'], 0, 3);
     }
@@ -225,7 +230,7 @@ function editLink($specimenID)
              . "<table>\n";
         if (($_SESSION['editControl'] & 0x2000) != 0) {
             $ret .= "<tr><td colspan=\"3\">"
-                  . "<input type=\"submit\" class=\"cssfbutton\" value=\"update\" onClick=\"xajax_updateLink(xajax.getFormValues('f_iBox')); return false;\">"
+                  . "<input type=\"submit\" class=\"cssfbutton\" value=\"update\" onClick=\"jaxon_updateLink(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
         }
         $sql = "( SELECT specimens_linkID, specimen1_ID AS specimenID
@@ -236,21 +241,21 @@ function editLink($specimenID)
                   FROM tbl_specimens_links
                   WHERE specimen1_ID = '$specimenID' )
                 ORDER BY specimenID";
-        $result = db_query($sql);
-        while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        while ($row = mysqli_fetch_array($result)) {
             $id = $row['specimens_linkID'];
             $sql = "SELECT s.HerbNummer, mc.source_id
                     FROM tbl_specimens s, tbl_management_collections mc
                     WHERE s.collectionID = mc.collectionID
                      AND s.specimen_ID = '" . $row['specimenID'] . "'";
-            $row2 = mysql_fetch_array(db_query($sql));
+            $row2 = mysqli_fetch_array(dbi_query($sql));
             $ret .= "<tr><td align=\"center\">"
                   . makeInstitutionDropdown($institution, $row2['source_id'], $id)
                   . "</td><td>"
                   . "<input class=\"cssftext\" style=\"width: 20em;\" type=\"text\" name=\"linkSpecimen_$id\" id=\"linkSpecimen_$id\" value=\"" . htmlspecialchars($row2['HerbNummer']) . "\">"
                   . "</td><td align=\"center\">";
             if (($_SESSION['editControl'] & 0x2000) != 0) {
-                $ret .= "<img src=\"webimages/remove.png\" title=\"delete entry\" onclick=\"xajax_deleteLink('" . $row['specimens_linkID'] . "', '$specimenID');\">";
+                $ret .= "<img src=\"webimages/remove.png\" title=\"delete entry\" onclick=\"jaxon_deleteLink('" . $row['specimens_linkID'] . "', '$specimenID');\">";
             }
             $ret .= "</td></tr>\n";
         }
@@ -262,16 +267,16 @@ function editLink($specimenID)
               . "</table>\n"
               . "</form>\n";
 
-        $objResponse->assign('iBox_content', 'innerHTML', $ret);
-        $objResponse->script('$("#iBox_content").dialog("option", "title", "edit links");');
-        $objResponse->script('$("#iBox_content").dialog("open");');
+        $response->assign('iBox_content', 'innerHTML', $ret);
+        $response->script('$("#iBox_content").dialog("option", "title", "edit links");');
+        $response->script('$("#iBox_content").dialog("open");');
     }
-    return $objResponse;
+    return $response;
 }
 
 function updateLink($formData)
 {
-    global $objResponse;
+    global $response;
 
     $specimenID = intval($formData['linkSpecimenID']);
 
@@ -284,9 +289,9 @@ function updateLink($formData)
                         WHERE s.collectionID = mc.collectionID
                          AND s.HerbNummer = " . quoteString($formData['linkSpecimen_' . $linkID]) . "
                          AND mc.source_id = '" . intval($formData['linkInstitution_' . $linkID]) . "'";
-                $result = db_query($sql);
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query($sql);
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $targetID = $row['specimen_ID'];
                     if ($specimenID != $targetID) {
                         $sqldata = "specimen1_ID = '" . $specimenID . "',
@@ -299,7 +304,7 @@ function updateLink($formData)
                             $sql = "INSERT INTO tbl_specimens_links SET
                                     $sqldata";
                         }
-                        db_query($sql);
+                        dbi_query($sql);
                     }
                 }
             }
@@ -309,30 +314,30 @@ function updateLink($formData)
     makeLinktext($specimenID);
 
     //Hide the iBox module on return
-    $objResponse->script('$("#iBox_content").dialog("close");');
+    $response->script('$("#iBox_content").dialog("close");');
 
-    return $objResponse;
+    return $response;
 }
 
 function deleteLink($linkID, $specimenID)
 {
-    global $objResponse;
+    global $response;
 
     $linkID = intval($linkID);
 
     if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
-        db_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $linkID . "'");
+        dbi_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $linkID . "'");
     }
 
     makeLinktext($specimenID);
     editLink($specimenID);
 
-    return $objResponse;
+    return $response;
 }
 
 function editMultiTaxa ($specimenID)
 {
-    global $objResponse;
+    global $response;
 
     $specimenID = intval($specimenID);
 
@@ -342,7 +347,7 @@ function editMultiTaxa ($specimenID)
              . "<table>\n";
         if (($_SESSION['editControl'] & 0x2000) != 0) {
             $ret .= "<tr><td colspan='4'>"
-                  . "<input type='submit' class='cssfbutton' value='update' onClick=\"xajax_updateMultiTaxa(xajax.getFormValues('f_iBox')); return false;\">"
+                  . "<input type='submit' class='cssfbutton' value='update' onClick=\"jaxon_updateMultiTaxa(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
         }
         $sql = "SELECT tst.specimens_tax_ID, tst.taxonID, tg.genus,
@@ -365,39 +370,39 @@ function editMultiTaxa ($specimenID)
                 WHERE tst.taxonID = ts.taxonID
                  AND specimen_ID = '$specimenID'
                 ORDER BY tg.genus, te.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
-        $result = db_query($sql);
-        if (mysql_num_rows($result) > 0) {
-            while ($row = mysql_fetch_array($result)) {
+        $result = dbi_query($sql);
+        if (mysqli_num_rows($result) > 0) {
+            while ($row = mysqli_fetch_array($result)) {
                 $id = $row['specimens_tax_ID'];
                 $ret .= "<tr><td>"
                       . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_$id' id='multiTaxaData_$id' "
                       . "value='" . taxon($row) . "'>"
                       . "</td><td align='center'>";
                 if (($_SESSION['editControl'] & 0x2000) != 0) {
-                    $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"xajax_deleteMultiTaxa('" . $row['specimens_tax_ID'] . "', '$specimenID');\">";
+                    $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteMultiTaxa('" . $row['specimens_tax_ID'] . "', '$specimenID');\">";
                 }
                 $ret .= "</td></tr>\n";
-                $objResponse->script("setTimeout(\"call_makeAutocompleter('multiTaxaData_$id')\",100);");
+                $response->script("setTimeout(\"call_makeAutocompleter('multiTaxaData_$id')\",100);");
             }
         }
         $ret .= "<tr><td>"
               . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_0' id='multiTaxaData_0' value=''>"
               . "</td></tr>\n";
-        $objResponse->script("setTimeout(\"call_makeAutocompleter('multiTaxaData_0')\",100);");
+        $response->script("setTimeout(\"call_makeAutocompleter('multiTaxaData_0')\",100);");
 
         $ret .= "</table>\n"
               . "</form>\n";
 
-        $objResponse->assign('iBox_content', 'innerHTML', $ret);
-        $objResponse->script('$("#iBox_content").dialog("option", "title", "edit multiple taxa");');
-        $objResponse->script('$("#iBox_content").dialog("open");');
+        $response->assign('iBox_content', 'innerHTML', $ret);
+        $response->script('$("#iBox_content").dialog("option", "title", "edit multiple taxa");');
+        $response->script('$("#iBox_content").dialog("open");');
     }
-    return $objResponse;
+    return $response;
 }
 
 function updateMultiTaxa ($formData)
 {
-    global $objResponse;
+    global $response;
 
     $specimenID = intval($formData['multiTaxa_specimen_ID']);
 
@@ -417,7 +422,7 @@ function updateMultiTaxa ($formData)
                                  specimen_ID = '$specimenID',
                                  taxonID = $taxonID";
                     }
-                    db_query($sql);
+                    dbi_query($sql);
                 }
             }
         }
@@ -425,36 +430,36 @@ function updateMultiTaxa ($formData)
 
     editMultiTaxa($specimenID);
 
-    return $objResponse;
+    return $response;
 }
 
 function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
 {
-    global $objResponse;
+    global $response;
 
     $specimens_tax_ID = intval($specimens_tax_ID);
 
     if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
-        db_query("DELETE FROM tbl_specimens_taxa WHERE specimens_tax_ID = '" . $specimens_tax_ID . "'");
+        dbi_query("DELETE FROM tbl_specimens_taxa WHERE specimens_tax_ID = '" . $specimens_tax_ID . "'");
     }
 
     editMultiTaxa($specimenID);
 
-    return $objResponse;
+    return $response;
 }
 
 
 /**
- * register all xajax-functions in this file
+ * register all jaxon-functions in this file
  */
-$xajax->registerFunction("toggleLanguage");
-$xajax->registerFunction("searchGeonames");
-$xajax->registerFunction("useGeoname");
-$xajax->registerFunction("makeLinktext");
-$xajax->registerFunction("editLink");
-$xajax->registerFunction("updateLink");
-$xajax->registerFunction("deleteLink");
-$xajax->registerFunction("editMultiTaxa");
-$xajax->registerFunction("updateMultiTaxa");
-$xajax->registerFunction("deleteMultiTaxa");
-$xajax->processRequest();
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->processRequest();

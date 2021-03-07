@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("../inc/connect.php");
-no_magic();
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -33,16 +32,16 @@ no_magic();
 /**
  * get addtl. Collectors
  */
-$result = db_query("SELECT SammlerID, Sammler FROM tbl_collector");
+$result = dbi_query("SELECT SammlerID, Sammler FROM tbl_collector");
 $collectorsKnown = array();
 $collectorsUnknown = array();
 $collectorsUnknownID = array();
 $ctrUnknown = 0;
-while ($row = mysql_fetch_array($result)) {
+while ($row = mysqli_fetch_array($result)) {
     $collector = strtr(trim($row['Sammler']), array("," => ", "));
-    $result2 = db_query("SELECT person_ID FROM tbl_person_alternative WHERE p_alternative = '" . mysql_real_escape_string($collector) . "'");
-    if (mysql_num_rows($result2)) {
-        $row2 = mysql_fetch_array($result2);
+    $result2 = dbi_query("SELECT person_ID FROM tbl_person_alternative WHERE p_alternative = '" . dbi_escape_string($collector) . "'");
+    if (mysqli_num_rows($result2)) {
+        $row2 = mysqli_fetch_array($result2);
         $collectorsKnown[$row2['person_ID']] = $collector;
     } else {
         $collectorsUnknown[$ctrUnknown] = $collector;

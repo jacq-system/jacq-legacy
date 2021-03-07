@@ -7,7 +7,6 @@ session_start();
 require_once ("../inc/xajax/xajax_core/xajax.inc.php");
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-//no_magic();   das funktioniert bei ajax NICHT!!!!!  Vorsicht bei Datenbankupdates!!
 
 function make_family($value) {
   $results = array();
@@ -16,11 +15,11 @@ function make_family($value) {
     $sql = "SELECT family, familyID, category ".
            "FROM tbl_tax_families tf ".
             "LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID ".
-           "WHERE family LIKE '".mysql_escape_string($pieces[0])."%' ".
+           "WHERE family LIKE '".dbi_escape_string($pieces[0])."%' ".
            "ORDER BY family";
-    if ($result = db_query($sql)) {
-      if (mysql_num_rows($result)>0)
-        while ($row=mysql_fetch_array($result))
+    if ($result = dbi_query($sql)) {
+      if (mysqli_num_rows($result)>0)
+        while ($row=mysqli_fetch_array($result))
           $results[] = $row['family']." ".$row['category']." <".$row['familyID'].">";
     }
   }
@@ -36,11 +35,11 @@ function make_author($value) {
     $pieces = explode(" <",$value);
     $sql = "SELECT author, authorID, Brummit_Powell_full ".
            "FROM tbl_tax_authors ".
-           "WHERE author LIKE '".mysql_escape_string($pieces[0])."%' ".
+           "WHERE author LIKE '".dbi_escape_string($pieces[0])."%' ".
            "ORDER BY author";
-    if ($result = db_query($sql)) {
-      if (mysql_num_rows($result)>0) {
-        while ($row=mysql_fetch_array($result)) {
+    if ($result = dbi_query($sql)) {
+      if (mysqli_num_rows($result)>0) {
+        while ($row=mysqli_fetch_array($result)) {
           $res = $row['author']." <".$row['authorID'].">";
           if ($row['Brummit_Powell_full']) $res .= " [".replaceNewline($row['Brummit_Powell_full'])."]";
           $results[] = $res;
@@ -63,13 +62,13 @@ function make_taxon($value) {
            "FROM tbl_tax_species ts ".
             "LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID ".
             "LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID ".
-           "WHERE tg.genus LIKE '".mysql_escape_string($pieces[0])."%' ";
+           "WHERE tg.genus LIKE '".dbi_escape_string($pieces[0])."%' ";
     if ($pieces[1])
-      $sql .= "AND te.epithet LIKE '".mysql_escape_string($pieces[1])."%' ";
+      $sql .= "AND te.epithet LIKE '".dbi_escape_string($pieces[1])."%' ";
     $sql .= "ORDER BY tg.genus, te.epithet";
-    if ($result = db_query($sql)) {
-      if (mysql_num_rows($result)>0)
-        while ($row=mysql_fetch_array($result))
+    if ($result = dbi_query($sql)) {
+      if (mysqli_num_rows($result)>0)
+        while ($row=mysqli_fetch_array($result))
           $results[] = getScientificName( $row['taxonID'] );
     }
   }

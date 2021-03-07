@@ -3,7 +3,6 @@ session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
 require_once('../inc/jsonRPCClient.php');
-no_magic();
 
 $authorMayBeEmpty = (!empty($_POST['authorEmpty'])) ? true : false;
 
@@ -54,7 +53,7 @@ function getTaxon($id)
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
             WHERE taxonID = '" . intval($id) . "'";
-    $row = mysql_fetch_array(db_query($sql));
+    $row = dbi_query($sql)->fetch_array();
 
     $text = $row['genus'];
     if ($row['epithet'])  $text .= " " . $row['epithet'] . " " . $row['author'];
@@ -72,9 +71,9 @@ function makeServiceDropdown()
     $sql = "SELECT *
             FROM tbl_nom_service
             ORDER BY name";
-    $result = db_query($sql);
+    $result = dbi_query($sql);
 
-    while ($row = mysql_fetch_array($result)) {
+    while ($row = mysqli_fetch_array($result)) {
         echo "<option value=\"" . $row['serviceID'] . "\">" . $row['name'] . "</option>\n";
     }
 }
@@ -162,10 +161,10 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
         $taxamatch[$i] = array();
 
         // check if genus exists
-        $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus=".quoteString($import[$i][0]));
-        if (mysql_num_rows($result) > 0) {
-            if (mysql_num_rows($result) == 1) {
-                $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus=".quoteString($import[$i][0]));
+        if (mysqli_num_rows($result) > 0) {
+            if (mysqli_num_rows($result) == 1) {
+                $row = mysqli_fetch_array($result);
                 $genID = $row['genID'];
             } else {
                 $status[$i] = "multiple_genera";
@@ -178,9 +177,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
 
         if ($OK) {
             // check if species exists
-            $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet=".quoteString($import[$i][1]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet=".quoteString($import[$i][1]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $epithetID = $row['epithetID'];
             } else {
                 $status[$i] = "no_species";
@@ -190,9 +189,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
 
         if ($OK) {
             // check if author exists
-            $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author=".quoteString($import[$i][2]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author=".quoteString($import[$i][2]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $authorID = $row['authorID'];
             } elseif ($authorMayBeEmpty && !trim($import[$i][2])) {
                 $authorID = 0;
@@ -210,8 +209,8 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     $allPartsKnown = true;
                     foreach ($parts as $part) {
                         if (strlen(trim($part)) > 0) {
-                            $result2 = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . mysql_escape_string(trim($part)) . "'");
-                            if (mysql_num_rows($result2) == 0) {
+                            $result2 = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . dbi_escape_string(trim($part)) . "'");
+                            if (mysqli_num_rows($result2) == 0) {
                                 $allPartsKnown = false;
                             }
                         }
@@ -230,9 +229,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
 
         if ($OK && trim($import[$i][3])) {
             // check if sub/var/... species exists
-            $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][4]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($import[$i][4]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $subepithetID = $row['epithetID'];
             } else {
                 $status[$i] = "no_subspecies";
@@ -242,9 +241,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
 
         if ($OK && trim($import[$i][3])) {
             // check if sub/var/... author exists
-            $result = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][5]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = " . quoteString($import[$i][5]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $subauthorID = $row['authorID'];
             } elseif ($authorMayBeEmpty && !trim($import[$i][5])) {
                 $subauthorID = 0;
@@ -262,8 +261,8 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     $allPartsKnown = true;
                     foreach ($parts as $part) {
                         if (strlen(trim($part)) > 0) {
-                            $result2 = db_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . mysql_escape_string(trim($part)) . "'");
-                            if (mysql_num_rows($result2) == 0) {
+                            $result2 = dbi_query("SELECT authorID FROM tbl_tax_authors WHERE author = '" . dbi_escape_string(trim($part)) . "'");
+                            if (mysqli_num_rows($result2) == 0) {
                                 $allPartsKnown = false;
                             }
                         }
@@ -339,18 +338,18 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     $sql2 .= " AND {$infraName}_authorID IS NULL";
                 }
             }
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
                 $parts = array();
-                $result2 = db_query($sql . $sql2);
-                if (mysql_num_rows($result2) > 0) {
+                $result2 = dbi_query($sql . $sql2);
+                if (mysqli_num_rows($result2) > 0) {
                     $status[$i] = "exists";
-                    while ($row = mysql_fetch_array($result2)) {
+                    while ($row = mysqli_fetch_array($result2)) {
                         $parts[] = $row['taxonID'];
                     }
                 } else {
                     $status[$i] = "collision";
-                    while ($row = mysql_fetch_array($result)) {
+                    while ($row = mysqli_fetch_array($result)) {
                         $parts[] = $row['taxonID'];
                     }
                 }
@@ -372,9 +371,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     FROM tbl_tax_species
                     WHERE genID = '$genID'
                      AND speciesID = '$epithetID'";
-            $result = db_query($sql);
+            $result = dbi_query($sql);
             $parts = array();
-            while ($row = mysql_fetch_array($result)) {
+            while ($row = mysqli_fetch_array($result)) {
                 $parts[] = $row['taxonID'];
             }
             if (count($parts)>0) {
@@ -506,7 +505,7 @@ if ($type==1 && !$blocked) {  // file uploaded
                                     serviceID='" . intval($_POST['service']) . "',
                                     param1=" . quoteString($import[$i][6]) . ",
                                     param2=" . quoteString($import[$i][7]);
-                    db_query($sqlService);
+                    dbi_query($sqlService);
                 }
                 for ($j = 0; $j < count($hybrid[$i]); $j++) {
                     echo "<tr><td colspan=\"9\">"
@@ -628,11 +627,11 @@ if ($type==1 && !$blocked) {  // file uploaded
                                AND subformaID IS NULL AND subforma_authorID IS NULL";
         }
         $taxonID = 0;
-        $result = db_query($sql1);
-        if (mysql_num_rows($result) == 0) {
-            $result = db_query($sql2);
+        $result = dbi_query($sql1);
+        if (mysqli_num_rows($result) == 0) {
+            $result = dbi_query($sql2);
             if ($result) {
-                $taxonID = mysql_insert_id();
+                $taxonID = dbi_insert_id();
                 logSpecies($taxonID, 0);
                 if (intval($_POST['service'])) {
                     $sqlService = "INSERT INTO tbl_nom_service_names SET
@@ -640,7 +639,7 @@ if ($type==1 && !$blocked) {  // file uploaded
                                     serviceID = '" . intval($_POST['service']) . "',
                                     param1 = " . quoteString($data[$i]['serviceTaxID']) . ",
                                     param2 = " . quoteString($data[$i]['serviceVersion']);
-                    db_query($sqlService);
+                    dbi_query($sqlService);
                 }
             }
         }

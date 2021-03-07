@@ -2,16 +2,14 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require_once 'inc/password_compat/lib/password.php';
-no_magic();
 
 if (isset($_GET['sel'])) {
     $sql = "SELECT *
             FROM herbarinput_log.tbl_herbardb_users
             WHERE userID = '" . intval($_GET['sel']) . "'";
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result, MYSQL_ASSOC);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
 
         $p_userID      = $row['userID'];
         $p_groupID     = $row['groupID'];
@@ -34,8 +32,8 @@ if (isset($_GET['sel'])) {
     $p_userID      = $_POST['userID'];
     $p_groupID     = $_POST['groupID'];
     $p_source_id   = $_POST['source_id'];
-    $p_active      = $_POST['active'];
-    $p_use_access  = $_POST['use_access'];
+    $p_active      = isset($_POST['active']) ? $_POST['active'] : 0;
+    $p_use_access  = isset($_POST['use_access']) ? $_POST['use_access'] : 0;
     $p_username    = $_POST['username'];
     $p_firstname   = $_POST['firstname'];
     $p_surname     = $_POST['surname'];
@@ -44,43 +42,43 @@ if (isset($_GET['sel'])) {
     $p_mobile      = $_POST['mobile'];
     $p_editFamily  = $_POST['editFamily'];
 
-    if ($_POST['submitUpdate'] && checkRight('admin')) {
-        $sqldata = "groupID = '" . intval($p_groupID) . "',
-                    source_id = '" . intval($p_source_id) . "',
+    if (!empy($_POST['submitUpdate']) && checkRight('admin')) {
+        $sqldata = "groupID = '"    . intval($p_groupID) . "',
+                    source_id = '"  . intval($p_source_id) . "',
                     use_access = '" . (($p_use_access) ? 1 : 0) . "',
-                    active = '" . (($p_active) ? 1 : 0) . "',
-                    username = " . quoteString($p_username) . ",
-                    firstname = " . quoteString($p_firstname) . ",
-                    surname = " . quoteString($p_surname) . ",
+                    active = '"     . (($p_active) ? 1 : 0) . "',
+                    username = "    . quoteString($p_username) . ",
+                    firstname = "   . quoteString($p_firstname) . ",
+                    surname = "     . quoteString($p_surname) . ",
                     emailadress = " . quoteString($p_emailadress) . ",
-                    phone = " . quoteString($p_phone) . ",
-                    mobile = " . quoteString($p_mobile) . ",
-                    editFamily = " . quoteString($p_editFamily);
+                    phone = "       . quoteString($p_phone) . ",
+                    mobile = "      . quoteString($p_mobile) . ",
+                    editFamily = "  . quoteString($p_editFamily);
         if (intval($p_userID)) {
             $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET " . $sqldata . " WHERE userID = '" . intval($p_userID) . "'";
-            db_query($sql);
+            dbi_query($sql);
         } else {
             $sql = "INSERT INTO herbarinput_log.tbl_herbardb_users SET " . $sqldata;
-            db_query($sql);
-            $p_userID = mysql_insert_id();
+            dbi_query($sql);
+            $p_userID = dbi_insert_id();
         }
 
         if ($_POST['password_1'] && $_POST['password_2'] && $_POST['password_1'] == $_POST['password_2']) {
-            $key = $p_username . " " . $_POST['password_1'];
-            $input = $_SESSION['username'] . "%%" . $_SESSION['password'];
-            $td = mcrypt_module_open('rijndael-256', '', 'cfb', '');
-            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
-            mcrypt_generic_init($td, $key, $iv);
-            $encrypted_data = mcrypt_generic($td, $input);
-            mcrypt_generic_deinit($td);
-            mcrypt_module_close($td);
+//            $key = $p_username . " " . $_POST['password_1'];
+//            $input = $_SESSION['username'] . "%%" . $_SESSION['password'];
+//            $td = mcrypt_module_open('rijndael-256', '', 'cfb', '');
+//            $iv = mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_DEV_RANDOM);
+//            mcrypt_generic_init($td, $key, $iv);
+//            $encrypted_data = mcrypt_generic($td, $input);
+//            mcrypt_generic_deinit($td);
+//            mcrypt_module_close($td);
 
-            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET
-                     iv = " . quoteString(base64_encode($iv)) . ",
-                     secret = " . quoteString(base64_encode($encrypted_data)) . ",
-                     pw='" . password_hash(trim($_POST['password_1']), PASSWORD_DEFAULT) . "'
-                    WHERE username = " . quoteString($p_username);
-            db_query($sql);
+            $sql = "UPDATE herbarinput_log.tbl_herbardb_users SET "
+//                 . " iv = " . quoteString(base64_encode($iv)) . ", "
+//                 . " secret = " . quoteString(base64_encode($encrypted_data)) . ", "
+                 . " pw='" . password_hash(trim($_POST['password_1']), PASSWORD_DEFAULT) . "' "
+                 . "WHERE username = " . quoteString($p_username);
+            dbi_query($sql);
         }
 
         //$location = "Location: listUsers.php";
@@ -121,9 +119,9 @@ if (isset($_GET['sel'])) {
 <?php
 unset($group);
 $sql = "SELECT groupID, group_name, group_description FROM herbarinput_log.tbl_herbardb_groups ORDER BY group_name";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $group[0][] = $row['groupID'];
             $group[1][] = $row['group_name'] . " (" . $row['group_description'] . ")";
         }
@@ -132,9 +130,9 @@ if ($result = db_query($sql)) {
 
 unset($source_id);
 $sql = "SELECT source_id, source_code, source_name FROM herbarinput.meta ORDER BY source_name";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $source_id[0][] = $row['source_id'];
             $source_id[1][] = $row['source_name'] . " (" . $row['source_code'] . ")";
         }

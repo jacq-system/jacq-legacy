@@ -1,7 +1,10 @@
 <?php
 session_start();
-require_once ("../inc/xajax/xajax_core/xajax.inc.php");
 require("../inc/connect.php");
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jaxon\Jaxon;
+use Jaxon\Response\Response;
 
 /*********************\
 |                     |
@@ -11,7 +14,7 @@ require("../inc/connect.php");
 
 function makeDropdownUsers($tid)
 {
-    $ret = "<select name=\"tid\" id=\"tid\" onchange=\"xajax_changetid(xajax.getFormValues('chatform'))\">"
+    $ret = "<select name=\"tid\" id=\"tid\" onchange=\"jaxon_changetid(jaxon.getFormValues('chatform'))\">"
          . "<option value=\"-1\">received (last hour, unseen)</option>\n";
 
     $sql = "SELECT hu.userID, hu.firstname, hu.surname, hu.login, m.`source_code`
@@ -22,17 +25,17 @@ function makeDropdownUsers($tid)
              AND hu.login >= subtime(now(), '24:00:00')
              AND hu.userID != {$_SESSION['uid']}
             ORDER BY m.`source_code`, hu.surname, hu.firstname";
-    $result = db_query($sql);
-    while ($row = mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
             $sql = "SELECT ID
                     FROM tbl_chat_priv
                     WHERE uid = {$row['userID']}
                      AND tid = {$_SESSION['uid']}
                      AND seen = 0";
-            $checkResult = db_query($sql);
+            $checkResult = dbi_query($sql);
             $ret .= "<option value=\"{$row['userID']}\""
-                  . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
+                  . ((mysqli_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
                   . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] ({$row['login']})"
@@ -47,17 +50,17 @@ function makeDropdownUsers($tid)
              AND (hu.login IS NULL OR hu.login < subtime(now(), '24:00:00'))
              AND hu.userID != {$_SESSION['uid']}
             ORDER BY m.`source_code`, hu.surname, hu.firstname";
-    $result = db_query($sql);
-    while ($row=mysql_fetch_array($result)) {
+    $result = dbi_query($sql);
+    while ($row=mysqli_fetch_array($result)) {
         if (trim($row['firstname']) || trim($row['surname'])) {
             $sql = "SELECT ID
                     FROM tbl_chat_priv
                     WHERE uid = {$row['userID']}
                      AND tid = {$_SESSION['uid']}
                      AND seen = 0";
-            $checkResult = db_query($sql);
+            $checkResult = dbi_query($sql);
             $ret .= "<option value=\"{$row['userID']}\""
-                  . ((mysql_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
+                  . ((mysqli_num_rows($checkResult) > 0) ? " style=\"font-weight:bold;\"" : "")
                   . (($row['userID'] == $tid) ? " selected" : "")
                   . ">"
                   . "{$row['firstname']} {$row['surname']} [{$row['source_code']}] (" . (($row['login']) ? $row['login'] : "offline") . ")"
@@ -71,19 +74,19 @@ function makeDropdownUsers($tid)
 
 /*******************\
 |                   |
-|  xajax functions  |
+|  jaxon functions  |
 |                   |
 \*******************/
 
 /**
- * xajax-function for ...
+ * jaxon-function for ...
  *
  * @param integer $tid target-ID
- * @return xajaxResponse
+ * @return Response
  */
 function displaychat($tid)
 {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
     ob_start();
 
     if ($tid > 0) {
@@ -103,13 +106,17 @@ function displaychat($tid)
                 ORDER BY tbl_chat_priv.timestamp DESC
                 LIMIT 100";
     }
-    $r = db_query($sql);
+    $r = dbi_query($sql);
     $chat = '<table width="500" dir=\"ltr\" summary=\"Shoutbox formating\" cellpadding=2 cellspacing=0 border=0>';
 
     $bgcolor='#c2c2c2';
-    while($row=mysql_fetch_assoc($r)){
+    $latestTableId = 0;
+    while($row = mysqli_fetch_assoc($r)) {
+        if (!$latestTableId) {
+            $latestTableId = $row['ID'];
+        }
         $bold = ($row['seen'] == 0 && $row['tid'] == $_SESSION['uid']) ? 'style="font-weight:bold"' : '';
-        $onclick = "onclick=\"xajax_changeStatus('{$row['userID']}', '{$row['ID']}');\"";
+        $onclick = "onclick=\"jaxon_changeStatus('{$row['userID']}', '{$row['ID']}');\"";
         $chat .= "<tr bgcolor=\"$bgcolor\">".
                  "<td nowrap $bold width=\"70\" valign=\"top\" $onclick>" . $row['firstname'] . " " . $row['surname'] . "<br>" . $row['timestamp'] . "</td>".
                  "<td width=\"10\">&nbsp;</td>".
@@ -123,26 +130,25 @@ function displaychat($tid)
         }
     }
     $chat .= '</table>';
-    $objResponse->assign('chatdiv', 'innerHTML', $chat);
+    $response->assign('chatdiv', 'innerHTML', $chat);
 
-    $latestTableId = (mysql_num_rows($r)>0) ? mysql_result($r,0,0) : 0;
-    $objResponse->script("document.getElementById('latestid').value='".$latestTableId."'");
+    $response->script("document.getElementById('latestid').value='".$latestTableId."'");
 
-    $objResponse->assign('spn_tid', 'innerHTML', makeDropdownUsers($tid));
+    $response->assign('spn_tid', 'innerHTML', makeDropdownUsers($tid));
 
-    $latestUserId = mysql_result(mysql_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1"),0,0);
-    $objResponse->script("document.getElementById('latestuid').value='".$latestUserId."'");
+    $latestUserId = dbi_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1")->fetch_assoc()['userID'];
+    $response->script("document.getElementById('latestuid').value='".$latestUserId."'");
 
     if ($tid > 0) {
-        $objResponse->call("enableSend");
+        $response->call("enableSend");
     } else {
-        $objResponse->call("disableSend");
+        $response->call("disableSend");
     }
 
     //Any errors or debug can be displayed in the de-bug div
-    $objResponse->assign('debugdiv', 'innerHTML', ob_get_clean());
+    $response->assign('debugdiv', 'innerHTML', ob_get_clean());
 
-    return $objResponse;
+    return $response;
 }
 
 function changeStatus($userID, $ID)
@@ -151,7 +157,7 @@ function changeStatus($userID, $ID)
              timestamp = timestamp,
              seen = 1
             WHERE ID = '" . intval($ID) . "'";
-    db_query($sql);
+    dbi_query($sql);
 
     return displaychat($userID);
 }
@@ -162,50 +168,49 @@ function changetid($formdata)
 }
 
 /**
- * xajax-function for ...
+ * jaxon-function for ...
  *
  * @param string $formdata form data
- * @return xajaxResponse
+ * @return Response
  */
 function insertchat($formdata)
 {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
     ob_start();
 
     //ignore blank entries
     if (trim($formdata['chat'])!="") {
 
-        $formdata['name'] = htmlspecialchars($formdata['name'], ENT_QUOTES);
         $formdata['chat'] = htmlspecialchars($formdata['chat'], ENT_QUOTES);
 
         $sql = "INSERT INTO tbl_chat_priv SET
                 uid='".$_SESSION['uid']."',
                 tid='".$formdata['tid']."',
-                chat='".mysql_real_escape_string($formdata['chat'])."'";
-        db_query($sql);
+                chat='".dbi_escape_string($formdata['chat'])."'";
+        dbi_query($sql);
 
         //Empty the textarea
-        $objResponse->script("document.getElementById('chat').value=''");
+        $response->script("document.getElementById('chat').value=''");
     }
 
     //Any errors or debug can be displayed in the de-bug div
-    $objResponse->assign('debugdiv', 'innerHTML', ob_get_clean());
+    $response->assign('debugdiv', 'innerHTML', ob_get_clean());
 
     //reload the chat display div with new message.
-    $objResponse->loadCommands(displaychat($formdata['tid']));
+    $response->appendResponse(displaychat($formdata['tid']));
 
-    return $objResponse;
+    return $response;
 }
 
 /**
- * xajax-function for ...
+ * jaxon-function for ...
  *
  * @param string $formdata form data
- * @return xajaxResponse
+ * @return Response
  */
 function checklatest($formdata)
 {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
 
     //get most recent id in table tbl_chat_priv
     if ($formdata['tid']>0) {
@@ -223,51 +228,51 @@ function checklatest($formdata)
                 ORDER BY timestamp DESC
                 LIMIT 1";
     }
-    $r = mysql_query($sql);
-    $latestTableId = (mysql_num_rows($r)>0) ? mysql_result($r,0,0) : 0;
-    $latestUserId = mysql_result(mysql_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1"),0,0);
+    $r = dbi_query($sql);
+    $latestTableId = (mysqli_num_rows($r) > 0) ? $r->fetch_assoc()['ID'] : 0;
+    $latestUserId = dbi_query("SELECT userID FROM herbarinput_log.tbl_herbardb_users ORDER BY timestamp DESC LIMIT 1")->fetch_assoc()['userID'];
     if($formdata['latestid']!=$latestTableId || $formdata['latestuid']!=$latestUserId){
-        $objResponse->loadCommands(displaychat($formdata['tid'])); //reload the chat display div
+        $response->appendResponse(displaychat($formdata['tid'])); //reload the chat display div
     }
 
-    return $objResponse;
+    return $response;
 }
 
 /**
  * helper-function: chat-window is open
  *
- * @return xajaxResponse
+ * @return Response
  */
 function chatIsOpen()
 {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
     $_SESSION['chatPrivActive'] = 1;
 
-    return $objResponse;
+    return $response;
 }
 
 /**
  * helper-function: chat-window is closed
  *
- * @return xajaxResponse
+ * @return Response
  */
 function chatIsClosed()
 {
-    $objResponse = new xajaxResponse();
+    $response = new Response();
     $_SESSION['chatPrivActive'] = 0;
 
-    return $objResponse;
+    return $response;
 }
 
 /**
- * register all xajax-functions in this file
+ * register all jaxon-functions in this file
  */
-$xajax = new xajax();
-$xajax->registerFunction("displaychat");
-$xajax->registerFunction("changeStatus");
-$xajax->registerFunction("changetid");
-$xajax->registerFunction("insertchat");
-$xajax->registerFunction("checklatest");
-$xajax->registerFunction("chatIsOpen");
-$xajax->registerFunction("chatIsClosed");
-$xajax->processRequest();
+$jaxon = jaxon();
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displaychat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changeStatus");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "changetid");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "insertchat");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checklatest");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsOpen");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsClosed");
+$jaxon->processRequest();

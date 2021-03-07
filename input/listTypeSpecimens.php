@@ -4,11 +4,9 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("inc/api_functions.php");
 require("inc/log_functions.php");
-//require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
 
-$nrSel = intval($_GET['nr']);
-$id = intval($_GET['ID']);
+$nrSel = intval(filter_input(INPUT_GET, 'nr', FILTER_SANITIZE_NUMBER_INT));
+$id    = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
 
 if (isset($_GET['order'])) {
   if ($_GET['order']=="b") {
@@ -136,14 +134,14 @@ $sql = "SELECT tg.genus,
          LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
         WHERE ts.taxonID='$id'
          AND tg.genID=ts.genID";
-$result = db_query($sql);
-$row=mysql_fetch_array($result);
+$result = dbi_query($sql);
+$row=mysqli_fetch_array($result);
 echo htmlspecialchars(taxonItem($row)) . "</div>\n<p>\n";
 
 $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image,
          c.Sammler, c2.Sammler_2, ss.series, s.series_number,
          s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-         n.nation_engl, p.provinz, s.Fundort, mc.collection, mc.coll_short, t.typus_lat,
+         n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
          s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
          s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
          ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -175,8 +173,8 @@ $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image,
          AND mc.collectionID=s.collectionID
          AND st.taxonID='$id'
          AND tg.genID=ts.genID";
-$result = db_query($sql." GROUP BY s.specimen_ID ORDER BY ".$_SESSION['ltsOrder']);
-if (mysql_num_rows($result)>0) {
+$result = dbi_query($sql." GROUP BY s.specimen_ID ORDER BY ".$_SESSION['ltsOrder']);
+if (mysqli_num_rows($result)>0) {
   echo "<table class=\"out\" cellspacing=\"0\">\n";
   echo "<tr class=\"out\">";
   echo "<th class=\"out\"></th>";
@@ -191,10 +189,9 @@ if (mysql_num_rows($result)>0) {
        "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=d\">Typus</a>".sortItem($_SESSION['ltsOrTyp'],4)."</th>";
   echo "<th class=\"out\">".
        "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=e\">Coll.</a>".sortItem($_SESSION['ltsOrTyp'],5)."</th>";
-  if ($swBatch) echo "<th class=\"out\">Batch</th>";
   echo "</tr>\n";
   $nr = 1;
-  while ($row=mysql_fetch_array($result)) {
+  while ($row=mysqli_fetch_array($result)) {
     $linkList[$nr] = $row['specimen_ID'];
 
     if ($row['digital_image'])

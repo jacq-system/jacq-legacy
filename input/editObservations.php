@@ -4,15 +4,23 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editSpecimensServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("toggleLanguage");
-$xajax->registerFunction("searchGeonames");
-$xajax->registerFunction("useGeoname");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 
 if (!empty($_POST['submitMakeSpecimen']) && isset($_POST['specimen_ID']) && intval($_POST['specimen_ID'])) {
     $location="Location: editSpecimens.php?sel=<" . intval($_POST['specimen_ID']) . ">";
@@ -38,14 +46,14 @@ function makeTaxon2($search)
                  LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
                  LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                 WHERE ts.external = 0
-                 AND tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'\n";
+                 AND tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'\n";
         if (!empty($pieces[1])) {
-            $sql .= "AND te.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'\n";
+            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'\n";
         }
         $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = getScientificName($row['taxonID']);
                 }
             }
@@ -78,18 +86,18 @@ function makeTaxon2($search)
                  LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                  LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                 WHERE th.taxon_ID_fk = ts.taxonID
-                 AND (tg.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                  OR tgp1.genus LIKE '" . mysql_escape_string($pieces[0]) . "%'
-                  OR tgp2.genus LIKE '" . mysql_escape_string($pieces[0]) . "%')\n";
+                 AND (tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
+                  OR tgp1.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
+                  OR tgp2.genus LIKE '" . dbi_escape_string($pieces[0]) . "%')\n";
         if (!empty($pieces[1])) {
-            $sql .= "AND (tep1.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%'
-                      OR tep2.epithet LIKE '" . mysql_escape_string($pieces[1]) . "%')\n";
+            $sql .= "AND (tep1.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'
+                      OR tep2.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%')\n";
         }
         $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
 
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     $results[] = taxonWithHybrids($row);
                 }
             }
@@ -108,17 +116,17 @@ function makeSammler2($search, $nr)
         if ($nr == 2) {
             $sql = "SELECT Sammler_2, Sammler_2ID
                     FROM tbl_collector_2
-                    WHERE Sammler_2 LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                    WHERE Sammler_2 LIKE '" . dbi_escape_string($pieces[0]) . "%'
                     ORDER BY Sammler_2";
         } else {
             $sql = "SELECT Sammler, SammlerID
                     FROM tbl_collector
-                    WHERE Sammler LIKE '" . mysql_escape_string($pieces[0]) . "%'
+                    WHERE Sammler LIKE '" . dbi_escape_string($pieces[0]) . "%'
                     ORDER BY Sammler";
         }
-        if ($result = db_query($sql)) {
-            if (mysql_num_rows($result) > 0) {
-                while ($row = mysql_fetch_array($result)) {
+        if ($result = dbi_query($sql)) {
+            if (mysqli_num_rows($result) > 0) {
+                while ($row = mysqli_fetch_array($result)) {
                     if ($nr == 2)
                       $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
                     else
@@ -150,14 +158,14 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
                 WHERE s.SammlerID = c.SammlerID
                  AND specimen_ID = " . extractID($_GET['sel']);
-        $result = db_query($sql);
-        $resultValid = (mysql_num_rows($result) > 0) ? true : false;
+        $result = dbi_query($sql);
+        $resultValid = (mysqli_num_rows($result) > 0) ? true : false;
     } else {
         $resultValid = false;
     }
 
     if ($resultValid) {
-        $row = mysql_fetch_array($result);
+        $row = mysqli_fetch_array($result);
         $p_specimen_ID       = $row['specimen_ID'];
         $p_HerbNummer        = $row['HerbNummer'];
         $p_identstatus       = $row['identstatusID'];
@@ -217,9 +225,9 @@ if (isset($_GET['sel'])) {
         if ($row['taxonID']) {
             $sql = "SELECT ts.taxonID, ts.external
                     FROM tbl_tax_species ts
-                    WHERE ts.taxonID = '" . mysql_escape_string($row['taxonID']) . "'";
-            $result2 = db_query($sql);
-            $row2 = mysql_fetch_array($result2);
+                    WHERE ts.taxonID = '" . dbi_escape_string($row['taxonID']) . "'";
+            $result2 = dbi_query($sql);
+            $row2 = mysqli_fetch_array($result2);
             $p_taxon  = getScientificName($row2['taxonID']);
             $p_external = $row2['external'];
         } else {
@@ -241,8 +249,8 @@ if (isset($_GET['sel'])) {
         $p_sammler = $p_sammler2 = "";
         if (!$_SESSION['editorControl']) {  // no editor, so the collectionID is fixed
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '" . $_SESSION['sid'] . "' ORDER BY collectionID ASC";
-            $result = db_query($sql);
-            $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            $row = mysqli_fetch_array($result);
             $p_collection = $row['collectionID'];
         } else {
             $p_collection = "";
@@ -252,8 +260,8 @@ if (isset($_GET['sel'])) {
         $p_specimen_ID = "";
         if (!$_SESSION['editorControl']) {  // no editor, so the collectionID is fixed
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '" . $_SESSION['sid'] . "' ORDER BY collectionID ASC";
-            $result = db_query($sql);
-            $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            $row = mysqli_fetch_array($result);
             $p_collection = $row['collectionID'];
         }
     }
@@ -368,7 +376,7 @@ if (isset($_GET['sel'])) {
                   FROM tbl_specimens, tbl_management_collections
                   WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                    AND specimen_ID = '" . intval($_POST['specimen_ID']) . "'";
-          $dummy = mysql_fetch_array(mysql_query($sql));
+          $dummy = dbi_query($sql)->fetch_array();
           $checkSource = ($dummy['source_id'] == $_SESSION['sid']) ? true : false;
 
           $sql = "UPDATE tbl_specimens SET
@@ -386,7 +394,7 @@ if (isset($_GET['sel'])) {
       }
       // check if user has access to the new collection
       $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID='".intval($p_collection)."'";
-      $rowCheck = mysql_fetch_array(mysql_query($sqlCheck));
+      $rowCheck = dbi_query($sqlCheck)->fetch_array();
       // allow write access to database if user is editor or is granted for both old and new collection
       if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
           $sqlDummy = "SELECT specimen_ID
@@ -396,18 +404,18 @@ if (isset($_GET['sel'])) {
                         AND (source_id = '1' OR source_id = '6')
                         AND source_id = '" . $rowCheck['source_id'] . "'
                         AND specimen_ID != '" . intval($_POST['specimen_ID']) . "'";
-          $dummy = db_query($sqlDummy);
-          if (mysql_num_rows($dummy)>0) {
+          $dummy = dbi_query($sqlDummy);
+          if (mysqli_num_rows($dummy)>0) {
               $updateBlocked = true;
               $blockCause = 1;  // HerbNummer and source_id already in database
-              $dummyRow = mysql_fetch_array($dummy);
+              $dummyRow = mysqli_fetch_array($dummy);
               $blockSource = $dummyRow['specimen_ID'];
               $edit = ($_POST['edit']) ? true : false;
               $p_specimen_ID = $_POST['specimen_ID'];
           }
           else {
-              $result = db_query($sql);
-              $p_specimen_ID = (intval($_POST['specimen_ID'])) ? intval($_POST['specimen_ID']) : mysql_insert_id();
+              $result = dbi_query($sql);
+              $p_specimen_ID = (intval($_POST['specimen_ID'])) ? intval($_POST['specimen_ID']) : dbi_insert_id();
               logSpecimen($p_specimen_ID, $updated);
 
               if ($_POST['submitUpdateNew']) {
@@ -444,7 +452,7 @@ if (isset($_GET['sel'])) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script src="js/freudLib.js" type="text/javascript"></script>
@@ -636,7 +644,7 @@ if (isset($_GET['sel'])) {
     }
 
     function call_toggleLanguage() {
-      xajax_toggleLanguage(xajax.getFormValues('f'));
+      jaxon_toggleLanguage(jaxon.getFormValues('f'));
       return false;
     }
 
@@ -661,9 +669,9 @@ if (isset($_GET['sel'])) {
 unset($collection);
 $collection[0][] = 0; $collection[1][] = "";
 $sql = "SELECT collection, collectionID FROM tbl_management_collections ORDER BY collection";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $collection[0][] = $row['collectionID'];
             $collection[1][] = $row['collection'];
         }
@@ -673,9 +681,9 @@ if ($result = db_query($sql)) {
 unset($identstatus);
 $identstatus[0][] = 0; $identstatus[1][] = "";
 $sql = "SELECT identstatusID, identification_status FROM tbl_specimens_identstatus ORDER BY identification_status";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $identstatus[0][] = $row['identstatusID'];
             $identstatus[1][] = $row['identification_status'];
         }
@@ -685,9 +693,9 @@ if ($result = db_query($sql)) {
 unset($series);
 $series[0][] = 0; $series[1][] = "";
 $sql = "SELECT seriesID, series FROM tbl_specimens_series ORDER BY series";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $series[0][] = $row['seriesID'];
             $series[1][] = (strlen($row['series']) > 50) ? substr($row['series'], 0, 50) . "..." : $row['series'];
         }
@@ -697,9 +705,9 @@ if ($result = db_query($sql)) {
 unset($nation);
 $nation[0][] = 0; $nation[1][] = "";
 $sql = "SELECT nation_engl, nationID FROM tbl_geo_nation ORDER BY nation_engl";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $nation[0][] = $row['nationID'];
             $nation[1][] = $row['nation_engl'];
         }
@@ -710,9 +718,9 @@ unset($province);
 $province[0][] = 0; $province[1][] = "";
 $sql = "SELECT provinz, provinceID FROM tbl_geo_province
         WHERE nationID = '" . intval($p_nation) . "' ORDER BY provinz";
-if ($result = db_query($sql)) {
-    if (mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_array($result)) {
+if ($result = dbi_query($sql)) {
+    if (mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
             $province[0][] = $row['provinceID'];
             $province[1][] = $row['provinz'];
         }
@@ -835,7 +843,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
 }
 $cf->label(40, 27, "Province");
 $cf->dropdown(40, 27, "province", $p_province, $province[0], $province[1]);
-$cf->label(9, 29, "geonames","#\" onclick=\"xajax_searchGeonames(document.f.Bezirk.value);");
+$cf->label(9, 29, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 $cf->inputText(9, 29, 20, "Bezirk", $p_Bezirk, 255);
 
 $cf->label(9, 31, "Altitude");

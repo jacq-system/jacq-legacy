@@ -42,7 +42,7 @@ $_CONFIG['DATABASE'] = array(
     ),
 
     // New database containing data
-    'INPUT' => array(
+    'JACQ' => array(
         'host' => 'localhost',
         'name' => 'jacq_input',
         'readonly' => array(
@@ -94,11 +94,8 @@ $_OPTIONS['TYPINGCACHE']['SETTING'] = array(
 // Enable debug mode
 $_OPTIONS['debug'] = 0;
 
-//  Use TCPDF 4.5 or 5.8
-$_OPTIONS['tcpdf_5_8'] = false;
-
 // Staging area
-  $_OPTIONS['staging_area'] = array(
+$_OPTIONS['staging_area'] = array(
     'enabled' => TRUE,
     'ignore_no_genus' => TRUE, // allows adding new taxa to the DB, even if no matching genus has been found
-  );
+);

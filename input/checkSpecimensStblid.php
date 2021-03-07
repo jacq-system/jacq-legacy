@@ -19,7 +19,7 @@ $dbLink->set_charset('utf8');
  * @param string $sql query string
  * @return mixed mysqli_result or false if error
  */
-function db_query($sql)
+function dbi_query($sql)
 {
   global $dbLink;
 
@@ -56,24 +56,24 @@ $missing = array();
 
 if (!empty($_POST['rescan']) || !empty($_GET['rescan'])) {
     /** @var mysqli_result $result_sources */
-    $result_sources = db_query("SELECT source_id FROM meta_stblid GROUP BY source_id ORDER BY source_id");
+    $result_sources = dbi_query("SELECT source_id FROM meta_stblid GROUP BY source_id ORDER BY source_id");
     while ($row_sources = $result_sources->fetch_array()) {
         /** @var mysqli_result $result_specimen */
-        $result_specimen = db_query("SELECT mc.collectionID, mc.source_id, s.specimen_ID, s.HerbNummer
-                                     FROM tbl_specimens s
-                                      LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                     WHERE mc.source_id = " . $row_sources['source_id'] . "
-                                      AND s.HerbNummer IS NOT NULL
-                                      AND s.HerbNummer != 0
-                                      AND s.specimen_ID NOT IN (SELECT specimen_ID FROM tbl_specimens_stblid)
-                                     ORDER BY mc.collectionID, s.specimen_ID");
+        $result_specimen = dbi_query("SELECT mc.collectionID, mc.source_id, s.specimen_ID, s.HerbNummer
+                                      FROM tbl_specimens s
+                                       LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                      WHERE mc.source_id = " . $row_sources['source_id'] . "
+                                       AND s.HerbNummer IS NOT NULL
+                                       AND s.HerbNummer != 0
+                                       AND s.specimen_ID NOT IN (SELECT specimen_ID FROM tbl_specimens_stblid)
+                                      ORDER BY mc.collectionID, s.specimen_ID");
         while ($row_specimen = $result_specimen->fetch_array()) {
-            $result_number = db_query("SELECT count(s.HerbNummer) AS number
-                                       FROM tbl_specimens s
-                                        LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                       WHERE HerbNummer = '" . $row_specimen['HerbNummer'] . "'
-                                        AND mc.source_id = "  . $row_specimen['source_id'] . "
-                                       GROUP BY HerbNummer");
+            $result_number = dbi_query("SELECT count(s.HerbNummer) AS number
+                                        FROM tbl_specimens s
+                                         LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                        WHERE HerbNummer = '" . $row_specimen['HerbNummer'] . "'
+                                         AND mc.source_id = "  . $row_specimen['source_id'] . "
+                                        GROUP BY HerbNummer");
             $row_number = $result_number->fetch_array();
             $missing[$row_sources['source_id']][] = array('specimen_ID'  => $row_specimen['specimen_ID'],
                                                           'collectionID' => $row_specimen['collectionID'],
@@ -81,18 +81,18 @@ if (!empty($_POST['rescan']) || !empty($_GET['rescan'])) {
                                                           'count'        => $row_number['number']);
         }
     }
-    db_query("TRUNCATE checkSpecimensStblid");
+    dbi_query("TRUNCATE checkSpecimensStblid");
     foreach ($missing as $source_id => $missing_block) {
         foreach($missing_block as $row) {
-            db_query("INSERT INTO checkSpecimensStblid SET `source_id`    = $source_id,
-                                                           `collectionID` = " . $row['collectionID'] . ",
-                                                           `specimen_ID`  = " . $row['specimen_ID'] . ",
-                                                           `HerbNummer`   = '" . $row['HerbNummer'] . "',
-                                                           `count`        = " . $row['count']);
+            dbi_query("INSERT INTO checkSpecimensStblid SET `source_id`    = $source_id,
+                                                            `collectionID` = " . $row['collectionID'] . ",
+                                                            `specimen_ID`  = " . $row['specimen_ID'] . ",
+                                                            `HerbNummer`   = '" . $row['HerbNummer'] . "',
+                                                            `count`        = " . $row['count']);
         }
     }
 } else {
-    $result_missing = db_query("SELECT * FROM checkSpecimensStblid ORDER BY id");
+    $result_missing = dbi_query("SELECT * FROM checkSpecimensStblid ORDER BY id");
     while ($row_missing = $result_missing->fetch_array()) {
         $missing[$row_missing['source_id']][] = array('specimen_ID'  => $row_missing['specimen_ID'],
                                                       'collectionID' => $row_missing['collectionID'],
@@ -102,12 +102,12 @@ if (!empty($_POST['rescan']) || !empty($_GET['rescan'])) {
 }
 
 $sources = array();
-$result_sources = db_query("SELECT source_id, source_code FROM meta");
+$result_sources = dbi_query("SELECT source_id, source_code FROM meta");
 while ($row_sources = $result_sources->fetch_array()) {
     $sources[$row_sources['source_id']] = $row_sources['source_code'];
 }
 $collections = array();
-$result_collections = db_query("SELECT collectionID, collection FROM tbl_management_collections");
+$result_collections = dbi_query("SELECT collectionID, collection FROM tbl_management_collections");
 while ($row_collections = $result_collections->fetch_array()) {
     $collections[$row_collections['collectionID']] = $row_collections['collection'];
 }

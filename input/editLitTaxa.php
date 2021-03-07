@@ -4,13 +4,14 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
-require_once ("inc/xajax/xajax_core/xajax.inc.php");
-no_magic();
+require __DIR__ . '/vendor/autoload.php';
 
-$xajax = new xajax();
-$xajax->setRequestURI("ajax/editLitTaxaServer.php");
+use Jaxon\Jaxon;
 
-$xajax->registerFunction("setSource");
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editLitTaxaServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
 
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -19,8 +20,8 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
            WHERE citationID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    $p_citation = protolog(mysql_fetch_array($result));
+    $result = dbi_query($sql);
+    $p_citation = protolog(mysqli_fetch_array($result));
     $p_citationIndex = extractID($_GET['ID']);
     $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
     $p_source = "person";
@@ -36,9 +37,9 @@ if (isset($_GET['new'])) {
             FROM tbl_lit_taxa lt
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lt.userID = hu.userID
             WHERE lit_tax_ID = " . extractID($_GET['ID']);
-    $result = db_query($sql);
-    if (mysql_num_rows($result) > 0) {
-        $row = mysql_fetch_array($result);
+    $result = dbi_query($sql);
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
         $p_lit_tax_ID  = $row['lit_tax_ID'];
         $p_annotations = $row['annotations'];
         $p_timestamp   = $row['timestamp'];
@@ -50,8 +51,8 @@ if (isset($_GET['new'])) {
                 LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                 LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = '" . $row['citationID'] . "'";
-        $result = db_query($sql);
-        $p_citation = protolog(mysql_fetch_array($result));
+        $result = dbi_query($sql);
+        $p_citation = protolog(mysqli_fetch_array($result));
         $p_citationIndex = $row['citationID'];
 
         $p_taxonIndex = $row['taxonID'];
@@ -68,15 +69,15 @@ if (isset($_GET['new'])) {
                      LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                      LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                     WHERE citationID = '" . $row['source_citationID'] . "'";
-            $result = db_query($sql);
-            $p_sourceLit = protolog(mysql_fetch_array($result));
+            $result = dbi_query($sql);
+            $p_sourceLit = protolog(mysqli_fetch_array($result));
             $p_sourceLitIndex = $row['source_citationID'];
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = "";
         } else {
             $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
                     FROM tbl_person
                     WHERE person_ID = '" . $row['source_person_ID'] . "'";
-            $row2 = mysql_fetch_array(db_query($sql));
+            $row2 = dbi_query($sql)->fetch_array();
             $p_sourcePers = $row2['p_familyname'] . ", " . $row2['p_firstname']
                           . " (" . $row2['p_birthdate'] . " - " . $row2['p_death'] . ") <" . $row2['person_ID'] . ">";
             $p_sourcePersIndex = $row['source_person_ID'];
@@ -119,8 +120,8 @@ if (isset($_GET['new'])) {
                 $sqldata";
         $updated = 0;
     }
-    $result = db_query($sql);
-        $p_lit_tax_ID = (intval($_POST['lit_tax_ID'])) ? intval($_POST['lit_tax_ID']) : mysql_insert_id();
+    $result = dbi_query($sql);
+        $p_lit_tax_ID = (intval($_POST['lit_tax_ID'])) ? intval($_POST['lit_tax_ID']) : dbi_insert_id();
         logLitTax($p_lit_tax_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
@@ -186,7 +187,7 @@ if (isset($_GET['new'])) {
 		height: 200px;
 	}
   </style>
-  <?php $xajax->printJavascript('inc/xajax'); ?>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
@@ -201,7 +202,7 @@ if (isset($_GET['new'])) {
       }
     }
     function setSource() {
-      xajax_setSource(xajax.getFormValues('f'));
+      jaxon_setSource(jaxon.getFormValues('f'));
     }
   </script>
 </head>

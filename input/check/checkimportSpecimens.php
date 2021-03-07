@@ -2,7 +2,6 @@
 session_start();
 require("../inc/connect.php");
 require("../inc/log_functions.php");
-no_magic();
 
 
 /**
@@ -52,7 +51,7 @@ function getTaxon($id)
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
             WHERE taxonID = '" . intval($id) . "'";
-    $row = mysql_fetch_array(db_query($sql));
+    $row = dbi_query($sql)->fetch_array();
 
     $text = $row['genus'];
     if ($row['epithet'])  $text .= " " . $row['epithet'] . " " . $row['author'];
@@ -110,8 +109,8 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
         /**
          * check if collection-ID exists
          */
-        $result = db_query("SELECT collection FROM tbl_management_collections WHERE collectionID = '" . intval($import[$i][1]) . "'");
-        if (mysql_num_rows($result) == 0) {
+        $result = dbi_query("SELECT collection FROM tbl_management_collections WHERE collectionID = '" . intval($import[$i][1]) . "'");
+        if (mysqli_num_rows($result) == 0) {
             $OK = false;
             $status[$i] .= "no_collection ";
             $data[$i]['collectionID'] = 0;
@@ -132,15 +131,15 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
             $sql = "SELECT source_id
                     FROM tbl_management_collections
                     WHERE collectionID = '" . $data[$i]['collectionID'] . "'";
-            $row = mysql_fetch_array(db_query($sql));
+            $row = mysqli_fetch_array(dbi_query($sql));
             $sql = "SELECT specimen_ID
                     FROM tbl_specimens, tbl_management_collections
                     WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                      AND source_id = '" . $row['source_id'] . "'
                      AND HerbNummer = " . quoteString($data[$i]['HerbNummer']);
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $OK = false;
                 $status[$i] .= "exists ";
                 $exists[$i] = $row['specimen_ID'];
@@ -151,9 +150,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
          * check if identstatus exists
          */
         if (trim($import[$i][2])) {
-            $result = db_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][2])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = " . quoteString(trim($import[$i][2])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['identstatusID'] = $row['identstatusID'];
             } else {
                 $OK = false;
@@ -168,17 +167,17 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
          */
         $taxonOK = false;
         $pieces = explode(' ', $import[$i][3], 3);
-        $result = db_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $genID = $row['genID'];
-            $result = db_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($pieces[1]));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($pieces[1]));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $epithetID = $row['epithetID'];
-                $result = db_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
-                if (mysql_num_rows($result) > 0) {
-                    while ($row = mysql_fetch_array($result)) {
+                $result = dbi_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
+                if (mysqli_num_rows($result) > 0) {
+                    while ($row = mysqli_fetch_array($result)) {
                         if (strcmp(getTaxon($row['taxonID']), trim($import[$i][3])) == 0) {
                             $taxonOK = true;
                             $data[$i]['taxonID'] = $row['taxonID'];
@@ -206,14 +205,14 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
             $collector = trim($parts[0]);
             $collector2 = trim(substr(trim($import[$i][4]), strlen($collector) + 2));
         }
-        $result = db_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
-        if (mysql_num_rows($result) > 0) {
-            $row = mysql_fetch_array($result);
+        $result = dbi_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_array($result);
             $collectorID = $row['SammlerID'];
             if (strlen($collector2) > 0) {
-                $result = db_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
-                if (mysql_num_rows($result) > 0) {
-                    $row = mysql_fetch_array($result);
+                $result = dbi_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_array($result);
                     $collectorsOK = true;
                     $data[$i]['SammlerID'] = $collectorID;
                     $data[$i]['Sammler_2ID'] = $row['Sammler_2ID'];
@@ -233,9 +232,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
          * check if series exists
          */
         if (trim($import[$i][5])) {
-            $result = db_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][5])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT seriesID FROM tbl_specimens_series WHERE series = " . quoteString(trim($import[$i][5])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['seriesID'] = $row['seriesID'];
             } else {
                 $OK = false;
@@ -284,9 +283,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
          * check if type exists
          */
         if (trim($import[$i][13])) {
-            $result = db_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][13])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT typusID FROM tbl_typi WHERE typus_lat = " . quoteString(trim($import[$i][13])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['typusID'] = $row['typusID'];
             } else {
                 $OK = false;
@@ -305,9 +304,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
          * check if nation exists
          */
         if (trim($import[$i][15])) {
-            $result = db_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][15])));
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query("SELECT nationID FROM tbl_geo_nation WHERE nation_engl = " . quoteString(trim($import[$i][15])));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['NationID'] = $row['nationID'];
             } else {
                 $OK = false;
@@ -325,9 +324,9 @@ if (is_uploaded_file($_FILES['userfile']['tmp_name'])) {
                     FROM tbl_geo_province
                     WHERE provinz = " . quoteString(trim($import[$i][16]))."
                      AND nationID = '" . intval($data[$i]['NationID']) . "'";
-            $result = db_query($sql);
-            if (mysql_num_rows($result) > 0) {
-                $row = mysql_fetch_array($result);
+            $result = dbi_query($sql);
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
                 $data[$i]['provinceID'] = $row['provinceID'];
             } else {
                 $OK = false;

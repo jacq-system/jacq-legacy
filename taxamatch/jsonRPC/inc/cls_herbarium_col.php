@@ -17,7 +17,9 @@
  */
 require_once('inc/variables.php');
 
-class cls_herbarium_col extends cls_herbarium_base {
+class cls_herbarium_col extends cls_herbarium_base
+{
+    private $dbLink;
 
 /*******************\
 |                   |
@@ -43,11 +45,12 @@ public function getMatches ($searchtext, $withNearMatch = false)
     $matches = array('error'       => '',
                      'result'      => array());
 
-    if (!@mysql_connect($options['col']['dbhost'], $options['col']['dbuser'], $options['col']['dbpass']) || !@mysql_select_db($options['col']['dbname'])) {
+    $this->dbLink = mysqli_connect($options['col']['dbhost'], $options['col']['dbuser'], $options['col']['dbpass'], $options['col']['dbname']);
+    if (!$this->dbLink) {
         $matches['error'] = 'no database connection';
         return $matches;
     }
-    mysql_query("SET character set utf8");
+    $this->dbLink->query("SET character set utf8");
 
     // split the input at newlines into several queries
     $searchItems = preg_split("[\n|\r]", $searchtext, -1, PREG_SPLIT_NO_EMPTY);
@@ -72,12 +75,12 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 $lenUninomial        = mb_strlen(trim($searchItem), "UTF-8");
             }
 
-//            $res = mysql_query("SELECT g.ID AS genID, g.genus, f.family
-//                                FROM genera g, families f
-//                                WHERE g.genus = '" . mysql_real_escape_string($uninomial) . "'
-//                                 AND g.family_id = f.record_id");
-//            if (mysql_num_rows($res) > 0) {
-//                $row = mysql_fetch_array($res);
+//            $res = $this->dbLink->query("SELECT g.ID AS genID, g.genus, f.family
+//                                   FROM genera g, families f
+//                                   WHERE g.genus = '" . $this->dbLink->real_escape_string($uninomial) . "'
+//                                    AND g.family_id = f.record_id");
+//            if (mysqli_num_rows($res) > 0) {
+//                $row = mysqli_fetch_array($res);
 //                $searchresult[] = array('genus'    => $row['genus'],
 //                                        'distance' => 0,
 //                                        'ratio'    => 1,
@@ -89,15 +92,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 // no full hit, so do just the normal search
 
                 // first search the genera
-                $res = mysql_query("SELECT g.ID AS genID, g.genus, f.family,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
-                                    FROM genera g, families f
-                                    WHERE g.family_id = f.record_id");
+                $res = $this->dbLink->query("SELECT g.ID AS genID, g.genus, f.family,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', g.genus, 2, 4) AS mdld
+                                             FROM genera g, families f
+                                             WHERE g.family_id = f.record_id");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['genus'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                         $searchresult[] = array('genus'    => $row['genus'],
@@ -111,15 +114,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the families
-                $res = mysql_query("SELECT family, record_id,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', family, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY family");
+                $res = $this->dbLink->query("SELECT family, record_id,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', family, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY family");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['family'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {            // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -133,15 +136,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the superfamilies
-                $res = mysql_query("SELECT superfamily,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', superfamily, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY superfamily");
+                $res = $this->dbLink->query("SELECT superfamily,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', superfamily, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY superfamily");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['superfamily'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {                 // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -155,15 +158,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the order
-                $res = mysql_query("SELECT order,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', order, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY order");
+                $res = $this->dbLink->query("SELECT order,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', order, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY order");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['order'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -177,15 +180,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the class
-                $res = mysql_query("SELECT class,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', class, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY class");
+                $res = $this->dbLink->query("SELECT class,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', class, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY class");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['class'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -199,15 +202,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the phylum
-                $res = mysql_query("SELECT phylum,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', phylum, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY phylum");
+                $res = $this->dbLink->query("SELECT phylum,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', phylum, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY phylum");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['phylum'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {            // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -221,15 +224,15 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // and finally the kingdom
-                $res = mysql_query("SELECT kingdom,
-                                     mdld('" . mysql_real_escape_string($uninomial) . "', kingdom, 2, 4) AS mdld
-                                    FROM families
-                                    GROUP BY kingdom");
+                $res = $this->dbLink->query("SELECT kingdom,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', kingdom, 2, 4) AS mdld
+                                             FROM families
+                                             GROUP BY kingdom");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
                  */
-                while ($row = mysql_fetch_array($res)) {
+                while ($row = mysqli_fetch_array($res)) {
                     $limit = min($lenUninomial, strlen($row['kingdom'])) / 2;     // 1st limit of the search
                     if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {            // 2nd limit of the search
                         $searchresult[] = array('genus'    => '',
@@ -286,12 +289,12 @@ public function getMatches ($searchtext, $withNearMatch = false)
              */
             for ($i = 0; $i < 2; $i++) {
                 // first let's see if there is a full hit of the searched genus or subgenus
-//                $res = mysql_query("SELECT g.ID AS genID, g.genus, f.family
-//                                    FROM genera g, families f
-//                                    WHERE g.genus = '" . mysql_real_escape_string($genus[$i]) . "'
-//                                     AND g.family_id = f.record_id");
-//                if (mysql_num_rows($res) > 0) {
-//                    $row = mysql_fetch_array($res);
+//                $res = $this->dbLink->query("SELECT g.ID AS genID, g.genus, f.family
+//                                       FROM genera g, families f
+//                                       WHERE g.genus = '" . $this->dbLink->real_escape_string($genus[$i]) . "'
+//                                        AND g.family_id = f.record_id");
+//                if (mysqli_num_rows($res) > 0) {
+//                    $row = mysqli_fetch_array($res);
 //                    $lev[] = array('genus'    => $row['genus'],
 //                                   'distance' => 0,
 //                                   'ratio'    => 1,
@@ -300,16 +303,16 @@ public function getMatches ($searchtext, $withNearMatch = false)
 //                    $ctr++;
 //                } else {
                     // no full hit, so do just the normal search
-                    $res = mysql_query("SELECT g.ID AS genID, g.genus, f.family,
-                                         mdld('" . mysql_real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
-                                        FROM genera g, families f
-                                        WHERE g.family_id = f.record_id");
+                    $res = $this->dbLink->query("SELECT g.ID AS genID, g.genus, f.family,
+                                                  mdld('" . $this->dbLink->real_escape_string($genus[$i]) . "', g.genus, 2, 4) AS mdld
+                                                 FROM genera g, families f
+                                                 WHERE g.family_id = f.record_id");
 
                     /**
                      * do the actual calculation of the distances
                      * and decide if the result should be kept
                      */
-                    while ($row = mysql_fetch_array($res)) {
+                    while ($row = mysqli_fetch_array($res)) {
                         $limit = min($lenGenus[$i], strlen($row['genus'])) / 2;     // 1st limit of the search
                         if ($row['mdld'] <= 3 && $row['mdld'] < $limit) {           // 2nd limit of the search
                             $lev[] = array('genus'    => $row['genus'],
@@ -344,9 +347,9 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 $lev2 = array();
                 $sql = "SELECT record_id AS taxonID, species, infraspecies, infraspecies_marker, author, name_code, accepted_name_code";
                 if ($epithet) {  // if an epithet was given, use it
-                    $sql .= ", mdld('" . mysql_real_escape_string($epithet) . "', species, 4, 5)  as mdld";
+                    $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet) . "', species, 4, 5)  as mdld";
                     if ($epithet2 && $rank) {  // if a subepithet was given, use it
-                        $sql .= ", mdld('" . mysql_real_escape_string($epithet2) . "', infraspecies, 4, 5) as mdld2";
+                        $sql .= ", mdld('" . $this->dbLink->real_escape_string($epithet2) . "', infraspecies, 4, 5) as mdld2";
                     }
                 }
                 $sql .= " FROM scientific_names
@@ -354,8 +357,8 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 if (!($epithet2 && $rank)) {
                     $sql .= " AND (infraspecies IS NULL OR infraspecies = '')";
                 }
-                $res = mysql_query($sql);
-                while ($row = mysql_fetch_array($res)) {
+                $res = $this->dbLink->query($sql);
+                while ($row = mysqli_fetch_array($res)) {
                     $name = trim($row['species']);
                     $found = false;
                     if ($epithet) {
@@ -387,9 +390,9 @@ public function getMatches ($searchtext, $withNearMatch = false)
                         if ($row['accepted_name_code'] && $row['accepted_name_code'] != $row['name_code']) {
                             $sql = "SELECT record_id AS taxonID, genus, species, infraspecies, infraspecies_marker, author
                                     FROM scientific_names
-                                    WHERE name_code = '" . mysql_real_escape_string($row['accepted_name_code']) . "'";
-                            $result2 = mysql_query($sql);
-                            $row2 = mysql_fetch_array($result2);
+                                    WHERE name_code = '" . $this->dbLink->real_escape_string($row['accepted_name_code']) . "'";
+                            $result2 = $this->dbLink->query($sql);
+                            $row2 = mysqli_fetch_array($result2);
                             $syn = trim($row2['genus']
                                       . " " . $row2['species']
                                       . " " . $row2['infraspecies_marker']
