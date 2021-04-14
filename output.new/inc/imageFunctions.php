@@ -8,7 +8,7 @@ require_once("jsonRPCClient.php");
  * @global array $_CONFIG all configuration parameters given in variables.php
  * @global mysqli $dbLink link to output-database
  * @param mixed $request either the specimen_ID or the wanted filename
- * @return array|bool either the wanted data or false if anything went wrong
+ * @return array return the wanted data if found or an empty array
  */
 function getPicDetails($request)
 {
