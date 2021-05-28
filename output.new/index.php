@@ -459,15 +459,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
         <div id="results">
         </div>
       </div>
-        <div id="collections" class="row">
-            <div class="col s12">
-                <h5>Participating Collections</h5>
-                <div class="divider"></div>
+        <div id="collections">
+            <div class="row">
+            <div id="jacq-map" class="col s12">
+                <iframe class="center-align pushpin" style="width:100%; height: 500px" data-target="institutions" src="https://www.google.com/maps/d/embed?mid=1xk4fZ8Rs2V1hu_vgAC4iIFoAV_Q"></iframe>
             </div>
-            <div id="jacq-map" class="col s6">
-                <iframe class="center-align pushpin" style="width:100%; height: 300px" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg"></iframe>
-            </div>
-            <div id="institutions" class="col s6">
+          </div>
+           <div class="row"> 
+            <div id="institutions1" class="col s6">
                 <ul class="collapsible">
                     <li>
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Afghanistan</div>
@@ -500,7 +499,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041" target="_blank">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059" target="_blank">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039" target="_blank">GZU // Karl Franzes University of Graz</a></li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland,Biologische Station Neusiedler See,Illmitz</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland, Biologische Station Neusiedler See, Illmitz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W //   Natural history Museum Vienna</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513" target="_blank">WU //   University of Vienna, [former] Institute for Botany</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=151017" target="_blank">WUP // Department of Pharmacognosy, Universität Wien</a></li>
@@ -539,7 +538,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Germany</div>
                         <div class="collapsible-body">
                             <ul>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103" target="_blank">B // Botanischer Garten und Botanisches Museum Berlin-Dahlem</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103" target="_blank">B // Botanischer Garten und Botanisches Museum Berlin</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128" target="_blank">DR // Institut für Botanik, Technische Universität Dresden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869" target="_blank">GAT // Leibniz-Institut für Pflanzengenetik und Kulturpflanzenforschung (IPK), Gatersleben</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224" target="_blank">HAL // Martin-Luther-Universität Halle-Wittenberg</a></li>
@@ -570,6 +569,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                             </ul>
                         </div>
                     </li>
+                  </ul>
+                </div>
+                <div id="institutions2" class="col s6">
+                <ul class="collapsible">
                     <li>
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Iran</div>
                         <div class="collapsible-body">
@@ -660,6 +663,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 </ul>
             </div>
         </div>
+      </div>
       <div id="systems" class="row">
         <div class="col s12">
           <h5>Reference Systems</h5>
