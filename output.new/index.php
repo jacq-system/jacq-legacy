@@ -74,7 +74,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
       <div id="home" class="row">
         <div class="col s12">
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BP, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PAV, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
           <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
 
 
@@ -224,24 +224,26 @@ header("Cache-Control: post-check=0, pre-check=0", false);
         </div>
         <!-- Search Form -->
           <form id="ajax_f" name="f" class="row">
-               <!-- Taxon -->
+              <!-- Taxon -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($taxon) . '"
-                         placeholder="Scientific name" name="taxon" type="text">';
+                  echo '<input  value="' . htmlspecialchars($taxon) . '"
+                          name="taxon" id="taxon" type="text">';
                   ?>
+                  <label for="taxon">Scientific name</label>
               </div>
               <!-- Family -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($family) . '"
-                         placeholder="Family" name="family" type="text">';
+                  echo '<input value="' . htmlspecialchars($family) . '"
+                          name="family" id="family" type="text">';
                   ?>
+                  <label for="family">Family</label>
               </div>
               <!-- Institution -->
               <div class="input-field col s6">
                   <select id="ajax_source_name" name="source_name">
-                      <option value="" selected>Search all</option>
+                      <option value="" selected>all herbaria</option>
                       <?php
                       $result = $dbLink->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
                                                 FROM `meta`
@@ -265,27 +267,31 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                       }
                       ?>
                   </select>
+                  <label>Search in</label>
               </div>
               <!-- Herbar Number -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($HerbNummer) . '"
-                         placeholder="Herbar #" name="HerbNummer" type="text">';
+                  echo '<input value="' . htmlspecialchars($HerbNummer) . '"
+                         name="HerbNummer" id="HerbNummer" type="text">';
                   ?>
+                  <label for="HerbNummer">Herbar #</label>
               </div>
               <!-- Collector -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($Sammler) . '"
-                         placeholder="Collector" name="Sammler" type="text">';
+                  echo '<input value="' . htmlspecialchars($Sammler) . '"
+                         name="Sammler" id="Sammler" type="text">';
                   ?>
+                  <label for="Sammler">Collector</label>
               </div>
               <!-- Collector Number -->
               <div class="input-field col s6">
                   <?php
-                  echo '<input class="searchinput" value="' . htmlspecialchars($SammlerNr) . '"
-                         placeholder="Collector #" name="SammlerNr" type="text">';
+                  echo '<input value="' . htmlspecialchars($SammlerNr) . '"
+                         name="SammlerNr" id="SammlerNr" type="text">';
                   ?>
+                  <label for="SammlerNr">Collector #</label>
               </div>
 
               <!-- Extended Search -->
@@ -297,16 +303,18 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                               <div class="flex-wrapper">
                                   <!-- Ident. History -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Ident. History" name="taxon_alt" type="text">
+                                      <input name="taxon_alt" id="taxon_alt" type="text">
+                                      <label for="taxon_alt">Ident. History</label>
                                   </div>
                                   <!-- CollectionDate -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Collection date" name="CollDate" type="text">
+                                      <input name="CollDate" id="CollDate" type="text">
+                                      <label for="CollDate">Collection date</label>
                                   </div>
                                   <!-- Collection -->
                                   <div class="input-field">
                                       <select id="ajax_collection" name="collection">
-                                          <option value="" selected>Search subcollection</option>
+                                          <option value="" selected>all subcollections</option>
                                           <?php
                                           $result_collection = $dbLink->query("SELECT `collection`
                                                                                FROM `tbl_management_collections`
@@ -325,23 +333,27 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
+                                      <label>Search in</label>
                                   </div>
                                   <!-- Collection Number -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Collection #" name="CollNummer" type="text">
+                                      <input name="CollNummer" id="CollNummer" type="text">
+                                       <label for="CollNummer">Collection #</label>
                                   </div>
                                   <!-- Series -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Series" name="series" type="text">
+                                      <input  name="series" id="series" type="text">
+                                       <label for="series">Series</label>
                                   </div>
                                   <!-- Locality -->
                                   <div class="input-field">
-                                      <input class="searchinput" placeholder="Locality" name="Fundort" type="text">
+                                      <input name="Fundort" id="Fundort" type="text">
+                                       <label for="Fundort">Locality</label>
                                   </div>
                                   <!-- Continent -->
                                   <div class="input-field">
                                       <select id="ajax_geo_general" name="geo_general">
-                                          <option value="" selected>Search continent</option>
+                                          <option value="" selected>all continents</option>
                                           <?php
                                           $result_geo_general = $dbLink->query("SELECT geo_general
                                                                                 FROM tbl_geo_region
@@ -356,15 +368,17 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
+                                       <label>Search in</label>
                                   </div>
                                   <!-- Series -->
                                   <div id="ajax_nation_engl_div" class="input-field">
-                                      <input class="searchinput" placeholder="Country" id="ajax_nation_engl" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
+                                      <input id="ajax_nation_engl" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
+                                       <label for="ajax_nation_engl">Country</label>
                                   </div>
                                   <!-- Region -->
                                   <div class="input-field">
                                       <select id="ajax_geo_region" name="geo_region">
-                                          <option value="" selected>Search region</option>
+                                          <option value="" selected>all regions</option>
                                           <?php
                                           $result_geo_region = $dbLink->query("SELECT geo_region
                                                                                FROM tbl_geo_region
@@ -378,11 +392,13 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                           }
                                           ?>
                                       </select>
+                                      <label>Search in</label>
                                   </div>
                                   <!-- State/Province -->
                                   <div id="ajax_provinz_div" class="input-field">
-                                      <input class="searchinput" placeholder="State/Province" id="ajax_provinz" name="provinz" type="text">
-                                  </div>
+                                      <input id="ajax_provinz" name="provinz" type="text">
+                                       <label for="ajax_provinz">State/Province</label>
+                                  </div>             
                                   <!-- Placeholder -->
                                   <div></div>
                               </div>
@@ -443,15 +459,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
         <div id="results">
         </div>
       </div>
-        <div id="collections" class="row">
-            <div class="col s12">
-                <h5>Participating Collections</h5>
-                <div class="divider"></div>
+        <div id="collections">
+            <div class="row">
+            <div id="jacq-map" class="col s12">
+                <iframe class="center-align pushpin" style="width:100%; height: 500px" data-target="institutions" src="https://www.google.com/maps/d/embed?mid=1xk4fZ8Rs2V1hu_vgAC4iIFoAV_Q"></iframe>
             </div>
-            <div id="jacq-map" class="col s6">
-                <iframe class="center-align pushpin" style="width:100%; height: 300px" data-target="institutions" src="https://mapsengine.google.com/map/embed?mid=zoTvNNgxY3Nw.kBUg9fgI9XCg"></iframe>
-            </div>
-            <div id="institutions" class="col s6">
+          </div>
+           <div class="row"> 
+            <div id="institutions1" class="col s6">
                 <ul class="collapsible">
                     <li>
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Afghanistan</div>
@@ -484,7 +499,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041" target="_blank">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059" target="_blank">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039" target="_blank">GZU // Karl Franzes University of Graz</a></li>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland,Biologische Station Neusiedler See,Illmitz</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland, Biologische Station Neusiedler See, Illmitz</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W //   Natural history Museum Vienna</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513" target="_blank">WU //   University of Vienna, [former] Institute for Botany</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=151017" target="_blank">WUP // Department of Pharmacognosy, Universität Wien</a></li>
@@ -523,7 +538,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Germany</div>
                         <div class="collapsible-body">
                             <ul>
-                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103" target="_blank">B // Botanischer Garten und Botanisches Museum Berlin-Dahlem</a></li>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124103" target="_blank">B // Botanischer Garten und Botanisches Museum Berlin</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128" target="_blank">DR // Institut für Botanik, Technische Universität Dresden</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869" target="_blank">GAT // Leibniz-Institut für Pflanzengenetik und Kulturpflanzenforschung (IPK), Gatersleben</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224" target="_blank">HAL // Martin-Luther-Universität Halle-Wittenberg</a></li>
@@ -547,6 +562,18 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         </div>
                     </li>
                     <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Hungary</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124790" target="_blank">BP // Hungarian Natural History Museum</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                  </ul>
+                </div>
+                <div id="institutions2" class="col s6">
+                <ul class="collapsible">
+                    <li>
                         <div class="collapsible-header"><i class="fas fa-angle-down"></i>Iran</div>
                         <div class="collapsible-body">
                             <ul>
@@ -559,6 +586,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                         <div class="collapsible-body">
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484" target="_blank">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126467" target="_blank"> PAV // Università di Pavia</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
                                 <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
                             </ul>
@@ -635,6 +663,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 </ul>
             </div>
         </div>
+      </div>
       <div id="systems" class="row">
         <div class="col s12">
           <h5>Reference Systems</h5>

@@ -14,7 +14,7 @@ $format   = filter_input(INPUT_GET, 'format', FILTER_SANITIZE_STRING);
 $picdetails = getPicDetails($filename);
 
 error_reporting(E_ALL);
-if (isset($picdetails['url']) && $picdetails['url'] !== false) {
+if (!empty($picdetails['url'])) {
     switch ($method) {
         default:
             doRedirectDownloadPic($picdetails, $method, 0);
@@ -119,7 +119,6 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
     // Setup default mime-type & file-extension
     $mime = 'image/jpeg';
     $fileExt = 'jpg';
-    $url = '';
     $downloadPic = true;
 
     // Check if we are using djatoka
@@ -127,21 +126,20 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $format = 'image/jp2';
+                $mime = 'image/jp2';
                 $fileExt = 'jp2';
                 break;
             case'tiff':
-                $format = 'image/tiff';
+                $mime = 'image/tiff';
                 $fileExt = 'tif';
                 break;
             default:
-                $format = 'image/jpeg';
+                $mime = 'image/jpeg';
                 $fileExt = 'jpg';
                 break;
         }
         // Default scaling is 50%
         $scale = '0.5';
-        $mime = $format;
 
         // Check if we need a thumbnail
         if ($thumb != 0) {
@@ -151,7 +149,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
             }
             // thumbnail for europeana
             else if ($thumb == 3) {
-                $downloadPic = false;
+//                $downloadPic = false;
                 $scale = '1200,0';
             }
             // thumbnail for nhmw digitization project
@@ -165,30 +163,29 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         }
 
         // Construct URL to djatoka-resolver
-        $url = $picdetails['url']
-             . "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}"
-             . "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}";
+        $url = cleanURL($picdetails['url']
+             .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}"
+             .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}");
 
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         //... Check if we are using djatoka = 2 (Berlin image server)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $format = 'image/jp2';
+                $mime = 'image/jp2';
                 $fileExt = 'jp2';
                 break;
             case'tiff':
-                $format = 'image/tiff';
+                $mime = 'image/tiff';
                 $fileExt = 'tif';
                 break;
             default:
-                $format = 'image/jpeg';
+                $mime = 'image/jpeg';
                 $fileExt = 'jpg';
                 break;
         }
         // Default scaling is 50%
         $scale = '0.5';
-        $mime = $format;
 
         // Check if we need a thumbnail
         if ($thumb != 0) {
@@ -220,28 +217,27 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         }
         $response_decoded = json_decode($response, true);
         //$url = $picdetails['url'].'images'.$response_decoded['value'];
-        $url = 'http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source=' . $response_decoded['value'];
+        $url = cleanURL('http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source=' . $response_decoded['value']);
 
     } else if ($picdetails['imgserver_type'] == 'baku') {
     //... Check if we are using djatoka = 3 (Baku image server)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $format = 'image/jp2';
+                $mime = 'image/jp2';
                 $fileExt = 'jp2';
                 break;
             case'tiff':
-                $format = 'image/tiff';
+                $mime = 'image/tiff';
                 $fileExt = 'tif';
                 break;
             default:
-                $format = 'image/jpeg';
+                $mime = 'image/jpeg';
                 $fileExt = 'jpg';
                 break;
         }
         // Default scaling is 50%
         $scale = '0.5';
-        $mime = $format;
 
         // Check if we need a thumbnail
         if ($thumb != 0) {
@@ -264,20 +260,20 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         }
 
 
-        $url = $picdetails['url'] . $picdetails['originalFilename'];
+        $url = cleanURL($picdetails['url'] . $picdetails['originalFilename']);
 
     } else {
         // ... if not fall back to old system
         switch ($format) {
             case'tiff':
-                $format = '&type=1';
+                $urlExt = '&type=1';
                 $mime = 'image/tiff';
                 $fileExt = 'tif';
                 break;
             default:
+                $urlExt = '';
                 $mime = 'image/jp2';
                 $fileExt = 'jp2';
-                $format = '';
                 break;
         }
         $fileurl = 'downPic.php';
@@ -298,9 +294,8 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
                 $q .= "&{$k}=" . rawurlencode($v);
             }
         }
-        $url = "{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$format}{$q}";
+        $url = cleanURL("{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$urlExt}{$q}");
     }
-    $url = cleanURL($url);
 
     // Send correct headers
     header('Content-Type: ' . $mime);

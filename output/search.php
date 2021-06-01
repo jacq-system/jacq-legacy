@@ -1,4 +1,8 @@
 <?php
+header("Location: https://www.jacq.org/#database", true, 308);
+die();
+
+// this is the original script, which is deactivated now (26.5.2021)
 session_start();
 require("inc/functions.php");
 require_once ("inc/xajax/xajax.inc.php");
