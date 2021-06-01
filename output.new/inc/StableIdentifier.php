@@ -1,6 +1,6 @@
 <?php
 /**
- * Returns the stable identifier. Tries to make on if none is found in database
+ * Returns the stable identifier. Tries to make one if none is found in database
  *
  * @param int $source_id Source-ID
  * @param string $HerbNummer Collection Herb.#
