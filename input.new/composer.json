@@ -1,0 +1,6 @@
+{
+    "require": {
+        "php": ">=5.6",
+        "jaxon-php/jaxon-core": "~3.2"
+    }
+}

@@ -1,0 +1,64 @@
+<?xml version ='1.0' encoding ='UTF-8' ?>
+<definitions name='Herbar'
+  targetNamespace='http://herbarium.botanik.univie.ac.at/herbarium-wu/soap/Herbar'
+  xmlns:tns=' http://herbarium.botanik.univie.ac.at/herbarium-wu/soap/Herbar '
+  xmlns:soap='http://schemas.xmlsoap.org/wsdl/soap/'
+  xmlns:xsd='http://www.w3.org/2001/XMLSchema'
+  xmlns:soapenc='http://schemas.xmlsoap.org/soap/encoding/'
+  xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'
+  xmlns='http://schemas.xmlsoap.org/wsdl/'>
+
+<message name='getTaxonRequest'>
+  <part name='symbol' type='xsd:string'/>
+</message>
+<message name='getSynonymsRequest'>
+  <part name='symbol' type='xsd:int'/>
+  <part name='symbol' type='xsd:int'/>
+</message>
+<message name='getStringResponse'>
+  <part name='Result' type='xsd:string'/>
+</message>
+
+<portType name='HerbarPortType'>
+  <operation name='getTaxon'>
+    <input message='tns:getTaxonRequest'/>
+    <output message='tns:getStringResponse'/>
+  </operation>
+  <operation name='getSynonyms'>
+    <input message='tns:getSynonymsRequest'/>
+    <output message='tns:getStringResponse'/>
+  </operation>
+</portType>
+
+<binding name='HerbarBinding' type='tns:HerbarPortType'>
+  <soap:binding style='rpc' transport='http://schemas.xmlsoap.org/soap/http'/>
+  <operation name='getTaxon'>
+    <soap:operation soapAction='urn:xmethods-delayed-quotes#getTaxon'/>
+    <input>
+      <soap:body use='encoded' namespace='urn:xmethods-delayed-quotes'
+        encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+    </input>
+    <output>
+      <soap:body use='encoded' namespace='urn:xmethods-delayed-quotes'
+        encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+    </output>
+  </operation>
+  <operation name='getSynonyms'>
+    <soap:operation soapAction='urn:xmethods-delayed-quotes'/>
+    <input>
+      <soap:body use='encoded' namespace='urn:xmethods-delayed-quotes'
+        encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+    </input>
+    <output>
+      <soap:body use='encoded' namespace='urn:xmethods-delayed-quotes'
+        encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'/>
+    </output>
+  </operation>
+</binding>
+
+<service name='HerbarService'>
+  <port name='HerbarPort' binding='tns:HerbarBinding'>
+    <soap:address location='http://herbarium.botanik.univie.ac.at/herbarium-wu/soap/server.php'/>
+  </port>
+</service>
+</definitions>
