@@ -227,7 +227,7 @@ function isLocked($table, $id)
         if ($row[$lock]) {
             return true;
         }
-    } else if(is_object($id)) {
+    } else if (is_object($id)) {
         $where = $id->getWhere();
 		if (!$where) {
             return false;

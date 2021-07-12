@@ -81,11 +81,11 @@ class clsAutocomplete {
             $sql = "SELECT author, authorID, Brummit_Powell_full
                     FROM tbl_tax_authors
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " authorID = ?");
                 $dbst->execute(array($value['id']));
             } else {
-                if (!empty($value['exact'])) {
+                if (isset($value['exact'])) {
                     $value['search'] = $value['exact'];
                     $equ = '=';
                 } else {
@@ -139,10 +139,10 @@ class clsAutocomplete {
                     FROM tbl_lit_authors
             		WHERE ";
 
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " autorID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " autor = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -195,10 +195,10 @@ class clsAutocomplete {
                 $sql = "SELECT Sammler_2 AS Sammler, Sammler_2ID AS SammlerID
                         FROM tbl_collector_2
                         WHERE ";
-                if (!empty($value['id'])) {
+                if (isset($value['id'])) {
                     $dbst = $db->prepare($sql . " Sammler_2ID = ?");
                     $dbst->execute(array($value['id']));
-                } else if (!empty($value['exact'])) {
+                } else if (isset($value['exact'])) {
                     $dbst = $db->prepare($sql . " Sammler_2 = ?");
                     $dbst->execute(array($value['exact']));
                 } else {
@@ -209,10 +209,10 @@ class clsAutocomplete {
                 $sql = "SELECT Sammler, SammlerID
                         FROM tbl_collector
                         WHERE ";
-                if (!empty($value['id'])) {
+                if (isset($value['id'])) {
                     $dbst = $db->prepare($sql . " SammlerID = ?");
                     $dbst->execute(array($value['id']));
-                } else if (!empty($value['exact'])) {
+                } else if (isset($value['exact'])) {
                     $dbst = $db->prepare($sql . " Sammler = ?");
                     $dbst->execute(array($value['exact']));
                 } else {
@@ -266,11 +266,11 @@ class clsAutocomplete {
                     FROM tbl_person
                     WHERE ";
 
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " person_ID = ?");
                 $dbst->execute(array($value['id']));
             } else {
-                $v = !empty($value['exact']) ? $value['exact'] : $value['search'];
+                $v = isset($value['exact']) ? $value['exact'] : $value['search'];
                 $pieces = explode(", ", $v, 2);
                 $p_familyname = $pieces[0];
                 if (count($pieces) > 1) {
@@ -292,7 +292,7 @@ class clsAutocomplete {
                     $p_firstname = $p_birthdate = $p_death = '';
                 }
 
-                if (!empty($value['exact'])) {
+                if (isset($value['exact'])) {
                     $equ = '=';
                 } else {
                     if (!empty($p_familyname)) {
@@ -363,7 +363,7 @@ class clsAutocomplete {
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 if ($value['id'] == '' || $value['id'] == '0' || $value['id'] == 0) {
                     return array();
                 }
@@ -377,7 +377,7 @@ class clsAutocomplete {
                     'color' => ''
                 );
             } else {
-                $v = !empty($value['exact']) ? $value['exact'] : $value['search'];
+                $v = isset($value['exact']) ? $value['exact'] : $value['search'];
                 $pieces = explode(" ", $v);
                 $autor = $pieces[0];
                 if (!empty($pieces[1]) && (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.'))) {
@@ -392,7 +392,7 @@ class clsAutocomplete {
                         LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID
                         LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
                         WHERE ";
-                if (!empty($value['exact'])) {
+                if (isset($value['exact'])) {
                     $equ = '=';
                 } else {
                     if (!empty($autor)) {
@@ -455,10 +455,10 @@ class clsAutocomplete {
             $sql = "SELECT periodical, periodicalID
                     FROM tbl_lit_periodicals
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " periodicalID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " periodical = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -497,10 +497,10 @@ class clsAutocomplete {
             $sql = "SELECT DISTINCT bestand
                     FROM tbl_lit
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " bestand = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " bestand = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -540,10 +540,10 @@ class clsAutocomplete {
             $sql = "SELECT DISTINCT category
                     FROM tbl_lit
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " category = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " category = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -583,10 +583,10 @@ class clsAutocomplete {
             $sql = "SELECT publisher, publisherID
                     FROM tbl_lit_publishers
                     WHERE";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " publisherID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " publisher = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -626,10 +626,10 @@ class clsAutocomplete {
                     FROM tbl_tax_families tf
                      LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " familyID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " family = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -672,10 +672,10 @@ class clsAutocomplete {
                      LEFT JOIN tbl_tax_families tf               ON tg.familyID   = tf.familyID
                      LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " tg.genID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " tg.genus = ?");
                 $dbst->execute(array($value['exact']));
             } else {
@@ -721,10 +721,10 @@ class clsAutocomplete {
             $sql = "SELECT epithet, epithetID
     				FROM tbl_tax_epithets
         			WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " epithetID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " epithet = ?" . (($noExternals) ? " AND external = 0" : ''));
                 $dbst->execute(array($value['exact']));
             } else {
@@ -800,15 +800,15 @@ class clsAutocomplete {
                      LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                      LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " ts.taxonID = ?" . (($noExternals) ? " AND external = 0" : ''));
                 $dbst->execute(array($value['id']));
             } else {
-                $v = !empty($value['exact']) ? $value['exact'] : $value['search'];
+                $v = isset($value['exact']) ? $value['exact'] : $value['search'];
                 $pieces1 = explode(chr(194) . chr(183), $v);
                 $pieces = explode(" ", $pieces1[0]);
 
-                if (!empty($value['exact'])) {
+                if (isset($value['exact'])) {
                     $equ = '=';
                 } else {
                     if (!empty($pieces[0])) {
@@ -918,15 +918,15 @@ class clsAutocomplete {
                      LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                     WHERE ";
 
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " taxonID = ?");
                 $dbst->execute(array($value['id']));
             } else {
-                $v = !empty($value['exact']) ? $value['exact'] : $value['search'];
+                $v = isset($value['exact']) ? $value['exact'] : $value['search'];
                 $pieces1 = explode(chr(194) . chr(183), $v);
                 $pieces = explode(" ", $pieces1[0]);
 
-                if (!empty($value['exact'])) {
+                if (isset($value['exact'])) {
                     $equ = '=';
                 } else {
                     if (!empty($pieces[0])) {
@@ -977,7 +977,7 @@ class clsAutocomplete {
             }
             // works up to here
             // ab hier: muss geprüft werden.
-            if (!!empty($value['id'])) {
+            if (!isset($value['id'])) {
 
                 // how to test??
                 $sql = "SELECT ts.taxonID, ts.synID
@@ -1068,10 +1068,10 @@ class clsAutocomplete {
             $sql = "SELECT series, seriesID
                     FROM tbl_specimens_series
                     WHERE ";
-            if (!empty($value['id'])) {
+            if (isset($value['id'])) {
                 $dbst = $db->prepare($sql . " seriesID = ?");
                 $dbst->execute(array($value['id']));
-            } else if (!empty($value['exact'])) {
+            } else if (isset($value['exact'])) {
                 $dbst = $db->prepare($sql . " series = ?");
                 $dbst->execute(array($value['exact']));
             } else {

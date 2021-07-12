@@ -10,8 +10,6 @@ function p($val) {
 /**
  * Autocomplete methods singleton - handling all autocomplete methods
  *
- * TODO: replace dbi_escape_string with PDO-Method
- *
  * @package clsAutocomplete
  * @subpackage classes
  */
@@ -35,7 +33,8 @@ class clsAutocompleteCommonName {
      *
      * @return clsAutocomplete new instance of that class
      */
-    public static function Load() {
+    public static function Load()
+    {
         if (self::$instance == null) {
             self::$instance = new clsAutocompleteCommonName();
         }
@@ -55,8 +54,8 @@ class clsAutocompleteCommonName {
     |			    |
     \***************/
 
-    protected function __construct() {
-
+    protected function __construct()
+    {
     }
 
     /********************\
@@ -65,7 +64,8 @@ class clsAutocompleteCommonName {
     |					 |
     \********************/
 
-    function getCacheOption() {
+    function getCacheOption()
+    {
         global $_OPTIONS;
 
         if (in_array($_OPTIONS['TYPINGCACHE']['SETTING']['type'], array('MICROSECOND', 'SECOND', 'MINUTE', 'HOUR', 'DAY', 'WEEK', 'MONTH', 'QUARTER', 'YEAR'))
@@ -82,39 +82,34 @@ class clsAutocompleteCommonName {
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_commonname($value) {
+    public function cname_commonname($value)
+    {
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
-
             $db = clsDbAccess::Connect('INPUT');
-            $sql = "
-SELECT
- com.common_name,
- com.common_id,
- trans.name as 'tranlit'
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
-WHERE
-";
+            $sql = "SELECT
+                     com.common_name,
+                     com.common_id,
+                     trans.name as 'tranlit'
+                    FROM
+                     {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" com.common_id ='{$value['id']}'";
+                $dbst = $db->prepare($sql . " com.common_id = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" com.common_name='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " com.common_name = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.=" com.common_name LIKE '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " com.common_name LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['common_id'];
@@ -139,39 +134,34 @@ WHERE
         return $results;
     }
 
-    public function cname_commonname_translit($value) {
+    public function cname_commonname_translit($value)
+    {
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
-
             $db = clsDbAccess::Connect('INPUT');
-            $sql = "
-SELECT
- com.common_name,
- com.common_id,
- trans.name as 'tranlit'
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
-WHERE
-";
+            $sql = "SELECT
+                     com.common_name,
+                     com.common_id,
+                     trans.name as 'tranlit'
+                    FROM
+                     {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" com.common_id ='{$value['id']}' or trans.transliteration_id ='{$value['id']}'";
+                $dbst = $db->prepare($sql . " com.common_id = ? OR trans.transliteration_id = ?");
+                $dbst->execute(array($value['id'], $value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " com.common_name = ? OR trans.name = ?");
+                $dbst->execute(array($value['exact'], $value['exact']));
             } else {
-                $sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}'";
+                $dbst = $db->prepare($sql . " com.common_name LIKE ? OR trans.name LIKE ?");
+                $dbst->execute(array($value['search'] . '%', $value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['common_id'];
@@ -201,39 +191,34 @@ WHERE
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_name($value) {
+    public function cname_name($value)
+    {
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
-
             $db = clsDbAccess::Connect('INPUT');
-            $sql = "
-SELECT
- com.common_name,
- com.common_id,
- trans.name as 'tranlit'
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com on com.common_id=nam.name_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
-WHERE
-";
+            $sql = "SELECT
+                     com.common_name,
+                     com.common_id,
+                     trans.name as 'tranlit'
+                    FROM
+                     {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons com on com.common_id=nam.name_id
+                     LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" nam.name_id ='{$value['id']}'";
+                $dbst = $db->prepare($sql . " nam.name_id = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" com.common_name='{$value['exact']}' or trans.name='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " com.common_name = ? OR trans.name = ?");
+                $dbst->execute(array($value['exact'], $value['exact']));
             } else {
-                $sql.=" com.common_name LIKE '{$value['search']}%' or trans.name LIKE '{$value['search']}%' ORDER BY  com.common_name,trans.name";
+                $dbst = $db->prepare($sql . " com.common_name LIKE ? OR trans.name LIKE ? ORDER BY com.common_name, trans.name");
+                $dbst->execute(array($value['search'] . '%', $value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['common_id'];
@@ -260,47 +245,42 @@ WHERE
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_transliteration($value) {
+    public function cname_transliteration($value)
+    {
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-
-            $sql = "SELECT transliteration_id, name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations WHERE ";
-
+            $sql = "SELECT transliteration_id, name
+                    FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations
+                    WHERE ";
             if (isset($value['id'])) {
-
                 if (substr($value['id'], 0, 1) == 'c') {
-                    $id = substr($value['id'], 1);
-                    $sql = "
-SELECT
- trans.transliteration_id,
- trans.name
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id=com.common_id
- LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id=nam.transliteration_id
-WHERE
- com.common_id ='{$id}'";
+                    $dbst = $db->prepare("SELECT
+                                           trans.transliteration_id,
+                                           trans.name
+                                          FROM
+                                           {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_commons  com
+                                           LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_names nam on nam.name_id = com.common_id
+                                           LEFT JOIN {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_transliterations trans ON trans.transliteration_id = nam.transliteration_id
+                                          WHERE
+                                           com.common_id = ?");
+                    $dbst->execute(array(substr($value['id'], 1)));
                 } else {
-                    $sql.=" transliteration_id ='{$value['id']}'";
+                    $dbst = $db->prepare($sql . " transliteration_id = ?");
+                    $dbst->execute(array($value['id']));
                 }
             } else if (isset($value['exact'])) {
-                $sql.="  name ='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " name = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.=" name LIKE '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " name LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['transliteration_id'];
@@ -331,27 +311,24 @@ WHERE
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-
-            $sql = "SELECT tribe_id, tribe_name FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_tribes WHERE ";
-
+            $sql = "SELECT tribe_id, tribe_name
+                    FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_name_tribes
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.="  tribe_id='{$value['id']}'";
+                $dbst = $db->prepare($sql . " tribe_id = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" tribe_name='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " tribe_name = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.=" tribe_name LIKE '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " tribe_name LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $id = $row['tribe_id'];
@@ -378,32 +355,32 @@ WHERE
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_geoname($value) {
+    public function cname_geoname($value)
+    {
         global $_OPTIONS, $_CONFIG;
+
         $results = array();
         $results_intern = array();
         $fetched = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-            $sql = "SELECT geonameId,name FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache WHERE ";
-
+            $sql = "SELECT geonameId, name
+                    FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_geonames_cache
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" geonameId ='{$value['id']}'";
+                $dbst = $db->prepare($sql . " geonameId = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" name='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " name = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.="name LIKE '{$value['search']}'";
+                $dbst = $db->prepare($sql . " name LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
-
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
                     $label = $row['name'];
@@ -428,9 +405,12 @@ WHERE
             $v = isset($value['id']) ? $value['id'] : (isset($value['exact']) ? $value['exact'] : $value['search']);
             // Get TypeCache
             $cacheoption = $this->getCacheOption();
-            $sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache WHERE search_group='1' and search_val='{$v}' {$cacheoption}";
+            $dbst = $db->prepare("SELECT result
+                                  FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache
+                                  WHERE search_group = '1'
+                                   AND search_val = ? {$cacheoption}");
+            $dbst->execute(array($v));
 
-            $dbst = $db->query($sql);
             $row = $dbst->fetch();
 
             // If TypeCache
@@ -513,8 +493,10 @@ WHERE
                     }
 
                     // Insert Geonames Search Cache
-                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('1','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
-                    $dbst = $db->query($sql);
+                    $dbst = $db->prepare("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result)
+                                          VALUES ('1', ?, " . $db->quote(json_encode($results)) . ")
+                                          ON DUPLICATE KEY UPDATE result = VALUES(result)");
+                    $dbst->execute(array($v));
                 }
             }
 
@@ -536,17 +518,15 @@ WHERE
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_language($value) {
+    public function cname_language($value)
+    {
         global $_CONFIG;
+
         $this->dbprefix = $_CONFIG['DATABASE']['NAME']['name'] . ".";
         $d = $this->dbprefix;
 
         $results = array();
         $fetched = array();
-
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
 
         try {
             $db = clsDbAccess::Connect('INPUT');
@@ -557,11 +537,9 @@ WHERE
                 $f1 = '';
                 $j1 = '';
                 for ($i = $pebenen; $i > 0; $i--) {
-                    $f1.="
- p{$i}.name as 'pn{$i}',
- p{$i}.`iso639-6` as 'pi{$i}',
- p{$i}.language_id as 'pii{$i}',
- ";
+                    $f1 .= "p{$i}.name as 'pn{$i}',
+                            p{$i}.`iso639-6` as 'pi{$i}',
+                            p{$i}.language_id as 'pii{$i}', ";
                     if ($i == 1) {
                         $j1 = " LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6`=l.`parent_iso639-6`\n" . $j1;
                     } else {
@@ -569,27 +547,24 @@ WHERE
                     }
                 }
 
-                $sql = "
-SELECT
-{$f1}
- l.language_id,
- l.name,
- l.`iso639-6`,
- l.`parent_iso639-6`
-
-FROM
- {$d}tbl_name_languages l
-{$j1}
-WHERE
-
-";
+                $sql = "SELECT
+                         {$f1}
+                         l.language_id,
+                         l.name,
+                         l.`iso639-6`,
+                         l.`parent_iso639-6`
+                        FROM
+                         {$d}tbl_name_languages l
+                         {$j1}
+                        WHERE ";
                 if (isset($value['exact'])) {
-                    $sql .=" l.name='{$value['exact']}' or l.`iso639-6`='{$value['exact']}' ";
+                    $dbst = $db->prepare($sql . " l.name = ? or l.`iso639-6` = ? ");
+                    $dbst->execute(array($value['exact'], $value['exact']));
                 } else {
-                    $sql .=" l.language_id='{$value['id']}' ";
+                    $dbst = $db->prepare($sql . " l.language_id = ? ");
+                    $dbst->execute(array($value['id']));
                 }
 
-                $dbst = $db->query($sql);
                 $row = $dbst->fetch();
                 $res = array();
                 if (isset($row['name']) && $row['name'] != '') {
@@ -628,10 +603,11 @@ WHERE
                 $v = $value['search'];
 
                 $cacheoption = $this->getCacheOption();
-                $sql = "SELECT result FROM {$_CONFIG['DATABASE']['NAME']['name']}. tbl_search_cache WHERE search_group='2' and search_val='{$v}' {$cacheoption}";
-
-                $db = clsDbAccess::Connect('INPUT');
-                $dbst = $db->query($sql);
+                $dbst = $db->prepare("SELECT result
+                                      FROM {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache
+                                      WHERE search_group = '2'
+                                       AND search_val = ? {$cacheoption}");
+                $dbst->execute(array($v));
                 $row = $dbst->fetch();
 
                 // If TypingCache
@@ -651,11 +627,9 @@ WHERE
                     $j1 = '';
                     $j2 = '';
                     for ($i = $pebenen; $i > 0; $i--) {
-                        $f1.="
- p{$i}.name as 'pn{$i}',
- p{$i}.`iso639-6` as 'pi{$i}',
- p{$i}.language_id as 'pii{$i}',
- ";
+                        $f1 .= " p{$i}.name as 'pn{$i}',
+                                 p{$i}.`iso639-6` as 'pi{$i}',
+                                 p{$i}.language_id as 'pii{$i}', ";
                         if ($i == 1) {
                             $j1 = " LEFT JOIN {$d}tbl_name_languages p1 ON p1.`iso639-6`=l.`parent_iso639-6`\n" . $j1;
                         } else {
@@ -664,11 +638,9 @@ WHERE
                     }
 
                     for ($i = 1; $i <= $cebenen; $i++) {
-                        $f2.="
- s{$i}.name as 'sn{$i}',
- s{$i}.`iso639-6` as 'si{$i}',
- s{$i}.language_id as 'sii{$i}',
-";
+                        $f2.=" s{$i}.name as 'sn{$i}',
+                               s{$i}.`iso639-6` as 'si{$i}',
+                               s{$i}.language_id as 'sii{$i}', ";
                         if ($i == 1) {
                             $j2.=" LEFT JOIN {$d}tbl_name_languages s1 ON s1.`parent_iso639-6`=l.`iso639-6`\n";
                         } else {
@@ -676,35 +648,24 @@ WHERE
                         }
                     }
 
-                    $sql = "
-SELECT
-{$f1}
-
- l.name as 'n',
- l.`iso639-6` as 'i',
- l.language_id as 'id',
-
-{$f2}
-
- IF(l.`iso639-6`='$value',1,0) as 'sort',
- LOCATE('{$value['search']}',l.name) as 'sort2'
-FROM
- {$d}tbl_name_languages l
-{$j1}
-{$j2}
-
-WHERE
-	l.name LIKE '%{$value['search']}%'
- or l.`iso639-6` LIKE '%{$value['search']}%'
-ORDER BY
- sort desc,sort2, l.name
- ";
-
-//p($sql);
-
-
-
-                    $dbst = $db->query($sql);
+                    $dbst = $db->prepare("SELECT
+                                          {$f1}
+                                          l.name as 'n',
+                                          l.`iso639-6` as 'i',
+                                          l.language_id as 'id',
+                                          {$f2}
+                                          IF(l.`iso639-6`='{$value['search']}',1,0) as 'sort',
+                                          LOCATE('{$value['search']}',l.name) as 'sort2'
+                                          FROM
+                                           {$d}tbl_name_languages l
+                                           {$j1}
+                                           {$j2}
+                                          WHERE
+                                           l.name LIKE ?
+                                           OR l.`iso639-6` LIKE ?
+                                          ORDER BY
+                                           sort desc,sort2, l.name ");
+                    $dbst->execute(array('%' . $value['search'] . '%', '%' . $value['search'] . '%'));
                     $rows = $dbst->fetchAll();
                     // Build Tree
 
@@ -772,8 +733,10 @@ ORDER BY
 
                     // Todo: fetch all manual inserted languages...
                     // Insert Geonames Search Cache
-                    $sql = "INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group,search_val,result) VALUES ('2','{$v}'," . $db->quote(json_encode($results)) . ")  ON DUPLICATE KEY UPDATE result=VALUES(result)";
-                    $dbst = $db->query($sql);
+                    $dbst = $db->prepare("INSERT INTO {$_CONFIG['DATABASE']['NAME']['name']}.tbl_search_cache (search_group, search_val,result)
+                                          VALUES ('2', ?, " . $db->quote(json_encode($results)) . ")
+                                          ON DUPLICATE KEY UPDATE result = VALUES(result)");
+                    $dbst->execute(array($v));
                 }
             }
         } catch (Exception $e) {
@@ -785,8 +748,8 @@ ORDER BY
         return $results;
     }
 
-    function buildtree(&$r) {
-
+    function buildtree(&$r)
+    {
         $this->x = 0;
 
         $res = array();
@@ -801,8 +764,8 @@ ORDER BY
 
     var $usedisos = array();
 
-    function buildtree1(&$res, &$el, $childebene, $keys, $akey, $t3) {
-
+    function buildtree1(&$res, &$el, $childebene, $keys, $akey, $t3)
+    {
         // to much recursion...
         $this->x++;
         if ($this->x > 3000) {
@@ -881,36 +844,31 @@ ORDER BY
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_service($value) {
+    public function cname_service($value)
+    {
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-            $sql = "
-SELECT
- serviceID,
- name,
- url_head
-FROM
- tbl_nom_service
-WHERE
-";
-
+            $sql = "SELECT
+                     serviceID,
+                     name,
+                     url_head
+                    FROM
+                     tbl_nom_service
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" serviceID='{$value['id']}' ";
+                $dbst = $db->prepare($sql . " serviceID = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.="name='{$value['exact']}' or url_head ='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " name = ? OR url_head = ?");
+                $dbst->execute(array($value['exact'], $value['exact']));
             } else {
-                $sql.=" name LIKE '{$value['search']}%' or url_head LIKE '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " name LIKE ? OR url_head LIKE ?");
+                $dbst->execute(array($value['search'] . '%', $value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
 
@@ -938,34 +896,31 @@ WHERE
      * @param bool[optional] $noExternals only results for "external=0" (default no)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
-    public function cname_period($value) {
+    public function cname_period($value)
+    {
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-            $sql = "
-SELECT
- period_id,
- period
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
-WHERE
-";
+            $sql = "SELECT
+                     period_id,
+                     period
+                    FROM
+                     {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_periods
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" period_id='{$value['id']}'";
+                $dbst = $db->prepare($sql . " period_id = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" period ='{$value['exact']}'";
+                $dbst = $db->prepare($sql . " period = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.=" period LIKE '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " period LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
@@ -998,32 +953,26 @@ WHERE
         global $_CONFIG;
 
         $results = array();
-        // Escape search string
-        if( isset($value['search']) ) $value['search'] = dbi_escape_string($value['search']);
-        if( isset($value['exact']) ) $value['exact'] = dbi_escape_string($value['exact']);
-
         try {
             $db = clsDbAccess::Connect('INPUT');
 
-            $sql = "
-SELECT
- DISTINCT geospecification
-FROM
- {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to
-WHERE
-";
+            $sql = "SELECT
+                     DISTINCT geospecification
+                    FROM
+                     {$_CONFIG['DATABASE']['NAME']['name']}.tbl_name_applies_to
+                    WHERE ";
             if (isset($value['id'])) {
-                $sql.=" geospecification = '{$value['id']}'";
+                $dbst = $db->prepare($sql . " geospecification = ?");
+                $dbst->execute(array($value['id']));
             } else if (isset($value['exact'])) {
-                $sql.=" geospecification = '{$value['exact']}'";
+                $dbst = $db->prepare($sql . " geospecification = ?");
+                $dbst->execute(array($value['exact']));
             } else {
-                $sql.=" geospecification like '{$value['search']}%'";
+                $dbst = $db->prepare($sql . " geospecification LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
             }
 
-
-            $dbst = $db->query($sql);
             $rows = $dbst->fetchAll();
-
             if (count($rows) > 0) {
                 foreach ($rows as $row) {
 
@@ -1057,6 +1006,7 @@ WHERE
     |					  |
     \*********************/
 
-    private function __clone() {
+    private function __clone()
+    {
     }
 }

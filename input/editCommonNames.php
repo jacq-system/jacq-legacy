@@ -283,7 +283,7 @@ $_dvar=array(
 	'annotations'		=> '',
 
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id','name_id','geonameId','language_id','period_id','reference_id','tribe_id')),
+	'active_id'	=>	new natID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
 
 	'enableClose'	=> ((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0
 
@@ -295,13 +295,23 @@ if(isset($_GET['search'])){
 	}
 }
 
-$action=isset($_POST['submitDelete'])?'doDelete':(isset($_POST['submitUpdate'])?'doUpdate':(isset($_POST['submitInsert'])?'doInsert':(
-		(isset($_POST['submitSearch'])||isset($_GET['search']))?'doSearch':(isset($_GET['show'])?'doShow':(isset($_POST['action'])?$_POST['action']:'')))));
-//echo $action;
-//print_r($_POST);
+if (isset($_POST['submitDelete'])) {
+    $action = 'doDelete';
+} elseif (isset($_POST['submitUpdate'])) {
+    $action = 'doUpdate';
+} elseif (isset($_POST['submitInsert'])) {
+    $action = 'doInsert';
+} elseif (isset($_POST['submitSearch']) || isset($_GET['search'])) {
+    $action = 'doSearch';
+} elseif (isset($_GET['show'])) {
+    $action = 'doShow';
+} elseif (isset($_POST['action'])) {
+    $action = filter_input(INPUT_POST, 'action', FILTER_SANITIZE_STRING);
+} else {
+    $action = '';
+}
 
-if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==false ){
-
+if (in_array($action, array('doDelete', 'doSearch', 'doInsert', 'doUpdate')) !== false ) {
 	// clean pairs...
 	foreach($_POST as $k=>$v){
 		if(preg_match('/ajax_(?P<name>.+)/', $k, $matches)==1){
@@ -343,8 +353,8 @@ if( in_array($action,array('doDelete' ,'doSearch','doInsert','doUpdate'))!==fals
 		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
 	));
 	error_reporting($errr);
-	if($action!='doSearch' && $_POST['active_id']!=''){
-		$_dvar['active_id']->setNatIDFromString($_POST['active_id']);
+	if ($action != 'doSearch' && !empty($_POST['active_id'])){
+		$_dvar['active_id']->setNatIDFromString(filter_input(INPUT_POST, 'active_id', FILTER_SANITIZE_STRING));
 	}
 
 	doQuotes($_dvar,1);
@@ -685,7 +695,9 @@ WHERE
 function checkRowExists($id){
 	global $dbprefix;
 
-	if(!is_object($id) || !$id->checkID() )return false;
+	if (!is_object($id) || !$id->checkID()) {
+        return false;
+    }
 	$whereID=$id->getWhere();
 	$result=dbi_query("SELECT COUNT(*) as 'count' FROM {$dbprefix}tbl_name_applies_to WHERE {$whereID}");
 	$row = mysqli_fetch_assoc($result);
