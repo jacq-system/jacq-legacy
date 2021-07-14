@@ -45,7 +45,7 @@ function getPicDetails($request)
         }
 
         if (substr($originalFilename, 0, 4) == 'KIEL') {
-            // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line...)
+            // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 135)
             $coll_short_prj = 'KIEL';
             $HerbNummer = substr($originalFilename, 4);
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
