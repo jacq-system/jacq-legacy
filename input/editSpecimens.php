@@ -277,9 +277,9 @@ if (isset($_GET['sel'])) {
         }
     }
     $edit = (!empty($_GET['edit'])) ? true : false;
-    if ($swBatch) {
+    if ($swBatch && isset($_GET['sel'])) {
         // read tbl_api_specimens
-        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID($_GET['sel']));
+        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
     }
 } else {
@@ -288,7 +288,7 @@ if (isset($_GET['sel'])) {
     $p_HerbNummer        = $_POST['HerbNummer'];
     $p_CollNummer        = $_POST['CollNummer'];
     $p_identstatus       = $_POST['identstatus'];
-    $p_batch             = $_POST['batch'];
+    $p_batch             = filter_input(INPUT_POST, 'batch');
     $p_checked           = $_POST['checked'];
     $p_accessible        = $_POST['accessible'];
     $p_series            = $_POST['seriesIndex'];
@@ -311,8 +311,8 @@ if (isset($_GET['sel'])) {
     $p_habitat           = $_POST['habitat'];
     $p_habitus           = $_POST['habitus'];
     $p_Bemerkungen       = $_POST['Bemerkungen'];
-    $p_digital_image     = $_POST['digital_image'];
-    $p_digital_image_obs = $_POST['digital_image_obs'];
+    $p_digital_image     = filter_input(INPUT_POST, 'digital_image');
+    $p_digital_image_obs = filter_input(INPUT_POST, 'digital_image_obs');
     $p_garten            = $_POST['garten'];
     $p_voucher           = $_POST['voucher'];
     $p_ncbi              = $_POST['ncbi'];
@@ -460,11 +460,11 @@ if (isset($_GET['sel'])) {
                     logSpecimen($p_specimen_ID, $updated);
                 }
 
-                if ($_POST['submitUpdateNew']) {
+                if (!empty($_POST['submitUpdateNew'])) {
                     $location="Location: editSpecimens.php?sel=<0>&new=1";
                     if (SID) $location .= "&" . SID;
                     Header($location);
-                } elseif ($_POST['submitUpdateCopy']) {
+                } elseif (!empty($_POST['submitUpdateCopy'])) {
                     $location="Location: editSpecimens.php?sel=<".$p_specimen_ID.">&new=1";
                     if (SID) $location .= "&" . SID;
                     Header($location);
@@ -478,9 +478,9 @@ if (isset($_GET['sel'])) {
             $edit = ($_POST['edit']) ? true : false;
             $p_specimen_ID = $_POST['specimen_ID'];
         }
-        if ($swBatch) {
+        if ($swBatch && isset($_GET['sel'])) {
             // read tbl_api_specimens
-            $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID($_GET['sel']));
+            $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
             $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
         }
     } else if (!empty($_POST['submitNewCopy'])) {

@@ -19,8 +19,8 @@ if ($dbLink->connect_errno) {
 $dbLink->set_charset('utf8');
 
 /** @var mysqli $dbLink2 */
-$dbLink2 = new mysqli($_CONFIG['DATABASE']['PICTURES']['host'], $_CONFIG['DATABASE']['PICTURES']['readonly']['user'], $_CONFIG['DATABASE']['PICTURES']['readonly']['pass'], $_CONFIG['DATABASE']['PICTURES']['db']);
-if ($dbLink2->connect_errno) {
+$dbLink_pictures = new mysqli($_CONFIG['DATABASES']['PICTURES']['host'], $_CONFIG['DATABASES']['PICTURES']['readonly']['user'], $_CONFIG['DATABASES']['PICTURES']['readonly']['pass'], $_CONFIG['DATABASES']['PICTURES']['db']);
+if ($dbLink_pictures->connect_errno) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
     "<html>\n" .
     "<head><titel>Sorry, no connection ...</title></head>\n" .
@@ -28,7 +28,7 @@ if ($dbLink2->connect_errno) {
     "</html>\n";
     exit();
 }
-$dbLink2->set_charset('utf8');
+$dbLink_pictures->set_charset('utf8');
 
 function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
 {

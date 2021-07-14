@@ -227,13 +227,15 @@ function getPicInfo($picdetails)
         $url = 'http://ww2.bgbm.org/rest/herb/thumb/' . $HerbNummer;
 
         $fp = fopen($url, "r");
-        while ($row = fgets($fp)) {
-            $response .= trim($row) . "\n";
+        if ($fp) {
+            $response = '';
+            while ($row = fgets($fp)) {
+                $response .= trim($row) . "\n";
+            }
+            $response_decoded = json_decode($response, true);
+            $return['pics'] = $response_decoded['result'];
+            fclose($fp);
         }
-
-        $response_decoded = json_decode($response, true);
-
-        $return['pics'] = $response_decoded['result'];
     } else if ($picdetails['imgserver_type'] == 'baku') {
         $return['pics'] = $picdetails['filename'];
     } else {  // old legacy

@@ -475,11 +475,11 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     if ($picdetails['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
         if ($row['iiif_capable']) {
-            // force https to always call iiif images with https
             $manifest = '';
             if ($row['source_id'] == '32'){
-              $manifest = getManifestURI(getStableIdentifier($row['specimen_ID']));
+                $manifest = getManifestURI(getStableIdentifier($row['specimen_ID']));
             } else {
+                // force https to always call iiif images with https
                 $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
             }
             echo "<iframe title='Mirador' width='100%' height='800px' "
