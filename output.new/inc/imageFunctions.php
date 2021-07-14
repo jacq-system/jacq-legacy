@@ -44,18 +44,30 @@ function getPicDetails($request)
             $originalFilename = $matches[1];
         }
 
-        // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-        if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
-            // Extract HerbNummer and construct alternative version
-            $HerbNummer = $matches[2];
+        if (substr($originalFilename, 0, 4) == 'KIEL') {
+            // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line...)
+            $coll_short_prj = 'KIEL';
+            $HerbNummer = substr($originalFilename, 4);
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
-
+        } else {
+            // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
+            if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
+                // Extract HerbNummer and construct alternative version
+                $coll_short_prj = $matches[1];
+                $HerbNummer = $matches[2];
+                $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+            } else {
+                $coll_short_prj = '';
+                $HerbNummer = $HerbNummerAlternative = 0;  // nothing found
+            }
+        }
+        if ($HerbNummer) {
             // Find entry in specimens table and return specimen ID for it
             $sql = "SELECT s.`specimen_ID`
                     FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
                      LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
                     WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
-                     AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($matches[1]) . "'";
+                     AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
             $result = $dbLink->query($sql);
             if ($result->num_rows > 0) {
                 $row = $result->fetch_array(MYSQLI_ASSOC);
