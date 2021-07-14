@@ -65,7 +65,7 @@ function getPicDetails($request)
     }
 
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
-                   mc.`coll_short_prj`,
+                   mc.`coll_short_prj`, mc.`source_id`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
              LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
@@ -120,7 +120,11 @@ function getPicDetails($request)
             $originalFilename = sprintf($uriSubset["thumb"]);
             $key = sprintf($uriSubset["html"]);
         } else {
-            $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            if ($row['source_id'] == 59) {
+                $filename = sprintf("%s%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            } else {
+                $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            }
             $key = $row['key'];
         }
 
