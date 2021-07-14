@@ -44,18 +44,30 @@ function getPicDetails($request)
             $originalFilename = $matches[1];
         }
 
-        // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-        if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
-            // Extract HerbNummer and construct alternative version
-            $HerbNummer = $matches[2];
+        if (substr($originalFilename, 0, 4) == 'KIEL') {
+            // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 135)
+            $coll_short_prj = 'KIEL';
+            $HerbNummer = substr($originalFilename, 4);
             $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
-
+        } else {
+            // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
+            if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
+                // Extract HerbNummer and construct alternative version
+                $coll_short_prj = $matches[1];
+                $HerbNummer = $matches[2];
+                $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+            } else {
+                $coll_short_prj = '';
+                $HerbNummer = $HerbNummerAlternative = 0;  // nothing found
+            }
+        }
+        if ($HerbNummer) {
             // Find entry in specimens table and return specimen ID for it
             $sql = "SELECT s.`specimen_ID`
                     FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
                      LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
                     WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
-                     AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($matches[1]) . "'";
+                     AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
             $result = $dbLink->query($sql);
             if ($result->num_rows > 0) {
                 $row = $result->fetch_array(MYSQLI_ASSOC);
@@ -65,7 +77,7 @@ function getPicDetails($request)
     }
 
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
-                   mc.`coll_short_prj`,
+                   mc.`coll_short_prj`, mc.`source_id`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
              LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
@@ -120,7 +132,11 @@ function getPicDetails($request)
             $originalFilename = sprintf($uriSubset["thumb"]);
             $key = sprintf($uriSubset["html"]);
         } else {
-            $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            if ($row['source_id'] == 59) {
+                $filename = sprintf("%s%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            } else {
+                $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            }
             $key = $row['key'];
         }
 
@@ -227,13 +243,15 @@ function getPicInfo($picdetails)
         $url = 'http://ww2.bgbm.org/rest/herb/thumb/' . $HerbNummer;
 
         $fp = fopen($url, "r");
-        while ($row = fgets($fp)) {
-            $response .= trim($row) . "\n";
+        if ($fp) {
+            $response = '';
+            while ($row = fgets($fp)) {
+                $response .= trim($row) . "\n";
+            }
+            $response_decoded = json_decode($response, true);
+            $return['pics'] = $response_decoded['result'];
+            fclose($fp);
         }
-
-        $response_decoded = json_decode($response, true);
-
-        $return['pics'] = $response_decoded['result'];
     } else if ($picdetails['imgserver_type'] == 'baku') {
         $return['pics'] = $picdetails['filename'];
     } else {  // old legacy

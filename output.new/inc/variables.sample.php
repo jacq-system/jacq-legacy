@@ -8,7 +8,7 @@ $_CONFIG['DATABASES']['OUTPUT'] = array(
     )
 );
 
-$_CONFIG['DATABASE']['PICTURES'] = array(
+$_CONFIG['DATABASES']['PICTURES'] = array(
     "host" => "localhost",
     "db" => "pictures",
     "readonly" => array(

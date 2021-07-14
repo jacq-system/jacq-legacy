@@ -391,7 +391,7 @@ class CSSF{
 	public function inputJqAutocomplete($x, $y, $w, $name, $value, $index, $serverScript, $maxsize = 0, $minLength = 1, $bgcol = "", $title = "",$autoFocus = false, $zeroOnEmpty = false, $class_attribute = "")
     {
 		$this->_divclass($x, $y, "cssfinput" . " " .$class_attribute);
-		print "<input  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;";
+		print "<input  tabindex=\"{$this->tabindex}\" class='cssftextAutocomplete' style='width: {$w}em;'";
 		if ($bgcol) {
             print " background-color: $bgcol;";
         }

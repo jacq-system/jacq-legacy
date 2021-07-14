@@ -1,0 +1,34 @@
+calling script:
+===============
+
+replace require_once ("inc/xajax/xajax_core/xajax.inc.php");  ->  require __DIR__ . '/vendor/autoload.php';
+
+insert  use Jaxon\Jaxon;
+
+replace $xajax = new xajax();                                 ->  $jaxon = jaxon();
+replace $xajax->setRequestURI("ajax/...Server.php");          ->  $jaxon->setOption('core.request.uri', 'ajax/...Server.php');
+replace $xajax->registerFunction("...");                      ->  $jaxon->register(Jaxon::CALLABLE_FUNCTION, "...");
+
+replace <?php $xajax->printJavascript('inc/xajax'); ?>        ->  <?php echo $jaxon->getScript(true, true); ?>
+
+replace xajax_                                                ->  jaxon_
+
+
+
+server script:
+==============
+
+replace require_once ("../inc/xajax/xajax_core/xajax.inc.php");  ->  require __DIR__ . '/../vendor/autoload.php';
+
+insert  use Jaxon\Jaxon;
+insert  use Jaxon\Response\Response;
+
+replace xajax-function                                           ->  jaxon-function
+replace xajaxResponse                                            ->  Response
+replace $objResponse                                             ->  $response
+replace $objResponse->loadCommands(...());                       ->  $response-> appendResponse(...());
+
+replace $xajax = new xajax();                                    ->  $jaxon = jaxon();
+replace $xajax->registerFunction("...");                         ->  $jaxon->register(Jaxon::CALLABLE_FUNCTION, "...");
+replace $xajax->processRequest();                                ->  $jaxon->processRequest();
+

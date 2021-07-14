@@ -66,3 +66,27 @@ function getStableIdentifier($specimenID)
         return "";
     }
 }
+
+/**
+ * get the manifest url for LZ stable identifier from herbar_pictures.stblid_manifest
+ *
+ * @param string $stableIdentifier the stable identifier
+ * @return string the manifest URI
+ */
+function getManifestURI($stableIdentifier)
+{
+    /** @var mysqli_result $result */
+    global $dbLink_pictures;
+
+    $sql4 = 'SELECT manifest FROM stblid_manifest WHERE stableIdentifier like "' . $stableIdentifier . '" LIMIT 1';
+    $result = $dbLink_pictures->query($sql4);
+    $manifest = '';
+
+    if ($result && $result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $manifest = $row["manifest"];
+       }
+    }
+
+    return $manifest;
+}
