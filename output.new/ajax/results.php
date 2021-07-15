@@ -162,8 +162,13 @@ while ($row = $result->fetch_array()) {
         echo "<td class=\"result\">";
         if ($link) {
             if ($row['iiif_capable']) {
-                // force https to always call iiif images with https
-                $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
+                $manifest = '';
+                if ($row['source_id'] == '32'){
+                    $manifest = getManifestURI(getStableIdentifier($row['specimen_ID']));
+                } else {
+                    // force https to always call iiif images with https
+                    $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
+                }
             	echo "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
                    . "<img border='2' height='15' src='images/$image' width='15'></a>"
                    . "&nbsp;<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
