@@ -7,11 +7,12 @@ require_once('inc/imageFunctions.php');
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]
  */
 
-$filename = filter_input(INPUT_GET, 'filename', FILTER_SANITIZE_STRING);
-$method   = filter_input(INPUT_GET, 'method', FILTER_SANITIZE_STRING);
-$format   = filter_input(INPUT_GET, 'format', FILTER_SANITIZE_STRING);
+$filename   = filter_input(INPUT_GET, 'filename', FILTER_SANITIZE_STRING);
+$specimenID = filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_STRING);
+$method     = filter_input(INPUT_GET, 'method', FILTER_SANITIZE_STRING);
+$format     = filter_input(INPUT_GET, 'format', FILTER_SANITIZE_STRING);
 
-$picdetails = getPicDetails($filename);
+$picdetails = getPicDetails($filename, $specimenID);
 
 error_reporting(E_ALL);
 if (!empty($picdetails['url'])) {

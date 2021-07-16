@@ -240,17 +240,20 @@ function showGeonameInfo(){
 <form Action="<?PHP echo $_SERVER['PHP_SELF'];?>" Method="POST" name="f" id="sendto">
 
 <?php
-$doSearch=false;
-$search_result='';
-$source_sel=array('service'=>'','person'=>'','literature'=>'');
-$msg=array('result'=>'','err'=>'');
-$strict=!isset($_GET['search']);
-$dbprefix=$_CONFIG['DATABASE']['NAME']['name'].'.';
-$quotesdone=0;
+$doSearch      = false;
+$search_result = '';
+$source_sel    = array('service'    => '',
+                       'person'     => '',
+                       'literature' => '');
+$msg           = array('result' => '',
+                       'err'    => '');
+$strict        = !isset($_GET['search']);
+$dbprefix      = $_CONFIG['DATABASE']['NAME']['name'] . '.';
+$quotesdone    = 0;
 
 
 // dataVar
-$_dvar=array(
+$_dvar = array(
 	'entityIndex'		=> '',
 	'entityType'		=> 'taxon',
 	'taxonIndex'		=> '',
@@ -285,7 +288,7 @@ $_dvar=array(
 	'locked'			=> '1',
 	'active_id'	=>	new natID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
 
-	'enableClose'	=> ((isset($_POST['enableClose'])&&$_POST['enableClose']==1)||(isset($_GET['enableClose'])&&$_GET['enableClose']==1))?1:0
+	'enableClose'	=> ((isset($_POST['enableClose']) && $_POST['enableClose'] == 1) || (isset($_GET['enableClose']) && $_GET['enableClose'] == 1)) ? 1 : 0
 
 );
 
@@ -314,9 +317,9 @@ if (isset($_POST['submitDelete'])) {
 if (in_array($action, array('doDelete', 'doSearch', 'doInsert', 'doUpdate')) !== false ) {
 	// clean pairs...
 	foreach($_POST as $k=>$v){
-		if(preg_match('/ajax_(?P<name>.+)/', $k, $matches)==1){
-			if(strlen($v)==0 && $v!='0'){
-				$_POST[ $matches['name'].'Index' ]='';
+		if(preg_match('/ajax_(?P<name>.+)/', $k, $matches) == 1){
+			if(strlen($v) == 0 && $v != '0'){
+				$_POST[ $matches['name'] . 'Index' ] = '';
 			}
 		}
 	}
@@ -325,142 +328,135 @@ if (in_array($action, array('doDelete', 'doSearch', 'doInsert', 'doUpdate')) !==
 	$_dvar=array_merge($_dvar, array(
 		'taxonIndex' => $_POST['taxonIndex'],
 
-		'nameIndex'			=> $_POST['common_nameIndex'],
-		'common_nameIndex'	=> $_POST['common_nameIndex'],
-		'common_name'		=> $_POST['ajax_common_name'],
+		'nameIndex'            => filter_input(INPUT_POST, 'common_nameIndex'),
+		'common_nameIndex'     => filter_input(INPUT_POST, 'common_nameIndex'),
+		'common_name'          => filter_input(INPUT_POST, 'ajax_common_name'),
 
-		'transliteration'	=>  $_POST['ajax_transliteration'],
-		'transliterationIndex'=>$_POST['transliterationIndex'],
+		'transliteration'      =>  filter_input(INPUT_POST, 'ajax_transliteration'),
+		'transliterationIndex' => filter_input(INPUT_POST, 'transliterationIndex'),
 
-		'geonameIndex'		=> $_POST['geonameIndex'],
-		'geoname'			=> $_POST['ajax_geoname'],
+		'geonameIndex'         => filter_input(INPUT_POST, 'geonameIndex'),
+		'geoname'              => filter_input(INPUT_POST, 'ajax_geoname'),
 
-		'geospecification'	=> $_POST['ajax_geospecification'],
+		'geospecification'     => filter_input(INPUT_POST, 'ajax_geospecification'),
 
-		'tribe_name'		=> $_POST['ajax_tribe'],
-		'tribeIndex'		=> $_POST['tribeIndex'],
+		'tribe_name'           => filter_input(INPUT_POST, 'ajax_tribe'),
+		'tribeIndex'           => filter_input(INPUT_POST, 'tribeIndex'),
 
-		'languageIndex'		=> $_POST['languageIndex'],
-		'language'			=> $_POST['ajax_language'],
+		'languageIndex'        => filter_input(INPUT_POST, 'languageIndex'),
+		'language'             => filter_input(INPUT_POST, 'ajax_language'),
 
-		'periodIndex'		=> $_POST['periodIndex'],
-		'period'			=> $_POST['ajax_period'],
+		'periodIndex'          => filter_input(INPUT_POST, 'periodIndex'),
+		'period'               => filter_input(INPUT_POST, 'ajax_period'),
 
-		'sourceType'		=> isset($_POST['sourceType'])?$_POST['sourceType']:$_dvar['sourceType'],
-		'sourcevalueIndex'	=> $_POST['sourcevalueIndex'],
+		'sourceType'           => isset($_POST['sourceType']) ? filter_input(INPUT_POST, 'sourceType', FILTER_SANITIZE_STRING) : $_dvar['sourceType'],
+		'sourcevalueIndex'     => filter_input(INPUT_POST, 'sourcevalueIndex'),
 
-		'annotations'		=> $_POST['annotations'],
-		'locked'			=> (isset($_POST['locked'])&&$_POST['locked']=='on')?1:$_dvar['locked'],
+		'annotations'          => filter_input(INPUT_POST, 'annotations'),
+		'locked'               => (isset($_POST['locked']) && $_POST['locked'] == 'on') ? 1 : $_dvar['locked'],
 	));
 	error_reporting($errr);
 	if ($action != 'doSearch' && !empty($_POST['active_id'])){
 		$_dvar['active_id']->setNatIDFromString(filter_input(INPUT_POST, 'active_id', FILTER_SANITIZE_STRING));
 	}
 
-	doQuotes($_dvar,1);
-	$quotesdone=1;
-
-
-	//print_r($_dvar);
-
+	doQuotes($_dvar, 1);
+	$quotesdone = 1;
 }
 
-
 // Delete action
-if ($action=='doDelete' ) {
-	list($msg['err'],$msg['result'])=deleteCommonName($_dvar);
+if ($action == 'doDelete' ) {
+	list($msg['err'], $msg['result']) = deleteCommonName($_dvar);
 
 	// Insert/Update
-}else if($action=='doInsert' || $action=='doUpdate') {
+} elseif ($action == 'doInsert' || $action == 'doUpdate') {
+	list($msg['err'], $msg['result']) = InsertUpdateCommonName($_dvar,$action == 'doUpdate');
+	$doSearch = true;
+	$searchNameNotEmpty = false;
 
-	list($msg['err'],$msg['result'])=InsertUpdateCommonName($_dvar,$action=='doUpdate');
-	$doSearch=true;
-	$searchNameNotEmpty=false;
 // Show a Common Name Set with given GET vars...
-}else if(isset($_GET['show'])) {
-
+} elseif(isset($_GET['show'])) {
 	$_dvar['active_id']->setNatIDFromString($_GET['id']);
-	$sql=getAppliesQuery()." and ".$_dvar['active_id']->getWhere(array(),'a.');
+	$sql = getAppliesQuery() . " AND " . $_dvar['active_id']->getWhere(array(), 'a.');
 	$result = dbi_query($sql);
 
 
-	if($result && ($row = mysqli_fetch_assoc($result) ) && mysqli_num_rows($result)==1 ){
+	if ($result && ($row = mysqli_fetch_assoc($result) ) && mysqli_num_rows($result) == 1 ) {
 		$_dvar=array_merge($_dvar, array(
-			'entityIndex'=>$row['entity_id'],
-			'entityType'		=> 'taxon',
-			'taxonIndex'=>$row['taxonID'],
+            'entityIndex'          => $row['entity_id'],
+    		'entityType'           => 'taxon',
+        	'taxonIndex'           => $row['taxonID'],
 
-			'nameIndex'=>$row['name_id'],
-			'common_nameIndex'=>$row['name_id'],
-			'common_name'=>$row['common_name'],
+            'nameIndex'            => $row['name_id'],
+        	'common_nameIndex'     => $row['name_id'],
+        	'common_name'          => $row['common_name'],
 
-			'transliteration'	=>  $row['transliteration'],
-			'transliterationIndex'	=>  $row['transliterationIndex'],
+        	'transliteration'      => $row['transliteration'],
+        	'transliterationIndex' => $row['transliterationIndex'],
 
 
-			'geonameIndex'=>$row['geoname_id'],
-			'geoname'=>$row['geoname'],
+        	'geonameIndex'         => $row['geoname_id'],
+        	'geoname'              => $row['geoname'],
 
-			'geospecification'=> $row['geospecification'],
+        	'geospecification'     => $row['geospecification'],
 
-			'languageIndex'=>$row['language_id'],
-			'language'=>$row['language'],
+        	'languageIndex'        => $row['language_id'],
+        	'language'             => $row['language'],
 
-			'tribe_name'		=>  $row['tribe_name'],
-			'tribeIndex'		=> $row['tribe_id'],
+        	'tribe_name'           => $row['tribe_name'],
+            'tribeIndex'           => $row['tribe_id'],
 
-			'periodIndex'=>$row['period_id'],
-			'period'=>$row['period'],
+        	'periodIndex'          => $row['period_id'],
+        	'period'               => $row['period'],
 
-			'referenceIndex'=>$row['reference_id'],
-			'sourceType'		=> $row['sourceType'],
-			'sourcevalueIndex'	=> $row['sourcevalueIndex'],
+        	'referenceIndex'       => $row['reference_id'],
+        	'sourceType'           => $row['sourceType'],
+        	'sourcevalueIndex'     => $row['sourcevalueIndex'],
 
-			'annotations'=>isset($row['annotations'])?$row['annotations']:$_dvar['annotations'],
+        	'annotations'          => isset($row['annotations']) ? $row['annotations'] : $_dvar['annotations'],
 
-			'locked'=>isset($row['locked'])?$row['locked']:$_dvar['locked'],
-		));
-		echo<<<EOF
+        	'locked'               => isset($row['locked']) ? $row['locked'] : $_dvar['locked'],
+        ));
+        echo<<<EOF
 <script>
 $(document).ready(function() {
 	$('#ajax_transliteration').attr('disabled', true);
 });
 </script>
 EOF;
-		$_POST['ACREALUPDATE']=1;
+        $_POST['ACREALUPDATE']=1;
 
 	// If no row found, prepare for search vars;
-	}else{
-		$doSearch=true;
-		$searchNameNotEmpty=true;
-	}
+    } else {
+    	$doSearch = true;
+    	$searchNameNotEmpty = true;
+    }
 
 // Do Search
-}else if($action=='doSearch'){
-	$doSearch=true;
-	$searchNameNotEmpty=false;
+} elseif ($action == 'doSearch') {
+    $doSearch = true;
+    $searchNameNotEmpty = false;
 }
-doQuotes($_dvar,($quotesdone==1)?2:3);
+doQuotes($_dvar, ($quotesdone == 1) ? 2 : 3);
 
-if($doSearch){
-	$search_result=doSearch($_dvar,$searchNameNotEmpty);
+if ($doSearch){
+    $search_result = doSearch($_dvar, $searchNameNotEmpty);
 }
-//print_r($_dvar);
 
 
-$source_sel[$_dvar['sourceType']]=' checked';
+$source_sel[$_dvar['sourceType']] = ' checked';
 
 
 // Check if update is possible (selected Row is existing)
-$_dvar['update']=checkRowExists($_dvar['active_id']);
-$_dvar['active_id']=$_dvar['active_id'];
+$_dvar['update'] = checkRowExists($_dvar['active_id']);
+$_dvar['active_id'] = $_dvar['active_id'];
 
 $msgs='';
 
-if($msg['result']=="0"){
-	$msgs.=" Error:<br>{$msg['err']} ";
-}else if(strlen($msg['result'])>0){
-	$msgs.=" Success:<br>{$msg['result']} ";
+if ($msg['result'] == "0"){
+	$msgs .= " Error:<br>{$msg['err']} ";
+} elseif (strlen($msg['result']) > 0){
+	$msgs .= " Success:<br>{$msg['result']} ";
 }
 
 echo <<<EOF
@@ -664,23 +660,32 @@ FROM
 WHERE
  1=1
 ";
- 	if(count($_dvar)==0)return $sql;
+ 	if (count($_dvar) == 0) {
+        return $sql;
+    }
 
-	if(!checkempty($_dvar,$strict,'taxon'))$sql.="\n and tax.taxonID='{$_dvar['taxonIndex']}'";
-	if(!checkempty($_dvar,$strict,'common_name'))$sql.="\n and com.common_id = '{$_dvar['common_nameIndex']}'";
-	if(!checkempty($_dvar,$strict,'transliteration'))$sql.="\n and translit.transliteration_id = '{$_dvar['transliterationIndex']}'";
-	if(!checkempty($_dvar,$strict,'geoname'))$sql.="\n and geo.geonameID = '{$_dvar['geonameIndex']}'";
-	if(!checkempty($_dvar,$strict,'geospecification'))$sql.="\n and a.geospecification = '{$_dvar['geospecification']}'";
-	if(!checkempty($_dvar,$strict,'tribe'))$sql.="\n and trib.tribe_id = '{$_dvar['tribeIndex']}'";
-	if(!checkempty($_dvar,$strict,'language'))$sql.="\n and a.language_id ='{$_dvar['languageIndex']}'";
-	if(!checkempty($_dvar,$strict,'period'))$sql.="\n and per.period_id = '{$_dvar['periodIndex']}'";
+    if (!checkempty($_dvar, $strict, 'taxon'))            { $sql .= "\n and tax.taxonID='{$_dvar['taxonIndex']}'"; }
+    if (!checkempty($_dvar, $strict, 'common_name'))      { $sql .= "\n and com.common_id = '{$_dvar['common_nameIndex']}'"; }
+	if (!checkempty($_dvar, $strict, 'transliteration'))  { $sql .= "\n and translit.transliteration_id = '{$_dvar['transliterationIndex']}'"; }
+	if (!checkempty($_dvar, $strict, 'geoname'))          { $sql .= "\n and geo.geonameID = '{$_dvar['geonameIndex']}'"; }
+	if (!checkempty($_dvar, $strict, 'geospecification')) { $sql .= "\n and a.geospecification = '{$_dvar['geospecification']}'"; }
+	if (!checkempty($_dvar, $strict, 'tribe'))            { $sql .= "\n and trib.tribe_id = '{$_dvar['tribeIndex']}'"; }
+	if (!checkempty($_dvar, $strict, 'language'))         { $sql .= "\n and a.language_id ='{$_dvar['languageIndex']}'"; }
+	if (!checkempty($_dvar, $strict, 'period'))           { $sql .= "\n and per.period_id = '{$_dvar['periodIndex']}'"; }
 
- 	switch($_dvar['sourceType']){
-		default: case 'literature':if(!checkempty($_dvar,$strict,'literature'))$sql.="\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'service':if(!checkempty($_dvar,$strict,'service'))$sql.="\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'";break;
-		case 'person':if(!checkempty($_dvar,$strict,'person'))$sql.="\n and pers.personID ='{$_dvar['sourcevalueIndex']}'";break;
+ 	switch($_dvar['sourceType']) {
+		default:
+        case 'literature':
+            if (!checkempty($_dvar, $strict, 'literature')) { $sql .= "\n and lit.citationID ='{$_dvar['sourcevalueIndex']}'"; }
+            break;
+		case 'service':
+            if (!checkempty($_dvar, $strict, 'service'))    { $sql .= "\n and ser.serviceID ='{$_dvar['sourcevalueIndex']}'"; }
+            break;
+		case 'person':
+            if (!checkempty($_dvar, $strict, 'person'))     { $sql .= "\n and pers.personID ='{$_dvar['sourcevalueIndex']}'"; }
+            break;
 	}
-	if(!checkempty($_dvar,$strict,'annotations'))$sql.="\n and a.annotations= '{$_dvar['annotations']}'";
+    if (!checkempty($_dvar, $strict, 'annotations')) { $sql.="\n and a.annotations= '{$_dvar['annotations']}'"; }
 
 	return $sql;
 }
@@ -692,17 +697,18 @@ WHERE
  * @param
  * @return boolean
  */
-function checkRowExists($id){
+function checkRowExists($id)
+{
 	global $dbprefix;
 
 	if (!is_object($id) || !$id->checkID()) {
         return false;
     }
-	$whereID=$id->getWhere();
-	$result=dbi_query("SELECT COUNT(*) as 'count' FROM {$dbprefix}tbl_name_applies_to WHERE {$whereID}");
+	$whereID = $id->getWhere();
+	$result = dbi_query("SELECT COUNT(*) as 'count' FROM {$dbprefix}tbl_name_applies_to WHERE {$whereID}");
 	$row = mysqli_fetch_assoc($result);
 
-	return ($row['count']==1);
+	return ($row['count'] == 1);
 }
 
 /**
@@ -711,113 +717,117 @@ function checkRowExists($id){
  * @param
  * @return sql string
  */
-function InsertUpdateCommonName(&$_dvar, $update=false){
+function InsertUpdateCommonName(&$_dvar, $update = false)
+{
 	global $dbprefix, $dbLink;
-	$msg=array();
-	if(!$update && !checkRight('commonnameInsert')){
-		return array("You have no Rights for Insert",0);
+
+    $msg=array();
+	if(!$update && !checkRight('commonnameInsert')) {
+		return array("You have no Rights for Insert", 0);
 	}
 
-	if($update && !checkRight('commonnameUpdate')){
-		return array("You have no Rights for Update",0);
+	if($update && !checkRight('commonnameUpdate')) {
+		return array("You have no Rights for Update", 0);
 	}
 
-	if ($update && !checkRight('unlock_tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])){
-		return array("You have no Rights for Update locked items",0);
+	if ($update && !checkRight('unlock_tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
+		return array("You have no Rights for Update locked items", );
 	}
 
 	if($update){
-		$_dvar['update']=checkRowExists($_dvar['active_id']);
+		$_dvar['update'] = checkRowExists($_dvar['active_id']);
 
 		// No Old Row...
-		if(!$_dvar['update']){
-			return array("No Set for update choosen",0);
+		if (!$_dvar['update']) {
+			return array("No Set for update choosen", 0);
 		}
 	}
-	if(intval($_dvar['taxonIndex'])==0)$msg['tax']="Please insert valid Taxon";
-	if(strlen($_dvar['common_name'])<1)$msg['cname']="Please insert valid Common Name";
+    if (intval($_dvar['taxonIndex']) == 0) { $msg['tax']="Please insert valid Taxon"; }
+    if (strlen($_dvar['common_name']) < 1) { $msg['cname']="Please insert valid Common Name"; }
 
-	if (count($msg)!=0){
-		$msg=implode("<br>",$msg);
-		return array($msg,0);
+	if (count($msg) != 0){
+		$msg = implode("<br>", $msg);
+		return array($msg, 0);
 	}
 
 	// reference
-	$_dvar['referenceIndex']=0;
+	$_dvar['referenceIndex'] = 0;
 	switch($_dvar['sourceType']){
 		default:
 		case 'literature':
-
 			$result = dbi_query("SELECT literature_id FROM {$dbprefix}tbl_name_literature WHERE citationID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysqli_fetch_assoc($result)){
-				$_dvar['referenceIndex']=$row['literature_id'];
-			}else{
-				$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
-				$_dvar['referenceIndex']=dbi_insert_id();
-				$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_literature (literature_id,citationID) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+			if ($result && $row = mysqli_fetch_assoc($result)) {
+				$_dvar['referenceIndex'] = $row['literature_id'];
+			} else {
+				dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+				$_dvar['referenceIndex'] = dbi_insert_id();
+				dbi_query("INSERT INTO {$dbprefix}tbl_name_literature (literature_id,citationID) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
 			}
 			break;
 
 		case 'person':
 			$result = dbi_query("SELECT person_id FROM {$dbprefix}tbl_name_persons WHERE personID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysqli_fetch_assoc($result)){
-				$_dvar['referenceIndex']=$row['person_id'];
-			}else{
-				$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
-				$_dvar['referenceIndex']=dbi_insert_id();
-				$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_persons (person_id,personId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+			if ($result && $row = mysqli_fetch_assoc($result)) {
+				$_dvar['referenceIndex'] = $row['person_id'];
+			} else {
+				dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+				$_dvar['referenceIndex'] = dbi_insert_id();
+				dbi_query("INSERT INTO {$dbprefix}tbl_name_persons (person_id,personId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
 			}
 			break;
 
 		case 'service':
 			$result = dbi_query("SELECT webservice_id FROM {$dbprefix}tbl_name_webservices WHERE serviceID='{$_dvar['sourcevalueIndex']}'");
-			if($result && $row=mysqli_fetch_assoc($result)){
-				$_dvar['referenceIndex']=$row['webservice_id'];
-			}else{$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
-				$_dvar['referenceIndex']=dbi_insert_id();
-				$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_webservices (webservice_id,serviceId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
+			if ($result && $row = mysqli_fetch_assoc($result)) {
+				$_dvar['referenceIndex'] = $row['webservice_id'];
+			} else {
+                dbi_query("INSERT INTO {$dbprefix}tbl_name_references (reference_id) VALUES (NULL)");
+				$_dvar['referenceIndex'] = dbi_insert_id();
+				dbi_query("INSERT INTO {$dbprefix}tbl_name_webservices (webservice_id,serviceId) VALUES ('{$_dvar['referenceIndex']}','{$_dvar['sourcevalueIndex']}')");
 			}
 			break;
 	}
 
 	//Cache geoname
-	$result = dbi_query("INSERT INTO {$dbprefix}tbl_geonames_cache (geonameId, name) VALUES ('{$_dvar['geonameIndex']}','{$_dvar['geoname']}') ON DUPLICATE KEY UPDATE  geonameId=VALUES(geonameId)");
+	dbi_query("INSERT INTO {$dbprefix}tbl_geonames_cache (geonameId, name) VALUES (
+               '{$_dvar['geonameIndex']}', '{$_dvar['geoname']}')
+               ON DUPLICATE KEY UPDATE geonameId = VALUES(geonameId)");
 
 	// Language
-	if($_dvar['languageIndex']==0 || $_dvar['languageIndex']==''){
+	if ($_dvar['languageIndex'] == 0 || $_dvar['languageIndex'] == ''){
 		$result = dbi_query("SELECT language_id FROM {$dbprefix}tbl_name_languages WHERE name='{$_dvar['language']}'");
-		if($result && $row=mysqli_fetch_assoc($result)){
-			$_dvar['languageIndex']=$row['language_id'];
-		}else{
-			$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
-			$_dvar['languageIndex']=dbi_insert_id();
+		if ($result && $row = mysqli_fetch_assoc($result)) {
+			$_dvar['languageIndex'] = $row['language_id'];
+		} else {
+			dbi_query("INSERT INTO {$dbprefix}tbl_name_languages (name) VALUES ('{$_dvar['language']}')");
+			$_dvar['languageIndex'] = dbi_insert_id();
 		}
 	}
 
 	//period
-	$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)");
-	$_dvar['periodIndex']=dbi_insert_id();
+	dbi_query("INSERT INTO {$dbprefix}tbl_name_periods (period) VALUES ('{$_dvar['period']}') ON DUPLICATE KEY UPDATE period_id=LAST_INSERT_ID(period_id)");
+	$_dvar['periodIndex'] = dbi_insert_id();
 
 	//tribe
-	$result = dbi_query("INSERT INTO {$dbprefix} tbl_name_tribes (tribe_name) VALUES ('{$_dvar['tribe_name']}') ON DUPLICATE KEY UPDATE tribe_id=LAST_INSERT_ID(tribe_id)");
-	$_dvar['tribeIndex']=dbi_insert_id();
+	dbi_query("INSERT INTO {$dbprefix} tbl_name_tribes (tribe_name) VALUES ('{$_dvar['tribe_name']}') ON DUPLICATE KEY UPDATE tribe_id=LAST_INSERT_ID(tribe_id)");
+	$_dvar['tribeIndex'] = dbi_insert_id();
 
 
 	//NAMES
 	//commonname
-	$_dvar['nameIndex']=0;
+	$_dvar['nameIndex'] = 0;
 	$result = dbi_query("SELECT common_id FROM {$dbprefix}tbl_name_commons WHERE common_name='{$_dvar['common_name']}'");
-	if($result && $row=mysqli_fetch_assoc($result)){
-		$_dvar['common_nameIndex']=$row['common_id'];
-		$_dvar['nameIndex']=$_dvar['common_nameIndex'];
-	}else{
-		$result = dbi_query("INSERT INTO {$dbprefix} tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}') ON DUPLICATE KEY UPDATE transliteration_id=LAST_INSERT_ID(transliteration_id)");
+	if ($result && $row = mysqli_fetch_assoc($result)) {
+		$_dvar['common_nameIndex'] = $row['common_id'];
+		$_dvar['nameIndex'] = $_dvar['common_nameIndex'];
+	} else {
+		dbi_query("INSERT INTO {$dbprefix} tbl_name_transliterations (name) VALUES ('{$_dvar['transliteration']}') ON DUPLICATE KEY UPDATE transliteration_id=LAST_INSERT_ID(transliteration_id)");
 		$_dvar['transliterationIndex']=dbi_insert_id();
 
-		$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')");
+		dbi_query("INSERT INTO {$dbprefix}tbl_name_names (name_id,transliteration_id) VALUES (NULL,'{$_dvar['transliterationIndex']}')");
 		$_dvar['nameIndex']=dbi_insert_id();
 		$_dvar['common_nameIndex']=$_dvar['nameIndex'];
-		$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
+		dbi_query("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
 
 		// log it
 		logCommonNamesCommonName($_dvar['common_nameIndex'],0);
@@ -825,32 +835,32 @@ function InsertUpdateCommonName(&$_dvar, $update=false){
 
 	// ENTITY
 	// taxon
-	$_dvar['entityIndex']=0;
+	$_dvar['entityIndex'] = 0;
 	$result = dbi_query("SELECT taxon_id FROM {$dbprefix}tbl_name_taxa WHERE taxonID='{$_dvar['taxonIndex']}'");
-	if($result && $row=mysqli_fetch_assoc($result)){
-		$_dvar['entityIndex']=$row['taxon_id'];
-	}else{
-		$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_entities (entity_id) VALUES (NULL)");
-		$_dvar['entityIndex']=dbi_insert_id();
-		$result = dbi_query("INSERT INTO {$dbprefix}tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
+	if ($result && $row = mysqli_fetch_assoc($result)) {
+		$_dvar['entityIndex'] = $row['taxon_id'];
+	} else {
+		dbi_query("INSERT INTO {$dbprefix}tbl_name_entities (entity_id) VALUES (NULL)");
+		$_dvar['entityIndex'] = dbi_insert_id();
+		dbi_query("INSERT INTO {$dbprefix}tbl_name_taxa (taxon_id, taxonID) VALUES ('{$_dvar['entityIndex']}','{$_dvar['taxonIndex']}')");
 	}
 
 	// save old id
-	$where='';$old='';
+	$where = ''; $old = '';
 	if($update){
-		$where=$_dvar['active_id']->getWhere();
-		$old=$_dvar['active_id']->toString();
+		$where = $_dvar['active_id']->getWhere();
+		$old   = $_dvar['active_id']->toString();
 	}
 
 	// NEW ID
 	$_dvar['active_id']->setNatID(array(
-		'entity_id'=>$_dvar['entityIndex'],
-		'name_id'=>$_dvar['nameIndex'],
-		'geonameId'=>$_dvar['geonameIndex'],
-		'language_id'=>$_dvar['languageIndex'],
-		'period_id'=>$_dvar['periodIndex'],
-		'reference_id'=>$_dvar['referenceIndex'],
-		'tribe_id'=>$_dvar['tribeIndex']
+		'entity_id'    => $_dvar['entityIndex'],
+		'name_id'      => $_dvar['nameIndex'],
+		'geonameId'    => $_dvar['geonameIndex'],
+		'language_id'  => $_dvar['languageIndex'],
+		'period_id'    => $_dvar['periodIndex'],
+		'reference_id' => $_dvar['referenceIndex'],
+		'tribe_id'     => $_dvar['tribeIndex']
 	));
 
 	// Update fields
@@ -927,7 +937,7 @@ function deleteCommonName($_dvar){
  * @param
  * @return sql string
  */
-function doSearch($_dvar,$strict=false){
+function doSearch($_dvar, $strict=false){
 	global $_OPTIONS;
 
 	// Mark collums that was searched...
