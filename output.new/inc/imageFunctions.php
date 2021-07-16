@@ -8,9 +8,10 @@ require_once("jsonRPCClient.php");
  * @global array $_CONFIG all configuration parameters given in variables.php
  * @global mysqli $dbLink link to output-database
  * @param mixed $request either the specimen_ID or the wanted filename
+ * @param string $sid specimenID (optional, default=empty)
  * @return array return the wanted data if found or an empty array
  */
-function getPicDetails($request)
+function getPicDetails($request, $sid = '')
 {
     global $_CONFIG, $dbLink;
 
@@ -44,34 +45,41 @@ function getPicDetails($request)
             $originalFilename = $matches[1];
         }
 
-        if (substr($originalFilename, 0, 4) == 'KIEL') {
-            // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 135)
-            $coll_short_prj = 'KIEL';
-            $HerbNummer = substr($originalFilename, 4);
-            $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+        if (!empty($sid) && intval($sid)) {
+            // we've got a specimen-ID, so use it
+            $specimenID = intval($sid);
         } else {
-            // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
-            if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
-                // Extract HerbNummer and construct alternative version
-                $coll_short_prj = $matches[1];
-                $HerbNummer = $matches[2];
+            // no specimen-ID included in call, so use old method and try to find one via HerbNummer
+            if (substr($originalFilename, 0, 4) == 'KIEL') {
+                // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 135)
+                $coll_short_prj = 'KIEL';
+                preg_match('/^([^_]+)/', substr($originalFilename, 4), $matches);
+                $HerbNummer = $matches[1];
                 $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
             } else {
-                $coll_short_prj = '';
-                $HerbNummer = $HerbNummerAlternative = 0;  // nothing found
+                // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
+                if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
+                    // Extract HerbNummer and construct alternative version
+                    $coll_short_prj = $matches[1];
+                    $HerbNummer = $matches[2];
+                    $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+                } else {
+                    $coll_short_prj = '';
+                    $HerbNummer = $HerbNummerAlternative = 0;  // nothing found
+                }
             }
-        }
-        if ($HerbNummer) {
-            // Find entry in specimens table and return specimen ID for it
-            $sql = "SELECT s.`specimen_ID`
-                    FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-                     LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-                    WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
-                     AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
-            $result = $dbLink->query($sql);
-            if ($result->num_rows > 0) {
-                $row = $result->fetch_array(MYSQLI_ASSOC);
-                $specimenID = $row['specimen_ID'];
+            if ($HerbNummer) {
+                // Find entry in specimens table and return specimen ID for it
+                $sql = "SELECT s.`specimen_ID`
+                        FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
+                         LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                        WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
+                         AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
+                $result = $dbLink->query($sql);
+                if ($result->num_rows > 0) {
+                    $row = $result->fetch_array(MYSQLI_ASSOC);
+                    $specimenID = $row['specimen_ID'];
+                }
             }
         }
     }

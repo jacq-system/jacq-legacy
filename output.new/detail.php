@@ -486,25 +486,25 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
                . "src='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
         } else {
-            $file = rawurlencode(basename($picdetails['specimenID']));
-            echo "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
-               . "(<a href='image.php?filename={$file}&method=show'>Open viewer</a>)";
+            $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $row['specimen_ID'];
+            echo "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
+               . "(<a href='image.php{$options}&method=show'>Open viewer</a>)";
         }
         echo "</td>\n";
     } elseif ($picdetails['imgserver_type'] == 'baku') {
-        $file = rawurlencode(basename($picdetails['specimenID']));
+        $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $row['specimen_ID'];
         echo "<td valign='top' align='center'>"
-           . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb border='2'></a><br>"
-           . "(<a href='image.php?filename={$file}&method=show' target='imgBrowser'>Open viewer</a>)"
+           . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
+           . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
            . "</td>";
     } elseif ($transfer) {
         if (count($transfer['pics']) > 0) {
             foreach ($transfer['pics'] as $v) {
-                $file = rawurlencode(basename($v));//?='+sel+"&method=show
+                $options = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $row['specimen_ID'];
                 echo "<td valign='top' align='center'>\n"
-                   . "<a href='image.php?filename={$file}&method=show' target='imgBrowser'><img src='image.php?filename={$file}&method=thumb' border='2'></a>\n"
+                   . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb' border='2'></a>\n"
                    . "<br>\n"
-                   . "(<a href='image.php?filename={$file}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?filename={$file}&method=download&format=tiff'>TIFF</a>)\n"
+                   . "(<a href='image.php?{$options}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?{$options}&method=download&format=tiff'>TIFF</a>)\n"
                    . "</td>\n";
             }
         } else {
