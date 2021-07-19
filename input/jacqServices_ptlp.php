@@ -28,6 +28,7 @@ function getREST($service_url)
 {
     $curl = curl_init($service_url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
     $curl_response = curl_exec($curl);
     if ($curl_response === false) {
 //        $info = curl_getinfo($curl);
