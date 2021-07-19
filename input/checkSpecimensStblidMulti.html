@@ -46,6 +46,10 @@
         background-color: #ddd;
         color: black;
       }
+      .navpage {
+        font-size: xx-large;
+        text-align: right;
+      }
     </style>
     <script>
       var previousPage;
@@ -70,6 +74,8 @@
           lastPage     = response.lastPage;
 
           $("#items").html(response.total + " items found");
+          $("#totalPages").html(' / ' + response.totalPages);
+          $("#page").val(response.page);
 
           $("#result tbody").empty();
           $.each(response.result, function( key, value) {
@@ -85,6 +91,7 @@
             $('#result > tbody:last-child').append(newline);
           });
           $('html').removeClass('waiting');
+          $("#page").focus().select();
         });
       }
 
@@ -102,6 +109,11 @@
         $("#lastPage, #lastPage2").on('click', function() {
           callJacqService(lastPage);
         });
+        $("#page").on('keypress', function(event){
+          if ( event.which === 13 ) {
+            callJacqService("stableIdentifier/multi?page=" + ($("#page").val() - 1));
+          }
+        });
       });
 
     </script>
@@ -111,6 +123,7 @@
     <div class="nav">
       <a href="#" class="navicon" id="firstPage">&larrb;</a>
       <a href="#" class="navicon" id="previousPage">&larr;</a>
+      <input type="text" class="navpage" id="page" style="width: 2em;"><span class="navpage" id="totalPages"></span>
       <a href="#" class="navicon" id="nextPage">&rarr;</a>
       <a href="#" class="navicon" id="lastPage">&rarrb;</a>
     </div>
