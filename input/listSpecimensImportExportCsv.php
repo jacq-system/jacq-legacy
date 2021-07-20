@@ -186,7 +186,7 @@ if (empty($_SESSION['sSQLCondition'])) {
 }
 $resultSpecimens = dbi_query($sql . $sql_condition);
 
-while( ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) !== false ) {
+while($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
   $sammler = collection($rowSpecimen['Sammler'],$rowSpecimen['Sammler_2'],$rowSpecimen['series'],$rowSpecimen['series_number'],
                       $rowSpecimen['Nummer'],$rowSpecimen['alt_number'],$rowSpecimen['Datum']);
 
