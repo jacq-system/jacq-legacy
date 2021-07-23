@@ -102,10 +102,17 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
                    <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map" onClick="osMap(-1)">Create map
                   </button>
                 </form>
+                &nbsp;&nbsp;
                 <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
                   <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
                 </form>
                 <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
+                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download XLSX</button>
+                </form>
+                <form style="display:inline;" action="exportCsv.php?type=ods" method="post" target="_blank">
+                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download ODS</button>
+                </form>
+                <form style="display:inline;" action="exportCsv.php?type=csv" method="post" target="_blank">
                     <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
                 </form>
               </td>

@@ -231,7 +231,7 @@ if (isset($_SESSION['sOrder'])) {
 $resultSpecimens = dbi_query($sql);
 
 $i = 2;
-while (($rowSpecimen = mysqli_fetch_array($resultSpecimens)) !== false) {
+while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'], $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
 
     if ($rowSpecimen['epithet5']) {

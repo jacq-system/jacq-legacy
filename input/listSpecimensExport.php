@@ -3,6 +3,7 @@ error_reporting(0);
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require("inc/stableIdentifierFunctions.php");
 require("inc/PHPExcel/PHPExcel.php");
 
 $select = filter_input(INPUT_GET, 'select');
@@ -222,6 +223,7 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen_ID')
         ->setCellValue('BG1', 'habitus')
         ->setCellValue('BH1', 'aktualdatum')
         ->setCellValue('BI1', 'eingabedatum')
+        ->setCellValue('BJ1', 'stable identifier')
 ;
 
 $sqlSelect = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
@@ -302,7 +304,7 @@ else {
 $resultSpecimens = dbi_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 
 $i = 2;
-while (($rowSpecimen = mysqli_fetch_array($resultSpecimens)) !== false) {
+while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'], $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
 
     if ($rowSpecimen['epithet5']) {
@@ -464,7 +466,8 @@ while (($rowSpecimen = mysqli_fetch_array($resultSpecimens)) !== false) {
         $rowSpecimen['habitat'],
         $rowSpecimen['habitus'],
         $rowSpecimen['aktualdatum'],
-        $rowSpecimen['eingabedatum']
+        $rowSpecimen['eingabedatum'],
+        getStableIdentifier($rowSpecimen['specimen_ID'])
             ), null, 'A' . $i);
 
 

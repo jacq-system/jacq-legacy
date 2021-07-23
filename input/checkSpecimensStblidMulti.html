@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Show multiple stable identifiers</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="webimages/JACQ_LOGO.png"/>
+    <script
+			  src="https://code.jquery.com/jquery-3.6.0.min.js"
+			  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+			  crossorigin="anonymous">
+    </script>
+    <style>
+      html.waiting, html.waiting * {
+        cursor: wait !important;
+      }
+      #result {
+          border-collapse: collapse;
+      }
+      #result td, #result th {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      #result tr:nth-child(even) {
+          background-color: #f2f2f2;
+      }
+      #result tr:hover {
+          background-color: #ddd;
+      }
+      #result th {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        text-align: left;
+        background-color: #04AA6D;
+        color: white;
+      }
+
+      .navicon {
+        font-size: xx-large;
+        padding: 4px 8px;
+        text-decoration: none;
+        background-color: #04AA6D;
+        color: white;
+      }
+      .navicon:hover {
+        background-color: #ddd;
+        color: black;
+      }
+      .navpage {
+        font-size: xx-large;
+        text-align: right;
+      }
+    </style>
+    <script>
+      var previousPage;
+      var nextPage;
+      var firstPage;
+      var lastPage;
+
+
+      function callJacqService(resource)
+      {
+        if (resource.indexOf('http') === 0) {
+          var type  = 'raw';
+        } else {
+          var type = 'resource';
+        }
+
+        $('html').addClass('waiting');
+        $.getJSON("jacqServices_ptlp.php?type=" + type + "&resource=" + resource, function(response) {
+          previousPage = response.previousPage;
+          nextPage     = response.nextPage;
+          firstPage    = response.firstPage;
+          lastPage     = response.lastPage;
+
+          $("#items").html(response.total + " items found");
+          $("#totalPages").html(' / ' + response.totalPages);
+          $("#page").val(response.page);
+
+          $("#result tbody").empty();
+          $.each(response.result, function( key, value) {
+            var newline = '<tr>';
+            newline += '<td>' + value.specimenID + '</td>';
+            newline += '<td>' + value.numberOfEntries + '</td>';
+            newline += '<td>';
+            $.each(value.stableIdentifierList, function (key2, value2) {
+              newline += value2.stableIdentifier + ' (' + value2.timestamp + ')<br>';
+            });
+            newline += '</td>'
+            newline += '</tr>';
+            $('#result > tbody:last-child').append(newline);
+          });
+          $('html').removeClass('waiting');
+          $("#page").focus().select();
+        });
+      }
+
+      $(function(){
+        callJacqService('stableIdentifier/multi');
+        $("#firstPage, #firstPage2").on('click', function() {
+          callJacqService(firstPage);
+        });
+        $("#previousPage, #previousPage2").on('click', function() {
+          callJacqService(previousPage);
+        });
+        $("#nextPage, #nextPage2").on('click', function() {
+          callJacqService(nextPage);
+        });
+        $("#lastPage, #lastPage2").on('click', function() {
+          callJacqService(lastPage);
+        });
+        $("#page").on('keypress', function(event){
+          if ( event.which === 13 ) {
+            callJacqService("stableIdentifier/multi?page=" + ($("#page").val() - 1));
+          }
+        });
+      });
+
+    </script>
+  </head>
+  <body>
+    <h3>Show multiple stable identifiers</h3>
+    <div class="nav">
+      <a href="#" class="navicon" id="firstPage">&larrb;</a>
+      <a href="#" class="navicon" id="previousPage">&larr;</a>
+      <input type="text" class="navpage" id="page" style="width: 2em;"><span class="navpage" id="totalPages"></span>
+      <a href="#" class="navicon" id="nextPage">&rarr;</a>
+      <a href="#" class="navicon" id="lastPage">&rarrb;</a>
+    </div>
+    <div id="items" style="padding: 1em;"></div>
+    <table id="result">
+      <thead><tr><th>specimen ID</th><th>entries</th><th>stable identifier(s)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="nav">
+      <a href="#" class="navicon" id="firstPage2">&larrb;</a>
+      <a href="#" class="navicon" id="previousPage2">&larr;</a>
+      <a href="#" class="navicon" id="nextPage2">&rarr;</a>
+      <a href="#" class="navicon" id="lastPage2">&rarrb;</a>
+    </div>
+  </body>
+</html>

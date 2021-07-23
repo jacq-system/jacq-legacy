@@ -55,6 +55,9 @@ $_CONFIG['DATABASE'] = array(
 // Force HTTPS
 $_CONFIG['CONNECTION']['secure'] = false;
 
+// URL to JACQ services
+$_CONFIG['JACQ_SERVICES'] = "https://services.jacq.org/jacq-services/rest/";
+
 // JSON-RPC Service for internal mdld
 $_OPTIONS['internMDLDService'] = array(
     'url' => 'http://website.com/access/internMDLDService.php',

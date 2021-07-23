@@ -196,6 +196,7 @@ $objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
         ->setCellValue('BB1', 'annotations')
         ->setCellValue('BC1', 'habitat')
         ->setCellValue('BD1', 'habitus')
+        ->setCellValue('BE1', 'stable identifier')
 ;
 
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
@@ -405,7 +406,8 @@ while ($row = $result->fetch_array()) {
         $rowSpecimen['taxon_alt'],
         $rowSpecimen['Bemerkungen'],
         $rowSpecimen['habitat'],
-        $rowSpecimen['habitus']
+        $rowSpecimen['habitus'],
+        getStableIdentifier($rowSpecimen['specimen_ID'])
             ), null, 'A' . $i);
 
     $i++;

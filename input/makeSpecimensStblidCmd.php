@@ -83,7 +83,6 @@ while ($row_specimen = $result_specimen->fetch_array()) {
 $details = array();
 ksort($count);
 foreach ($count as $key => $value) {
-    $result_source = dbi_query("SELECT source_code FROM meta WHERE source_id = $key");
     $row_source = dbi_query("SELECT source_code FROM meta WHERE source_id = $key")->fetch_array();
     $details[$key] = array('source'  => $row_source['source_code'],
                            'new'     => (isset($value['new'])) ? $value['new'] : 0,
