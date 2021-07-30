@@ -353,11 +353,11 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
             if ($_POST['submitUpdateNew']) {
                 $location="Location: editSpecimensSimple.php?sel=<0>&new=1";
                 if (SID) $location .= "&" . SID;
-                Header($location);
+                header($location);
             } elseif ($_POST['submitUpdateCopy']) {
                 $location="Location: editSpecimensSimple.php?sel=<" . $p_specimen_ID . ">&new=1";
                 if (SID) $location .= "&" . SID;
-                Header($location);
+                header($location);
             }
             $edit = false;
         }

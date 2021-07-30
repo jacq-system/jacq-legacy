@@ -30,7 +30,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editLabel.php?sel=<" . $_POST['specimen'] . ">";
     if (SID) $location .= "&" . SID;
-    Header($location);
+    header($location);
     die();
 }
 

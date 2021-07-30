@@ -83,7 +83,7 @@ if (isset($_GET['sel'])) {
 
         //$location = "Location: listUsers.php";
         //if (SID) $location = $location . "?" . SID;
-        //Header($location);
+        //header($location);
     }
 }
 ?>

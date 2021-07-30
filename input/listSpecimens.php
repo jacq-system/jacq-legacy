@@ -321,7 +321,7 @@ function getImportEntries($checked)
 if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && $_POST['specimen']) {
     $location = "Location: editSpecimens.php?sel=<" . $_POST['specimen'] . ">";
     if (SID) $location .= "&" . SID;
-    Header($location);
+    header($location);
     die();
 }
 

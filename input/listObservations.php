@@ -207,7 +207,7 @@ function collectionItem($coll)
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editObservations.php?sel=<" . $_POST['specimen'] . ">";
     if (SID) $location .= "&" . SID;
-    Header($location);
+    header($location);
     die();
 }
 

@@ -90,7 +90,7 @@ if (isset($_GET['sel'])) {
 
         //$location = "Location: listGroups.php";
         //if (SID) $location = $location . "?" . SID;
-        //Header($location);
+        //header($location);
     }
 }
 

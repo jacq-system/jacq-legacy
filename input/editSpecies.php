@@ -313,11 +313,11 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             if (!empty($_POST['submitUpdateNew'])) {
                 $location = "Location: editSpecies.php?sel=<0>&new=1";
                 if (SID) $location = $location . "&" . SID;
-                Header($location);
+                header($location);
             } elseif (!empty($_POST['submitUpdateCopy'])) {
                 $location = "Location: editSpecies.php?sel=<" . $p_taxonID . ">&new=1";
                 if (SID) $location = $location . "&" . SID;
-                Header($location);
+                header($location);
             }
             $edit = false;
         } else {

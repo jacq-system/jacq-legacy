@@ -50,7 +50,7 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
 	}else{
 		$location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
 		if (SID != "") $location .= "?" . SID;
-		Header($location);
+		header($location);
 	}
 }
 

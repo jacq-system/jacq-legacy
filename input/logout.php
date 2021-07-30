@@ -16,4 +16,4 @@ unset($_SESSION['editControl']);
 unset($_SESSION['linkControl']);
 unset($_SESSION['editorControl']);
 
-Header("Location: login.php");
+header("Location: login.php");

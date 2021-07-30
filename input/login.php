@@ -6,6 +6,8 @@ $secure = $_CONFIG['CONNECTION']['secure'];  // set to false if no secure server
 session_set_cookie_params(0, "/", "", $secure);
 session_start();
 
+header("Content-Security-Policy: frame-ancestors 'none'"); // to prevent embedding this page within an iframe (to prevent phishing)
+
 if (isset($_SESSION['username']) && isset($_SESSION['password'])) {
     $dbLink = mysqli_connect($_CONFIG['DATABASE']['INPUT']['host'],
                              $_SESSION['username'],
@@ -163,7 +165,7 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 if (SID) {
                     $location = $location."?".SID;
                 }
-                Header($location);
+                header($location);
             } else {
                 show_page("Login failed!<br>\nPlease redo!");
             }
@@ -174,6 +176,6 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
         show_page("");
     }
 } else {
-    Header("Location: https://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
+    header("Location: https://" . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'] );
 }
 ?>
