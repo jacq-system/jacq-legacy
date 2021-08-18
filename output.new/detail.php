@@ -14,6 +14,11 @@ if (isset($_GET['ID'])) {
     $ID = 0;
 }
 
+
+/********************************
+ * functions
+ ********************************/
+
 function protolog($row)
 {
     $text = "";
@@ -37,31 +42,6 @@ function protolog($row)
 }
 
 
-// Returns 'false' if we can't open a connection to the location
-// OR if the result is empty.
-/*function get_directory_match($url, $base)
-{
-    $url = parse_url($url);
-    $fp = fsockopen($url['host'], 80, $errno, $errstr, 30);
-
-    if (!$fp) {
-        return false; // Can't open a connection
-    } else {
-        set_socket_blocking($fp, true);
-        fputs($fp, "GET " . $url['path'] . " HTTP/1.0\r\nHost: " . $url['host'] . "\r\n\r\n");
-        $result = "";
-        while (!feof($fp)) {
-            $result .= fgets($fp,128);
-        }
-        fclose($fp);
-    }
-
-    if (preg_match_all("/>$base(\\w+).jpg<\\/a>/i", $result, $match)) {
-        return $match[1];
-    } else {
-        return false;
-    }
-}*/
 
 function makeCell($text)
 {
@@ -162,6 +142,65 @@ function makeTypus($ID) {
     return $text;
 }
 
+/**********************************
+ * main query
+ **********************************/
+$specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
+                             s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified,
+                             s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
+                             s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+                             s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+                             n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
+                             mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
+                             tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
+                             ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
+                             te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
+                             ts.synID, ts.taxonID, ts.statusID
+                            FROM tbl_specimens s
+                             LEFT JOIN tbl_specimens_series ss           ON ss.seriesID = s.seriesID
+                             LEFT JOIN tbl_management_collections mc     ON mc.collectionID = s.collectionID
+                             LEFT JOIN tbl_img_definition tid            ON tid.source_id_fk = mc.source_id
+                             LEFT JOIN tbl_geo_nation n                  ON n.NationID = s.NationID
+                             LEFT JOIN tbl_geo_province p                ON p.provinceID = s.provinceID
+                             LEFT JOIN tbl_collector c                   ON c.SammlerID = s.SammlerID
+                             LEFT JOIN tbl_collector_2 c2                ON c2.Sammler_2ID = s.Sammler_2ID
+                             LEFT JOIN tbl_tax_species ts                ON ts.taxonID = s.taxonID
+                             LEFT JOIN tbl_tax_authors ta                ON ta.authorID = ts.authorID
+                             LEFT JOIN tbl_tax_authors ta1               ON ta1.authorID = ts.subspecies_authorID
+                             LEFT JOIN tbl_tax_authors ta2               ON ta2.authorID = ts.variety_authorID
+                             LEFT JOIN tbl_tax_authors ta3               ON ta3.authorID = ts.subvariety_authorID
+                             LEFT JOIN tbl_tax_authors ta4               ON ta4.authorID = ts.forma_authorID
+                             LEFT JOIN tbl_tax_authors ta5               ON ta5.authorID = ts.subforma_authorID
+                             LEFT JOIN tbl_tax_epithets te               ON te.epithetID = ts.speciesID
+                             LEFT JOIN tbl_tax_epithets te1              ON te1.epithetID = ts.subspeciesID
+                             LEFT JOIN tbl_tax_epithets te2              ON te2.epithetID = ts.varietyID
+                             LEFT JOIN tbl_tax_epithets te3              ON te3.epithetID = ts.subvarietyID
+                             LEFT JOIN tbl_tax_epithets te4              ON te4.epithetID = ts.formaID
+                             LEFT JOIN tbl_tax_epithets te5              ON te5.epithetID = ts.subformaID
+                             LEFT JOIN tbl_tax_genera tg                 ON tg.genID = ts.genID
+                             LEFT JOIN tbl_tax_families tf               ON tf.familyID = tg.familyID
+                             LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
+                            WHERE specimen_ID = '" . intval($ID) . "'")
+                   ->fetch_array();
+    if (($specimen['digital_image'] || $specimen['digital_image_obs']) && $specimen['source_id'] == '1') {
+        // we need special treatment for pheidra when wu has images
+        $pheidra = false;
+        $pheidraUrl = "";
+
+        $picname = sprintf("WU%0" . $specimen['HerbNummerNrDigits'] . ".0f", str_replace('-', '', $specimen['HerbNummer']));
+        $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($ch);
+        if ($curl_response) {
+            $info = curl_getinfo($ch);
+            if ($info['http_code'] == 200) {
+                $pheidra = true;
+                $pheidraUrl = "phaidra_ptlp.php?type=manifests&id={$picname}";
+            }
+        }
+        curl_close($ch);
+    }
+
 ?><!DOCTYPE html>
 <html>
 <head>
@@ -172,6 +211,10 @@ function makeTypus($ID) {
   <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
   <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
   <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
+  <?php if ($pheidra): ?>
+      <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto:300,400,500'>
+      <script type='text/javascript' src='https://app05a.phaidra.org/mirador.min.js'></script>
+  <?php endif; ?>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="shortcut icon" href="JACQ_LOGO.png"/>
   <script type="text/javascript">
@@ -212,78 +255,34 @@ function makeTypus($ID) {
     <div class="nav-wrapper">
       <a href="https://www.jacq.org/#database" class="brand-logo center"><img src="assets/images/JACQ_LOGO.png" alt="JACQ Logo"></a>
     </div>
-    <div class="nav-content">
-      <ul class="tabs">
-        <li class="tab"><a class="active" href="detail.php?ID=<?php echo $ID; ?>">Detail</a></li>
-      </ul>
-    </div>
   </nav>
 </div>
 
 <?php
-$query = "SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
-           s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-           n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description,s.taxonID taxid,
-           mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.typified,
-           s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
-           s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-           s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-           ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-           ta4.author author4, ta5.author author5,
-           te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-           te4.epithet epithet4, te5.epithet epithet5,
-           ts.synID, ts.taxonID, ts.statusID
-          FROM tbl_specimens s
-           LEFT JOIN tbl_specimens_series ss ON ss.seriesID=s.seriesID
-           LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
-           LEFT JOIN tbl_img_definition tid ON tid.source_id_fk=mc.source_id
-           LEFT JOIN tbl_geo_nation n ON n.NationID=s.NationID
-           LEFT JOIN tbl_geo_province p ON p.provinceID=s.provinceID
-           LEFT JOIN tbl_collector c ON c.SammlerID=s.SammlerID
-           LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID=s.Sammler_2ID
-           LEFT JOIN tbl_tax_species ts ON ts.taxonID=s.taxonID
-           LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-           LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-           LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-           LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-           LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-           LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-           LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-           LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-           LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-           LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-           LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-           LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-           LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-           LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
-           LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
-          WHERE specimen_ID='" . intval($ID) . "'";
-$result = $dbLink->query($query);
-$row = $result->fetch_array();
 
-$taxon = taxonWithHybrids($row);
+$taxon = taxonWithHybrids($specimen);
 
-//$sammler = collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']);
-$sammler = rdfcollection($row,true);
+//$sammler = collection($specimen['Sammler'], $specimen['Sammler_2'], $specimen['series'], $specimen['series_number'], $specimen['Nummer'], $specimen['alt_number'], $specimen['Datum']);
+$sammler = rdfcollection($specimen,true);
 
-if ($row['ncbi_accession']) {
-    $sammler .=  " &mdash; " . $row['ncbi_accession']
-              .  " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" .  $row['ncbi_accession'] . "' target='_blank'>"
+if ($specimen['ncbi_accession']) {
+    $sammler .=  " &mdash; " . $specimen['ncbi_accession']
+              .  " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" .  $specimen['ncbi_accession'] . "' target='_blank'>"
               .  "<img border='0' height='16' src='images/ncbi.gif' width='14'></a>";
 }
 ?>
-<div class="container">
+<div id="details" class="container">
   <table class="striped">
     <tr>
       <td align="right" width="30%">Stable identifier</td>
       <td>
-        <b><?php makeCellWithLink(StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])); ?></b>
+        <b><?php makeCellWithLink(StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID'])); ?></b>
       </td>
     </tr>
     <tr>
       <td align="right" width="30%">Collection Herb.#</td>
       <td><b>
-        <?php makeCell(collectionID($row)); ?>
+        <?php makeCell(collectionID($specimen)); ?>
          </b>
         </td>
     </tr>
@@ -291,26 +290,26 @@ if ($row['ncbi_accession']) {
       <td align="right">Stored under taxonname</td>
       <td><b>
         <?php makeCell($taxon); ?>
-        </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($row['genus'] . " "  . $row['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
-        <?php makeCell(getTaxonAuth($row['taxid'])); ?>
+        </b>&nbsp;<a href="http://www.tropicos.org/NameSearch.aspx?name=<?php echo urlencode($specimen['genus'] . " "  . $specimen['epithet']); ?>&exact=true" title="Search in tropicos" target="_blank"><img alt="tropicos" src="images/tropicos.png" border="0" width="16" height="16"></a>
+        <?php makeCell(getTaxonAuth($specimen['taxid'])); ?>
       </td>
     </tr>
     <tr>
       <td align="right">Family</td>
       <td><b>
-        <?php makeCell($row['family']); ?>
+        <?php makeCell($specimen['family']); ?>
         </b></td>
     </tr>
     <tr>
       <td align="right">Det./rev./conf./assigned</td>
       <td>
-        <b><?php makeCell($row['det']); ?></b>
+        <b><?php makeCell($specimen['det']); ?></b>
       </td>
     </tr>
     <tr>
       <td align="right">Ident. history</td>
       <td>
-          <b><?php makeCell($row['taxon_alt']); ?></b>
+          <b><?php makeCell($specimen['taxon_alt']); ?></b>
       </td>
     </tr>
     <?php
@@ -328,47 +327,47 @@ if ($row['ncbi_accession']) {
     <tr>
       <td align="right">Date</td>
       <td align="left">
-        <b><?php makeCell($row['Datum']); ?></b>
+        <b><?php makeCell($specimen['Datum']); ?></b>
       </td>
     </tr>
     <tr>
       <td align="right">Location</td>
       <td><b>
         <?php
-        $text = $row['nation_engl'];
-        if (strlen(trim($row['provinz'])) > 0) {
-            $text .= " / " . trim($row['provinz']);
+        $text = $specimen['nation_engl'];
+        if (strlen(trim($specimen['provinz'])) > 0) {
+            $text .= " / " . trim($specimen['provinz']);
         }
-        if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
-            $lat = -($row['Coord_S'] + $row['S_Min'] / 60 + $row['S_Sec'] / 3600);
-        } else if ($row['Coord_N'] > 0 || $row['N_Min'] > 0 || $row['N_Sec'] > 0) {
-            $lat = $row['Coord_N'] + $row['N_Min'] / 60 + $row['N_Sec'] / 3600;
+        if ($specimen['Coord_S'] > 0 || $specimen['S_Min'] > 0 || $specimen['S_Sec'] > 0) {
+            $lat = -($specimen['Coord_S'] + $specimen['S_Min'] / 60 + $specimen['S_Sec'] / 3600);
+        } else if ($specimen['Coord_N'] > 0 || $specimen['N_Min'] > 0 || $specimen['N_Sec'] > 0) {
+            $lat = $specimen['Coord_N'] + $specimen['N_Min'] / 60 + $specimen['N_Sec'] / 3600;
         } else {
             $lat = 0;
         }
-        if ($row['Coord_W'] > 0 || $row['W_Min'] > 0 || $row['W_Sec'] > 0) {
-            $lon = -($row['Coord_W'] + $row['W_Min'] / 60 + $row['W_Sec'] / 3600);
-        } else if ($row['Coord_E'] > 0 || $row['E_Min'] > 0 || $row['E_Sec'] > 0) {
-            $lon = $row['Coord_E'] + $row['E_Min'] / 60 + $row['E_Sec'] / 3600;
+        if ($specimen['Coord_W'] > 0 || $specimen['W_Min'] > 0 || $specimen['W_Sec'] > 0) {
+            $lon = -($specimen['Coord_W'] + $specimen['W_Min'] / 60 + $specimen['W_Sec'] / 3600);
+        } else if ($specimen['Coord_E'] > 0 || $specimen['E_Min'] > 0 || $specimen['E_Sec'] > 0) {
+            $lon = $specimen['Coord_E'] + $specimen['E_Min'] / 60 + $specimen['E_Sec'] / 3600;
         } else {
             $lon = 0;
         }
         if ($lat != 0 || $lon != 0) {
             $text .= " &mdash; " . round($lat,2) . "&deg; / " . round($lon,2) . "&deg; ";
 
-            $point['lat'] = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']) / 3600.0;
-            $point['lng'] = dms2sec($row['Coord_W'], $row['W_Min'], $row['W_Sec'], $row['Coord_E'], $row['E_Min'], $row['E_Sec']) / 3600.0;
-            $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
+            $point['lat'] = dms2sec($specimen['Coord_S'], $specimen['S_Min'], $specimen['S_Sec'], $specimen['Coord_N'], $specimen['N_Min'], $specimen['N_Sec']) / 3600.0;
+            $point['lng'] = dms2sec($specimen['Coord_W'], $specimen['W_Min'], $specimen['W_Sec'], $specimen['Coord_E'], $specimen['E_Min'], $specimen['E_Sec']) / 3600.0;
+            $url = "https://www.jacq.org/detail.php?ID=" . $specimen['specimen_ID'];
             $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
-                 . htmlspecialchars(taxonWithHybrids($row))
+                 . htmlspecialchars(taxonWithHybrids($specimen))
                  . "</div>"
                  . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
-                 . htmlentities(collection($row['Sammler'], $row['Sammler_2'], $row['series'], $row['series_number'], $row['Nummer'], $row['alt_number'], $row['Datum']), ENT_QUOTES | ENT_HTML401) . " / "
-                 . $row['Datum'] . " / ";
-            if ($row['typusID']) {
-                $txt .= htmlspecialchars($row['typusID']) . " / ";
+                 . htmlentities(collection($specimen['Sammler'], $specimen['Sammler_2'], $specimen['series'], $specimen['series_number'], $specimen['Nummer'], $specimen['alt_number'], $specimen['Datum']), ENT_QUOTES | ENT_HTML401) . " / "
+                 . $specimen['Datum'] . " / ";
+            if ($specimen['typusID']) {
+                $txt .= htmlspecialchars($specimen['typusID']) . " / ";
             }
-            $txt .= htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</div>";
+            $txt .= htmlspecialchars(collectionItem($specimen['collection'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</div>";
             $txt = strtr($txt, array("\r" => '', "\n" => ''));
             $point['txt'] = "<a href=\"$url\" target=\"_blank\">$txt</a>";
             echo "<div id='map'></div>";
@@ -418,34 +417,34 @@ if ($row['ncbi_accession']) {
     <tr>
       <td align="right">Label</td>
       <td><b>
-        <?php makeCell($row['Fundort']); ?>
+        <?php makeCell($specimen['Fundort']); ?>
       </b></td>
     </tr>
     <tr>
       <td align="right">Annotations</td>
       <td><b>
         <?php
-            if ($row['source_id'] == '35'){
-                makeCell((preg_replace("#<a .*a>#", "", $row['Bemerkungen'])));
+            if ($specimen['source_id'] == '35'){
+                makeCell((preg_replace("#<a .*a>#", "", $specimen['Bemerkungen'])));
             } else {
-                makeCell($row['Bemerkungen']);
+                makeCell($specimen['Bemerkungen']);
             }
         ?>
       </b></td>
     </tr>
     <?php
-        if (($row['source_id'] == '29' || $row['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
+        if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
             echo "<tr>";
             // create new id object
-            $id = new MyTripleID($row['HerbNummer']);
+            $id = new MyTripleID($specimen['HerbNummer']);
             // create new AnnotationQuery object
             $query = new AnnotationQuery($serviceUri);
             // fetch annotation metadata
             $annotations = $query->getAnnotationMetadata($id);
             // build URI for new annotation
-            if ($row['source_id'] == '29') {
+            if ($specimen['source_id'] == '29') {
                 $newAnnoUri = $query->newAnnotationUri("http://ww3.bgbm.org/biocase/pywrapper.cgi?dsa=Herbar&", $id);
-            } else { //$row['source_id'] == '6'
+            } else { //$specimen['source_id'] == '6'
                 $newAnnoUri = $query->newAnnotationUri("http://131.130.131.9/biocase/pywrapper.cgi?dsa=gbif_w&", $id);
             }
             echo "<td align='right'>Annosys annotations<br/>"
@@ -468,31 +467,31 @@ if ($row['ncbi_accession']) {
           <tr>
 
 <?php
-if ($row['digital_image'] || $row['digital_image_obs']) {
-    $picdetails = getPicDetails($row['specimen_ID']);
+if (($specimen['digital_image'] || $specimen['digital_image_obs']) && !$pheidra) {
+    $picdetails = getPicDetails($specimen['specimen_ID']);
     $transfer   = getPicInfo($picdetails);
 
     if ($picdetails['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
-        if ($row['iiif_capable']) {
+        if ($specimen['iiif_capable']) {
             $manifest = '';
-            if ($row['source_id'] == '32'){
-                $manifest = getManifestURI(getStableIdentifier($row['specimen_ID']));
+            if ($specimen['source_id'] == '32'){
+                $manifest = getManifestURI(getStableIdentifier($specimen['specimen_ID']));
             } else {
                 // force https to always call iiif images with https
-                $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
+                $manifest = str_replace('http:', 'https:', StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID'])) . '/manifest.json';
             }
             echo "<iframe title='Mirador' width='100%' height='800px' "
-               . "src='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' "
+               . "src='https://" . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
         } else {
-            $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $row['specimen_ID'];
+            $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $specimen['specimen_ID'];
             echo "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
                . "(<a href='image.php{$options}&method=show'>Open viewer</a>)";
         }
         echo "</td>\n";
     } elseif ($picdetails['imgserver_type'] == 'baku') {
-        $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $row['specimen_ID'];
+        $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $specimen['specimen_ID'];
         echo "<td valign='top' align='center'>"
            . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
            . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
@@ -500,7 +499,7 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
     } elseif ($transfer) {
         if (count($transfer['pics']) > 0) {
             foreach ($transfer['pics'] as $v) {
-                $options = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $row['specimen_ID'];
+                $options = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
                 echo "<td valign='top' align='center'>\n"
                    . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb' border='2'></a>\n"
                    . "<br>\n"
@@ -523,13 +522,45 @@ if ($row['digital_image'] || $row['digital_image_obs']) {
       </td>
     </tr>
   </table>
-</div>
-<div id="footer-wrapper">
   <div class="divider"></div>
-  <div id="footer">
+  <div id="footer" style="position: absolute;">
     <a href="imprint_citation_privacy.htm">Imprint | Citation | Privacy</a>
   </div>
 </div>
+<?php if ($pheidra): ?>
+
+<div id="jacq_mirador" style="position: relative; height: 800px;"></div>
+<script type="text/javascript">
+ var miradorInstance = Mirador.viewer({
+   id: 'jacq_mirador',
+   windows: [{
+     manifestId: '<?php echo $pheidraUrl; ?>',
+     canvasId: 'https://app05a.phaidra.org/manifests/<?php echo $picname; ?>/c/<?php echo $picname; ?>-01',
+     thumbnailNavigationPosition: 'far-right',
+   }],
+   window: {
+    allowClose: false,
+    allowMaximize: false,
+    allowFullscreen: true,
+    allowTopMenuButton: true,
+    defaultSideBarPanel: 'info',
+    sideBarOpenByDefault: false,
+    views: [
+      { key: 'single' },
+      { key: 'gallery' }
+    ]
+   },
+   workspace: {
+    showZoomControls: true,
+    type: 'mosaic'
+   },
+   workspaceControlPanel: {
+    enabled: false
+   }
+ });
+</script>
+
+<?php endif; ?>
 <script type="text/javascript" src="assets/jquery/jquery.min.js"></script>
 <script type="text/javascript" src="assets/materialize/js/materialize.min.js"></script>
 <script type="text/javascript" src="assets/custom/scripts/jacq.js"></script>
