@@ -152,7 +152,7 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
-                             tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
+                             tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
                              ts.synID, ts.taxonID, ts.statusID
@@ -183,7 +183,7 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                             WHERE specimen_ID = '" . intval($ID) . "'")
                    ->fetch_array();
     if (($specimen['digital_image'] || $specimen['digital_image_obs']) && $specimen['source_id'] == '1') {
-        // we need special treatment for pheidra when wu has images
+        // for now, special treatment for pheidra is needed when wu has images
         $pheidra = false;
         $pheidraUrl = "";
 
@@ -468,10 +468,7 @@ if ($specimen['ncbi_accession']) {
 
 <?php
 if (($specimen['digital_image'] || $specimen['digital_image_obs']) && !$pheidra) {
-    $picdetails = getPicDetails($specimen['specimen_ID']);
-    $transfer   = getPicInfo($picdetails);
-
-    if ($picdetails['imgserver_type'] == 'bgbm') {
+    if ($specimen['imgserver_type'] == 'bgbm') {
         echo "<td valign='top' align='center'>\n";
         if ($specimen['iiif_capable']) {
             $manifest = '';
@@ -485,35 +482,42 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs']) && !$pheidra)
                . "src='https://" . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . "/?manifest=$manifest' "
                . "allowfullscreen='true' webkitallowfullscreen='true' mozallowfullscreen='true'></iframe>";
         } else {
-            $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $specimen['specimen_ID'];
+            $options = 'filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
             echo "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
                . "(<a href='image.php{$options}&method=show'>Open viewer</a>)";
         }
         echo "</td>\n";
-    } elseif ($picdetails['imgserver_type'] == 'baku') {
-        $options = 'filename=' . rawurlencode(basename($picdetails['specimenID'])) . '&sid=' . $specimen['specimen_ID'];
-        echo "<td valign='top' align='center'>"
-           . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
-           . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
-           . "</td>";
-    } elseif ($transfer) {
-        if (count($transfer['pics']) > 0) {
-            foreach ($transfer['pics'] as $v) {
-                $options = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
-                echo "<td valign='top' align='center'>\n"
-                   . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb' border='2'></a>\n"
-                   . "<br>\n"
-                   . "(<a href='image.php?{$options}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?{$options}&method=download&format=tiff'>TIFF</a>)\n"
-                   . "</td>\n";
+//    'baku' is depricated and no loner used
+//    } elseif ($specimen['imgserver_type'] == 'baku') {
+//        $options = 'filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
+//        echo "<td valign='top' align='center'>"
+//           . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb border='2'></a><br>"
+//           . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
+//           . "</td>";
+    } elseif ($specimen['imgserver_type'] == 'djatoka') {
+        $picdetails = getPicDetails($specimen['specimen_ID']);
+        $transfer   = getPicInfo($picdetails);
+        if ($transfer) {
+            if (count($transfer['pics']) > 0) {
+                foreach ($transfer['pics'] as $v) {
+                    $options = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
+                    echo "<td valign='top' align='center'>\n"
+                       . "<a href='image.php?{$options}&method=show' target='imgBrowser'><img src='image.php?{$options}&method=thumb' border='2'></a>\n"
+                       . "<br>\n"
+                       . "(<a href='image.php?{$options}&method=download&format=jpeg2000'>JPEG2000</a>, <a href='image.php?{$options}&method=download&format=tiff'>TIFF</a>)\n"
+                       . "</td>\n";
+                }
+            } else {
+                echo "no pictures found\n";
+            }
+            if (trim($transfer['output'])) {
+                echo nl2br("\n" . $transfer['output'] . "\n");
             }
         } else {
-            echo "no pictures found\n";
-        }
-        if (trim($transfer['output'])) {
-            echo nl2br("\n" . $transfer['output'] . "\n");
+            echo "transmission error\n";
         }
     } else {
-        echo "transmission error\n";
+        echo "no pictures available\n";
     }
 }
 ?>
