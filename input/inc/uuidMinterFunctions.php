@@ -1,17 +1,15 @@
 <?php
-// only works with connecttion to $dbLinkJacq (link to jacq_input)
-// needs $dbLinkJacq as a global variable
-
 /**
  * Return a single entry of a single result row
  *
+ * @global mysqli $dbLink link to database jacq_input
  * @param string $tableName the table to query
  * @param array $attributes array of constraints like 'column name' => 'value'
  * @return mixed result of query as object or NULL if anything went wrong
  */
 function findRowByAttributes($tableName, $attributes)
 {
-    global $dbLinkJacq;
+    global $dbLink;
 
     $constraints = array();
     foreach ($attributes as $key => $value) {
@@ -19,7 +17,7 @@ function findRowByAttributes($tableName, $attributes)
     }
     $sql = "SELECT * FROM `jacq_input`.`$tableName` WHERE " . implode(" AND ", $constraints);
 
-    $result = $dbLinkJacq->query($sql);
+    $result = $dbLink->query($sql);
     if (!$result) {
         return NULL;
     }
@@ -30,7 +28,7 @@ function findRowByAttributes($tableName, $attributes)
  * Creates a new entry in the UUID minting table for the given type or fetch an existing one
  * derived from jacq_code (protected/component/services/UuidMinterComponent->mint
  *
- * @global mysqli $dbLinkJacq link to database jacq_input
+ * @global mysqli $dbLink link to database jacq_input
  * @param int|string $type Type of UUID to mint, either the uuid_minter_type_id or the description as string
  * @param int $internal_id Internal ID of object to mint the UUID for
  * @return string generated or fetched uuid
@@ -38,7 +36,7 @@ function findRowByAttributes($tableName, $attributes)
  */
 function mint($type, $internal_id)
 {
-    global $dbLinkJacq;
+    global $dbLink;
 
     $internal_id_filtered = intval($internal_id);
 
@@ -67,8 +65,8 @@ function mint($type, $internal_id)
     ));
     if( $uuidMinter == NULL ) {
         // create new entry in minter database as we didn't find one
-        $dbLinkJacq->query("INSERT INTO `jacq_input`.`srvc_uuid_minter` SET `uuid_minter_type_id` = $type, `internal_id` = '$internal_id_filtered', `uuid` = UUID()");
-        $uuidMinter = findRowByAttributes('srvc_uuid_minter', array('uuid_minter_id' => $dbLinkJacq->insert_id));
+        $dbLink->query("INSERT INTO `jacq_input`.`srvc_uuid_minter` SET `uuid_minter_type_id` = $type, `internal_id` = '$internal_id_filtered', `uuid` = UUID()");
+        $uuidMinter = findRowByAttributes('srvc_uuid_minter', array('uuid_minter_id' => $dbLink->insert_id));
     }
 
     return $uuidMinter->uuid;

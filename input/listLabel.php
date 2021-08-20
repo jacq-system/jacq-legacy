@@ -8,6 +8,7 @@ use Jaxon\Jaxon;
 
 $jaxon = jaxon();
 $jaxon->setOption('core.request.uri', 'ajax/listLabelServer.php');
+$jaxon->setOption('js.lib.queue_size', 20000);  // to handle very long lists of labels
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");

@@ -47,18 +47,19 @@ if (isset($_GET['order'])) {
 try {
 	$db = clsDbAccess::Connect('INPUT');
 
-	$dbst = $db->prepare("SELECT * FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon WHERE taxonID=:taxonID");
-	$dbst->execute(array(":taxonID" => $id));
+	$dbst1 = $db->prepare("SELECT taxonID FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon WHERE taxonID=:taxonID");
+	$dbst1->execute(array(":taxonID" => $id));
 
-	$row = $dbst->fetch();
+	$row = $dbst1->fetch();
 
 	echo "<b>protolog:</b> " . getScientificName($row['taxonID'], true, false) . "\n<p>\n";
 
-	$dbst = $db->prepare("SELECT * FROM {$_CONFIG['DATABASE']['INPUT']['name']}.tbl_tax_synonymy tts
-         LEFT JOIN {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon taxon ON taxon.taxonID = tts.acc_taxon_ID
-        WHERE tts.taxonID = :taxonID ORDER BY :orderby");
-	$dbst->execute(array(":taxonID" => $id, 'orderby'=>$_SESSION['taxSynOrder']));
-	$rows = $dbst->fetchAll();
+	$dbst2 = $db->prepare("SELECT taxon.taxonID, preferred_taxonomy, tax_syn_ID, annotations, tts.source, tts.source_citationID, tts.source_person_ID, tts.source_serviceID
+                           FROM {$_CONFIG['DATABASE']['INPUT']['name']}.tbl_tax_synonymy tts
+                            LEFT JOIN {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon taxon ON taxon.taxonID = tts.acc_taxon_ID
+                           WHERE tts.taxonID = :taxonID ORDER BY :orderby");
+	$dbst2->execute(array(":taxonID" => $id, 'orderby'=>$_SESSION['taxSynOrder']));
+	$rows = $dbst2->fetchAll(PDO::FETCH_ASSOC);
 
 }catch (Exception $e) {
 	exit($e->getMessage());
@@ -117,7 +118,7 @@ if(count($rows)>0){
 <tr class="out">
  <td class="out"><a href="javascript:editTaxSynonymy('<{$row['tax_syn_ID']}>',0)">edit</a></td>
  <td class="out">{$taxon}</td>
- <td class="out" align="center>"{$radic}</td>
+ <td class="out" align="center">{$radic}</td>
  <td class="out">{$row['annotations']}</td>
  <td class="out">{$ref}</td>
 </tr>

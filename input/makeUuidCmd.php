@@ -3,33 +3,33 @@
 require_once './inc/variables.php';
 require_once './inc/uuidMinterFunctions.php';
 
-/** @var mysqli $dbLinkJacq */
-$dbLinkJacq = new mysqli($_CONFIG['DATABASE']['JACQ']['host'],
+/** @var mysqli $dbLink */
+$dbLink = new mysqli($_CONFIG['DATABASE']['JACQ']['host'],
                      $_CONFIG['DATABASE']['JACQ']['readonly']['user'],
                      $_CONFIG['DATABASE']['JACQ']['readonly']['pass'],
                      $_CONFIG['DATABASE']['JACQ']['name']);
-if ($dbLinkJacq->connect_errno) {
+if ($dbLink->connect_errno) {
     die("Database not available!");
 }
-$dbLinkJacq->set_charset('utf8');
+$dbLink->set_charset('utf8');
 
 
 /**
  * do a mysql query
  *
- * @global mysqli $dbLinkJacq link to database
+ * @global mysqli $dbLink link to database
  * @param string $sql query string
  * @return mysqli_result
  */
 function dbi_query($sql)
 {
-  global $dbLinkJacq;
+  global $dbLink;
 
-  $res = $dbLinkJacq->query($sql);
+  $res = $dbLink->query($sql);
 
   if(!$res){
     echo $sql . "\n"
-       . $dbLinkJacq->errno . ": " . $dbLinkJacq->error . "\n";
+       . $dbLink->errno . ": " . $dbLink->error . "\n";
   }
 
   return $res;
@@ -39,16 +39,16 @@ function dbi_query($sql)
 /**
  * encase text with quotes or return NULL if string is empty
  *
- * @global mysqli $dbLinkJacq link to database
+ * @global mysqli $dbLink link to database
  * @param string $text text to quote
  * @return string result
  */
 function quoteString($text)
 {
-    global $dbLinkJacq;
+    global $dbLink;
 
     if (strlen($text) > 0) {
-        return "'" . $dbLinkJacq->real_escape_string($text) . "'";
+        return "'" . $dbLink->real_escape_string($text) . "'";
     } else {
         return "NULL";
     }
