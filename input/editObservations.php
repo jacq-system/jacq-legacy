@@ -25,7 +25,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 if (!empty($_POST['submitMakeSpecimen']) && isset($_POST['specimen_ID']) && intval($_POST['specimen_ID'])) {
     $location="Location: editSpecimens.php?sel=<" . intval($_POST['specimen_ID']) . ">";
     if (SID) $location .= "&" . SID;
-    Header($location);
+    header($location);
     die();
 }
 
@@ -421,11 +421,11 @@ if (isset($_GET['sel'])) {
               if ($_POST['submitUpdateNew']) {
                   $location="Location: editObservations.php?sel=<0>&new=1";
                   if (SID) $location .= "&" . SID;
-                  Header($location);
+                  header($location);
               } elseif ($_POST['submitUpdateCopy']) {
                   $location="Location: editObservations.php?sel=<" . $p_specimen_ID . ">&new=1";
                   if (SID) $location = "&" . SID;
-                  Header($location);
+                  header($location);
               }
               $edit = false;
           }

@@ -51,11 +51,17 @@ function getPicDetails($request, $sid = '')
         } else {
             // no specimen-ID included in call, so use old method and try to find one via HerbNummer
             if (substr($originalFilename, 0, 4) == 'KIEL') {
-                // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 135)
+                // source_id 59 uses no "_" between coll_short_prj and HerbNummer (see also line 149)
                 $coll_short_prj = 'KIEL';
                 preg_match('/^([^_]+)/', substr($originalFilename, 4), $matches);
                 $HerbNummer = $matches[1];
                 $HerbNummerAlternative = substr($HerbNummer, 0, 4) . '-' . substr($HerbNummer, 4);
+            } elseif (substr($originalFilename, 0, 2) == 'FT') {
+                // source_id 47 uses no "_" between coll_short_prj and HerbNummer (see also line 149)
+                $coll_short_prj = 'FT';
+                preg_match('/^([^_]+)/', substr($originalFilename, 2), $matches);
+                $HerbNummer = $matches[1];
+                $HerbNummerAlternative = substr($HerbNummer, 0, 2) . '-' . substr($HerbNummer, 4);
             } else {
                 // Extract HerbNummer and coll_short_prj from filename and use it for finding the specimen_ID
                 if (preg_match('/^([^_]+)_([^_]+)/', $originalFilename, $matches) > 0) {
@@ -140,7 +146,7 @@ function getPicDetails($request, $sid = '')
             $originalFilename = sprintf($uriSubset["thumb"]);
             $key = sprintf($uriSubset["html"]);
         } else {
-            if ($row['source_id'] == 59) {
+            if ($row['source_id'] == 59 || $row['source_id'] == 47) {  // KIEL and FT use no underscore in filename
                 $filename = sprintf("%s%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
             } else {
                 $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);

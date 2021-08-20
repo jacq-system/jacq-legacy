@@ -8,6 +8,7 @@ use Jaxon\Jaxon;
 
 $jaxon = jaxon();
 $jaxon->setOption('core.request.uri', 'ajax/listLabelServer.php');
+$jaxon->setOption('js.lib.queue_size', 20000);  // to handle very long lists of labels
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownInstitution");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeDropdownCollection");
@@ -30,7 +31,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editLabel.php?sel=<" . $_POST['specimen'] . ">";
     if (SID) $location .= "&" . SID;
-    Header($location);
+    header($location);
     die();
 }
 

@@ -193,7 +193,7 @@ if (isset($_POST['search'])) {
 if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
     /*$location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
     if (SID != "") $location .= "?" . SID;
-    Header($location);*/
+    header($location);*/
 	echo <<<EOF
 <scrip>
 selectTaxon('{$_POST['taxon']}');

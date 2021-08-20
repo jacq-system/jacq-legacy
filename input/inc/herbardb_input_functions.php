@@ -10,6 +10,11 @@ require_once( 'tools.php' );
  */
 function getScientificName ($taxon_id, $withDT = false, $withID = true, $p_bAvoidHybridFormula = false)
 {
+    // wrong call with empty taxon-ID
+    if (empty($taxon_id)) {
+        return '';
+    }
+
     // Translation between mysql boolean (tinyint) and php boolean
     if( $p_bAvoidHybridFormula ) {
         $p_bAvoidHybridFormula = 1;
