@@ -30,9 +30,14 @@ function dbi_query($sql, $debug=false)
 
     $res = $dbLink->query($sql);
 
-    if(!$res && $debug){
-        echo $sql;
-        echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+    if(!$res) {
+        // log the error in php error log
+        error_log("SEVERE SQL-ERROR IN SCRIPT. SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
+        if ($debug){
+            // and show it additionally, if debug is on
+            echo $sql . "\n";
+            echo $dbLink->errno . ": " . $dbLink->error . "\n";
+        }
     }
 
     return $res;

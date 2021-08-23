@@ -185,8 +185,7 @@ while ($row = $result->fetch_array()) {
     }
     $rowSpecimen = $resultSpecimen->fetch_array();
 
-    $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'],
-                          $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
+    $sammler = collection($rowSpecimen);
 
     $location = $rowSpecimen['nation_engl'];
     if (strlen(trim($rowSpecimen['provinz']))>0) {

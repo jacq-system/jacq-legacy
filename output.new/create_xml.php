@@ -211,8 +211,7 @@ while( $data_row = $data_result->fetch_array() ) {
 
     $taxon = taxonWithHybrids($row);
 
-    $sammler = collection($row['Sammler'],$row['Sammler_2'],$row['series'],$row['series_number'],
-                          $row['Nummer'],$row['alt_number'],$row['Datum']);
+    $sammler = collection($row);
 
     $typusText = makeTypus($ID);
 
