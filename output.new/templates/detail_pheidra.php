@@ -188,8 +188,7 @@
    id: 'jacq_mirador',
    windows: [{
      manifestId: '<?php echo $output['pheidraUrl']; ?>',
-     canvasId: 'https://app05a.phaidra.org/manifests/<?php echo $output['pheidraPicname']; ?>/c/<?php echo $output['pheidraPicname']; ?>-01',
-     thumbnailNavigationPosition: 'far-right',
+     thumbnailNavigationPosition: 'far-right'
    }],
    window: {
     allowClose: false,

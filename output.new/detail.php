@@ -274,15 +274,15 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
         $output['pheidraUrl'] = "";
 
         // ask pheidra server if it has the desired picture. If not, use old method
-        $output['pheidraPicname'] = sprintf("WU%0" . $specimen['HerbNummerNrDigits'] . ".0f", str_replace('-', '', $specimen['HerbNummer']));
-        $ch = curl_init("https://app05a.phaidra.org/viewer/" . $output['pheidraPicname']);
+        $picname = sprintf("WU%0" . $specimen['HerbNummerNrDigits'] . ".0f", str_replace('-', '', $specimen['HerbNummer']));
+        $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curl_response = curl_exec($ch);
         if ($curl_response) {
             $info = curl_getinfo($ch);
             if ($info['http_code'] == 200) {
                 $pheidra = true;
-                $output['pheidraUrl'] = "phaidra_ptlp.php?type=manifests&id={$output['pheidraPicname']}";
+                $output['pheidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
             }
         }
         curl_close($ch);
@@ -292,12 +292,22 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
     } else {
         if ($specimen['imgserver_type'] == 'bgbm') {
             if ($specimen['iiif_capable']) {
-                if ($specimen['source_id'] == '32'){
-                    $output['manifest'] = getManifestURI(getStableIdentifier($specimen['specimen_ID']));
+                $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/" . $specimen['specimen_ID']);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $curl_response = curl_exec($ch);
+                if ($curl_response !== false) {
+                    $curl_result = json_decode($curl_response, true);
+                    $output['manifest'] = $curl_result['uri'];
                 } else {
-                    // force https to always call iiif images with https
-                    $output['manifest'] = str_replace('http:', 'https:', StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID'])) . '/manifest.json';
+                    $output['manifest'] = "";
                 }
+                curl_close($ch);
+//                if ($specimen['source_id'] == '32'){
+//                    $output['manifest'] = getManifestURI(getStableIdentifier($specimen['specimen_ID']));
+//                } else {
+//                    // force https to always call iiif images with https
+//                    $output['manifest'] = str_replace('http:', 'https:', StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID'])) . '/manifest.json';
+//                }
             } else {
                 $output['bgbm_options'] = '?filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
             }
