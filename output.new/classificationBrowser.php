@@ -1,4 +1,6 @@
 <?php
+require('inc/variables.php'); // require configuration
+
 // get all parameters
 $filterId      = intval(filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMBER_INT));
 $referenceId   = intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT));
@@ -67,6 +69,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
         var insertSeries = <?php echo $insertSeries; ?>;
         var editSeries = <?php echo $editSeries; ?>;
+        var JACQServices = '<?php echo $_CONFIG['JACQ_SERVICES']; ?>';
     </script>
     <style>
         .ui-autocomplete-loading {

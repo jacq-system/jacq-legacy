@@ -11,9 +11,6 @@ header('Content-Type: application/json');
 
 $type = filter_input(INPUT_GET, 'type', FILTER_SANITIZE_STRING);
 switch ($type) {
-    case 'referenceType':
-        echo $rest->get('classification/references', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)));
-        break;
     case 'jstree':
         $referenceType = trim(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING));
         $referenceID = intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT));
@@ -51,12 +48,15 @@ switch ($type) {
     case 'scientificNameAc':
         echo $rest->get('autocomplete/scientificNames', array(filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)));
         break;
-    case 'infoBox_statistics':
-        echo $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
-        break;
-    case 'open_all':
-        echo $rest->get('classification/numberOfChildrenWithChildrenCitation',
-                   array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)),
-                   array('taxonID' => filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)));
-        break;
+//    case 'referenceType':
+//        echo $rest->get('classification/references', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING)));
+//        break;
+//    case 'infoBox_statistics':
+//        echo $rest->get('classification/periodicalStatistics', array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)));
+//        break;
+//    case 'open_all':
+//        echo $rest->get('classification/numberOfChildrenWithChildrenCitation',
+//                   array(filter_input(INPUT_GET, 'referenceID', FILTER_SANITIZE_STRING)),
+//                   array('taxonID' => filter_input(INPUT_GET, 'taxonID', FILTER_SANITIZE_NUMBER_INT)));
+//        break;
 }
