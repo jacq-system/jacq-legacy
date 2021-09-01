@@ -30,43 +30,42 @@ if ($dbLink_pictures->connect_errno) {
 }
 $dbLink_pictures->set_charset('utf8');
 
-function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
+function collection($row)
 {
-    $text = $Sammler;
-    if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
+    $text = $row['Sammler'];
+    if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
         $text .= " et al.";
+    } else if ($row['Sammler_2']) {
+        $text .= " & " . $row['Sammler_2'];
     }
-    else if ($Sammler_2) {
-        $text .= " & " . $Sammler_2;
-    }
-    if ($series_number) {
-        if ($Nummer) {
-            $text .= " " . $Nummer;
+
+    if ($row['series_number']) {
+        if ($row['Nummer']) {
+            $text .= " " . $row['Nummer'];
         }
-        if ($alt_number && $alt_number != "s.n.") {
-            $text .= " " . $alt_number;
+        if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
+            $text .= " " . $row['alt_number'];
         }
-        if ($series) {
-            $text .= " " . $series;
+        if ($row['series']) {
+            $text .= " " . $row['series'];
         }
-        $text .= " " . $series_number;
-    }
-    else {
-        if ($series) {
-            $text .= " " . $series;
+        $text .= " " . $row['series_number'];
+    } else {
+        if ($row['series']) {
+            $text .= " " . $row['series'];
         }
-        if ($Nummer) {
-            $text .= " " . $Nummer;
+        if ($row['Nummer']) {
+            $text .= " " . $row['Nummer'];
         }
-        if ($alt_number) {
-            $text .= " " . $alt_number;
+        if ($row['alt_number']) {
+            $text .= " " . $row['alt_number'];
         }
-//        if (strstr($alt_number, "s.n.")) {
-//            $text .= " [" . $Datum . "]";
+//        if (strstr($row['alt_number'], "s.n.")) {
+//            $text .= " [" . $row['Datum'] . "]";
 //        }
     }
 
-    return $text;
+    return trim($text);
 }
 
 function rdfcollection($row, $isBotanyPilot = false)
@@ -90,16 +89,16 @@ function rdfcollection($row, $isBotanyPilot = false)
         $text .= getBloodhoundID($row);
         }
         $text .=  $row['Sammler'];
+    } else {
+        $text =  $row['Sammler'];
     }
-    else {
-             $text =  $row['Sammler'];
-        }
+
     if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
         $text .= " et al.";
-    }
-    else if ($row['Sammler_2']) {
+    } else if ($row['Sammler_2']) {
         $text .= " & " . $row['Sammler_2'];
     }
+
     if ($row['series_number']) {
         if ($row['Nummer']) {
             $text .= " " . $row['Nummer'];
@@ -111,8 +110,7 @@ function rdfcollection($row, $isBotanyPilot = false)
             $text .= " " . $row['series'];
         }
         $text .= " " . $row['series_number'];
-    }
-    else {
+    } else {
         if ($row['series']) {
             $text .= " " . $row['series'];
         }
@@ -123,18 +121,20 @@ function rdfcollection($row, $isBotanyPilot = false)
             $text .= " " . $row['alt_number'];
         }
     }
+
     if ($isBotanyPilot){
-            if ($row['WIKIDATA_ID']) {
-                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-            } elseif ($row['HUH_ID']) {
-                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-            } elseif ($row['VIAF_ID']) {
-                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-            } elseif ($row['ORCID']) {
-                $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-            }
-         }
-    return $text;
+        if ($row['WIKIDATA_ID']) {
+            $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+        } elseif ($row['HUH_ID']) {
+            $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+        } elseif ($row['VIAF_ID']) {
+            $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+        } elseif ($row['ORCID']) {
+            $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
+        }
+    }
+
+    return trim($text);
 }
 
 
@@ -143,6 +143,7 @@ class MyTripleID extends TripleID
 {
     public function __construct($id) {
         global $dbLink;
+
         // do some conversion stuff
         // ex.: database query for institution, source, object ...
         //      sql = "SELECT * FROM table WHERE id=" . $id
@@ -165,18 +166,19 @@ class MyTripleID extends TripleID
 }
 
 
-function generateAnnoTable($metadata) {
+function generateAnnoTable($metadata)
+{
     // table header
     $str = '<table width="100%"><tr><td align="left">'
-            . '<strong>' . count($metadata) . ' annotation(s)</strong></td></tr>';
+         . '<strong>' . count($metadata) . ' annotation(s)</strong></td></tr>';
     // add annotations
     foreach ($metadata as $anno) {
-        $str .= '<tr><td align="left">';
-        $str .= "<strong>Annotator:</strong> " . $anno['annotator'] . "; ";
-        $str .= "<strong>Type of annotation:</strong> " . $anno['motivation'] . "; ";
-        $str .= "<strong>Date:</strong> " . date("d M Y", $anno['time'] / 1000) . "; ";
-        $str .= "<a href=\"" . $anno['viewURI'] . '" target="_blank" class="leftnavi">View annotation</a><br/>';
-        $str .= "</td></tr>";
+        $str .= '<tr><td align="left">'
+              . "<strong>Annotator:</strong> " . $anno['annotator'] . "; "
+              . "<strong>Type of annotation:</strong> " . $anno['motivation'] . "; "
+              .  "<strong>Date:</strong> " . date("d M Y", $anno['time'] / 1000) . "; "
+              . "<a href=\"" . $anno['viewURI'] . '" target="_blank" class="leftnavi">View annotation</a><br/>'
+              . "</td></tr>";
     }
     // close table
     $str .= "</table>";
@@ -184,21 +186,21 @@ function generateAnnoTable($metadata) {
     return $str;
 }
 
-function collectionID($row) {
+function collectionID($row)
+{
     if ($row['source_id'] == '29') {
         $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
-    }
-    elseif ($row['source_id'] == '50') {
+    } elseif ($row['source_id'] == '50') {
         $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
-    }
-    else {
+    } else {
         $text = $row['collection'] . " " . $row['HerbNummer'];
     }
 
-    return $text;
+    return trim($text);
 }
 
-function taxon($row) {
+function taxon($row)
+{
     $text = $row['genus'];
     if ($row['epithet']) {
         $text .= " " . $row['epithet'] . " " . $row['author'];
@@ -222,7 +224,8 @@ function taxon($row) {
     return $text;
 }
 
-function taxonWithHybrids($row) {
+function taxonWithHybrids($row)
+{
     global $dbLink;
 
     if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
@@ -283,8 +286,8 @@ function taxonWithHybrids($row) {
 function getTaxonAuth($taxid)
 {
     global $dbLink;
-    $sql = "SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = " . ($taxid) . ";";
-    $result = $dbLink->query($sql);
+
+    $result = $dbLink->query("SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = $taxid");
     $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row
@@ -304,8 +307,8 @@ function getTaxonAuth($taxid)
 function getGeonamesID($HerbNummer)
 {
     global $dbLink;
-    $sql = "SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode like '" . ($HerbNummer) . "';";
-    $result = $dbLink->query($sql);
+
+    $result = $dbLink->query("SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode LIKE '$HerbNummer'");
      $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row
@@ -320,13 +323,13 @@ function getGeonamesID($HerbNummer)
 function getBloodhoundID($row)
 {
     global $dbLink;
-    $sql = "SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "';";
-    $result = $dbLink->query($sql);
-     $text = '';
+
+    $result = $dbLink->query("SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "'");
+    $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-         $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia' alt='Bionomia'><img src='assets/images/bionomia_logo.png' width='20px'></a>&nbsp;";
+            $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia' alt='Bionomia'><img src='assets/images/bionomia_logo.png' width='20px'></a>&nbsp;";
         }
     }
     return $text;
@@ -363,7 +366,8 @@ function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP)
   Contact:     webmaster@phpeasycode.com
  * ******************************************************************************** */
 
-function paginate_three($page, $tpages, $adjacents) {
+function paginate_three($page, $tpages, $adjacents)
+{
     $prevlabel = "<i class='material-icons'>chevron_left</i>";
     $nextlabel = "<i class='material-icons'>chevron_right</i>";
 
@@ -379,8 +383,7 @@ function paginate_three($page, $tpages, $adjacents) {
     if ($tpages < 4 + $adjacents * 2 + 2) {
         $pmin = 1;
         $pmax = $tpages;
-    }
-    else {
+    } else {
         $prev = 0;
         $post = 0;
         // first
@@ -422,11 +425,9 @@ function paginate_three($page, $tpages, $adjacents) {
     for ($i = $pmin; $i <= $pmax; $i++) {
         if ($i == $page) {
             $out .= "<li class='active'><a>" . htmlspecialchars($i) . "</a></li>\n";
-        }
-        elseif ($i == 1) {
+        } elseif ($i == 1) {
             $out .= "<li class='waves-effect' data-value='$i'><a>" . htmlspecialchars($i) . "</a></li>\n";
-        }
-        else {
+        } else {
             $out .= "<li class='waves-effect' data-value='$i'><a>" . htmlspecialchars($i) . "</a></li>\n";
         }
     }
@@ -445,8 +446,7 @@ function paginate_three($page, $tpages, $adjacents) {
     // next
     if ($page < $tpages) {
         $out .= "<li class='waves-effect' data-value='".($page+1)."'><a>$nextlabel</a></li>\n";
-    }
-    else {
+    } else {
         $out .= "<li><a>$nextlabel</a></li>\n";
     }
 

@@ -1,4 +1,4 @@
-/* global insertSeries */
+/* global insertSeries, JACQServices */
 
 // called once jquery is ready
 $(function() {
@@ -14,10 +14,11 @@ $(function() {
         .change(function() {
             if ($('#classificationBrowser_referenceType').val()) {
                 $.ajax( {
-                    url: "classificationBrowser_ptlp.php?type=referenceType",
-                    data: {
-                        referenceType: $('#classificationBrowser_referenceType').val()
-                    },
+//                    url: "classificationBrowser_ptlp.php?type=referenceType",
+//                    data: {
+//                        referenceType: $('#classificationBrowser_referenceType').val()
+//                    },
+                    url: JACQServices + "classification/references/" + $('#classificationBrowser_referenceType').val(),
                     dataType: "json"
                 } ).done( function(data) {
                     // reset reference drop-down
@@ -56,11 +57,12 @@ $(function() {
                 var referenceId = $(this).attr('data-reference-id');
                 var clickTarget = jQuery(this);
                 $.ajax({
-                    url: "classificationBrowser_ptlp.php?type=open_all",
-                    data: {
-                        referenceID: referenceId,
-                        taxonID: taxonID
-                    },
+//                    url: "classificationBrowser_ptlp.php?type=open_all",
+//                    data: {
+//                        referenceID: referenceId,
+//                        taxonID: taxonID
+//                    },
+                    url: JACQServices + "classification/numberOfChildrenWithChildrenCitation/" + referenceId + "?taxonID=" + taxonID,
                     dataType: "json",
                     success: function(data) {
                         $('html').removeClass('waiting');
@@ -161,10 +163,11 @@ $(function() {
             } else {
                 // query the JSON-services for detail information
                 $.ajax({
-                    url: "classificationBrowser_ptlp.php?type=infoBox_statistics",
-                    data: {
-                        referenceID: referenceId
-                    },
+//                    url: "classificationBrowser_ptlp.php?type=infoBox_statistics",
+//                    data: {
+//                        referenceID: referenceId
+//                    },
+                    url: JACQServices + "classification/periodicalStatistics/" + referenceId,
                     dataType: "json",
                     success: function(data) {
                         // check if we found additional references

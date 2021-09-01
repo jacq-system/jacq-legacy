@@ -61,6 +61,7 @@ function getCommonNames($taxonIDs){
 	}
 	$where=substr($where,1);
 
+    //view_commonnames does not exist
 	$sql ="SELECT common_name FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_commonnames WHERE  taxonID IN ($where)";
 
 	$result = dbi_query($sql);

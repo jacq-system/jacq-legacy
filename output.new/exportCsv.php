@@ -259,8 +259,7 @@ while ($row = $result->fetch_array()) {
     }
     $rowSpecimen = $resultSpecimen->fetch_array();
 
-    $sammler = collection($rowSpecimen['Sammler'],$rowSpecimen['Sammler_2'],$rowSpecimen['series'],$rowSpecimen['series_number'],
-                        $rowSpecimen['Nummer'],$rowSpecimen['alt_number'],$rowSpecimen['Datum']);
+    $sammler = collection($rowSpecimen);
 
     if ($rowSpecimen['epithet5']) {
         $infra_spec = $rowSpecimen['epithet5'];

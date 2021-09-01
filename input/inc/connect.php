@@ -76,19 +76,24 @@ function doQuotes(&$obj, $mode)
  * @param bool|FALSE $debug
  * @return mysqli_result
  */
-function dbi_query($sql, $debug=false)
+function dbi_query($sql, $debug = false)
 {
     global $_OPTIONS, $dbLink;
 
-    if($debug || $_OPTIONS['debug'] == 1){
-        $debug=true;
+    if($debug || $_OPTIONS['debug'] == 1) {
+        $debug = true;
     }
 
     $res = $dbLink->query($sql);
 
-    if(!$res && $debug){
-        echo $sql;
-        echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+    if(!$res) {
+        // log the error in php error log
+        error_log("SEVERE SQL-ERROR IN SCRIPT. SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
+        if ($debug){
+            // and show it additionally, if debug is on
+            echo $sql . "<br>\n";
+            echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+        }
     }
 
     return $res;
