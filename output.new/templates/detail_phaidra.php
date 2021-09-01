@@ -187,7 +187,7 @@
  var miradorInstance = Mirador.viewer({
    id: 'jacq_mirador',
    windows: [{
-     manifestId: '<?php echo $output['pheidraUrl']; ?>',
+     manifestId: '<?php echo $output['phaidraUrl']; ?>',
      thumbnailNavigationPosition: 'far-right'
    }],
    window: {

@@ -269,11 +269,11 @@ if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFI
 
 if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
     if ($specimen['source_id'] == '1') {
-        // for now, special treatment for pheidra is needed when wu has images
-        $pheidra = false;
-        $output['pheidraUrl'] = "";
+        // for now, special treatment for phaidra is needed when wu has images
+        $phaidra = false;
+        $output['phaidraUrl'] = "";
 
-        // ask pheidra server if it has the desired picture. If not, use old method
+        // ask phaidra server if it has the desired picture. If not, use old method
         $picname = sprintf("WU%0" . $specimen['HerbNummerNrDigits'] . ".0f", str_replace('-', '', $specimen['HerbNummer']));
         $ch = curl_init("https://app05a.phaidra.org/viewer/" . $picname);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -281,14 +281,14 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
         if ($curl_response) {
             $info = curl_getinfo($ch);
             if ($info['http_code'] == 200) {
-                $pheidra = true;
-                $output['pheidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
+                $phaidra = true;
+                $output['phaidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
             }
         }
         curl_close($ch);
     }
-    if ($pheidra) {
-        include 'templates/detail_pheidra.php';  // pheidra picture found
+    if ($phaidra) {
+        include 'templates/detail_phaidra.php';  // phaidra picture found
     } else {
         if ($specimen['imgserver_type'] == 'bgbm') {
             if ($specimen['iiif_capable']) {
