@@ -66,7 +66,8 @@ function makeText($id)
  */
 function makePreText($sourceID, $collectionID, $number)
 {
-    $text['Herbarium'] = dbi_query("SELECT QR_code_header, SourceInstitutionID FROM herbarinput.metadata WHERE MetadataID = '$sourceID'")->fetch_assoc()['QR_code_header'];
+    $row_source = dbi_query("SELECT QR_code_header, SourceInstitutionID FROM herbarinput.metadata WHERE MetadataID = '$sourceID'")->fetch_assoc();
+    $text['Herbarium'] = $row_source['QR_code_header'];
 
     $row_coll = dbi_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'")->fetch_assoc();
     $text['Collection'] = ($row_coll['collection']) ? 'Herbarium ' . $row_coll['collection'] : "";
