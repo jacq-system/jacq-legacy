@@ -176,6 +176,17 @@
       </tr>
     <?php endif; ?>
   </table>
+  <table border='0'>
+    <tr>
+      <?php foreach ($output['phaidraThumbs'] as $thumb): ?>
+        <td valign='top' align='center'>
+          <a href="<?php echo $thumb['viewer'] ?>" target='imgBrowser'>
+            <img src='<?php echo $thumb['img']; ?>/full/!200,200/0/default.jpg'>
+          </a>
+        </td>
+      <?php endforeach; ?>
+    </tr>
+  </table>
   <div class="divider"></div>
   <div id="footer" style="position: absolute;">
     <a href="imprint_citation_privacy.htm">Imprint | Citation | Privacy</a>

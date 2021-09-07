@@ -283,6 +283,20 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
             if ($info['http_code'] == 200) {
                 $phaidra = true;
                 $output['phaidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
+                $ch2 = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID']);
+                curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
+                $curl_response2 = curl_exec($ch2);
+                curl_close($ch2);
+                $decoded = json_decode($curl_response2, true);
+                $output['phaidraThumbs'] = array();
+                foreach ($decoded['sequences'] as $sequence) {
+                    foreach ($sequence['canvases'] as $canvas) {
+                        foreach ($canvas['images'] as $image) {
+                            $output['phaidraThumbs'][] = array('img'    => $image['resource']['service']['@id'],
+                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl']);
+                        }
+                    }
+                }
             }
         }
         curl_close($ch);

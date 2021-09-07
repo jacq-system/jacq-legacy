@@ -64,7 +64,7 @@ function makeText($id, $sub)  {
     $text['DT'] = $row['DallaTorreIDs'].$row['DallaTorreZusatzIDs'];
     $text['coll_short'] = strtoupper($row['coll_short_prj']);
 
-    $supplier_organisation_parts = split( ", ", $row['supplier_organisation'] );
+    $supplier_organisation_parts = explode( ", ", $row['supplier_organisation'] );  // split() is depricated as of PHP 5.3.0
     $text['supplier_organisation'] = "";
     foreach( $supplier_organisation_parts as $supplier_organisation_part ) {
         $text['supplier_organisation'] = $supplier_organisation_part . "\n" . $text['supplier_organisation'];
@@ -228,9 +228,9 @@ class LABEL extends TCPDF {
   }
 
   // BP, 08/2010:
-  function MultiCell($w, $h, $txt, $border=0, $align='L', $fill=false, $ln=1) {
+  function MultiCell($w, $h, $txt, $border=0, $align='L', $fill=false, $ln=1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = true, $maxh = 0, $valign = 'T', $fitcell = false) {
       // $autopadding needs to be false (default=true if $isHtml is false)
-      /*if (!$this->abort)*/ parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln,'','',true,0,false,false);
+      /*if (!$this->abort)*/ parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln, '', '', true, 0, false, false, $maxh, $valign, $fitcell);
   }
 
 
@@ -244,14 +244,14 @@ class LABEL extends TCPDF {
       $this->SetFont($family,$style,$size);
   }
 
-  public function SetFont($family, $style='', $size=0, $fontfile='') {
+  public function SetFont($family, $style='', $size=NULL, $fontfile='', $subset = 'default', $out = true) {
     if (($family == 'Arial') || ($family == 'PaddingtonSC')) {
         // We haven't got these fonts --> use 'freesans' instead
         $family='freesans';
     } else if ($family == 'Times') {
         $family = 'freeserif';
     }
-    parent::SetFont($family, $style, $size, $fontfile);
+    parent::SetFont($family, $style, $size, $fontfile, $subset, $out);
   }
 
   // This is an attempt to somehow emulate the SetStyle()-function
