@@ -38,7 +38,7 @@ $authorsUnknown = array();
 $authorsUnknownID = array();
 $ctrUnknown = 0;
 while ($row = mysqli_fetch_array($result)) {
-    $parts = split('\., |\. & ', $row['autor']);
+    $parts = preg_split('\., |\. & ', $row['autor']);  // split() is depricated as of PHP 5.3.0
     if (count($parts) > 1) {
         foreach ($parts as $part) {
             if (strlen(trim($part)) > 0) {

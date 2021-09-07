@@ -42,7 +42,7 @@ if (isset($_GET['sel'])) {
     $p_mobile      = $_POST['mobile'];
     $p_editFamily  = $_POST['editFamily'];
 
-    if (!empy($_POST['submitUpdate']) && checkRight('admin')) {
+    if (!empty($_POST['submitUpdate']) && checkRight('admin')) {
         $sqldata = "groupID = '"    . intval($p_groupID) . "',
                     source_id = '"  . intval($p_source_id) . "',
                     use_access = '" . (($p_use_access) ? 1 : 0) . "',
