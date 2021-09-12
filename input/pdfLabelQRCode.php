@@ -1,5 +1,5 @@
 <?php
-//ini_set('memory_limit', '32M');
+ini_set('memory_limit', '256M');
 ini_set("max_execution_time","3600");
 $check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
 if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
@@ -12,7 +12,11 @@ require("inc/pdf_functions.php");
 require_once 'inc/stableIdentifierFunctions.php';
 
 define('TCPDF','1');
-require_once('inc/tcpdf_6_3_2/tcpdf.php');
+if (isset($_OPTIONS['tcpdf']) && $_OPTIONS['tcpdf'] == '6.4.2') {
+    require_once('inc/tcpdf_6_4_2/tcpdf.php');
+} else {
+    require_once('inc/tcpdf_6_3_2/tcpdf.php');
+}
 
 
 /**

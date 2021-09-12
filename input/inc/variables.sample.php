@@ -97,6 +97,9 @@ $_OPTIONS['TYPINGCACHE']['SETTING'] = array(
 // Enable debug mode
 $_OPTIONS['debug'] = 0;
 
+//  Use which TCPDF version
+$_OPTIONS['tcpdf'] = '6.4.2';
+
 // Staging area
 $_OPTIONS['staging_area'] = array(
     'enabled' => TRUE,
