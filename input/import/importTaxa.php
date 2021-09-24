@@ -202,9 +202,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     if (substr($author, 0, 1) == '(') {
                         $subauthor = trim(substr($author, 1, strpos($author, ')') - 1));
                         $author = trim(substr($author, strpos($author, ')') + 1));
-                        $subparts = preg_split(', |& |ex ',$subauthor);  // split() is depricated as of PHP 5.3.0
+                        $subparts = preg_split('/, |& |ex /',$subauthor);  // split() is depricated as of PHP 5.3.0
                     }
-                    $parts = preg_split(', |& |ex ',$author);  // split() is depricated as of PHP 5.3.0
+                    $parts = preg_split('/, |& |ex /',$author);  // split() is depricated as of PHP 5.3.0
                     $parts = array_merge($parts, $subparts);
                     $allPartsKnown = true;
                     foreach ($parts as $part) {
@@ -254,9 +254,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                     if (substr($author,0,1) == '(') {
                         $subauthor = trim(substr($author, 1, strpos($author, ')') - 1));
                         $author = trim(substr($author, strpos($author, ')') + 1));
-                        $subparts = preg_split(', |& |ex ',$subauthor);  // split() is depricated as of PHP 5.3.0
+                        $subparts = preg_split('/, |& |ex /',$subauthor);  // split() is depricated as of PHP 5.3.0
                     }
-                    $parts = preg_split(', |& |ex ',$author);  // split() is depricated as of PHP 5.3.0
+                    $parts = preg_split('/, |& |ex /',$author);  // split() is depricated as of PHP 5.3.0
                     $parts = array_merge($parts, $subparts);
                     $allPartsKnown = true;
                     foreach ($parts as $part) {

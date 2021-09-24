@@ -44,9 +44,9 @@ while ($row = mysqli_fetch_array($result)) {
         if (substr($author,0,1) == '(') {
             $subauthor = trim(substr($author, 1, strpos($author, ')') - 1));
             $author = trim(substr($author, strpos($author, ')') + 1));
-            $subparts = preg_split(', |& |ex ', $subauthor);  // split() is depricated as of PHP 5.3.0
+            $subparts = preg_split('/, |& |ex /', $subauthor);  // split() is depricated as of PHP 5.3.0
         }
-        $parts = preg_split(', |& |ex ', $author);  // split() is depricated as of PHP 5.3.0
+        $parts = preg_split('/, |& |ex /', $author);  // split() is depricated as of PHP 5.3.0
         $parts = array_merge($parts, $subparts);
         foreach ($parts as $part) {
             if (strlen(trim($part)) > 0) {
