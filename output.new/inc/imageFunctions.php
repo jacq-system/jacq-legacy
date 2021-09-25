@@ -174,7 +174,7 @@ function getPicDetails($request, $sid = '')
                     $pics = array();  // something has gone wrong, so no picture can be found anyway
                 }
                 if (count($pics) == 0) {  // nothing found, so use the old filename
-                    $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+                    $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 }
             } else {
                 $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
