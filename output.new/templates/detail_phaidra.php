@@ -58,8 +58,8 @@
     <tr>
       <td align="right" width="30%">Stable identifier</td>
       <td>
-        <?php if ($output['sid']): ?>
-          <b><a href="<?php echo $output['sid']; ?>" target="_blank"><?php echo $output['sid']; ?></a></b>'
+        <?php if ($output['stblid']): ?>
+          <b><a href="<?php echo $output['stblid']; ?>" target="_blank"><?php echo $output['stblid']; ?></a></b>'
         <?php endif; ?>
       </td>
     </tr>

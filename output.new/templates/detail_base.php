@@ -180,7 +180,7 @@
     <?php endif; ?>
     <tr>
       <td align="left" colspan="2">
-        <?php include $output['picture_include']; ?>
+        <?php if (!empty($output['picture_include'])) { include $output['picture_include']; } ?>
       </td>
     </tr>
   </table>

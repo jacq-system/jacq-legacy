@@ -91,7 +91,7 @@ function getPicDetails($request, $sid = '')
     }
 
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
-                   mc.`coll_short_prj`, mc.`source_id`,
+                   mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
              LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
@@ -148,6 +148,34 @@ function getPicDetails($request, $sid = '')
         } else {
             if ($row['source_id'] == 59 || $row['source_id'] == 47) {  // KIEL and FT use no underscore in filename
                 $filename = sprintf("%s%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
+            } elseif ($row['collectionID'] == 90 || $row['collectionID'] == 92 || $row['collectionID'] == 123) { // w-krypt needs special treatment
+                /* TODO
+                 * specimens of w-krypt are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
+                 * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
+                 * in tbl_specimens are changed accordingly.
+                 * So, this script should first look for pictures, named after the new system before searching for pictures, named after the old system
+                 * When the transition is finished, this code-part (the whole elseif-block) should be removed
+                 * Johannes Schachner, 25.9.2021
+                 */
+                $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+                try {  // ask the picture server for a picture with the new filename
+                    $service = new jsonRPCClient($url . 'jacq-servlet/ImageServer');
+                    $pics = $service->listResources($row['key'],
+                                                    array($filename,
+                                                          $filename . "_%",
+                                                          $filename . "A",
+                                                          $filename . "B",
+                                                          "tab_" . $filename,
+                                                          "obs_" . $filename,
+                                                          "tab_" . $filename . "_%",
+                                                          "obs_" . $filename . "_%"));
+                }
+                catch( Exception $e ) {
+                    $pics = array();  // something has gone wrong, so no picture can be found anyway
+                }
+                if (count($pics) == 0) {  // nothing found, so use the old filename
+                    $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+                }
             } else {
                 $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
             }
