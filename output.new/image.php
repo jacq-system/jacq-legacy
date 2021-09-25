@@ -78,7 +78,7 @@ function doRedirectShowPic($picdetails)
     if ($picdetails['imgserver_type'] == 'djatoka') {
         // Get additional identifiers (if available)
         $picinfo = getPicInfo($picdetails);
-        $identifiers = implode($picinfo['pics'], ',');
+        $identifiers = implode(',', $picinfo['pics']);
 
         // Construct URL to viewer
         if (in_array($picdetails['originalFilename'], $picinfo['pics'])) {
@@ -303,10 +303,11 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
     if ($downloadPic) {
         header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
     }
-    readfile($url);
 
     // Redirect to image download
     header("location: {$url}");
+
+    readfile($url);
 }
 
 function cleanURL($url)

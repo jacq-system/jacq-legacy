@@ -146,7 +146,7 @@ function makeTypus($ID) {
  * main query
  **********************************/
 $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
-                             s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified,
+                             s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified, s.typusID,
                              s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
                              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
@@ -268,9 +268,9 @@ if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFI
 }
 
 if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
+    $phaidra = false;
     if ($specimen['source_id'] == '1') {
         // for now, special treatment for phaidra is needed when wu has images
-        $phaidra = false;
         $output['phaidraUrl'] = "";
 
         // ask phaidra server if it has the desired picture. If not, use old method
@@ -301,8 +301,10 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
         }
         curl_close($ch);
     }
-    if ($phaidra) {
-        include 'templates/detail_phaidra.php';  // phaidra picture found
+    if ($phaidra) {  // phaidra picture found
+        $output['picture_include'] = 'templates/detail_inc_phaidra.php';
+        include 'templates/detail_base.php';
+//        include 'templates/detail_phaidra.php';  // just needed for testing
     } else {
         if ($specimen['imgserver_type'] == 'bgbm') {
             if ($specimen['iiif_capable']) {
@@ -336,17 +338,23 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
         } elseif ($specimen['imgserver_type'] == 'djatoka') {
             $picdetails = getPicDetails($specimen['specimen_ID']);
             $transfer   = getPicInfo($picdetails);
+            $output['djatoka_options'] = array();
             if ($transfer) {
-                if (count($transfer['pics']) > 0) {
-                    foreach ($transfer['pics'] as $v) {
-                        $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
-                    }
-                    $output['djatoka']['error'] = "";
+                if (!empty($transfer['error'])) {
+                    $output['djatoka']['error'] = "transmission error";
+                    error_log($transfer['error']);
                 } else {
-                    $output['djatoka']['error'] = "no pictures found";
-                }
-                if (trim($transfer['output'])) {
-                    $output['djatoka_transfer_output'] = "\n" . $transfer['output'] . "\n";
+                    if (count($transfer['pics']) > 0) {
+                        foreach ($transfer['pics'] as $v) {
+                            $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
+                        }
+                        $output['djatoka']['error'] = "";
+                    } else {
+                        $output['djatoka']['error'] = "no pictures found";
+                    }
+                    if (trim($transfer['output'])) {
+                        $output['djatoka_transfer_output'] = "\n" . $transfer['output'] . "\n";
+                    }
                 }
             } else {
                 $output['djatoka']['error'] = "transmission error";
