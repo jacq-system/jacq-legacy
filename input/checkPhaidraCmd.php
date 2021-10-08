@@ -16,6 +16,12 @@ $dbLink->set_charset('utf8');
 
 ob_start();
 
+$dbLink->query("INSERT INTO `herbar_pictures`.`phaidra_status` SET start = NOW()");
+$statusID = $dbLink->insert_id;
+
+$items_start = $dbLink->query("SELECT count(*) AS number FROM `herbar_pictures`.`phaidra_cache`")->fetch_assoc()['number'];
+
+$items = 0;
 $result = $dbLink->query("SELECT s.specimen_ID, s.HerbNummer, tid.HerbNummerNrDigits
                           FROM tbl_specimens s
                            LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
@@ -42,7 +48,17 @@ while ($row = $result->fetch_array()) {
         if (!$dbLink->query("INSERT INTO `herbar_pictures`.`phaidra_cache` SET `specimenID` = '" . $row['specimen_ID'] . "'")) {
             echo $dbLink->error;
         }
+        $items++;
     }
 }
+
+$items_end = $dbLink->query("SELECT count(*) AS number FROM `herbar_pictures`.`phaidra_cache`")->fetch_assoc()['number'];
+
+$dbLink->query("UPDATE `herbar_pictures`.`phaidra_status` SET
+                 end         = NOW(),
+                 items_start = '$items_start',
+                 items_end   = '$items_end',
+                 items_added = '$items'
+                WHERE id = $statusID");
 
 ob_end_flush();
