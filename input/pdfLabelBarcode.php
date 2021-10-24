@@ -122,7 +122,7 @@ $pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
 
 $pdf->AddPage();
 
-$pdf->SetFont('helvetica', '', 8);
+$pdf->SetFont('freesans', '', 8);
 
 $style = array(
     'position'    => 'S',
