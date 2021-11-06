@@ -633,6 +633,7 @@ if ($type==1 && !$blocked) {  // file uploaded
             if ($result) {
                 $taxonID = dbi_insert_id();
                 logSpecies($taxonID, 0);
+                updateTblTaxSciname($taxonID);
                 if (intval($_POST['service'])) {
                     $sqlService = "INSERT INTO tbl_nom_service_names SET
                                     taxonID = '$taxonID',
