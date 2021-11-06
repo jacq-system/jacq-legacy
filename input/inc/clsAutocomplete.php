@@ -801,7 +801,7 @@ class clsAutocomplete {
                      LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                     WHERE ";
             if (isset($value['id'])) {
-                $dbst = $db->prepare($sql . " ts.taxonID = ?" . (($noExternals) ? " AND external = 0" : ''));
+                $dbst = $db->prepare($sql . " ts.taxonID = ?" . (($noExternals) ? " AND ts.external = 0" : ''));
                 $dbst->execute(array($value['id']));
             } else {
                 $v = isset($value['exact']) ? $value['exact'] : $value['search'];
