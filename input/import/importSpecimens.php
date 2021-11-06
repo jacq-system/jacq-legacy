@@ -269,6 +269,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
     dbi_query($sql);
     $ret['taxonID'] = dbi_insert_id();
     logSpecies($ret['taxonID'], 0);
+    updateTblTaxSciname($ret['taxonID']);
 
     dbi_query("UPDATE tbl_external_import_content SET
                 externalID = $externalID,

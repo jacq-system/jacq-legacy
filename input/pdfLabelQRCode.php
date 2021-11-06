@@ -1,5 +1,5 @@
 <?php
-ini_set('memory_limit', '256M');
+//ini_set('memory_limit', '256M');
 ini_set("max_execution_time","3600");
 $check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
 if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
@@ -252,7 +252,7 @@ $pdf->SetMargins(5, 5);
 
 $pdf->AddPage();
 
-$pdf->SetFont('helvetica', '', 9);
+$pdf->SetFont('freesans', '', 9);
 
 if (empty($_POST['institution_QR'])) {  // make labels for a list of given specimens
     $sql = "SELECT s.specimen_ID, l.label

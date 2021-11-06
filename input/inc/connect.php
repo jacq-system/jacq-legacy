@@ -250,6 +250,29 @@ function isLocked($table, $id)
 }
 
 /**
+ * update the table tbl_tax_sciname with the changed or newly entered scientific name
+ *
+ * @param integer $taxonID taxon-ID
+ */
+function updateTblTaxSciname($taxonID)
+{
+    $taxonIDfiltered = intval($taxonID);
+
+    $result = dbi_query("SELECT scientificName FROM tbl_tax_sciname WHERE taxonID = $taxonIDfiltered");
+    if ($result->num_rows > 0) {
+        dbi_query("UPDATE tbl_tax_sciname SET
+                    scientificName = herbar_view.GetScientificName($taxonIDfiltered, 0),
+                    taxonName = herbar_view._buildScientificName($taxonIDfiltered)
+                   WHERE taxonID = $taxonIDfiltered");
+    } else {
+        dbi_query("INSERT INTO tbl_tax_sciname SET
+                    taxonID = $taxonIDfiltered,
+                    scientificName = herbar_view.GetScientificName($taxonIDfiltered, 0),
+                    taxonName = herbar_view._buildScientificName($taxonIDfiltered)");
+    }
+}
+
+/**
  * format the unit-ID (HerbNummer) according to tbl_labels_numbering
  *
  * @param integer $specimenID Specimen ID

@@ -240,46 +240,47 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 
         if (!$blocked) {
             if (intval($_POST['taxonID'])) {
-              $p_taxonID = intval($_POST['taxonID']);
-              if (intval($p_rankIndex) && intval($p_genIndex)) {
-                  $sql = "UPDATE tbl_tax_species SET
-                           synID = "               . makeInt($p_synIndex) . ",
-                           basID = "               . makeInt($p_basIndex) . ",
-                           tax_rankID = "          . makeInt($p_rankIndex) . ",
-                           statusID = "            . makeInt($p_statusIndex) . ",
-                           genID = "               . makeInt($p_genIndex) . ",
-                           speciesID = "           . makeInt($p_speciesIndex) . ",
-                           authorID = "            . makeInt($p_authorIndex) . ",
-                           subspeciesID = "        . makeInt($p_subspeciesIndex) . ",
-                           subspecies_authorID = " . makeInt($p_subauthorIndex) . ",
-                           varietyID = "           . makeInt($p_varietyIndex) . ",
-                           variety_authorID = "    . makeInt($p_varauthorIndex) . ",
-                           subvarietyID = "        . makeInt($p_subvarietyIndex) . ",
-                           subvariety_authorID = " . makeInt($p_subvarauthorIndex) . ",
-                           formaID = "             . makeInt($p_formaIndex) . ",
-                           forma_authorID = "      . makeInt($p_forauthorIndex) . ",
-                           subformaID = "          . makeInt($p_subformaIndex) . ",
-                           subforma_authorID = "   . makeInt($p_subforauthorIndex) . ",
-                           annotation = "          . quoteString($_POST['annotation']) . ",
-                           external = "            . (($p_external) ? 1 : 0) . "
-                          WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
-                  $result = dbi_query($sql);
-                  logSpecies($p_taxonID,1);
-                  if (!$p_external) {
-                      // check any used epitheta and authors and make them internal if still external
-                      clearExternal('epithets', $p_speciesIndex);
-                      clearExternal('authors',  $p_authorIndex);
-                      clearExternal('epithets', $p_subspeciesIndex);
-                      clearExternal('authors',  $p_subauthorIndex);
-                      clearExternal('epithets', $p_varietyIndex);
-                      clearExternal('authors',  $p_varauthorIndex);
-                      clearExternal('epithets', $p_subvarietyIndex);
-                      clearExternal('authors',  $p_subvarauthorIndex);
-                      clearExternal('epithets', $p_formaIndex);
-                      clearExternal('authors',  $p_forauthorIndex);
-                      clearExternal('epithets', $p_subformaIndex);
-                      clearExternal('authors',  $p_subforauthorIndex);
-                  }
+                $p_taxonID = intval($_POST['taxonID']);
+                if (intval($p_rankIndex) && intval($p_genIndex)) {
+                    $sql = "UPDATE tbl_tax_species SET
+                             synID = "               . makeInt($p_synIndex) . ",
+                             basID = "               . makeInt($p_basIndex) . ",
+                             tax_rankID = "          . makeInt($p_rankIndex) . ",
+                             statusID = "            . makeInt($p_statusIndex) . ",
+                             genID = "               . makeInt($p_genIndex) . ",
+                             speciesID = "           . makeInt($p_speciesIndex) . ",
+                             authorID = "            . makeInt($p_authorIndex) . ",
+                             subspeciesID = "        . makeInt($p_subspeciesIndex) . ",
+                             subspecies_authorID = " . makeInt($p_subauthorIndex) . ",
+                             varietyID = "           . makeInt($p_varietyIndex) . ",
+                             variety_authorID = "    . makeInt($p_varauthorIndex) . ",
+                             subvarietyID = "        . makeInt($p_subvarietyIndex) . ",
+                             subvariety_authorID = " . makeInt($p_subvarauthorIndex) . ",
+                             formaID = "             . makeInt($p_formaIndex) . ",
+                             forma_authorID = "      . makeInt($p_forauthorIndex) . ",
+                             subformaID = "          . makeInt($p_subformaIndex) . ",
+                             subforma_authorID = "   . makeInt($p_subforauthorIndex) . ",
+                             annotation = "          . quoteString($_POST['annotation']) . ",
+                             external = "            . (($p_external) ? 1 : 0) . "
+                            WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
+                    $result = dbi_query($sql);
+                    logSpecies($p_taxonID,1);
+                    updateTblTaxSciname($p_taxonID);
+                    if (!$p_external) {
+                        // check any used epitheta and authors and make them internal if still external
+                        clearExternal('epithets', $p_speciesIndex);
+                        clearExternal('authors',  $p_authorIndex);
+                        clearExternal('epithets', $p_subspeciesIndex);
+                        clearExternal('authors',  $p_subauthorIndex);
+                        clearExternal('epithets', $p_varietyIndex);
+                        clearExternal('authors',  $p_varauthorIndex);
+                        clearExternal('epithets', $p_subvarietyIndex);
+                        clearExternal('authors',  $p_subvarauthorIndex);
+                        clearExternal('epithets', $p_formaIndex);
+                        clearExternal('authors',  $p_forauthorIndex);
+                        clearExternal('epithets', $p_subformaIndex);
+                        clearExternal('authors',  $p_subforauthorIndex);
+                    }
                 }
             } else {
                 $sql = "INSERT INTO tbl_tax_species SET
@@ -305,6 +306,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
                 if ($result) {
                     $p_taxonID = dbi_insert_id();
                     logSpecies($p_taxonID, 0);
+                    updateTblTaxSciname($p_taxonID);
                 } else {
                     $taxonID = 0;
                 }
