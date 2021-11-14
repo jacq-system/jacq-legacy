@@ -49,11 +49,17 @@ public function getUuid($type, $id)
 
 public function getIDs($uuid)
 {
-    return $this->db->query("SELECT m.`internal_id`, mt.`uuid_minter_type_id` AS type_id, mt.`description` AS type
+    $data = $this->db->query("SELECT m.`internal_id`, mt.`uuid_minter_type_id` AS type_id, mt.`description` AS type, m.`uuid`
                              FROM `jacq_input`.`srvc_uuid_minter` m, `jacq_input`.`srvc_uuid_minter_type` mt
                              WHERE m.`uuid_minter_type_id` = mt.`uuid_minter_type_id`
                               AND m.`uuid` = '$uuid'")
                     ->fetch_assoc();
+
+    if (empty($data)) {
+        return array('internal_id' => 0, 'type_id' => 0, 'description' => '', 'uuid' => '');
+    } else {
+        return $data;
+    }
 }
 
 }

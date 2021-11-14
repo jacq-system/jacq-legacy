@@ -26,16 +26,17 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
-if (!isset($_SESSION['wuCollection'])) $_SESSION['wuCollection'] = 0;
-if (!isset($_SESSION['sTyp'])) $_SESSION['sTyp'] = '';
-if (!isset($_SESSION['sType'])) $_SESSION['sType'] = 0;
-if (!isset($_SESSION['sImages'])) $_SESSION['sImages'] = '';
-if (!isset($_SESSION['sLinkList'])) $_SESSION['sLinkList'] = array();
-if (!isset($_SESSION['sUserID'])) $_SESSION['sUserID'] = -1;
-if (!isset($_SESSION['sUserDate'])) $_SESSION['sUserDate'] = '';
-if (!isset($_SESSION['sLabelDate'])) $_SESSION['sLabelDate'] = '';
-if (!isset($_SESSION['sGeoGeneral'])) $_SESSION['sGeoGeneral'] = '';
-if (!isset($_SESSION['sGeoRegion'])) $_SESSION['sGeoRegion'] = '';
+if (!isset($_SESSION['wuCollection']))  { $_SESSION['wuCollection'] = 0; }
+if (!isset($_SESSION['sTyp']))          { $_SESSION['sTyp'] = ''; }
+if (!isset($_SESSION['sType']))         { $_SESSION['sType'] = 0; }
+if (!isset($_SESSION['sImages']))       { $_SESSION['sImages'] = ''; }
+if (!isset($_SESSION['sLinkList']))     { $_SESSION['sLinkList'] = array(); }
+if (!isset($_SESSION['sUserID']))       { $_SESSION['sUserID'] = -1; }
+if (!isset($_SESSION['sUserDate']))     { $_SESSION['sUserDate'] = ''; }
+if (!isset($_SESSION['sLabelDate']))    { $_SESSION['sLabelDate'] = ''; }
+if (!isset($_SESSION['sGeoGeneral']))   { $_SESSION['sGeoGeneral'] = ''; }
+if (!isset($_SESSION['sGeoRegion']))    { $_SESSION['sGeoRegion'] = ''; }
+if (!isset($_SESSION['sItemsPerPage'])) { $_SESSION['sItemsPerPage'] = 10; }
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;

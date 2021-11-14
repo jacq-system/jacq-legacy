@@ -434,14 +434,20 @@ if (isset($_GET['sel'])) {
         // allow write access to database if user is editor or is granted for both old and new collection
         if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
             // TODO: add configuration switch for duplicate check
-            $sqlDummy = "SELECT s.`specimen_ID`
-                         FROM `tbl_specimens` s, `tbl_management_collections` mc
-                         WHERE s.`collectionID` = mc.`collectionID`
-                          AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
-                          AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4' OR mc.`source_id` = '5' OR mc.`source_id` = '29')
-                          AND mc.`coll_short_prj` = (SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `collectionID` = " . intval($p_collection) .")
-                          AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'";
-            $dummy = dbi_query($sqlDummy);
+//            $dummy = dbi_query("SELECT s.`specimen_ID`
+//                                FROM `tbl_specimens` s, `tbl_management_collections` mc
+//                                WHERE s.`collectionID` = mc.`collectionID`
+//                                 AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
+//                                 AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4' OR mc.`source_id` = '5' OR mc.`source_id` = '29')
+//                                 AND mc.`coll_short_prj` = (SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `collectionID` = " . intval($p_collection) .")
+//                                 AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'");
+            $dummy = dbi_query("SELECT s.`specimen_ID`
+                                FROM `tbl_specimens` s, `tbl_management_collections` mc
+                                WHERE s.`collectionID` = mc.`collectionID`
+                                 AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
+                                 AND mc.`collectionID` = " . intval($p_collection) . "
+                                 AND mc.`allowDuplicateHerbNr` = 0
+                                 AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'");
             if (mysqli_num_rows($dummy) > 0) {
                 $updateBlocked = true;
                 $blockCause = 1;  // HerbNummer and source_id already in database
