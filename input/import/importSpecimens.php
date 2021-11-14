@@ -404,16 +404,22 @@ if ($run == 2) {  // file uploaded
             $data[$i]['HerbNummer'] = $import[$i][0];
         }
         if ($data[$i]['HerbNummer']) {
-            $sql = "SELECT source_id
-                    FROM tbl_management_collections
-                    WHERE collectionID = '" . $data[$i]['collectionID'] . "'";
-            $row = mysqli_fetch_array(dbi_query($sql));
-            $sql = "SELECT specimen_ID
-                    FROM tbl_specimens, tbl_management_collections
-                    WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
-                     AND source_id = '" . $row['source_id'] . "'
-                     AND HerbNummer = " . quoteString($data[$i]['HerbNummer']);
-            $result = dbi_query($sql);
+//            $sql = "SELECT source_id
+//                    FROM tbl_management_collections
+//                    WHERE collectionID = '" . $data[$i]['collectionID'] . "'";
+//            $row = mysqli_fetch_array(dbi_query($sql));
+//            $sql = "SELECT specimen_ID
+//                    FROM tbl_specimens, tbl_management_collections
+//                    WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
+//                     AND source_id = '" . $row['source_id'] . "'
+//                     AND HerbNummer = " . quoteString($data[$i]['HerbNummer']);
+//            $result = dbi_query($sql);
+            $result = dbi_query("SELECT s.`specimen_ID`
+                                 FROM `tbl_specimens` s, `tbl_management_collections` mc
+                                 WHERE s.`collectionID` = mc.`collectionID`
+                                  AND s.`HerbNummer` = " . quoteString($data[$i]['HerbNummer']) . "
+                                  AND mc.`collectionID` = " . quoteString($data[$i]['collectionID']) . "
+                                  AND mc.`allowDuplicateHerbNr` = 0");
             if (mysqli_num_rows($result) > 0) {
                 $row = mysqli_fetch_array($result);
                 $OK = false;
