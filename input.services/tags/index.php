@@ -114,6 +114,7 @@ $app->get('/ids/{uuid}', function (Request $request, Response $response, array $
 
     $mapper = new IdentifierMapper($this->db);
     $ids = $mapper->getIDs(trim(filter_var($args['uuid'], FILTER_SANITIZE_STRING)));
+    $ids['url'] = (!empty($ids['uuid'])) ? $this->get('settings')['guidUrlPrefix'] . $ids['uuid'] : '';
     $jsonResponse = $response->withJson($ids);
     return $jsonResponse;
 });
