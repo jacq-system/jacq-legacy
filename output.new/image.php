@@ -303,10 +303,6 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
     if ($downloadPic) {
         header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
     }
-
-    // Redirect to image download
-    header("location: {$url}");
-
     readfile($url);
 }
 

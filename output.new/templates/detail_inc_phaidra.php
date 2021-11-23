@@ -6,7 +6,7 @@
           <img src='<?php echo $thumb['img']; ?>/full/!200,200/0/default.jpg'>
         </a>
         <br>
-         (<a href='<?php echo $thumb['img']; ?>/full/full/0/default.jpg'>JPEG</a>)
+        (<a href='downloadPhaidra.php?filename=<?php echo $thumb['file']; ?>.jpg&url=<?php echo $thumb['img']; ?>/full/full/0/default.jpg'>JPEG</a>)
       </td>
     <?php endforeach; ?>
   </tr>
