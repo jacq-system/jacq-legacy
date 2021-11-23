@@ -6,6 +6,19 @@ require __DIR__ . '/../../vendor/autoload.php';
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
+
+/*-------------------\
+ *                   *
+ *  jaxon functions  *
+ *                   *
+ \------------------*/
+
+/**
+ * react on a change in source selection and send a new list of collections
+ *
+ * @param integer $source_id source-ID
+ * @return Response send response back to caller
+ */
 function changeDropdownCollection($source_id)
 {
     $rows = dbi_query("SELECT collectionID, collection
@@ -23,6 +36,14 @@ function changeDropdownCollection($source_id)
     return $response;
 }
 
+/**
+ * get a table of all duplicate Herbar Numbers for a given source and collection
+ * only admins may choose any source, all other users are bound to their own source
+ * 
+ * @param integer $source_id source-ID
+ * @param integer $collection_id collection-ID
+ * @return Response send response back to caller
+ */
 function listDoubleHerbNr($source_id, $collection_id)
 {
     $sql = "SELECT s.HerbNummer, s.collectionID, mc.collection, m.source_code, m.source_id, m.source_name, count(s.HerbNummer) as nr
