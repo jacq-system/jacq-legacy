@@ -293,7 +293,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     foreach ($sequence['canvases'] as $canvas) {
                         foreach ($canvas['images'] as $image) {
                             $output['phaidraThumbs'][] = array('img'    => $image['resource']['service']['@id'],
-                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'],
+                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'], // TODO: use db-entries instead
                                                                'file'   => $picname);
                         }
                     }
