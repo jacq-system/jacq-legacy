@@ -168,7 +168,7 @@ while ($row = $result->fetch_array()) {
     if (strlen($image) > 0) {
         echo "<td class=\"result\">";
         if ($link) {
-            if ($row['iiif_capable']) {
+            if ($row['iiif_capable'] || $row['phaidraID']) {
                 $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/" . $row['specimen_ID']);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 $curl_response = curl_exec($ch);
@@ -187,9 +187,11 @@ while ($row = $result->fetch_array()) {
 //                    $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
 //                }
             	echo "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
-                   . "<img border='2' height='15' src='images/$image' width='15'></a>"
-                   . "&nbsp;<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
-                   . "<img border='2' height='15' src='images/logo-iiif.png' width='15'></a>";
+                   . "<img border='2' height='15' src='images/$image' width='15'>"
+                   . "</a>&nbsp;"
+                   . "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
+                   . "<img border='2' height='15' src='images/logo-iiif.png' width='15'>"
+                   . "</a>";
             } else {
 				echo "<a href='image.php?filename={$row['specimen_ID']}&method=show' target='imgBrowser'>"
                    . "<img border='2' height='15' src='images/$image' width='15'></a>";

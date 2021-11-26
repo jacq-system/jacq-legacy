@@ -5,6 +5,7 @@ if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
                   c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
                   s.Nummer, s.alt_number, s.Datum, mc.collection, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
+                  ph.specimenID AS phaidraID,
                   n.nation_engl, n.iso_alpha_2_code, p.provinz, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                   s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
@@ -35,6 +36,7 @@ if (!empty($_POST['submit'])) {
                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                     LEFT JOIN tbl_tax_species ts2 ON ts2.taxonID = tst.taxonID
+                    LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
                    WHERE ts.taxonID = s.taxonID
                     AND tg.genID = ts.genID
                     AND tf.familyID = tg.familyID
