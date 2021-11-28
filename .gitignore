@@ -4,6 +4,8 @@ variables.php
 .idea
 input/install.php
 /output.new/testJsonRPC.php
+/output.new/vendor/
+/output.new/composer.lock
 /access/test.html
 /input.services/vendor/
 /input.services/logs/

@@ -4,7 +4,10 @@ session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require("inc/stableIdentifierFunctions.php");
-require("inc/PHPExcel/PHPExcel.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 $select = filter_input(INPUT_GET, 'select');
 if ($select != 'labels' && $select != 'list') {
@@ -153,16 +156,16 @@ ini_set("memory_limit", "4096M");
 set_time_limit(0);
 
 // SQLiteCache hält die Cell-Data nicht im Speicher
-if (!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip)) {
-    die('Caching not available!');
-}
+//if (!\PhpOffice\PhpSpreadsheet\Settings::setCacheStorageMethod(\PhpOffice\PhpSpreadsheet\Collection\CellsFactory::cache_in_memory_gzip)) {
+//    die('Caching not available!');
+//}
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
-$objPHPExcelWorksheet = $objPHPExcel->setActiveSheetIndex(0);
+// Create new PhpSpreadsheet object
+$spreadsheet = new Spreadsheet();
 
 // add header info
-$objPHPExcelWorksheet->setCellValue('A1', 'Specimen_ID')
+$spreadsheet->getActiveSheet()
+        ->setCellValue('A1', 'Specimen_ID')
         ->setCellValue('B1', 'observation')
         ->setCellValue('C1', 'API')
         ->setCellValue('D1', 'dig_image')
@@ -405,7 +408,7 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
         $apibatch = "";
     }
 
-    $objPHPExcelWorksheet->fromArray(array(
+    $spreadsheet->getActiveSheet()->fromArray(array(
         $rowSpecimen['specimen_ID'],
         $rowSpecimen['observation'],
         $apibatch,
@@ -472,7 +475,8 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
 
 
     /*
-      $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
+      $spreadsheet->getActiveSheet()
+      ->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
       ->setCellValue('B' . $i, $rowSpecimen['observation'])
       ->setCellValue('C' . $i, $apibatch)
       ->setCellValue('D' . $i, ($rowSpecimen['digital_image']) ? '1' : '')
@@ -541,23 +545,22 @@ switch (filter_input(INPUT_GET, 'type')) {
         header("Content-type: text/csv; charset=utf-8");
         header("Content-Disposition: attachment; filename=specimens_download.csv");
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
-        $objWriter->save('php://output');
+        $writer = IOFactory::createWriter($spreadsheet, 'Csv');
+        $writer->save('php://output');
         break;
     case 'ods':
         // Redirect output to a client’s web browser (OpenDocument)
         header('Content-Type: application/vnd.oasis.opendocument.spreadsheet');
         header('Content-Disposition: attachment;filename="specimens_download.ods"');
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'OpenDocument');
-        $objWriter->save('php://output');
+        $writer = IOFactory::createWriter($spreadsheet, 'Ods');
+        $writer->save('php://output');
         break;
     default:
         // Redirect output to a client’s web browser (Excel2007)
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="specimens_download.xlsx"');
         header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-        $objWriter->save('php://output');
+        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
 }
-exit;
