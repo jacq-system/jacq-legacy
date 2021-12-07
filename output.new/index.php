@@ -589,6 +589,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                 <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126467" target="_blank"> PAV // Università di Pavia</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
                                 <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126455" target="_blank"> TO // Università di Torino</a></li>
                             </ul>
                         </div>
                     </li>
