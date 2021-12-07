@@ -76,7 +76,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
           <div class="divider"></div>
           <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BP, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PAV, PI, PIAGR, PRC, TBI, TGU, TMRC, TO, TUB, UBT, W, WU and WUP.</p>
           <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
-
+          <p></p>
+          <object type="image/svg+xml" data="https://www.re3data.org/public/badges/l/light/100013564.svg"><img src="https://www.re3data.org/public/badges/l/light/100013564.png" style="max-width:100%"></object>
+          <p></p>
 
           <div class="divider"></div>
             <ul class="collapsible">
@@ -188,8 +190,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 </div>
                 <div id="partners">
                   <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" alt="BMK Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png" alt="BMKOES Logo"></a></div>
                 </div>
            </div>
           </li>
