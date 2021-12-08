@@ -188,7 +188,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 <div id="partners">
                   <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png"  height="70" alt="BKA Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" height="70" alt="BMK Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png"  height="70" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png"  height="60" alt="BMBWF Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png"  height="70" alt="BMKOES Logo"></a></div>
                 </div>
            </div>
