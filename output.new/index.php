@@ -186,10 +186,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
                 </div>
                 <div id="partners">
-                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" height="60" alt="BMK Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png"  height="60" alt="BMKOES Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png"  height="70" alt="BKA Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" height="70" alt="BMK Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png"  height="70" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png"  height="70" alt="BMKOES Logo"></a></div>
                 </div>
            </div>
           </li>
