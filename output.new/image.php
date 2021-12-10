@@ -31,7 +31,7 @@ if (!empty($picdetails['url'])) {
             break;
         case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
             $picinfo = getPicInfo($picdetails);
-            if (!in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+            if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
                 $picdetails['originalFilename'] = $picinfo['pics'][0];
             }
             doRedirectDownloadPic($picdetails, $format, 3);
