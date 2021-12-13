@@ -1,7 +1,8 @@
 <?php
-if ($output['djatoka']['error']):
+if ($output['djatoka']['error']) {
     echo $output['djatoka']['error'];
-else :
+}
+if (!empty($output['djatoka_options'])):
 ?>
   <table border='0'>
     <tr>
