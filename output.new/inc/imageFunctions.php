@@ -91,7 +91,7 @@ function getPicDetails($request, $sid = '')
     }
 
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
-                   mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`,
+                   mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
              LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
@@ -146,9 +146,7 @@ function getPicDetails($request, $sid = '')
             $originalFilename = sprintf($uriSubset["thumb"]);
             $key = sprintf($uriSubset["html"]);
         } else {
-            if ($row['source_id'] == 59 || $row['source_id'] == 47) {  // KIEL and FT use no underscore in filename
-                $filename = sprintf("%s%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
-            } elseif ($row['collectionID'] == 90 || $row['collectionID'] == 92 || $row['collectionID'] == 123) { // w-krypt needs special treatment
+            if ($row['collectionID'] == 90 || $row['collectionID'] == 92 || $row['collectionID'] == 123) { // w-krypt needs special treatment
                 /* TODO
                  * specimens of w-krypt are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
                  * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
@@ -176,7 +174,39 @@ function getPicDetails($request, $sid = '')
                 if (count($pics) == 0) {  // nothing found, so use the old filename
                     $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 }
-            } else {
+            } elseif (!empty($row['picture_filename'])) {   // special treatment for this collection is necessary
+                $parts = parser($row['picture_filename']);
+                $filename = '';
+                foreach ($parts as $part) {
+                    if ($part['token']) {
+                        $tokenParts = explode(':', $part['text']);
+                        $token = $tokenParts[0];
+                        switch ($token) {
+                            case 'coll_short_prj':                                      // use contents of coll_short_prj
+                                $filename .= $row['coll_short_prj'];
+                                break;
+                            case 'HerbNummer':                                          // use HerbNummer with removed hyphens, options are :num and :reformat
+                                if (in_array('num', $tokenParts)) {                     // ignore text with digits within, only use the last number
+                                    if (preg_match("/\d+$/", $HerbNummer, $matches)) {  // there is a number at the tail of HerbNummer
+                                        $number = $matches[0];
+                                    } else {                                            // HerbNummer ends with text
+                                        $number = 0;
+                                    }
+                                } else {
+                                    $number = $HerbNummer;                              // use the complete HerbNummer
+                                }
+                                if (in_array("reformat", $tokenParts)) {                // correct the number of digits with leading zeros
+                                    $filename .= sprintf("%0" . $row['HerbNummerNrDigits'] . ".0f", $number);
+                                } else {                                                // use it as it is
+                                    $filename .= $number;
+                                }
+                                break;
+                        }
+                    } else {
+                        $filename .= $part['text'];
+                    }
+                }
+            } else {    // standard filename, would be "<coll_short_prj>_<HerbNummer:reformat>"
                 $filename = sprintf("%s_%0" . $row['HerbNummerNrDigits'] . ".0f", $row['coll_short_prj'], $HerbNummer);
             }
             $key = $row['key'];
@@ -308,4 +338,23 @@ function getPicInfo($picdetails)
     }
 
     return $return;
+}
+/**
+ * parse text into parts and tokens (text within '<>')
+ *
+ * @param string $text text to tokenize
+ * @return array found parts
+ */
+function parser ($text)
+{
+    $parts = explode('<', $text);
+    $result = array(array('text' => $parts[0], 'token' => false));
+    for ($i = 1; $i < count($parts); $i++) {
+        $subparts = explode('>', $parts[$i]);
+        $result[] = array('text' => $subparts[0], 'token' => true);
+        if (!empty($subparts[1])) {
+            $result[] = array('text' => $subparts[1], 'token' => false);
+        }
+    }
+    return $result;
 }

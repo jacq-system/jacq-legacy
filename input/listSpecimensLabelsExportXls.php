@@ -3,7 +3,10 @@ error_reporting(0);
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require("./inc/PHPExcel/PHPExcel.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
     $text = $Sammler;
@@ -131,12 +134,11 @@ function makeTypus($ID) {
 ini_set("memory_limit", "512M");
 set_time_limit(0);
 
-// Create new PHPExcel object
-$objPHPExcel = new PHPExcel();
-$objPHPExcelWorksheet = $objPHPExcel->setActiveSheetIndex(0);
+// Create new PhpSpreadsheet object
+$spreadsheet = new Spreadsheet();
 
 // add header info
-$objPHPExcelWorksheet->setCellValue('A1', 'Specimen ID')
+$spreadsheet->getActiveSheet()->setCellValue('A1', 'Specimen ID')
         ->setCellValue('B1', 'Herbarium-Number/BarCode')
         ->setCellValue('C1', 'Collection')
         ->setCellValue('D1', 'Collection Number')
@@ -309,7 +311,8 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
         $lon = "" . number_format(round($lon, 9), 9) . "° ";
     }
 
-    $objPHPExcelWorksheet->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
+    $spreadsheet->getActiveSheet()
+        ->setCellValue('A' . $i, $rowSpecimen['specimen_ID'])
         ->setCellValue('B' . $i, $rowSpecimen['HerbNummer'])
         ->setCellValue('C' . $i, $rowSpecimen['coll_short'])
         ->setCellValue('D' . $i, $rowSpecimen['CollNummer'])
@@ -356,6 +359,5 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment;filename="specimens_labels_download.xlsx"');
 header('Cache-Control: max-age=0');
-
-$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-$objWriter->save('php://output');
+$writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
+$writer->save('php://output');

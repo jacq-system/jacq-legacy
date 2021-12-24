@@ -31,7 +31,7 @@ if (!empty($picdetails['url'])) {
             break;
         case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
             $picinfo = getPicInfo($picdetails);
-            if (!in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+            if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
                 $picdetails['originalFilename'] = $picinfo['pics'][0];
             }
             doRedirectDownloadPic($picdetails, $format, 3);
@@ -127,38 +127,26 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $mime = 'image/jp2';
-                $fileExt = 'jp2';
-                break;
+                $mime = 'image/jp2';  $fileExt = 'jp2'; break;
             case'tiff':
-                $mime = 'image/tiff';
-                $fileExt = 'tif';
-                break;
+                $mime = 'image/tiff'; $fileExt = 'tif'; break;
             default:
-                $mime = 'image/jpeg';
-                $fileExt = 'jpg';
-                break;
+                $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
         }
         // Default scaling is 50%
         $scale = '0.5';
 
         // Check if we need a thumbnail
         if ($thumb != 0) {
-            // Thumbnail for kulturpool
-            if ($thumb == 2) {
+
+            if ($thumb == 2) {          // Thumbnail for kulturpool
                 $scale = '0,1300';
-            }
-            // thumbnail for europeana
-            else if ($thumb == 3) {
+            } else if ($thumb == 3) {   // thumbnail for europeana
 //                $downloadPic = false;
                 $scale = '1200,0';
-            }
-            // thumbnail for nhmw digitization project
-            else if ($thumb == 4) {
+            } else if ($thumb == 4) {   // thumbnail for nhmw digitization project
                 $scale = '160,0';
-            }
-            // Default thumbnail
-            else {
+            } else {                    // Default thumbnail
                 $scale = '160,0';
             }
         }
@@ -166,46 +154,18 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         // Construct URL to djatoka-resolver
         $url = cleanURL($picdetails['url']
              .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}"
-             .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$format}&svc.scale={$scale}");
+             .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$mime}&svc.scale={$scale}");
 
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         //... Check if we are using djatoka = 2 (Berlin image server)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $mime = 'image/jp2';
-                $fileExt = 'jp2';
-                break;
+                $mime = 'image/jp2';  $fileExt = 'jp2'; break;
             case'tiff':
-                $mime = 'image/tiff';
-                $fileExt = 'tif';
-                break;
+                $mime = 'image/tiff'; $fileExt = 'tif'; break;
             default:
-                $mime = 'image/jpeg';
-                $fileExt = 'jpg';
-                break;
-        }
-        // Default scaling is 50%
-        $scale = '0.5';
-
-        // Check if we need a thumbnail
-        if ($thumb != 0) {
-            // Thumbnail for kulturpool
-            if ($thumb == 2) {
-                $scale = '0,1300';
-            }
-            // thumbnail for europeana
-            else if ($thumb == 3) {
-                $scale = '1200,0';
-            }
-            // thumbnail for nhmw digitization project
-            else if ($thumb == 4) {
-                $scale = '160,0';
-            }
-            // Default thumbnail
-            else {
-                $scale = '160,0';
-            }
+                $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
         }
 
         // Construct URL to Berlin Server
@@ -225,41 +185,12 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
-                $mime = 'image/jp2';
-                $fileExt = 'jp2';
-                break;
+                $mime = 'image/jp2';  $fileExt = 'jp2'; break;
             case'tiff':
-                $mime = 'image/tiff';
-                $fileExt = 'tif';
-                break;
+                $mime = 'image/tiff'; $fileExt = 'tif'; break;
             default:
-                $mime = 'image/jpeg';
-                $fileExt = 'jpg';
-                break;
+                $mime = 'image/jpeg'; $fileExt = 'jpg'; break;
         }
-        // Default scaling is 50%
-        $scale = '0.5';
-
-        // Check if we need a thumbnail
-        if ($thumb != 0) {
-            // Thumbnail for kulturpool
-            if ($thumb == 2) {
-                $scale = '0,1300';
-            }
-            // thumbnail for europeana
-            else if ($thumb == 3) {
-                $scale = '1200,0';
-            }
-            // thumbnail for nhmw digitization project
-            else if ($thumb == 4) {
-                $scale = '160,0';
-            }
-            // Default thumbnail
-            else {
-                $scale = '160,0';
-            }
-        }
-
 
         $url = cleanURL($picdetails['url'] . $picdetails['originalFilename']);
 

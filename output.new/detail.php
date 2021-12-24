@@ -293,7 +293,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     foreach ($sequence['canvases'] as $canvas) {
                         foreach ($canvas['images'] as $image) {
                             $output['phaidraThumbs'][] = array('img'    => $image['resource']['service']['@id'],
-                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'],
+                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'], // TODO: use db-entries instead
                                                                'file'   => $picname);
                         }
                     }
@@ -342,7 +342,8 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
             $output['djatoka_options'] = array();
             if ($transfer) {
                 if (!empty($transfer['error'])) {
-                    $output['djatoka']['error'] = "transmission error";
+                    $output['djatoka']['error'] = "Picture server list error. Falling back to original image name";
+                    $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen['specimen_ID'];
                     error_log($transfer['error']);
                 } else {
                     if (count($transfer['pics']) > 0) {

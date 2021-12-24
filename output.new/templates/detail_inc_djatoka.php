@@ -1,7 +1,8 @@
 <?php
-if ($output['djatoka']['error']):
+if ($output['djatoka']['error']) {
     echo $output['djatoka']['error'];
-else :
+}
+if (!empty($output['djatoka_options'])):
 ?>
   <table border='0'>
     <tr>
@@ -19,7 +20,7 @@ else :
   </table>
 <?php endif; ?>
 <?php
-  if (!empty($output['djatoka_transfer_output'])) {
-      echo nl2br($output['djatoka_transfer_output'], true);
-  }
+if (!empty($output['djatoka_transfer_output'])) {
+    echo nl2br($output['djatoka_transfer_output'], true);
+}
 ?>

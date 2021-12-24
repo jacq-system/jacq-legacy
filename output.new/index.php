@@ -74,9 +74,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
       <div id="home" class="row">
         <div class="col s12">
           <div class="divider"></div>
-          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BP, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PAV, PI, PIAGR, PRC, TBI, TGU, TMRC, TUB, UBT, W, WU and WUP.</p>
+          <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BP, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, NBSI, OLD, PAV, PI, PIAGR, PRC, TBI, TGU, TMRC, TO, TUB, UBT, W, WU and WUP.</p>
           <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
-
 
           <div class="divider"></div>
             <ul class="collapsible">
@@ -187,9 +186,10 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
                 </div>
                 <div id="partners">
-                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png" alt="BKA Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmlrt.gv.at/" target="_blank"><img src="assets/images/BMLRT_Logo.png" alt="BMLRT Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png"  height="70" alt="BKA Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" height="70" alt="BMK Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png"  height="60" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png"  height="70" alt="BMKOES Logo"></a></div>
                 </div>
            </div>
           </li>
@@ -589,6 +589,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                 <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126467" target="_blank"> PAV // Università di Pavia</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
                                 <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
+                                <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126455" target="_blank"> TO // Università di Torino</a></li>
                             </ul>
                         </div>
                     </li>
@@ -619,6 +620,14 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                             <ul>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=123996" target="_blank">LAGU // Asociación Jardín Botánico La Laguna, Urbanización Plan de La Laguna</a></li>
                                 <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=145204" target="_blank">MHES // Herbarium Botánica, Museo de Historia Natural de El Salvador</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="collapsible-header"><i class="fas fa-angle-down"></i>Serbia</div>
+                        <div class="collapsible-body">
+                            <ul>
+                                <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126601" target="_blank">BEOU // University of Belgrade</a></li>
                             </ul>
                         </div>
                     </li>
