@@ -1,0 +1,38 @@
+body {
+	font-family: Roman,"Times New Roman","Times,serif";
+	font: Roman;
+}
+
+
+table {
+	page-break-inside:avoid;
+	border-collapse: separate;
+	padding: 0px;
+	margin: 0px 0px;
+//	background-color:#FFFFFF; /* neccesary for correct alignment of labels !!!!!!!!!!!!!!!! */
+}
+table.outer2 {
+	border-collapse: separate;
+	padding: 0px 0px;
+	margin: 0px;
+	empty-cells: hide;
+}
+table.outer2 td {
+}
+table.inner {
+	border-collapse: collapse;
+	padding: 0px;
+	empty-cells: show;
+}
+td {
+	padding: 0px;
+}
+table.inner td {
+	padding: 0px;
+}
+table.collapsed {
+	border-collapse: collapse;
+}
+table.collapsed td {
+}
+
