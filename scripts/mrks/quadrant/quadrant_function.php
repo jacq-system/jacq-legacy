@@ -19,6 +19,7 @@ function gradminsec_trennung($trenn_daten) /* Hilfsfunktion für Funktion "gps_t
 	{
 	#echo "<pre>";
 	#var_dump($trenn_daten);
+	#if ($trenn_daten == 'CEERD_NNLAT_DEGREE_grad_LAT_MINUTE_min_LAT_') return null;
 	if (!is_string($trenn_daten)) return null;
 	unset($getrennt_daten);
 	$getrennt_daten = 0;
