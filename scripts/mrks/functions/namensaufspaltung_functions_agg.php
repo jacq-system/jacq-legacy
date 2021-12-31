@@ -1,7 +1,8 @@
 <?php
 
 ############################################################
-### ver 3.1  - 2021-01-19                               ####
+### aktuellste version der namensaufspaltungsfunktionen ####
+### ver 3.2  - 2021-04-06                               ####
 ############################################################
 
 function ersterbuchstabe_gross($input)
@@ -71,8 +72,8 @@ function hybrid_trennung($spaltprodukt)
 		{
 		$erst_elter = $hybrid_arr[0];
 		$zweit_elter = $hybrid_arr[1];
-		echo "hybrid";
-		var_dump($hybrid_arr);
+		#echo "hybrid";
+		#var_dump($hybrid_arr);
 		}
 	else
 		{
@@ -637,6 +638,10 @@ function namensaufspaltung_neu($spaltprodukt,$taxatype_eingabe=0) #namensaufspal
 	if ($cf_art != '')
 		{
 		$html = $html."</i></b> ".$cf_art."<b><i>";
+		}
+	if ($agg != '')
+		{
+		$html = $html." ".$agg."</b></i> agg.";
 		}
 	if ($art != '')
 		{

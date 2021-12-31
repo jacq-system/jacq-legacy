@@ -23,7 +23,7 @@ function csv_to_array($filename='', $delimiter=',', $endung = '')
 
 		$header = array();
 		$cc = 0;
-		for ($row = 1; $row <= $highestRow; ++$row) 
+		for ($row = 1; $row <= $highestRow; $row++) 
 			{
 			 $arr_row = array();
 			  for ($col = 0; $col <= $highestColumnIndex; ++$col) 
@@ -40,6 +40,8 @@ function csv_to_array($filename='', $delimiter=',', $endung = '')
 						}
 
 				  }
+        #   echo "<p>".$row."</p>";
+        #   var_dump($arr_row);
 			if ($row != 1) $data[] = array_combine($header, $arr_row);
 
 			}
