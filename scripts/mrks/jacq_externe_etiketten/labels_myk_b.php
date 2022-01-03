@@ -19,6 +19,27 @@ $csv_neu = csv_to_array($_FILES['file']['tmp_name'], ",",$extension);
 
 
 
+
+
+$mpdf = new \Mpdf\Mpdf([
+       'mode' => 'utf-8',
+       'format' => 'A4',
+       'margin_left' => '9',
+       'margin_right' => '9',
+       'margin_top' => '10',
+       'margin_bottom' => '10'
+ ]); 
+
+$mpdf->SetDisplayMode('fullpage');
+$mpdf->shrink_tables_to_fit=0; # verhindert, daß schrift automatisch kleiner wird, wenn zu wenig platz
+#$mpdf->SetColumns(2,'J');
+#$mpdf->WriteHTML($loremH,2);
+
+$mpdf->list_indent_first_level = 0;	// 1 or 0 - whether to indent the first level of a list
+
+
+
+
 ##################################################################################################################
 $html_1 = '
 <head>
@@ -90,7 +111,7 @@ font-size: 0.01pt;
  <columns column-count="2"> 
 <!-- # ------------------------------------------------------------------------------------------------------------------------------------ # -->
 ';
-
+$mpdf->WriteHTML($html_1);
 
 ################################################################################################################################################
 $pp = 0;
@@ -121,7 +142,7 @@ foreach ($csv_neu as $herb_line)
   $herb_nr = '';
   if (isset($herb_line['HerbariumNr_BarCode'])) $herb_nr = str_replace("WU ","",$herb_line['HerbariumNr_BarCode']);
   if (isset($herb_line['Herbarium-Number/BarCode'])) $herb_nr = str_replace("WU ","",$herb_line['Herbarium-Number/BarCode']);
-  $herb_subtitle = "<b>HERBARIUM&nbsp;&nbsp;&nbsp;WU ".$herb_nr."&nbsp;&nbsp;&nbsp;MYCOLOGICUM</b>";
+  $herb_subtitle = "<b>HERBARIUM&nbsp;WU-MYC&#x202F;".$herb_nr."&nbsp;MYCOLOGICUM</b>";
   
   
   $taxon_arr = array();
@@ -442,6 +463,8 @@ foreach ($csv_neu as $herb_line)
       $pp = 0;
       }
     $html2_labels = $html2_labels.$html_2_labels_temp;
+    $mpdf->WriteHTML($html2_labels);   
+    $html2_labels = '';
     }
 $herb_line['Admin1'] = '';
 $herb_line['Label'] = '';
@@ -457,8 +480,9 @@ $html_3 = '
 </body>
 ';
 
+$mpdf->WriteHTML($html_3);
 
-$html =$html_1.$html2_labels.$html_3;
+#$html =$html_1.$html2_labels.$html_3;
 #echo "<pre>";
 #var_dump($html);
 #echo "</pre>";
@@ -467,7 +491,7 @@ $html =$html_1.$html2_labels.$html_3;
 //==============================================================
 
 #$mpdf=new mPDF('utf8','A4','','',10,10,10,10,10,10); 
-$mpdf = new \Mpdf\Mpdf([
+/*$mpdf = new \Mpdf\Mpdf([
        'mode' => 'utf-8',
        'format' => 'A4',
        'margin_left' => '9',
@@ -482,12 +506,12 @@ $mpdf->shrink_tables_to_fit=0; # verhindert, daß schrift automatisch kleiner wi
 #$mpdf->WriteHTML($loremH,2);
 
 $mpdf->list_indent_first_level = 0;	// 1 or 0 - whether to indent the first level of a list
-
+*/
 // LOAD a stylesheet
 #$stylesheet = file_get_contents('mpdfstyletables.css');
 #$mpdf->WriteHTML($stylesheet,1);	// The parameter 1 tells that this is css/style only and no body/html/text
 
-$mpdf->WriteHTML($html);
+#$mpdf->WriteHTML($html);
 
 $mpdf->Output('labels_myk_belege.pdf','D');
 exit;

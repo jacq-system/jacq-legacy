@@ -129,7 +129,7 @@ foreach ($csv_neu as $herb_line)
   #else $herb_nr= $herb_line['Herbarium-Number/BarCode'];
   if (isset($herb_line['HerbariumNr_BarCode'])) $herb_nr = str_replace("WU ","",$herb_line['HerbariumNr_BarCode']);
   if (isset($herb_line['Herbarium-Number/BarCode'])) $herb_nr = str_replace("WU ","",$herb_line['Herbarium-Number/BarCode']);
-  $herb_subtitle = "HERBARIUM<b>&nbsp;&nbsp;&nbsp;WU ".$herb_nr."&nbsp;&nbsp;&nbsp;</b>MYCOLOGICUM";
+  $herb_subtitle = "HERBARIUM<b>&nbsp;&nbsp;WU-MYC&#x202F;".$herb_nr."&nbsp;&nbsp;</b>MYCOLOGICUM";
   
   
   $taxon_arr = array();

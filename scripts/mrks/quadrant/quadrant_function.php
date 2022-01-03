@@ -1,7 +1,7 @@
 <?php 
 
 ####################################################################################
-// ####### Quadranten+Koordinanten-Funktionen: Version 1.7.1 ## 2021-02-09 ############
+// ####### Quadranten+Koordinanten-Funktionen: Version 1.7.2 ## 2022-01-03 #########
 ####################################################################################
 
 
@@ -1034,7 +1034,9 @@ function gps_gesamt_ausgabe($gps_koordinaten_input,$input='gradminsec')
  $ausgabe_mgrs_km_feld = $mgrs_arr['raster']." ".$ausg_mgrs_1.$ausg_mgrs_2;
  
  $quadrant_arr = quadrant_gps_neu($ausgabe_gradminsec);
- $ausgabe_quadrant = $quadrant_arr['grundfeld']."/".$quadrant_arr['quadrant'];
+ if (isset($quadrant_arr['grundfeld']) && isset($quadrant_arr['quadrant'])) $ausgabe_quadrant = $quadrant_arr['grundfeld']."/".$quadrant_arr['quadrant'];
+ elseif (isset($quadrant_arr['grundfeld'])) $ausgabe_quadrant = $quadrant_arr['grundfeld']."/ ";
+ else $ausgabe_quadrant = '';
  
  $ausgabe_gradminsec1 = str_replace("O","E", $ausgabe_gradminsec1);
  
