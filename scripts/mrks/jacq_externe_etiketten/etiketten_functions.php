@@ -1017,7 +1017,12 @@ function nomalize_input_data($data_arr, $outputtype = 'label')
             if (isset($data_line['accessible'])) $accessible = $data_line['accessible'];
             else $accessible = '';
 
-            
+             # accessible
+            if (isset($data_line['stable identifier'])) $stable_url = $data_line['stable identifier'];
+            elseif (isset($data_line['stable_url'])) $stable_url = $data_line['stable_url'];
+            else $stable_url = '';
+
+           
             
             for ($nn = ($coll_no_range1 == '' ? 1 : $coll_no_range1) ; $nn <= ($coll_no_range2 == '' ? 1 : $coll_no_range2); $nn++) # if coll_nr_range1 and coll_nr_range2 not set, then just one iteration
                 {
@@ -1095,7 +1100,8 @@ function nomalize_input_data($data_arr, $outputtype = 'label')
                         "digital_image_obs" => $digital_image_obs ,
                         "observation" => $observation ,
                         "checked" => $checked ,
-                        "accessible" => $accessible);
+                        "accessible" => $accessible,
+                        "stable_url" => $stable_url);
                     
                     
                     } # end of data multipication (quantity)

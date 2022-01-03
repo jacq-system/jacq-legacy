@@ -26,6 +26,10 @@ $land_result ='';
 $html ='';
 $html2_labels = '';
 
+# function for preg_replace_callback (insert narrow space)
+function leerzeichen($matches) {
+  return $matches[0] . '&#8239;';
+}
 
 
 
@@ -254,11 +258,19 @@ $plfa_html = $name_aufgespalten;
 $plfa_html = str_replace(". )", ".)", $plfa_html); # ersetzt stoerende leerzeichen vor Klammern.
 
 	$title = "Herbarium ".$zelle['institution_code'];
+	$stable_url = $zelle['stable_url'];
+	$stable_url_nr = preg_replace('/^((https)|(http)):\/\/.*\//i','',$stable_url);
 	
-	if ($herb_nr != '') $herb_nr_html = '	  <tr>
+
+$pattern = '/[a-z\-]+/i';
+$stable_url_nr = preg_replace_callback($pattern, 'leerzeichen', $stable_url_nr);
+	
+	
+	
+/*	if ($herb_nr != '') $herb_nr_html = '	  <tr>
 	    <td style="text-align: left; font-size: 4pt; vertical-align:top;">'.$herb_nr.'</td>
 	  </tr>';
-    else $herb_nr_html = "";
+    else $herb_nr_html = ""; */
 
 	
  $html_2_labels_temp = '<table cellSpacing="0" class="outer2"  style="page-break-inside:avoid;"  width="100%">
@@ -268,15 +280,16 @@ $plfa_html = str_replace(". )", ".)", $plfa_html); # ersetzt stoerende leerzeich
     <td style="height: 29.5mm; vertical-align:top; padding-left: 0em; padding-right: 0em;">
       <table cellSpacing="0" class="inner" width="100%" style=" vertical-align:top;" >
 	<tbody style="vertical-align:top;">
-	'.$herb_nr_html.'
-	  <tr style = "border-bottom:solid;">
+	  <tr style = "border-bottom:1px solid black;">
+        <td style = "border-bottom:1px solid black; font-size: 7pt;" width="25%">'.$stable_url_nr.'&nbsp;</td>
 	    <td style="text-align: center; font-size: 11pt; padding-bottom:0.15em;  vertical-align:top; border-bottom:1px solid black;">'.$title.'</td>
+        <td style = "border-bottom:1px solid black;" width="25%">&nbsp;</td>
 	  </tr>
 	  <tr>
-	    <td style="height: 2em; text-align: left; font-size: 12pt; vertical-align:middle; padding-top:0.5em;">'.$plfa_html.'</td>
+	    <td colspan = "3" style="height: 2em; text-align: left; font-size: 12pt; vertical-align:middle; padding-top:0.5em;">'.$plfa_html.'</td>
 	  </tr>
 	  <tr>
-	    <td style="height: 1em; text-align: left; font-size: 10pt; vertical-align:middle;padding-top:0.5em">'.$datum."&nbsp;&nbsp;&nbsp; ".$det.'</td>
+	    <td colspan = "3" style="height: 1em; text-align: left; font-size: 10pt; vertical-align:middle;padding-top:0.5em">'.$datum."&nbsp;&nbsp;&nbsp; ".$det.'</td>
 	  </tr>
 	</tbody>
       </table>
