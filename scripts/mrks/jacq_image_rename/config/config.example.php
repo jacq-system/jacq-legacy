@@ -14,6 +14,10 @@ $input_base_dir = "";
 # locatioan where all new images should be stored (it should have write access)
 $output_base_dir = "";
 
+#necessary fo herbarium WU only:  output directory for copying files to phaidra
+$output_dir2 = "";
+
+
 # tmp folder should have write access
 $tmp_dir = "";
 
@@ -27,6 +31,10 @@ $acronym = "W"; # herbarium acronym of qr-codes and output_images; e.g. "WU"
 #   $output_format = "phaidra";  # eg. WU0000000.tif
 #   $output_format = "traditional"; # eg. wu_0000000.tif
 $output_format = "traditional";
+
+
+#session parameters
+$session_subfolder = "/Output/"; #folder within the session folder, where tifs are stored
 
 ?>
 

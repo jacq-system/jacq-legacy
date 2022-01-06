@@ -13,7 +13,10 @@ config-file:
     - output format: "phaidra" will give e.g. WU0123456.tif and "traditional" wu_0123456.tif
 
 adapt the absolute (!) path of the config file in "image_rename.php" 
-    
+
+make image-rename.php executable:
+    chmod +x image-rename.php
+
 create symlink to /usr/local/bin/:
     ln -s ./image_rename.php /usr/local/bin/jacq-image-rename
     
@@ -40,6 +43,12 @@ e.g.:
 for further options see jacq-image-rename -h
 
 
+### for WU only: ###
+to copy files to phaidra use the script wu2phaidra.php 
+    - edit config file and add absolute  to phaidra share in $output_dir2
+    - make executeable: chmod +x wu2phaidra.php
+    - create symlink: ln -s ./wu2phaidra.php /usr/local/bin/wu2phaidra
+to copy files use parameter -s and enter the session name e.g.: wu2phaidra -s 220105_01
     
 
     
