@@ -4,7 +4,7 @@ require_once 'inc/functions.php';
 if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
                   c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
-                  s.Nummer, s.alt_number, s.Datum, mc.collection, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
+                  s.Nummer, s.alt_number, s.Datum, mc.collection, mc.coll_short_prj, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
                   ph.specimenID AS phaidraID,
                   n.nation_engl, n.iso_alpha_2_code, p.provinz, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -47,10 +47,10 @@ if (!empty($_POST['submit'])) {
     $sql_restrict_specimen = $sql_restrict_species = "";
     while (list($var, $value) = each($_POST)) {
         // echo "$var = $value<br>\n";
-        if ($value != "" && $var != "submit" && $var != "PHPSESSID") {
+        if (trim($value) != "" && $var != "submit" && $var != "PHPSESSID") {
             if ($var != "type" && $var != "images" && $var != "synonym") {
-                $varE   = $dbLink->real_escape_string($var);
-                $valueE = $dbLink->real_escape_string($value);
+                $varE   = $dbLink->real_escape_string(trim($var));
+                $valueE = $dbLink->real_escape_string(trim($value));
                 if ($var == "taxon") {
                     $pieces = explode(" ", $valueE);
                     $part1 = array_shift($pieces);
@@ -114,7 +114,41 @@ if (!empty($_POST['submit'])) {
                 } elseif ($var == "CollDate") {
                     $sql_restrict_specimen .= "AND (s.Datum LIKE '%$valueE%') ";
                 } elseif ($var == "Sammler") {
-                    $sql_restrict_specimen .= "AND (Sammler LIKE '$valueE%' OR Sammler_2 LIKE '%$valueE%') ";
+                    $sql_restrict_specimen .= "AND (s.SammlerID IN (";
+                    // first search in tbl_collector for collector and similar entries
+                    $results = array();
+                    $rows = $dbLink->query("SELECT SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID
+                                            FROM tbl_collector
+                                            WHERE Sammler LIKE '$valueE%'")
+                                   ->fetch_all(MYSQLI_ASSOC);
+                    foreach ($rows as $row) {
+                        $results[] = $row['SammlerID'];
+                        $othersFlag = false;
+                        $sql = "SELECT SammlerID
+                                FROM tbl_collector
+                                WHERE SammlerID != " . $row['SammlerID'] . "
+                                 AND  (";
+                        foreach (array('HUH_ID', 'VIAF_ID', 'WIKIDATA_ID', 'ORCID', 'Bloodhound_ID') as $type) {
+                            if ($row[$type]) {
+                                $sql .= (($othersFlag) ? " OR " : '') . "$type = '" . $row[$type] . "'";
+                                $othersFlag = true;
+                            }
+                        }
+                        if ($othersFlag) {
+                            $others = $dbLink->query($sql . ')')->fetch_all(MYSQLI_ASSOC);
+                            foreach ($others as $item) {
+                                $results[] = $item['SammlerID'];
+                            }
+                        }
+                    }
+                    $sql_restrict_specimen .= (($results) ? implode(', ', $results) : 'NULL') . ")";
+
+                    // second search in tbl_collector_2
+                    $rows2 = $dbLink->query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 LIKE '%$valueE%'")->fetch_all(MYSQLI_ASSOC);
+                    if (!empty($rows2)) {
+                        $sql_restrict_specimen .= " OR s.Sammler_2ID IN (" . implode(', ', array_column($rows2, 'Sammler_2ID')) . ")";
+                    }
+                    $sql_restrict_specimen .= ") ";
                 } elseif ($var == "Fundort") {
                     $sql_restrict_specimen .= "AND (Fundort LIKE '%$valueE%' OR Fundort_engl LIKE '%$valueE%') ";
                 } elseif ($var == "nation_engl") {

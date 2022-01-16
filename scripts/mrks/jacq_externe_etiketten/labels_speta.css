@@ -1,0 +1,65 @@
+body {
+	font-family: sans;
+	font: freesans,Quivira,FreeSans,Arial,Helvetica;
+}
+
+
+table {
+	page-break-inside:avoid;
+    width: 100%;
+    border-spacing: 0px;
+	border-collapse: separate;
+	padding: 0px;
+	margin: 0px 0px;
+//	background-color:#FFFFFF; /* neccesary for correct alignment of labels !!!!!!!!!!!!!!!! */ // verursacht php-warnung!!!!
+//Notice: Undefined offset: 0 in /home/mrks/www/kartierung_herbar2/external_tools/composer/vendor/mpdf/mpdf/src/Writer/BaseWriter.php on line 205
+//Notice: Undefined offset: 1 in /home/mrks/www/kartierung_herbar2/external_tools/composer/vendor/mpdf/mpdf/src/Writer/BaseWriter.php on line 205
+}
+table.outer2 {
+	border-collapse: separate;
+	padding: 0px 0px;
+	margin: 0px;
+	empty-cells: hide;
+}
+table.outer2 td {
+}
+table.inner {
+	border-collapse: collapse;
+	padding: 0px;
+	empty-cells: show;
+}
+td {
+	padding: 0px;
+}
+table.inner td {
+	padding: 0px;
+}
+table.collapsed {
+	border-collapse: collapse;
+}
+table.collapsed td {
+}    
+
+    
+.width33 {
+    width: 33%;
+}
+.width35 {
+    width: 35%;
+}
+.width65 {
+    width: 65%;
+}
+.width8_5 {
+    width: 8.5%;
+}
+.width91_5 {
+    width: 91.5%;
+}
+
+.pagebreakdiv {
+  font-size: 0.001pt; 
+  page-break-after: auto; 
+  // page-break-before: auto;  // causes error: Notice: Undefined index: current in /home/mrks/www/kartierung_herbar2/external_tools/composer/vendor/mpdf/mpdf/src/Tag/BlockTag.php on line 316
+
+}

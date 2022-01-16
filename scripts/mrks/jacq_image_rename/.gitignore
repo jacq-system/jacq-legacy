@@ -1,0 +1,7 @@
+config.php
+.htaccess
+.htuser
+.htpasswd
+test_img
+test_output_img
+tmp/
