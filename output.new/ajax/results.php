@@ -236,7 +236,8 @@ while ($row = $result->fetch_array()) {
         echo "<td class='result' valign='top' title='" . htmlspecialchars($row['collection']) . "'>" . htmlspecialchars($row['HerbNummer']) . "</td>";
     } else {
         echo "<td class='result' valign='top' title='" . htmlspecialchars($row['collection']) . "'>"
-           . htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+           . htmlspecialchars(mb_strtoupper($row['coll_short_prj'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
+           //. htmlspecialchars(collectionItem($row['collection'])) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
     }
 
     if ($row['Coord_S'] > 0 || $row['S_Min'] > 0 || $row['S_Sec'] > 0) {
