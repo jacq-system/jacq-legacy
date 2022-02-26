@@ -33,15 +33,15 @@ function dec2min($angle, $type = '', $print = true)
     }
 }
 
-function makeInstitutionDropdown($institution, $selected, $id)
+function makeInstitutionDropdown($institutions, $selected, $id)
 {
-    $dropdown = "<select class=\"cssf\" name=\"linkInstitution_$id\" id=\"linkInstitution_$id\">";
-    for ($i = 0; $i < count($institution[0]); $i++) {
-        $dropdown .= "<option value=\"" . $institution[0][$i] . "\"";
-        if ($selected == $institution[0][$i]) {
+    $dropdown = "<select class='cssf' name='linkInstitution_$id' id='linkInstitution_$id'>\n";
+    foreach ($institutions as $institution) {
+        $dropdown .= "<option value='" . $institution[0] . "'";
+        if ($selected == $institution[0]) {
             $dropdown .= " selected";
         }
-        $dropdown .= ">" . htmlspecialchars($institution[1][$i]) . "</option>";
+        $dropdown .= ">" . htmlspecialchars($institution[1]) . "</option>\n";
     }
     $dropdown .= "</select>\n";
 
@@ -115,7 +115,7 @@ function searchGeonames($searchtext)
                       . "<b>name:</b> " . $row['name'] . "<br>\n"
                       . (($row['alternatenames']) ? "<b>alternatenames:</b> " . $row['alternatenames'] . "<br>\n" : "")
                       . "<b>lat/lon:</b> " . dec2min($row['latitude'], 'lat') . " / " . dec2min($row['longitude'], 'lon') . "   "
-                      .  "<a style=\"color:blue; margin-left:2em;\" href=\"http://www.geonames.org/maps/google_" . $row['latitude'] . "_" . $row['longitude'] . ".html\" target=\"_blank\">view in google-maps</a><br>\n"
+                      . "<a style='color:blue; margin-left:2em;' href='http://www.geonames.org/maps/google_" . $row['latitude'] . "_" . $row['longitude'] . ".html' target='_blank'>view in google-maps</a><br>\n"
                       . "<b>country:</b> " . $row['nation_engl'] . " (" . $row['iso_alpha_2_code'] . ")<br>\n"
                       . "<b>admin1 code:</b> $admin1Code\n";
             }
@@ -220,17 +220,17 @@ function editLink($specimenID)
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
-        $institution[0][] = $row['source_id'];
-        $institution[1][] = substr($row['source_code'], 0, 3);
+        $institution[] = array($row['source_id'],
+                               substr($row['source_code'], 0, 3));
     }
 
     if ($specimenID) {
-        $ret = "<form id=\"f_iBox\">\n"
-             . "<input type=\"hidden\" name=\"linkSpecimenID\" id=\"linkSpecimenID\" value=\"$specimenID\">\n"
+        $ret = "<form id='f_iBox'>\n"
+             . "<input type='hidden' name='linkSpecimenID' id='linkSpecimenID' value='$specimenID'>\n"
              . "<table>\n";
         if (($_SESSION['editControl'] & 0x2000) != 0) {
-            $ret .= "<tr><td colspan=\"3\">"
-                  . "<input type=\"submit\" class=\"cssfbutton\" value=\"update\" onClick=\"jaxon_updateLink(jaxon.getFormValues('f_iBox')); return false;\">"
+            $ret .= "<tr><td colspan='3'>"
+                  . "<input type='submit' class='cssfbutton' value='update' onClick=\"jaxon_updateLink(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
         }
         $sql = "( SELECT specimens_linkID, specimen1_ID AS specimenID
@@ -249,20 +249,20 @@ function editLink($specimenID)
                     WHERE s.collectionID = mc.collectionID
                      AND s.specimen_ID = '" . $row['specimenID'] . "'";
             $row2 = mysqli_fetch_array(dbi_query($sql));
-            $ret .= "<tr><td align=\"center\">"
+            $ret .= "<tr><td align='center'>"
                   . makeInstitutionDropdown($institution, $row2['source_id'], $id)
                   . "</td><td>"
-                  . "<input class=\"cssftext\" style=\"width: 20em;\" type=\"text\" name=\"linkSpecimen_$id\" id=\"linkSpecimen_$id\" value=\"" . htmlspecialchars($row2['HerbNummer']) . "\">"
-                  . "</td><td align=\"center\">";
+                  . "<input class='cssftext' style='width: 20em;' type='text' name='linkSpecimen_$id' id='linkSpecimen_$id' value='" . htmlspecialchars($row2['HerbNummer']) . "'>"
+                  . "</td><td align='center'>";
             if (($_SESSION['editControl'] & 0x2000) != 0) {
-                $ret .= "<img src=\"webimages/remove.png\" title=\"delete entry\" onclick=\"jaxon_deleteLink('" . $row['specimens_linkID'] . "', '$specimenID');\">";
+                $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteLink('" . $row['specimens_linkID'] . "', '$specimenID');\">";
             }
             $ret .= "</td></tr>\n";
         }
-        $ret .= "<tr><td align=\"center\">"
+        $ret .= "<tr><td align='center'>"
               . makeInstitutionDropdown($institution, 0, 0)
               . "</td><td>"
-              . "<input class=\"cssftext\" style=\"width: 20em;\" type=\"text\" name=\"linkSpecimen_0\" id=\"linkSpecimen_0\" value=\"\">"
+              . "<input class='cssftext' style='width: 20em;' type='text' name='linkSpecimen_0' id='linkSpecimen_0' value=''>"
               . "</td><td></td></tr>\n"
               . "</table>\n"
               . "</form>\n";
