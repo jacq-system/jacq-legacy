@@ -45,18 +45,20 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
                          HUH_ID = " . quoteString($_POST['HUH_ID']) . ",
                          VIAF_ID = " . quoteString($_POST['VIAF_ID']) . ",
                          WIKIDATA_ID = " . quoteString($_POST['WIKIDATA_ID']) . ",
-                         ORCID = " . quoteString($_POST['ORCID']) . "
+                         ORCID = " . quoteString($_POST['ORCID']) . ",
+                         Bloodhound_ID = " . quoteString($_POST['Bionomia']) . "
                         WHERE SammlerID = '" . intval($_POST['ID']) . "'";
             } else {
                 $sql = "";
             }
         } else {
-          $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID) "
+          $sql = "INSERT INTO tbl_collector (Sammler, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID) "
                . " VALUES ('" . dbi_escape_string($_POST['Sammler']) . "', "
                .  quoteString($_POST['HUH_ID']) . ", "
                .  quoteString($_POST['VIAF_ID']) . ", "
                .  quoteString($_POST['WIKIDATA_ID']) . ", "
-               .  quoteString($_POST['ORCID']) . ")";
+               .  quoteString($_POST['ORCID']) . ", "
+               .  quoteString($_POST['Bionomia']) . ")";
         }
         $result = dbi_query($sql);
         $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
@@ -77,7 +79,7 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
 
 echo "<form name='f' Action='" . $_SERVER['PHP_SELF'] . "' Method='POST'>\n";
 
-$sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID
+$sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID
         FROM tbl_collector WHERE SammlerID = '$id'";
 $result = dbi_query($sql);
 $row = mysqli_fetch_array($result);
@@ -97,11 +99,13 @@ $cf->label(7,8.5,"WIKIDATA","javascript:showExternal(document.f.WIKIDATA_ID)");
 $cf->inputText(7,8.5,50,"WIKIDATA_ID",$row['WIKIDATA_ID'],200);
 $cf->label(7,10.5,"ORCID","javascript:showExternal(document.f.ORCID)");
 $cf->inputText(7,10.5,50,"ORCID",$row['ORCID'],200);
+$cf->label(7,12.5,"Bionomia","javascript:showExternal(document.f.Bionomia)");
+$cf->inputText(7,12.5,50,"Bionomia",$row['Bloodhound_ID'],200);
 
 if (($_SESSION['editControl'] & 0x1800)!=0) {
   $text = ($row['SammlerID']) ? " Update " : " Insert ";
-  $cf->buttonSubmit(2,14,"submitUpdate",$text);
-  $cf->buttonJavaScript(12,14," New ","self.location.href='editCollector.php?sel=<0>'");
+  $cf->buttonSubmit(2,16,"submitUpdate",$text);
+  $cf->buttonJavaScript(12,16," New ","self.location.href='editCollector.php?sel=<0>'");
 }
 
 echo "</form>\n";

@@ -155,6 +155,11 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
       <tr align="left"><td>
         <input class="button" type="button" value="change password" onclick="changePassword()">
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
+<?php if (checkRight('admin')): ?>
+      <tr align="left"><td>
+        <input class="button" type="button" value="make StblID" onClick="openWindow('makeSpecimensStblid.php','StblID')">
+      </td><td style="width:20px">&nbsp;</td><td></td></tr>
+<?php endif; ?>
     </table>
   </form>
 </div>
