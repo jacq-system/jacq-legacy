@@ -151,6 +151,12 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_specimen .= ") ";
                 } elseif ($var == "Fundort") {
                     $sql_restrict_specimen .= "AND (Fundort LIKE '%$valueE%' OR Fundort_engl LIKE '%$valueE%') ";
+                } elseif ($var == "habitus") {
+                    $sql_restrict_specimen .= "AND (habitus LIKE '%$valueE%') ";
+                } elseif ($var == "habitat") {
+                    $sql_restrict_specimen .= "AND (habitat LIKE '%$valueE%') ";
+                } elseif ($var == "annotation") {
+                    $sql_restrict_specimen .= "AND (Bemerkungen LIKE '%$valueE%') ";
                 } elseif ($var == "nation_engl") {
                     $sql_restrict_specimen .= "AND (nation_engl LIKE '$valueE%' OR nation LIKE '$valueE%'"
                                             . "     OR (language_variants LIKE '%$valueE%' AND language_variants NOT LIKE '%(%$valueE%)%')) ";

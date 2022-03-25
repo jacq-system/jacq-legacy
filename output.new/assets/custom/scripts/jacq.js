@@ -23,8 +23,6 @@ function check() {
         isEmpty(document.f.collection.value) &&
         isEmpty(document.f.taxon_alt.value) &&
         isEmpty(document.f.series.value) &&
-        isEmpty(document.f.geo_general.value) &&
-        isEmpty(document.f.geo_region.value) &&
         isEmpty(document.f.nation_engl.value) &&
         isEmpty(document.f.provinz.value) &&
         isEmpty(document.f.CollNummer.value) &&

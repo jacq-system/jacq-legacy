@@ -171,6 +171,18 @@
       </td>
     </tr>
     <tr>
+      <td align="right">Habitat</td>
+      <td>
+        <b><?php echo nl2br($specimen['habitat'], true); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Habitus</td>
+      <td>
+        <b><?php echo nl2br($specimen['habitus'], true); ?></b>
+      </td>
+    </tr>
+    <tr>
       <td align="right">Annotations</td>
       <td>
         <b><?php echo nl2br($output['annotations'], true); ?></b>

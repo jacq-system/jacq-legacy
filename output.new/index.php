@@ -350,56 +350,31 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       <input name="Fundort" id="Fundort" type="text">
                                        <label for="Fundort">Locality</label>
                                   </div>
-                                  <!-- Continent -->
-                                  <div class="input-field">
-                                      <select id="ajax_geo_general" name="geo_general">
-                                          <option value="" selected>all continents</option>
-                                          <?php
-                                          $result_geo_general = $dbLink->query("SELECT geo_general
-                                                                                FROM tbl_geo_region
-                                                                                GROUP BY geo_general
-                                                                                ORDER BY geo_general");
-                                          while ($row = $result_geo_general->fetch_array()) {
-                                              echo "<option value=\"{$row['geo_general']}\"";
-                                              if ($geo_general == $row['geo_general']) {
-                                                  echo " selected";
-                                              }
-                                              echo ">{$row['geo_general']}</option>\n";
-                                          }
-                                          ?>
-                                      </select>
-                                       <label>Search in</label>
-                                  </div>
-                                  <!-- Series -->
+                                  <!-- Country -->
                                   <div id="ajax_nation_engl_div" class="input-field">
                                       <input id="ajax_nation_engl" name="nation_engl" type="text" value="<?php echo htmlspecialchars($nation_engl); ?>">
                                        <label for="ajax_nation_engl">Country</label>
-                                  </div>
-                                  <!-- Region -->
-                                  <div class="input-field">
-                                      <select id="ajax_geo_region" name="geo_region">
-                                          <option value="" selected>all regions</option>
-                                          <?php
-                                          $result_geo_region = $dbLink->query("SELECT geo_region
-                                                                               FROM tbl_geo_region
-                                                                               ORDER BY geo_region");
-                                          while ($row = $result_geo_region->fetch_array()) {
-                                              echo "<option value=\"{$row['geo_region']}\"";
-                                              if ($geo_region == $row['geo_region']) {
-                                                  echo " selected";
-                                              }
-                                              echo ">{$row['geo_region']}</option>\n";
-                                          }
-                                          ?>
-                                      </select>
-                                      <label>Search in</label>
                                   </div>
                                   <!-- State/Province -->
                                   <div id="ajax_provinz_div" class="input-field">
                                       <input id="ajax_provinz" name="provinz" type="text">
                                        <label for="ajax_provinz">State/Province</label>
-                                  </div>             
-                                  <!-- Placeholder -->
+                                  </div> 
+                                  <!-- Habitat -->
+                                  <div class="input-field">
+                                      <input name="habitat" id="habitat" type="text">
+                                       <label for="habitat">Habitat</label>
+                                  </div>
+                                  <!-- Habitus -->
+                                  <div class="input-field">
+                                      <input name="habitus" id="habitus" type="text">
+                                       <label for="habitus">Habitus</label>
+                                  </div>
+                                  <div class="input-field">
+                                      <input name="annotation" id="annotation" type="text">
+                                       <label for="annotation">Annotation</label>
+                                  </div>
+                                 <!-- Placeholder -->
                                   <div></div>
                               </div>
                           </div>
