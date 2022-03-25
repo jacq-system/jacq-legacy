@@ -167,7 +167,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bgbm.org/" target="_blank"><img src="assets/images/logo_bgbm_rgb.png" alt="BGBM Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bo.berlin/" target="_blank"><img src="assets/images/Bo_Logo.png" height ="70" alt="Bo Logo"></a></div>
                   <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
                 </div>
                 <div id="partners">
