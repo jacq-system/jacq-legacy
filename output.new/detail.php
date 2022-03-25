@@ -128,7 +128,7 @@ function makeTypus($ID) {
                  WHERE ti.taxonID='" . $row['taxonID'] . "'";
         $result2 = $dbLink->query($sql2);
 
-        $text .= "<tr><td nowrap align=\"right\">" . $row['typus_lat'] . " for&nbsp;</td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>";
+        $text .= "<tr><td nowrap align=\"right\">" . $row['typus_lat'] . " of&nbsp;</td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>";
         $text .="<tr><td nowrap align=\"right\"></td><td>Typified by:&nbsp;<b>" . $row['typified_by_Person'] . "&nbsp;" . $row['typified_Date'] ."</b></td></tr>";
         while ($row2 = $result2->fetch_array()) {
             $text .= "<tr><td></td><td><b>" . protolog($row2) . "</b></td></tr>";
@@ -147,11 +147,12 @@ function makeTypus($ID) {
  **********************************/
 $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
                              s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified, s.typusID,
-                             s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation,
+                             s.digital_image, s.digital_image_obs, s.HerbNummer, s.CollNummer, s.ncbi_accession, s.observation,
                              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
+                             m.source_code,
                              tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
@@ -159,6 +160,7 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                             FROM tbl_specimens s
                              LEFT JOIN tbl_specimens_series ss           ON ss.seriesID = s.seriesID
                              LEFT JOIN tbl_management_collections mc     ON mc.collectionID = s.collectionID
+                             LEFT JOIN meta m                            ON m.source_id = mc.source_id
                              LEFT JOIN tbl_img_definition tid            ON tid.source_id_fk = mc.source_id
                              LEFT JOIN tbl_geo_nation n                  ON n.NationID = s.NationID
                              LEFT JOIN tbl_geo_province p                ON p.provinceID = s.provinceID
@@ -187,7 +189,9 @@ $output['ID'] = $ID;
 
 $output['stblid'] = StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID']);
 
-$output['collectionID'] = collectionID($specimen);
+$output['HerbariumNr'] = HerbariumNr($specimen);
+
+$output['collectionNr'] = trim($specimen['collection'] . " " . $specimen['CollNummer']);
 
 $output['taxon'] = taxonWithHybrids($specimen);
 
