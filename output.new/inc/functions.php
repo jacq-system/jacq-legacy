@@ -199,6 +199,19 @@ function collectionID($row)
     return trim($text);
 }
 
+function HerbariumNr($row)
+{
+    if ($row['source_id'] == '29') {
+        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
+    } elseif ($row['source_id'] == '50') {
+        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
+    } else {
+        $text = $row['source_code'] . " " . $row['HerbNummer'];
+    }
+
+    return trim($text);
+}
+
 function taxon($row)
 {
     $text = $row['genus'];

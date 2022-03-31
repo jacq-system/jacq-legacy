@@ -67,9 +67,15 @@
       </td>
     </tr>
     <tr>
-      <td align="right" width="30%">Collection Herb.#</td>
+      <td align="right" width="30%">Herbarium #</td>
       <td>
-        <b><?php echo $output['collectionID']; ?></b>
+        <b><?php echo $output['HerbariumNr']; ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right" width="30%">Collection #</td>
+      <td>
+        <b><?php echo $output['collectionNr']; ?></b>
       </td>
     </tr>
     <tr>
@@ -162,6 +168,18 @@
       <td align="right">Label</td>
       <td>
         <b><?php echo nl2br($specimen['Fundort'], true); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Habitat</td>
+      <td>
+        <b><?php echo nl2br($specimen['habitat'], true); ?></b>
+      </td>
+    </tr>
+    <tr>
+      <td align="right">Habitus</td>
+      <td>
+        <b><?php echo nl2br($specimen['habitus'], true); ?></b>
       </td>
     </tr>
     <tr>
