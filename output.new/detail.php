@@ -119,8 +119,7 @@ function makeTypus($ID) {
             $accName = "";
         }
 
-        $sql2 = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part,
-                  ti.paginae, ti.figures, l.jahr
+        $sql2 = "SELECT l.suptitel, la.autor, l.periodicalID, lp.periodical, l.vol, l.part, ti.paginae, ti.figures, l.jahr
                  FROM tbl_tax_index ti
                   INNER JOIN tbl_lit l ON l.citationID=ti.citationID
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
@@ -128,13 +127,25 @@ function makeTypus($ID) {
                  WHERE ti.taxonID='" . $row['taxonID'] . "'";
         $result2 = $dbLink->query($sql2);
 
-        $text .= "<tr><td nowrap align=\"right\">" . $row['typus_lat'] . " of&nbsp;</td><td><b>" . taxonWithHybrids($row) . "</b></td></tr>";
-        $text .="<tr><td nowrap align=\"right\"></td><td>Typified by:&nbsp;<b>" . $row['typified_by_Person'] . "&nbsp;" . $row['typified_Date'] ."</b></td></tr>";
+        $text .= "<tr>"
+               .   "<td nowrap align=\"right\">" . $row['typus_lat'] . " of&nbsp;</td>"
+               .   "<td><b>" . taxonWithHybrids($row) . "</b></td>"
+               . "</tr>";
         while ($row2 = $result2->fetch_array()) {
-            $text .= "<tr><td></td><td><b>" . protolog($row2) . "</b></td></tr>";
+            $text .= "<tr>"
+                   .   "<td></td>"
+                   .   "<td><b>" . protolog($row2) . "</b></td>"
+                   . "</tr>";
         }
+        $text .="<tr>"
+               .   "<td nowrap align=\"right\"></td>"
+               .   "<td>Typified by:&nbsp;<b>" . $row['typified_by_Person'] . "&nbsp;" . $row['typified_Date'] ."</b></td>"
+               . "</tr>";
         if (strlen($accName) > 0) {
-            $text .= "<tr><td></td><td><b>Current Name: <i>$accName</i></b></td></tr>";
+            $text .= "<tr>"
+                   .   "<td></td>"
+                   .   "<td><b>Current Name: <i>$accName</i></b></td>"
+                   . "</tr>";
         }
     }
     $text .= "";
