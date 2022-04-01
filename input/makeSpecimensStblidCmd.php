@@ -4,6 +4,13 @@ require_once './inc/variables.php';
 
 ini_set("max_execution_time","3600");
 
+if (in_array("-h", $argv) || in_array("--help", $argv)) {
+    echo $argv[0] . "                                    make stable-IDs for all new HerbNumbers\n"
+       . $argv[0] . " -h  --help                         this explanation\n"
+       . $argv[0] . "     --recheck_source_id source-id  recheck this source-ID for empty stable-IDs\n";
+    die();
+}
+
 /** @var mysqli $dbLink */
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
                      $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
@@ -46,6 +53,16 @@ function dbi_query($sql, $debug=false)
 
 require_once 'inc/stableIdentifierFunctions.php';
 
+/**
+ * check, if a source-ID is given to completely recheck for empty stable-IDs
+ */
+$key = array_search("--recheck_source_id", $argv);
+if ($key && $argc > $key + 1) {
+    $check_source_id = intval($argv[$key + 1]);
+} else {
+    $check_source_id = 0;
+}
+
 ob_start();
 
 $row_start = dbi_query("SELECT DATE(`starttime`) AS startdate FROM statusSpecimensStblid ORDER BY id DESC LIMIT 1")->fetch_array();
@@ -56,10 +73,21 @@ $startID = $dbLink->insert_id;
 
 $count_changed = $count_new = 0;
 $count = array();
-$result_specimen = dbi_query("SELECT s.`specimen_ID`, mc.`collectionID`, mc.`source_id`, s.`aktualdatum`
-                              FROM tbl_specimens s, tbl_management_collections mc
-                              WHERE s.`collectionID` = mc.`collectionID`
-                               AND TIMESTAMPDIFF(DAY, '$startdate', s.`aktualdatum`) >= 0");
+if (!$check_source_id) {
+    // make stable identifiers for all new HerbNumbers
+    $result_specimen = dbi_query("SELECT s.`specimen_ID`, mc.`collectionID`, mc.`source_id`, s.`aktualdatum`
+                                  FROM tbl_specimens s, tbl_management_collections mc
+                                  WHERE s.`collectionID` = mc.`collectionID`
+                                   AND TIMESTAMPDIFF(DAY, '$startdate', s.`aktualdatum`) >= 0");
+} else {
+    // make stable identifiers for all specimens of a given source-id which do not already exist
+    $result_specimen = dbi_query("SELECT s.`specimen_ID`, mc.`collectionID`, mc.`source_id`
+                                  FROM tbl_specimens s
+                                   LEFT JOIN tbl_management_collections mc ON mc.`collectionID` = s.`collectionID`
+                                   LEFT JOIN tbl_specimens_stblid ss ON ss.`specimen_ID` = s.`specimen_ID`
+                                  WHERE ss.`stableIdentifier` IS NULL
+                                   AND mc.`source_id` = $check_source_id");
+}
 while ($row_specimen = $result_specimen->fetch_array()) {
     $stblid = makeStableIdentifier($row_specimen['source_id'], array('specimen_ID' => $row_specimen['specimen_ID']), $row_specimen['collectionID']);
     if ($stblid) {
