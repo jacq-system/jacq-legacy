@@ -87,7 +87,7 @@ if (!empty($_POST['submit'])) {
                     } else {
                         $remaining = trim($value);
                     }
-                    // is there still a number left?
+                    // is there still something left?
                     if (strlen($remaining) > 0) {
                         // search for trailing alphameric characters
                         if (ctype_alpha(substr($remaining, -1))) {
@@ -102,12 +102,22 @@ if (!empty($_POST['submit'])) {
                         } else {
                             $trailing = ""; // no trailing chars
                         }
+                        if (strpos($remaining, '-') == 4) { // contents of search is ####-#... so, look also inside "CollNummer" (relevant for source-ID 6 = W)
+                            $pre = substr($remaining, 0, 5);
+                            $remaining = substr($remaining, 5);
+                        } else {
+                            $pre = "";
+                        }
                         if (strlen($remaining) >= 6) {
                             $number = $remaining;   // at least 6 digits, so no padding with zeros
                         } else {
                             $number = sprintf("%06d", intval($remaining));
                         }
-                        $sql_restrict_specimen .= "AND HerbNummer LIKE '%$number$trailing' ";
+                        if ($pre) {
+                            $sql_restrict_specimen .= "AND (HerbNummer LIKE '$pre%$number$trailing' OR CollNummer LIKE '$pre%$number$trailing') ";
+                        } else {
+                            $sql_restrict_specimen .= "AND HerbNummer LIKE '%$number$trailing' ";
+                        }
                     }
                 } elseif ($var == "SammlerNr") {
                     $sql_restrict_specimen .= "AND (s.Nummer='$valueE' OR s.alt_number LIKE '%$valueE%' OR s.series_number LIKE '%$valueE%') ";
