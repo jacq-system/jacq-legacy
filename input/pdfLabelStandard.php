@@ -149,7 +149,7 @@ function makeText($id)  {
     $concat = false;
   }
 
-  $sql = "SELECT ts.statusID, tg.genus, tf.family,
+  $sql = "SELECT ts.statusID, ts.taxonID, tg.genus, tf.family,
            ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
            ta4.author author4, ta5.author author5,
            te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -172,7 +172,7 @@ function makeText($id)  {
           WHERE ts.taxonID='".dbi_escape_string($row['taxonID'])."'";
   $row = dbi_query($sql)->fetch_array();
 
-  $text['taxon'] = taxonWithHybrids($row, true);
+  $text['taxon'] = taxonWithHybrids($row, true);  // TODO: change to usage of herbar_view.GetScientificName
   $text['family'] = $row['family'];
 
   //error_log("text = " . var_export($text,true),0);
