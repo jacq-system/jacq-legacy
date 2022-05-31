@@ -6,7 +6,7 @@ if (!empty($_POST['submit'])) {
                   c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
                   s.Nummer, s.alt_number, s.Datum, mc.collection, mc.coll_short_prj, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, s.HerbNummer,
                   ph.specimenID AS phaidraID,
-                  n.nation_engl, n.iso_alpha_2_code, p.provinz, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
+                  n.nation_engl, n.iso_alpha_2_code, p.provinz, s.Fundort, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                   s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
                   ta.author, ta1.author author1, ta2.author author2, ta3.author author3,

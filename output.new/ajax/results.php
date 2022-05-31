@@ -226,6 +226,17 @@ while ($row = $result->fetch_array()) {
         echo $row['provinz'];
         $switch = true;
     }
+    if (trim($row['Fundort'])) {
+        if ($switch) {
+            echo ". ";
+        }
+        if (strlen(trim($row['Fundort'])) > 50) {
+            echo substr(trim($row['Fundort']), 0, 50) . "...";
+        } else {
+            echo trim($row['Fundort']);
+        }
+        $switch = true;
+    }
     echo "</td>";
 
     echo "<td class=\"result\" valign=\"top\">"
