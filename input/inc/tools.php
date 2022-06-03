@@ -7,24 +7,38 @@
  * @version 14.07.2010
  */
 
-function AjaxParseValue($value)
+/**
+ * helper-function for ajax-calls with parameters
+ *
+ * looks for special patterns in a string or returns the original. Looks for <<foobar> (exact match is desired) or <foobar> (ID is given).
+ * Returns array with 'type' (exact, id or search), 'value' (text between <<> or <> or original $value) and 'original' (original text)
+ *
+ * @param string $value text to parse
+ * @return array result
+ */
+function AjaxParseValue ($value)
 {
-	$ret = array();
-
-	$result = preg_match('/\<\<(?P<exact>.*)\>/', $value, $matches);
-	if($result == 1){
+	if (preg_match('/\<\<(?P<exact>.*?)\>/', $value, $matches)) {  // group "exact" is returned, if <<foobar> is within searchtext
 		$exact = $matches['exact'];
-		return array('exact'=>$exact);
+        return array('type'     => 'exact',
+                     'value'    => $exact,
+                     'original' => $value,
+                     'exact'    => $exact);  // deprecated
 	}
 
-	$result = preg_match('/\<(?P<ID>.*)\>/', $value, $matches);
-	if($result == 1){
+	if (preg_match('/\<(?P<ID>.*?)\>/', $value, $matches)) {       // group "id" is returend, if <foobar> is within searchtext
 		$ID = $matches['ID'];
-		return array('id'=>$ID);
+        return array('type'     => 'id',
+                     'value'    => $ID,
+                     'original' => $value,
+                     'id'       => $ID);  // deprecated
 	}
 
-	$result = preg_replace('/\<.*\>/', '', $value);
-	return array('search'=>$result);
+    // neither exact nor id, so return the original string
+    return array('type'     => 'search',
+                 'value'    => $value,  // no filtering neccessary, all occurrences of "<...>" would have been found already and the first one returned as "id"
+                 'original' => $value,
+                 'search'   => preg_replace('/\<.*\>/', '', $value));  // deprecated
 }
 
 

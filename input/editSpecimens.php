@@ -6,6 +6,9 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+
+// TODO: link auf output/details wenn specimenID vorhanden
+
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -13,6 +16,7 @@ $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+//$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
@@ -22,11 +26,15 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 
-if (!isset($_SESSION['sPTID'])) $_SESSION['sPTID'] = 0;
+if (!isset($_SESSION['sPTID'])) {
+    $_SESSION['sPTID'] = 0;
+}
 
-if (isset($_GET['ptid'])) $_SESSION['sPTID'] = intval($_GET['ptid']);
+if (isset($_GET['ptid'])) {
+    $_SESSION['sPTID'] = intval(filter_input(INPUT_GET, 'ptid'));
+}
 
-$nr = isset($_GET['nr']) ? intval($_GET['nr']) : 0;
+$nr = isset($_GET['nr']) ? intval(filter_inpu(INPUT_GET, 'nr')) : 0;
 $linkList = $_SESSION['sLinkList'];
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" kann Batches aendern
 
@@ -433,14 +441,6 @@ if (isset($_GET['sel'])) {
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
         // allow write access to database if user is editor or is granted for both old and new collection
         if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
-            // TODO: add configuration switch for duplicate check
-//            $dummy = dbi_query("SELECT s.`specimen_ID`
-//                                FROM `tbl_specimens` s, `tbl_management_collections` mc
-//                                WHERE s.`collectionID` = mc.`collectionID`
-//                                 AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
-//                                 AND (mc.`source_id` = '1' OR mc.`source_id` = '6' OR mc.`source_id` = '4' OR mc.`source_id` = '5' OR mc.`source_id` = '29')
-//                                 AND mc.`coll_short_prj` = (SELECT `coll_short_prj` FROM `tbl_management_collections` WHERE `collectionID` = " . intval($p_collection) .")
-//                                 AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'");
             $dummy = dbi_query("SELECT s.`specimen_ID`
                                 FROM `tbl_specimens` s, `tbl_management_collections` mc
                                 WHERE s.`collectionID` = mc.`collectionID`
@@ -988,7 +988,7 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
     $cf->labelMandatory(11, $y, 8, "taxon");
 }
 //$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
-$cf->inputJqAutocomplete(11, $y, 50, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, ($p_external) ? 'red' : '');
+$cf->inputJqAutocomplete(11, $y, 50, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 
@@ -1051,6 +1051,7 @@ $cf->dropdown(46, $y, "province", $p_province, $province[0], $province[1]);
 
 $y += 2;
 $cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
+//$cf->label(35, $y, "**","#\" onclick=\"jaxon_searchGeonamesService(document.f.Bezirk.value);");
 $cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);
 
 $y += 2;
