@@ -6,8 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
-
-// TODO: link auf output/details wenn specimenID vorhanden
+//  TODO: link auf output/details wenn specimenID vorhanden
 
 use Jaxon\Jaxon;
 
@@ -34,7 +33,7 @@ if (isset($_GET['ptid'])) {
     $_SESSION['sPTID'] = intval(filter_input(INPUT_GET, 'ptid'));
 }
 
-$nr = isset($_GET['nr']) ? intval(filter_inpu(INPUT_GET, 'nr')) : 0;
+$nr = isset($_GET['nr']) ? intval(filter_input(INPUT_GET, 'nr')) : 0;
 $linkList = $_SESSION['sLinkList'];
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" kann Batches aendern
 
