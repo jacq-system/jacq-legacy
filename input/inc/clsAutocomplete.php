@@ -1052,6 +1052,7 @@ class clsAutocomplete {
      */
     public function taxonWithHybridsNew($value, $noExternals = false)
     {
+        $results = array();
         try {
             $display = clsDisplay::Load();
             /* @var $db clsDbAccess */
@@ -1063,24 +1064,25 @@ class clsAutocomplete {
                                       WHERE taxonID = ?");
                 $dbst->execute(array($value['id']));
                 $rows = $dbst->fetchAll();
-                $color = '';
-                if (is_numeric($rows[0]['synID'])) {
-                    $color = 'red';
-                } else if ($rows[0]['external']) {
-                    $color = 'darkorange'; // see also .taxon_external in screen.css
+                if (!empty($rows)) {
+                    $color = '';
+                    if (is_numeric($rows[0]['synID'])) {
+                        $color = 'red';
+                    } else if ($rows[0]['external']) {
+                        $color = 'darkorange'; // see also .taxon_external in screen.css
+                    }
+                    $results[] = array(
+                        'id'    => $rows[0]['taxonID'],
+                        'label' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                        'value' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                        'color' => $color,
+                    );
                 }
-                $results = array(
-                                 'id'    => $rows[0]['taxonID'],
-                                 'label' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
-                                 'value' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
-                                 'color' => $color,
-                                );
-
             } else {
                 if (strpos($value['value'], " x ") !== false) {
                     // find only hybrids, show nothing else
                     $hybridsOnly = true;
-                    $value['value'] = strtr($value['value'], array(" x " => "")); // strip " x " from search-string
+                    $value['value'] = strtr($value['value'], array(" x " => " ")); // strip " x " from search-string
                 } else {
                     // show everything, including hybrids
                     $hybridsOnly = false;
@@ -1099,8 +1101,6 @@ class clsAutocomplete {
                     }
                     $equ = 'LIKE';
                 }
-
-                $results = array();
 
                 if (!$hybridsOnly) {
                     $sql = "SELECT taxonID, ts.synID, ts.external
