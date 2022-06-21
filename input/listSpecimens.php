@@ -786,6 +786,27 @@ if ($error) {
 }
 ?>
 </form>
-
+<script type="text/javascript">
+    // added trim for HerbNummer to prevent spaces and tabs
+    $(document).ready(function() {
+        $('[name="number"]').blur(function() {
+            this.value = this.value.trim();
+            var number = this.value;
+            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+            if (r.test(number)) { // Yes, a valid url
+                $.ajax({
+                    url: "ajax/convStabURItoHerbnummer.php",
+                    data: {stableuri: number},
+                    type: 'post',
+                    success: function (data) {
+                        document.getElementsByName("number")[0].value = data;
+                        console.log("Success, you submit your form" + data);
+                    }
+                });   // Do your $.ajax({}); request here
+                var number = this.value;
+           }
+        })
+    });
+</script>
 </body>
 </html>

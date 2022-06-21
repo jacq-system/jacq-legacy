@@ -954,7 +954,7 @@ $cf->label(11, $y, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
 $cf->label(23, $y, "HerbarNr.");
-$cf->inputText(23, $y, 7, "HerbNummer", $p_HerbNummer, 25);
+$cf->inputText(23, $y, 7, "HerbNummer", $p_HerbNummer, 100);
 $cf->labelMandatory(37, $y, 5.5, "Collection");
 $cf->dropdown(37.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
 $cf->label(55, $y, "Nr.");
@@ -1163,9 +1163,22 @@ if ($updateBlocked) {
         $('[name="HerbNummer"]').blur(function() {
             this.value = this.value.trim();
             var HerbNummer = this.value;
-            var institutionNr = $('[name="institution"]').val();
-            var institutionName = $('[name="institution"] option:selected').text();
-        });
+            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+            if (r.test(HerbNummer)) { // Yes, a valid url
+                $.ajax({
+                    url: "ajax/convStabURItoHerbnummer.php",
+                    data: {stableuri: HerbNummer},
+                    type: 'post',
+                    success: function (data) {
+                        document.getElementsByName("HerbNummer")[0].value = data;
+                        console.log("Success, you submit your form" + data);
+                    }
+                });   // Do your $.ajax({}); request here
+                var HerbNummer = this.value;
+                var institutionNr = $('[name="institution"]').val();
+                var institutionName = $('[name="institution"] option:selected').text();
+            }
+        })
     });
 </script>
 </body>
