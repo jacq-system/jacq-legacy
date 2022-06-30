@@ -120,38 +120,78 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
         /* @var $db clsDbAccess */
         $db = clsDbAccess::Connect('INPUT');
 
+        // herbar_view.GetScientificName with optional seperator, Dalla Torre and ID
         /* @var $dbst PDOStatement */
-        $dbst = $db->prepare("SELECT taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
-                               ta.author  author0,  ta1.author  author1,  ta2.author  author2,  ta3.author  author3,  ta4.author  author4,  ta5.author  author5,
-                               te.epithet epithet0, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5
-                              FROM tbl_tax_species ts
-                               LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                               LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                               LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                               LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                               LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                               LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                               LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                               LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                               LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                               LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                               LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                               LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                               LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                              WHERE taxonID = :taxonID");
+        $dbst = $db->prepare("SELECT vt.`taxonID`,
+                                     vt.`genus`, vt.`author_g`, vt.`DallaTorreIDs`, vt.`DallaTorreZusatzIDs`, vt.`epithet`, vt.`author`,
+                                     vt.`epithet1`, vt.`author1`,vt.`epithet2`, vt.`author2`, vt.`epithet3`, vt.`author3`,
+                                     vt.`epithet4`, vt.`author4`, vt.`epithet5`, vt.`author5`, vt.`rank_abbr`
+                              FROM `herbar_view`.`view_taxon` vt
+                              WHERE vt.`taxonID` = :taxonID");
         $dbst->execute(array(":taxonID" => $taxonID));
         $row = $dbst->fetch();
 
-        $ret = $row['genus'];
-        if ($row['epithet0']) $ret .= " "          .$row['epithet0'] . (($withSeperator) ? chr(194) . chr(183) : "") . " " . $row['author0'];
-        if ($row['epithet1']) $ret .= " subsp. "   .$row['epithet1'] . " " . $row['author1'];
-        if ($row['epithet2']) $ret .= " var. "     .$row['epithet2'] . " " . $row['author2'];
-        if ($row['epithet3']) $ret .= " subvar. "  .$row['epithet3'] . " " . $row['author3'];
-        if ($row['epithet4']) $ret .= " forma "    .$row['epithet4'] . " " . $row['author4'];
-        if ($row['epithet5']) $ret .= " subforma " .$row['epithet5'] . " " . $row['author5'];
+        if (empty($row['epithet']) && empty($row['epithet1']) && empty($row['epithet2']) && empty($row['epithet3']) && empty($row['epithet4']) && empty($row['epithet5'])) {
+            $ret = $row['genus'] . (($withSeperator) ? chr(194) . chr(183) : "") . " " . $row['author_g'];
+        } else {
+            $ret = $row['genus'] . " " . $row['epithet'] . (($withSeperator) ? chr(194) . chr(183) : "") . " ";
+            $namePart2 = $author = "";
+            if ($row['epithet']) {
+                $author = $row['author'];
+            }
+            if ($row['epithet1']) {
+                $namePart2 = $row['rank_abbr'] . " " . $row['epithet1'];
+                $author    = (empty($row['author1']) && $row['epithet1'] == $row['epithet']) ? $row['author'] : $row['author1'];
+            }
+            if ($row['epithet2']) {
+                $namePart2 = $row['rank_abbr'] . " " . $row['epithet2'];
+                $author    = (empty($row['author2']) && $row['epithet2'] == $row['epithet']) ? $row['author'] : $row['author2'];
+            }
+            if ($row['epithet3']) {
+                $namePart2 = $row['rank_abbr'] . " " . $row['epithet3'];
+                $author    = (empty($row['author3']) && $row['epithet3'] == $row['epithet']) ? $row['author'] : $row['author3'];
+            }
+            if ($row['epithet4']) {
+                $namePart2 = $row['rank_abbr'] . " " . $row['epithet4'];
+                $author    = (empty($row['author4']) && $row['epithet4'] == $row['epithet']) ? $row['author'] : $row['author4'];
+            }
+            if ($row['epithet5']) {
+                $namePart2 = $row['rank_abbr'] . " " . $row['epithet5'];
+                $author    = (empty($row['author5']) && $row['epithet5'] == $row['epithet']) ? $row['author'] : $row['author5'];
+            }
+            $ret .= $namePart2 . " " . $author;
+        }
+//        $dbst = $db->prepare("SELECT taxonID, tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs,
+//                               ta.author  author0,  ta1.author  author1,  ta2.author  author2,  ta3.author  author3,  ta4.author  author4,  ta5.author  author5,
+//                               te.epithet epithet0, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5
+//                              FROM tbl_tax_species ts
+//                               LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+//                               LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+//                               LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+//                               LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+//                               LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+//                               LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+//                               LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+//                               LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+//                               LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+//                               LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+//                               LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+//                               LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+//                               LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+//                              WHERE taxonID = :taxonID");
+//        $dbst->execute(array(":taxonID" => $taxonID));
+//        $row = $dbst->fetch();
+//
+//        $ret = $row['genus'];
+//        if ($row['epithet0']) { $ret .= " "          .$row['epithet0'] . (($withSeperator) ? chr(194) . chr(183) : "") . " " . $row['author0']; }
+//        if ($row['epithet1']) { $ret .= " subsp. "   .$row['epithet1'] . " " . $row['author1']; }
+//        if ($row['epithet2']) { $ret .= " var. "     .$row['epithet2'] . " " . $row['author2']; }
+//        if ($row['epithet3']) { $ret .= " subvar. "  .$row['epithet3'] . " " . $row['author3']; }
+//        if ($row['epithet4']) { $ret .= " forma "    .$row['epithet4'] . " " . $row['author4']; }
+//        if ($row['epithet5']) { $ret .= " subforma " .$row['epithet5'] . " " . $row['author5']; }
 
-        if ($withDT) $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
-        if ($withID) $ret .= " <" . $row['taxonID'] . ">";
+        if ($withDT) { $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs']; }
+        if ($withID) { $ret .= " <" . $row['taxonID'] . ">"; }
 
         return $ret;
     }
@@ -220,7 +260,7 @@ public function SynonymyReference($synonymID,$row=array()){
 				$dbst = $db->prepare("SELECT serviceID, name FROM tbl_nom_service WHERE serviceID=:serviceID  ");
 				$dbst->execute(array(":serviceID" => $row['source_serviceID']));
 				$row = $dbst->fetch();
-				
+
 				return "{$row['name']} <{$row['serviceID']}>";
 			}else if($row['source']=='person'){
 				$dbst = $db->prepare("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE person_ID =:person_ID");
@@ -233,7 +273,7 @@ public function SynonymyReference($synonymID,$row=array()){
 		}
 	}catch (Exception $e) {
 		exit($e->getMessage());
-	}		
+	}
 }
 
 /***********************\

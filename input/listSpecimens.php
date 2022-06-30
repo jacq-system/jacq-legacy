@@ -60,6 +60,8 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sCountry']='' ;//    = $_POST['country'];
 		$_SESSION['sProvince']='' ;//   = $_POST['province'];
 		$_SESSION['sLoc']   =''   ;//   = $_POST['loc'];
+        $_SESSION['sHabitat'] = '';//   = $_POST['habitat'];
+        $_SESSION['sHabitus'] = '';//   = $_POST['habitus'];
 		$_SESSION['sBemerkungen'] ='';//= $_POST['annotations'];
 		$_SESSION['sTyp'] ='' ;//  = (($_POST['typ']=="only"='' ? true : false='';
 		$_SESSION['sImages']='';// = $_POST['images'];
@@ -79,6 +81,8 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sCountry']     = $_POST['country'];
 		$_SESSION['sProvince']    = $_POST['province'];
 		$_SESSION['sLoc']         = $_POST['loc'];
+        $_SESSION['sHabitat']     = $_POST['habitat'];
+        $_SESSION['sHabitus']     = $_POST['habitus'];
 		$_SESSION['sBemerkungen'] = $_POST['annotations'];
 
 		$_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
@@ -97,6 +101,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
 
     $_SESSION['sUserID'] = $_POST['userID'];
@@ -108,6 +113,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
 
     $_SESSION['sLabelDate'] = $_POST['label_date'];
@@ -403,34 +409,36 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 
 <body>
 
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
-
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm1" id="fm1">
 <table cellspacing="5" cellpadding="0">
 <tr>
-  <td align="right">&nbsp;<b><a href="#" id="lblInstitutionCollection" onclick="toggleInstitutionCollection();"><?php echo ($_SESSION['wuCollection'] > 0) ? 'Collection:' : 'Institution:'; ?></a></b>
+  <td align="right">&nbsp;<b><a href="#" id="lblInstitutionCollection" onclick="toggleInstitutionCollection();"><?php echo ($_SESSION['wuCollection'] > 0) ? 'Collection&nbsp;' : 'Institution&nbsp;'; ?></a></b>
     </td>
     <td id="drpInstitutionCollection"><?php ($_SESSION['wuCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
-  <td align="right">&nbsp;<b>Herbar Nr.:</b></td>
+  <td align="right">&nbsp;<b>Herbar Nr.&nbsp;</b></td>
     <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Series:</b></td>
+  <td align="right">&nbsp;<b>Series&nbsp;</b></td>
     <td><input type="text" name="series" value="<?php echoSpecial('sSeries', 'SESSION'); ?>"></td>
+  <td></td><td></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Family:</b></td>
+  <td align="right">&nbsp;<b>Family&nbsp;</b></td>
     <td><input type="text" name="family" value="<?php echoSpecial('sFamily', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Taxon:</b></td>
+  <td align="right">&nbsp;<b>Taxon&nbsp;</b></td>
     <td><input type="text" name="taxon" value="<?php echoSpecial('sTaxon', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>ident. history</b></td>
     <td><input type="text" name="taxon_alt" value="<?php echoSpecial('sTaxonAlt', 'SESSION'); ?>"></td>
+  <td></td><td></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Collector:</b></td>
+  <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
     <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Number:</b></td>
+  <td align="right">&nbsp;<b>Collector #&nbsp;</b></td>
     <td><input type="text" name="numberC" value="<?php echoSpecial('sNumberC', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Date:</b></td>
+  <td align="right">&nbsp;<b>Date&nbsp;</b></td>
     <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b>Habitat&nbsp;</b></td>
+    <td><input type="text" name="habitat" value="<?php echoSpecial('sHabitat', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Continent:</b></td>
+  <td align="right">&nbsp;<b>Continent&nbsp;</b></td>
     <td>
       <select size="1" name="geo_general">
       <option></option>
@@ -447,7 +455,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       ?>
       </select>
     </td>
-  <td align="right">&nbsp;<b>Region:</b></td>
+  <td align="right">&nbsp;<b>Region&nbsp;</b></td>
     <td>
       <select size="1" name="geo_region">
       <option></option>
@@ -464,15 +472,18 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       ?>
       </select>
     </td>
-  <td align="right">&nbsp;<b>Loc.:</b></td>
+  <td align="right">&nbsp;<b>Loc.&nbsp;</b></td>
     <td><input type="text" name="loc" value="<?php echoSpecial('sLoc', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
+    <td><input type="text" name="habitus" value="<?php echoSpecial('sHabitus', 'SESSION'); ?>"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Country:</b></td>
+  <td align="right">&nbsp;<b>Country&nbsp;</b></td>
     <td><input type="text" name="country" value="<?php echoSpecial('sCountry', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>State/Province:</b></td>
+  <td align="right">&nbsp;<b>State/Province&nbsp;</b></td>
     <td><input type="text" name="province" value="<?php echoSpecial('sProvince', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Annotation:</b></td>
+  <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
     <td><input type="text" name="annotations" value="<?php echoSpecial('sBemerkungen', 'SESSION'); ?>"></td>
+  <td></td><td></td>
 </tr><tr>
   <td colspan="2">
     <input type="radio" name="typ" value="all"<?php if(!$_SESSION['sTyp']) echo " checked"; ?>>
@@ -480,13 +491,14 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <input type="radio" name="typ" value="only"<?php if($_SESSION['sTyp']) echo " checked"; ?>>
     <b>Type records only</b>
   </td><td colspan="4" align="right">
-    <b>Images:</b>
+    <b>Images&nbsp;</b>
     <input type="radio" name="images" value="only"<?php if($_SESSION['sImages'] == 'only') echo " checked"; ?>>
     <b>Yes</b>
     <input type="radio" name="images" value="no"<?php if($_SESSION['sImages'] == 'no') echo " checked"; ?>>
     <b>No</b>
     <input type="radio" name="images" value="all"<?php if($_SESSION['sImages'] != 'only' && $_SESSION['sImages'] != 'no') echo " checked"; ?>>
     <b>All</b>
+  </td><td colspan="2">
   </td>
 </tr><tr>
   <td colspan="3">
@@ -501,6 +513,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <?php if (checkRight('specim')): ?>
     <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecimens.php?sel=<0>&new=1'">
     <?php endif; ?>
+  </td><td colspan="2">
   </td>
 </tr>
 </table>
@@ -510,7 +523,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm2">
 <table cellspacing="0" cellpadding="0"><tr>
 <td>
-  <b>SpecimenID:</b> <input type="text" name="specimen" value="<?php echoSpecial('specimen', 'POST'); ?>">
+  <b>SpecimenID&nbsp;</b> <input type="text" name="specimen" value="<?php echoSpecial('specimen', 'POST'); ?>">
   <input class="button" type="submit" name="select" value=" Edit ">
 </td><td style="width: 2em">&nbsp;</td><td>
   <?php makeDropdownDate(true); ?>
@@ -519,7 +532,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </td>
 <?php if (checkRight('editor')):    // only editors may check logged in users ?>
 <td style="width: 2em">&nbsp;</td><td>
-  <b>User:</b> <?php makeDropdownUsername(); ?> <?php makeDropdownDate(); ?>
+  <b>User&nbsp;</b> <?php makeDropdownUsername(); ?> <?php makeDropdownDate(); ?>
   <input class="button" type="submit" name="selectUser" value=" search ">
 </td>
 <?php endif; ?>
@@ -773,6 +786,27 @@ if ($error) {
 }
 ?>
 </form>
-
+<script type="text/javascript">
+    // added trim for HerbNummer to prevent spaces and tabs
+    $(document).ready(function() {
+        $('[name="number"]').blur(function() {
+            this.value = this.value.trim();
+            var number = this.value;
+            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+            if (r.test(number)) { // Yes, a valid url
+                $.ajax({
+                    url: "ajax/convStabURItoHerbnummer.php",
+                    data: {stableuri: number},
+                    type: 'post',
+                    success: function (data) {
+                        document.getElementsByName("number")[0].value = data;
+                        console.log("Success, you submit your form" + data);
+                    }
+                });   // Do your $.ajax({}); request here
+                var number = this.value;
+           }
+        })
+    });
+</script>
 </body>
 </html>

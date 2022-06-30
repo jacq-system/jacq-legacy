@@ -1022,8 +1022,8 @@ class clsAutocomplete {
                     foreach ($rows as $row) {
                         $results[] = array(
                             'id' => $row['taxonID'],
-                            'label' => $display->taxon($row['taxonID'], true, false, true),
-                            'value' => $display->taxon($row['taxonID'], true, false, true),
+                            'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                            'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
                             'color' => ($row['synID']) ? 'red' : ''
                         );
                     }
@@ -1032,6 +1032,173 @@ class clsAutocomplete {
                     $results[$k]['label'] = preg_replace("/ [\s]+/", " ", $v['label']);
                     $results[$k]['value'] = preg_replace("/ [\s]+/", " ", $v['value']);
                 }
+            }
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+        }
+
+        return $results;
+    }
+
+    /**
+     * autocomplete a taxon entry field with hybrids at the end of the list
+     * If the searchstring has only one part before the separator only taxa with empty species are presented.
+     * If the searchstring consists of two parts the first one is used for genus, the second one for species.
+     * If the searchstring contains " x ", only hybrids are returned
+     *
+     * @param string $value text to search for
+     * @param bool[optional] $noExternals only results for "external=0"(default: false)
+     * @return array data array ready to send to jQuery-autocomplete via json-encode
+     */
+    public function taxonWithHybridsNew($value, $noExternals = false)
+    {
+        $results = array();
+        try {
+            $display = clsDisplay::Load();
+            /* @var $db clsDbAccess */
+            $db = clsDbAccess::Connect('INPUT');
+
+            if ($value['type'] == 'id') {
+                $dbst = $db->prepare("SELECT taxonID, ts.synID, ts.external
+                                      FROM tbl_tax_species ts
+                                      WHERE taxonID = ?");
+                $dbst->execute(array($value['id']));
+                $rows = $dbst->fetchAll();
+                if (!empty($rows)) {
+                    $color = '';
+                    if (is_numeric($rows[0]['synID'])) {
+                        $color = 'red';
+                    } else if ($rows[0]['external']) {
+                        $color = 'darkorange'; // see also .taxon_external in screen.css
+                    }
+                    $results[] = array(
+                        'id'    => $rows[0]['taxonID'],
+                        'label' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                        'value' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                        'color' => $color,
+                    );
+                }
+            } else {
+                if (strpos($value['value'], " x ") !== false) {
+                    // find only hybrids, show nothing else
+                    $hybridsOnly = true;
+                    $value['value'] = strtr($value['value'], array(" x " => " ")); // strip " x " from search-string
+                } else {
+                    // show everything, including hybrids
+                    $hybridsOnly = false;
+                }
+                $pieces1 = explode(chr(194) . chr(183), $value['value']);
+                $pieces = explode(" ", $pieces1[0]);
+
+                if ($value['type'] == 'exact') {
+                    $equ = '=';
+                } else {
+                    if (!empty($pieces[0])) {
+                        $pieces[0] .= '%';
+                    }
+                    if (!empty($pieces[1])) {
+                        $pieces[1] .= '%';
+                    }
+                    $equ = 'LIKE';
+                }
+
+                if (!$hybridsOnly) {
+                    $sql = "SELECT taxonID, ts.synID, ts.external
+                            FROM tbl_tax_species ts
+                             LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                             LEFT JOIN tbl_tax_genera tg    ON tg.genID      = ts.genID
+                            WHERE ts.taxonID NOT IN (SELECT taxon_ID_fk FROM tbl_tax_hybrids th WHERE th.taxon_ID_fk = ts.taxonID)
+                             AND ";
+
+                    $sql .= " tg.genus {$equ} ? ";
+                    $param = array($pieces[0]);
+                    if ($noExternals) {
+                        $sql .= " AND ts.external = 0 ";
+                    }
+                    if (!empty($pieces[1])) {
+                        $sql .= " AND te0.epithet {$equ} ? ";
+                        $param[] = $pieces[1];
+                    } else {
+                        $sql .= " AND te0.epithet IS NULL";
+                    }
+                    $sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+                    $dbst = $db->prepare($sql);
+                    $dbst->execute($param);
+                    $rows = $dbst->fetchAll();
+
+                    foreach ($rows as $row) {
+                        if (is_numeric($row['synID'])) {
+                            $color = 'red';
+                        } else if ($row['external']) {
+                            $color = 'darkorange'; // see also .taxon_external in screen.css
+                        } else {
+                            $color = '';
+                        }
+
+                        $results[] = array(
+                            'id'    => $row['taxonID'],
+                            'label' => $display->taxon($row['taxonID'], true, false, true),
+                            'value' => $display->taxon($row['taxonID'], true, false, true),
+                            'color' => $color
+                        );
+                    }
+                }
+
+                $sql1 = "SELECT ts.taxonID, ts.synID, ts.external, herbar_view.GetScientificName(ts.taxonID, 0) as sciName
+                         FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                          LEFT JOIN tbl_tax_species tsp1  ON tsp1.taxonID   = th.parent_1_ID
+                          LEFT JOIN tbl_tax_genera tgp1   ON tgp1.genID     = tsp1.genID
+                          LEFT JOIN tbl_tax_epithets tep1 ON tep1.epithetID = tsp1.speciesID
+                         WHERE th.taxon_ID_fk = ts.taxonID
+                          AND tgp1.genus {$equ} ? ";
+                $sql2 = "SELECT ts.taxonID, ts.synID, ts.external, herbar_view.GetScientificName(ts.taxonID, 0) as sciName
+                         FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                          LEFT JOIN tbl_tax_species tsp2  ON tsp2.taxonID   = th.parent_2_ID
+                          LEFT JOIN tbl_tax_genera tgp2   ON tgp2.genID     = tsp2.genID
+                          LEFT JOIN tbl_tax_epithets tep2 ON tep2.epithetID = tsp2.speciesID
+                         WHERE th.taxon_ID_fk = ts.taxonID
+                          AND tgp2.genus {$equ} ?  ";
+                if ($noExternals) {
+                    $sql.=" AND ts.external = 0 ";
+                }
+                if (!empty($pieces[1])) {
+                    $sql1 .= " AND tep1.epithet {$equ} ? ";
+                    $sql2 .= " AND tep2.epithet {$equ} ? ";
+                    $param = array($pieces[0], $pieces[1], $pieces[0], $pieces[1]);
+                } else {
+                    $param = array($pieces[0], $pieces[0]);
+                }
+                /* @var $dbst PDOStatement */
+                //$dbst=0;return array(array('id'=>'1','label'=>($dbst?'Y':'N').$sql,'value'=>($dbst?'Y':'N').$sql));
+
+                $dbst = $db->prepare("(" . $sql1 . " ORDER BY sciName) UNION (" . $sql2 . " ORDER BY sciName)");
+                $dbst->execute($param);
+                $rows = $dbst->fetchAll();
+                foreach ($rows as $row) {
+                    if (is_numeric($row['synID'])) {
+                        $color = 'red';
+                    } else if ($row['external']) {
+                        $color = 'darkorange'; // see also .taxon_external in screen.css
+                    } else {
+                        $color = '';
+                    }
+
+                    $results[] = array(
+                        'id' => $row['taxonID'],
+                        'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                        'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                        'color' => $color
+                    );
+                }
+            }
+            foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
+                $results[$k]['label'] = preg_replace("/ [\s]+/", " ", $v['label']);
+                $results[$k]['value'] = preg_replace("/ [\s]+/", " ", $v['value']);
             }
         } catch (Exception $e) {
             error_log($e->getMessage());

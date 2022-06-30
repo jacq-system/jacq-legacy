@@ -48,6 +48,21 @@ function makeInstitutionDropdown($institutions, $selected, $id)
     return $dropdown;
 }
 
+function jsonGetGeoNames($searchtext)
+{
+    global $_OPTIONS;
+
+    $curl = curl_init("http://api.geonames.org/searchJSON?name_equals=" . urlencode($searchtext) . "&username=" . $_OPTIONS['GEONAMES']['username']);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $curl_response = curl_exec($curl);
+    curl_close($curl);
+    if ($curl_response === false) {
+        return null;
+    } else {
+        return json_decode($curl_response, true);
+    }
+}
+
 /**
  * jaxon-function toggleLanguage
  *
@@ -81,6 +96,7 @@ function searchGeonames($searchtext)
 {
     global $response;
 
+    // TODO: change to geonames service
     if (trim($searchtext)) {
         $sql = "SELECT grg.geonameid, grg.name, grg.alternatenames, grg.latitude, grg.longitude,
                  grg.`admin1 code` AS admin1_code, grg.`country code` AS country_code,
@@ -115,7 +131,39 @@ function searchGeonames($searchtext)
                       . "<b>name:</b> " . $row['name'] . "<br>\n"
                       . (($row['alternatenames']) ? "<b>alternatenames:</b> " . $row['alternatenames'] . "<br>\n" : "")
                       . "<b>lat/lon:</b> " . dec2min($row['latitude'], 'lat') . " / " . dec2min($row['longitude'], 'lon') . "   "
-                      . "<a style='color:blue; margin-left:2em;' href='http://www.geonames.org/maps/google_" . $row['latitude'] . "_" . $row['longitude'] . ".html' target='_blank'>view in google-maps</a><br>\n"
+                      . "<a style='color:blue; margin-left:2em;' href='http://www.geonames.org/" . $row['geonameid'] . "/' target='_blank'>view in google-maps</a><br>\n"
+                      . "<b>country:</b> " . $row['nation_engl'] . " (" . $row['iso_alpha_2_code'] . ")<br>\n"
+                      . "<b>admin1 code:</b> $admin1Code\n";
+            }
+        } else {
+            $ret = "nothing found";
+        }
+
+        $response->assign('iBox_content', 'innerHTML', $ret);
+        $response->script('$("#iBox_content").dialog("option", "title", "search");');
+        $response->script('$("#iBox_content").dialog("open");');
+    }
+
+    return $response;
+}
+
+function searchGeonamesService($searchtext)
+{
+    global $response;
+
+    if (trim($searchtext)) {
+        $rows = jsonGetGeoNames($searchtext);
+        if ($rows) {
+            $ret = "<b>found " . $rows['totalResultsCount'] . (($rows['totalResultsCount'] > 1) ? " entries" : " entry") . "</b><br>\n";
+            foreach ($rows['geonames'] as $row) {
+                $admin1Code = $row['adminCode1'];
+                $ret .= "<hr>\n"
+                      . "<b>geonameID:</b> " . $row['geonameId'] . "     "
+                      .  "<input type=\"button\" value=\" use this \" onclick=\"jaxon_useGeoname('" . $row['geonameId'] . "');\"><br>\n"
+                      . "<b>name:</b> " . $row['name'] . "<br>\n"
+                      . (($row['alternatenames']) ? "<b>alternatenames:</b> " . $row['alternatenames'] . "<br>\n" : "")
+                      . "<b>lat/lon:</b> " . dec2min($row['lat'], 'lat') . " / " . dec2min($row['lng'], 'lon') . "   "
+                      . "<a style='color:blue; margin-left:2em;' href='http://www.geonames.org/" . $row['geonameId'] . "/' target='_blank'>view in google-maps</a><br>\n"
                       . "<b>country:</b> " . $row['nation_engl'] . " (" . $row['iso_alpha_2_code'] . ")<br>\n"
                       . "<b>admin1 code:</b> $admin1Code\n";
             }
@@ -135,6 +183,7 @@ function useGeoname($geonameid)
 {
     global $response;
 
+    // TODO: change to geonames service
     $sql = "SELECT grg.geonameid, grg.name, grg.alternatenames, grg.latitude, grg.longitude, grg.`admin1 code`,
              gn.nationID, gn.nation_engl, gn.iso_alpha_2_code
             FROM tbl_geo_ref_geonames grg
@@ -454,6 +503,7 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
  */
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");

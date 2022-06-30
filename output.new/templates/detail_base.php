@@ -167,7 +167,14 @@
     <tr>
       <td align="right">Label</td>
       <td>
-        <b><?php echo nl2br($specimen['Fundort'], true); ?></b>
+        <b><?php echo nl2br($specimen['Fundort'], true); ?>
+            <?php if (!empty($specimen['altitude_min'])): ?>
+                ;&nbsp;Alt. <?php echo nl2br($specimen['altitude_min'], true); ?>&nbsp;m
+                <?php if (!empty($specimen['altitude_max'])): ?>
+                    &nbsp; - &nbsp; <?php echo nl2br($specimen['altitude_max'], true); ?>&nbsp;m
+                <?php endif; ?>
+            <?php endif; ?>
+        </b>
       </td>
     </tr>
     <tr>
