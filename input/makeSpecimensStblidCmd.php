@@ -7,7 +7,7 @@ ini_set("max_execution_time","3600");
 if (in_array("-h", $argv) || in_array("--help", $argv)) {
     echo $argv[0] . "                                    make stable-IDs for all new HerbNumbers\n"
        . $argv[0] . " -h  --help                         this explanation\n"
-       . $argv[0] . "     --recheck_source_id source-id  recheck this source-ID for empty stable-IDs\n";
+       . $argv[0] . "     --recheck_source_id source-id  recheck this source-ID for missing stable-IDs\n";
     die();
 }
 
@@ -54,7 +54,7 @@ function dbi_query($sql, $debug=false)
 require_once 'inc/stableIdentifierFunctions.php';
 
 /**
- * check, if a source-ID is given to completely recheck for empty stable-IDs
+ * check, if a source-ID is given to completely recheck for missing stable-IDs
  */
 $key = array_search("--recheck_source_id", $argv);
 if ($key && $argc > $key + 1) {
