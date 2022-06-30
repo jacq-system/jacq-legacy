@@ -384,11 +384,11 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $rowSpecimen['Fundort'],
         $rowSpecimen['det'],
         $rowSpecimen['taxon_alt'],
-        $rowSpecimen['Bemerkungen'],
-        $rowSpecimen['habitat'],
-        $rowSpecimen['habitus'],
+        " " . $rowSpecimen['Bemerkungen'],          // to prevent a starting "=" (would be interpreted as a formula)
+        " " . $rowSpecimen['habitat'],              // to prevent a starting "=" (would be interpreted as a formula)
+        " " . $rowSpecimen['habitus'],              // to prevent a starting "=" (would be interpreted as a formula)
         getStableIdentifier($rowSpecimen['specimen_ID'])
-            ), null, 'A' . $i);
+    ), null, 'A' . $i);
 
     $i++;
 }
