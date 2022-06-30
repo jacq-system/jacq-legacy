@@ -104,7 +104,9 @@ function makeTypus($ID)
 }
 
 // extend memory and timeout settings
-//ini_set("memory_limit", "4096M");
+if (!empty($_CONFIG['EXPORT']['memory_limit'])) {
+    ini_set("memory_limit", $_CONFIG['EXPORT']['memory_limit']);
+}
 set_time_limit(0);
 
 // SQLiteCache hält die Cell-Data nicht im Speicher
@@ -384,9 +386,9 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $rowSpecimen['Fundort'],
         $rowSpecimen['det'],
         $rowSpecimen['taxon_alt'],
-        " " . $rowSpecimen['Bemerkungen'],          // to prevent a starting "=" (would be interpreted as a formula)
-        " " . $rowSpecimen['habitat'],              // to prevent a starting "=" (would be interpreted as a formula)
-        " " . $rowSpecimen['habitus'],              // to prevent a starting "=" (would be interpreted as a formula)
+        ((substr($rowSpecimen['Bemerkungen'], 0, 1) == '=') ? " " : "") . $rowSpecimen['Bemerkungen'],  // to prevent a starting "=" (would be interpreted as a formula)
+        ((substr($rowSpecimen['habitat'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitat'],          // to prevent a starting "=" (would be interpreted as a formula)
+        ((substr($rowSpecimen['habitus'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitus'],          // to prevent a starting "=" (would be interpreted as a formula)
         getStableIdentifier($rowSpecimen['specimen_ID'])
     ), null, 'A' . $i);
 

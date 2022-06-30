@@ -465,9 +465,9 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
         $rowSpecimen['Fundort'],
         $rowSpecimen['det'],
         $rowSpecimen['taxon_alt'],
-        $rowSpecimen['Bemerkungen'],
-        $rowSpecimen['habitat'],
-        $rowSpecimen['habitus'],
+        ((substr($rowSpecimen['Bemerkungen'], 0, 1) == '=') ? " " : "") . $rowSpecimen['Bemerkungen'],  // to prevent a starting "=" (would be interpreted as a formula)
+        ((substr($rowSpecimen['habitat'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitat'],          // to prevent a starting "=" (would be interpreted as a formula)
+        ((substr($rowSpecimen['habitus'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitus'],          // to prevent a starting "=" (would be interpreted as a formula)
         $rowSpecimen['aktualdatum'],
         $rowSpecimen['eingabedatum'],
         getStableIdentifier($rowSpecimen['specimen_ID'])
