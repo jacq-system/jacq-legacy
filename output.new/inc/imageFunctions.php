@@ -2,6 +2,8 @@
 // can only be used if inc/functions.php is included beforehand
 require_once("jsonRPCClient.php");
 
+ini_set("default_socket_timeout", 5);
+
 /**
  * get all details of a given picture
  *
