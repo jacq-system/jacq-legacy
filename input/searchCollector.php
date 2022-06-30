@@ -13,7 +13,6 @@ require("inc/cssf.php");
   <script language="JavaScript">
     function sendCollector(sel) {
       window.opener.document.f.sammler.value = sel;
-      window.opener.document.f.reload.click();
       self.close();
     }
   </script>
