@@ -6,7 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
-//  TODO: link auf output/details wenn specimenID vorhanden
+// TODO: link auf output/details wenn specimenID vorhanden
 
 use Jaxon\Jaxon;
 
@@ -15,7 +15,7 @@ $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
-//$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   // search for label **
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
