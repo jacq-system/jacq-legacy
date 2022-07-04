@@ -6,8 +6,6 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
-// TODO: link auf output/details wenn specimenID vorhanden
-
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -15,7 +13,7 @@ $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   // search for label **
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   //  search for label **
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
@@ -24,6 +22,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
 
 if (!isset($_SESSION['sPTID'])) {
     $_SESSION['sPTID'] = 0;
@@ -780,6 +779,10 @@ if (isset($_GET['sel'])) {
           width: 750,
           height: 600
         } );
+        $('#sammlerIndex').change(function() {
+          jaxon_displayCollectorLinks($(this).val());
+        } );
+        $('#sammlerIndex').change();
     } );
   </script>
 </head>
@@ -912,7 +915,9 @@ if ($p_specimen_ID) {
         echo "<input type=\"hidden\" name=\"edit\" value=\"$edit\">\n";
         $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>$p_specimen_ID</b>&nbsp;</span>";
     } else {
-        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>";
+        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>"
+              . "&nbsp;<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
+              . "<img height='10' src='webimages/JACQ_LOGO.png'></a>";
     }
 } else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";
@@ -1017,6 +1022,7 @@ $y += 2;
 $cf->labelMandatory(11, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
 $cf->inputJqAutocomplete(11, $y, 50, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
+echo "<div style='position: absolute; left: 62em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;

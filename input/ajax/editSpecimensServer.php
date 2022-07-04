@@ -497,6 +497,41 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
     return $response;
 }
 
+function displayCollectorLinks($collectorID)
+{
+    global $response;
+
+    $ret = array();
+    $row = dbi_query("SELECT HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID
+                      FROM tbl_collector
+                      WHERE SammlerID = '" . intval($collectorID) . "'")
+           ->fetch_assoc();
+    if (substr(trim($row['WIKIDATA_ID']), 0, 4) == 'http') {
+        $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' alt='wikidata' target='_blank'>"
+               . "<img src='webimages/wikidata.png' width='20px'></a>";
+    }
+    if (substr(trim($row['HUH_ID']), 0, 4) == 'http') {
+        $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' alt='Index of Botanists (HUH)' target='_blank'>"
+               . "<img src='webimages/huh.png' width='20px'></a>";
+    }
+    if (substr(trim($row['VIAF_ID']), 0, 4) == 'http') {
+        $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' alt='VIAF' target='_blank'>"
+               . "<img src='webimages/viaf.png' width='20px'></a>";
+    }
+    if (substr(trim($row['ORCID']), 0, 4) == 'http') {
+        $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' alt='ORCID' target='_blank'>"
+               . "<img src='webimages/orcid.logo.icon.svg' width='20px'></a>";
+    }
+    if (substr(trim($row['Bloodhound_ID']), 0, 4) == 'http') {
+        $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' alt='Bionomia' target='_blank'>"
+               . "<img src='webimages/bionomia_logo.png' width='20px'></a>";
+    }
+
+    $response->assign('displayCollectorLinks', 'innerHTML', implode("&nbsp;", $ret));
+
+    return $response;
+}
+
 
 /**
  * register all jaxon-functions in this file
@@ -512,4 +547,5 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
 $jaxon->processRequest();
