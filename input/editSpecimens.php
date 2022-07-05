@@ -1169,6 +1169,7 @@ if ($updateBlocked) {
         $('[name="HerbNummer"]').blur(function() {
             this.value = this.value.trim();
             var HerbNummer = this.value;
+            // convert StableURI to collection HerbNummer
             var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
             if (r.test(HerbNummer)) { // Yes, a valid url
                 $.ajax({
@@ -1176,15 +1177,24 @@ if ($updateBlocked) {
                     data: {stableuri: HerbNummer},
                     type: 'post',
                     success: function (data) {
-                        document.getElementsByName("HerbNummer")[0].value = data;
-                        console.log("Success, you submit your form" + data);
+                        $('[name="HerbNummer"]').val(data).change();
+                        //console.log("Success, you submit your form" + data);
                     }
-                });   // Do your $.ajax({}); request here
+                });
                 var HerbNummer = this.value;
                 var institutionNr = $('[name="institution"]').val();
                 var institutionName = $('[name="institution"] option:selected').text();
             }
         })
+        // catch enter keypress to trigger blur event
+        .keydown(function(event){
+            if (event.keyCode == 13){
+                event.preventDefault()
+                event.stopPropagation()
+                $('[name="HerbNummer"]').blur()
+                return false;
+            }
+       })
     });
 </script>
 </body>

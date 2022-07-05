@@ -792,6 +792,7 @@ if ($error) {
         $('[name="number"]').blur(function() {
             this.value = this.value.trim();
             var number = this.value;
+            // convert StableURI to collection HerbNummer
             var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
             if (r.test(number)) { // Yes, a valid url
                 $.ajax({
@@ -799,14 +800,30 @@ if ($error) {
                     data: {stableuri: number},
                     type: 'post',
                     success: function (data) {
-                        document.getElementsByName("number")[0].value = data;
-                        console.log("Success, you submit your form" + data);
+                        $('[name="number"]').val(data).change();
+                        //console.log("Success, you submit your form" + data);
                     }
-                });   // Do your $.ajax({}); request here
+                });   
                 var number = this.value;
            }
-        })
+           else
+           {
+            $('[name="number"]').change();
+           }
+       })
+        // catch enter keypress to trigger blur event before search submit
+        .keydown(function(event){
+        if (event.keyCode == 13){
+            event.preventDefault()
+            event.stopPropagation()
+            $('[name="number"]').change(function(){
+                //console.log("Funktion Change")
+                $('[name="search"]').click()
+            }).blur()
+            return false;
+        }
+       })
     });
-</script>
+ </script>
 </body>
 </html>
