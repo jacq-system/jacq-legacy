@@ -1,7 +1,5 @@
 <?php
-
 require_once('variables.php');
-
 
 function logNamesCommonName ($id, $updated)
 {
@@ -54,6 +52,29 @@ function logTbl_tax_synonymy ($id, $updated)
 }
 
 
+/*
+at first, transfer all collectors from tbl_collector into log_collector
+INSERT INTO herbarinput_log.log_collector
+                     (SammlerID, Sammler, Sammler_FN_List, Sammler_FN_short, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, locked, Bloodhound_ID, userID, updated)
+               SELECT SammlerID, Sammler, Sammler_FN_List, Sammler_FN_short, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, locked, Bloodhound_ID, 0,      0
+               FROM herbarinput.tbl_collector
+ */
+function logCollector($id, $updated)
+{
+	global $_CONFIG;
+
+    $dbprefix = $_CONFIG['DATABASE']['NAME']['name'] . '.';
+
+    dbi_query("INSERT INTO herbarinput_log.log_collector
+                     (SammlerID, Sammler, Sammler_FN_List, Sammler_FN_short, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, locked, Bloodhound_ID,
+                      userID, updated)
+               SELECT SammlerID, Sammler, Sammler_FN_List, Sammler_FN_short, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, locked, Bloodhound_ID,
+                      " . quoteString($_SESSION['uid']) . ", ". quoteString($updated) . "
+               FROM tbl_collector
+               WHERE SammlerID = " . quoteString($id));
+}
+
+
 function logCommonNamesAppliesTo ($id, $updated, $old = '')
 {
 	global $_CONFIG;
@@ -76,6 +97,7 @@ function logCommonNamesAppliesTo ($id, $updated, $old = '')
                 userID           = " . quoteString($_SESSION['uid']) . ",
                 updated          = " . quoteString($updated));
 }
+
 
 function logCommonNamesCommonName ($id, $updated)
 {
