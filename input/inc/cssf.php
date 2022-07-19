@@ -415,7 +415,7 @@ class CSSF{
 		if ($autoFocus) {
             print " autoFocus: true,\n";
         }
-		print "	select: function(event, ui) { $('#{$name}Index').val(ui.item.id); }\n"
+		print "	select: function(event, ui) { $('#{$name}Index').val(ui.item.id); $('#{$name}Index').change(); }\n"
 			. "				})\n"
 			. "				.data('autocomplete')._renderItem = function( ul, item ) {\n"
 			. "						return $('<li></li>')\n"
@@ -425,7 +425,7 @@ class CSSF{
 			. "				};\n"
 			. "		});\n";
 		if ($zeroOnEmpty) {
-            print "$('#ajax_{$name}').change( function() { if( $('#ajax_{$name}').val() == '' ) $('#{$name}Index').val(''); } );\n";
+            print "$('#ajax_{$name}').change( function() { if( $('#ajax_{$name}').val() == '' ) $('#{$name}Index').val(''); $('#{$name}Index').change(); } );\n";
         }
 		print "</script>\n";
 		$this->tabindex++;

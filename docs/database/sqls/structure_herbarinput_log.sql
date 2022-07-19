@@ -100,6 +100,33 @@ CREATE TABLE IF NOT EXISTS `log_commonnames_tbl_name_names_equals` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `log_collector`
+--
+
+DROP TABLE IF EXISTS `log_collector`;
+CREATE TABLE IF NOT EXISTS `log_collector` (
+  `log_SammlerID` int(11) NOT NULL auto_increment,
+  `SammlerID` int(11) NOT NULL,
+  `Sammler` varchar(250) NOT NULL DEFAULT '',
+  `Sammler_FN_List` varchar(50) DEFAULT NULL,
+  `Sammler_FN_short` varchar(50) DEFAULT NULL,
+  `HUH_ID` varchar(255) DEFAULT NULL,
+  `VIAF_ID` varchar(255) DEFAULT NULL,
+  `WIKIDATA_ID` varchar(255) DEFAULT NULL,
+  `ORCID` varchar(255) DEFAULT NULL,
+  `locked` tinyint(4) NOT NULL DEFAULT '1',
+  `Bloodhound_ID` varchar(255) DEFAULT NULL,
+  `userID` int(11) NOT NULL default '0',
+  `updated` tinyint(4) NOT NULL default '0',
+  `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`log_SammlerID`),
+  KEY `SammlerID` (`SammlerID`),
+  KEY `userID` (`userID`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 ;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `log_lit`
 --
 
