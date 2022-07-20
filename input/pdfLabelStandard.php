@@ -10,8 +10,8 @@ require("inc/connect.php");
 require("inc/pdf_functions.php");
 
 define('TCPDF','1');
-if (isset($_OPTIONS['tcpdf']) && $_OPTIONS['tcpdf'] == '6.4.2') {
-    require_once('inc/tcpdf_6_4_2/tcpdf.php');
+if (isset($_OPTIONS['tcpdf'])) {
+    require_once('inc/tcpdf_' . strtr($_OPTIONS['tcpdf'], '.', '_') . '/tcpdf.php');
 } else {
     require_once('inc/tcpdf_6_3_2/tcpdf.php');
 }
