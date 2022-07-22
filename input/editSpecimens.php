@@ -13,7 +13,7 @@ $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   //  search for label **
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   // search for label **
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
@@ -915,9 +915,7 @@ if ($p_specimen_ID) {
         echo "<input type=\"hidden\" name=\"edit\" value=\"$edit\">\n";
         $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>$p_specimen_ID</b>&nbsp;</span>";
     } else {
-        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>"
-              . "&nbsp;<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
-              . "<img height='10' src='webimages/JACQ_LOGO.png'></a>";
+        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>";
     }
 } else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";
@@ -943,15 +941,19 @@ if ($p_digital_image && $p_specimen_ID) {
 }
 $cf->checkbox(32, $y, "digital_image", $p_digital_image);
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(41, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
+    $cf->label(42, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
 } else {
-    $cf->label(41, $y, "dig.im.obs.");
+    $cf->label(42, $y, "dig.im.obs.");
 }
-$cf->checkbox(41, $y, "digital_image_obs", $p_digital_image_obs);
+$cf->checkbox(42, $y, "digital_image_obs", $p_digital_image_obs);
 $cf->labelMandatory(50.5, $y, 5, "checked");
 $cf->checkbox(50.5, $y, "checked", $p_checked);
 $cf->labelMandatory(60.5, $y, 6, "accessible");
 $cf->checkbox(60.5, $y, "accessible", $p_accessible);
+if ($p_specimen_ID && !$edit) {
+    $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
+                        . "<img src='webimages/JACQ_LOGO.png'></a>");
+}
 
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));

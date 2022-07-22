@@ -193,7 +193,8 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              LEFT JOIN tbl_tax_genera tg                 ON tg.genID = ts.genID
                              LEFT JOIN tbl_tax_families tf               ON tf.familyID = tg.familyID
                              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                            WHERE specimen_ID = '" . intval($ID) . "'")
+                            WHERE s.accessible != '0'
+                             AND s.specimen_ID = '" . intval($ID) . "'")
                    ->fetch_array();
 
 $output['ID'] = $ID;
