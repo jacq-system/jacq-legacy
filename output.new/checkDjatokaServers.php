@@ -30,6 +30,7 @@ use GuzzleHttp\Client;
   <h1>check all Djatoka installations</h1>
 <?php
 $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
+$client = new Client(['timeout' => 2]);
 
 $rows = $dbLink->query("SELECT source_id_fk, img_coll_short
                         FROM tbl_img_definition
@@ -53,19 +54,47 @@ foreach ($rows as $row) {
     if ($result->num_rows > 0) {
         $specimenID = $result->fetch_assoc()['specimen_ID'];
 
-        $picdetails = getPicDetails($specimenID);
-        $picinfo = getPicInfo($picdetails);
-        if (!empty($picinfo['error'])) {
+//        $picdetails = getPicDetails($specimenID);
+//        $picinfo = getPicInfo($picdetails);
+//        if (!empty($picinfo['error'])) {
+//            $ok = false;
+//            $errorRPC = $picinfo['error'];
+//        }
+
+        try{
+            $picdetails = getPicDetails($specimenID);
+            $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
+                'json'   => ['method' => 'listResources', 'params' => [$picdetails['key'], [$picdetails['filename']]], 'id' => 1],
+                'verify' => false
+            ]);
+            $data = json_decode($response1->getBody()->getContents(), true);
+            if (!empty($data['error'])) {
+                $ok = false;
+                $errorRPC = $data['error'];
+            } elseif (empty($data['result'][0])) {
+                $ok = false;
+                $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
+            } elseif ($data['result'][0] != $picdetails['filename']) {
+                $ok = false;
+                $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+            }
+        }
+        catch( Exception $e ) {
             $ok = false;
-            $errorRPC = $picinfo['error'];
+            $errorRPC = $e->getMessage();
         }
 
         try {
-            $client = new Client(['timeout' => 2]);
-            $response = $client->get("https://www.jacq.org/image.php?filename=$specimenID&method=show");
-            if ($response->getStatusCode() != 200) {
+            $response2 = $client->request('GET', "https://www.jacq.org/image.php?filename=$specimenID&method=thumbs", [
+                'verify' => false
+            ]);
+            $data = json_decode($response2->getBody()->getContents(), true);
+            if ($response2->getStatusCode() != 200) {
                 $ok = false;
                 $errorImage = "FAIL";
+            } elseif (empty($data['pics'])) {
+                $ok = false;
+                $errorImage = "FAIL: no image";
             }
         }
         catch( Exception $e ) {
