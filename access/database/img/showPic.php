@@ -18,7 +18,7 @@ function allocatePicture($path, $pic) {
 
 $pieces = explode("_",basename($_GET['name']),2);
 if ($pieces[0]=='obs') {
-    $sql = "SELECT specimen_ID, img_obs_directory, source_name
+    $sql = "SELECT specimen_ID, source_name
             FROM tbl_specimens, tbl_management_collections, tbl_img_definition, herbarinput.meta
             WHERE tbl_specimens.collectionID=tbl_management_collections.collectionID
              AND tbl_management_collections.source_id=tbl_img_definition.source_id_fk
@@ -27,7 +27,7 @@ if ($pieces[0]=='obs') {
     $row = $dblink->query($sql)->fetch_array();
     $img = allocatePicture($row['img_obs_directory'], "obs_".$pieces[1]);
 } elseif ($pieces[0]=='tab') {
-    $sql = "SELECT specimen_ID, img_tab_directory, source_name
+    $sql = "SELECT specimen_ID, source_name
             FROM tbl_specimens, tbl_management_collections, tbl_img_definition, herbarinput.meta
             WHERE tbl_specimens.collectionID=tbl_management_collections.collectionID
              AND tbl_management_collections.source_id=tbl_img_definition.source_id_fk
@@ -36,7 +36,7 @@ if ($pieces[0]=='obs') {
     $row = $dblink->query($sql)->fetch_array();
     $img = allocatePicture($row['img_tab_directory'], "tab_".$pieces[1]);
 } else {
-    $sql = "SELECT img_directory, coll_short_prj, source_name
+    $sql = "SELECT coll_short_prj, source_name
             FROM tbl_img_definition, tbl_management_collections, herbarinput.meta
             WHERE tbl_img_definition.source_id_fk=herbarinput.meta.source_id
              AND tbl_management_collections.source_id=tbl_img_definition.source_id_fk

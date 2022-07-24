@@ -50,7 +50,7 @@ public function getPictures ($ip, $secret)
 
     $start = microtime(true);
     try {
-        $dbst = $db->prepare("SELECT source_id_fk, img_directory
+        $dbst = $db->prepare("SELECT source_id_fk
                               FROM tbl_img_definition
                               WHERE imgserver_IP = :ip");
         $dbst->execute(array(':ip' => $ip));

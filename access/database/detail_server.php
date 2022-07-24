@@ -24,7 +24,7 @@ class Picture {
 
 $picture = new Picture();
 
-$sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, img_directory, img_obs_directory, img_tab_directory, HerbNummerNrDigits,
+$sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, HerbNummerNrDigits,
          tbl_specimens.collectionID, tbl_management_collections.source_id
         FROM tbl_specimens, tbl_management_collections, tbl_img_definition
         WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID

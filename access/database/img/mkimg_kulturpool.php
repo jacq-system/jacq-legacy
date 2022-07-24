@@ -30,7 +30,7 @@ class Picture {
 }
 
 function getData($id) {
-    $sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, img_directory, img_obs_directory, img_tab_directory, HerbNummerNrDigits,
+    $sql = "SELECT HerbNummer, specimen_ID, coll_short_prj, HerbNummerNrDigits,
              tbl_specimens.collectionID
             FROM tbl_specimens, tbl_management_collections, tbl_img_definition
             WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
@@ -141,7 +141,7 @@ while( !feof($fp) ) {
   //    $sql = "SELECT img_directory, img_coll_short ".
   //           "FROM tbl_img_definition ".
   //           "WHERE img_coll_short='".$pieces[0]."'";
-      $sql = "SELECT img_directory, coll_short_prj
+      $sql = "SELECT coll_short_prj
               FROM tbl_management_collections mc, tbl_img_definition id
               WHERE mc.source_id=id.source_id_fk
                AND coll_short_prj='".$pieces[0]."'";
