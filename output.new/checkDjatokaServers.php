@@ -18,6 +18,9 @@ use GuzzleHttp\Client;
         text-align: center;
         padding: 2px 1ex;
     }
+    th {
+        white-space: nowrap;
+    }
     td.ok {
         color: green;
     }
@@ -27,10 +30,10 @@ use GuzzleHttp\Client;
   </style>
 </head>
 <body>
-  <h1>check all Djatoka installations</h1>
+  <h1>check all Djatoka installations at <?php echo date(DATE_RFC822); ?></h1>
 <?php
 $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
-$client = new Client(['timeout' => 2]);
+$client = new Client(['timeout' => 8]);
 
 $rows = $dbLink->query("SELECT source_id_fk, img_coll_short
                         FROM tbl_img_definition
@@ -53,6 +56,7 @@ foreach ($rows as $row) {
                               LIMIT 1");
     if ($result->num_rows > 0) {
         $specimenID = $result->fetch_assoc()['specimen_ID'];
+        $picdetails = getPicDetails($specimenID);
 
 //        $picdetails = getPicDetails($specimenID);
 //        $picinfo = getPicInfo($picdetails);
@@ -62,21 +66,38 @@ foreach ($rows as $row) {
 //        }
 
         try{
-            $picdetails = getPicDetails($specimenID);
             $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
-                'json'   => ['method' => 'listResources', 'params' => [$picdetails['key'], [$picdetails['filename']]], 'id' => 1],
+                'json'   => ['method' => 'listResources',
+                             'params' => [$picdetails['key'],
+                                            [ $picdetails['filename'],
+                                              $picdetails['filename'] . "_%",
+                                              $picdetails['filename'] . "A",
+                                              $picdetails['filename'] . "B",
+                                              "tab_" . $picdetails['specimenID'],
+                                              "obs_" . $picdetails['specimenID'],
+                                              "tab_" . $picdetails['specimenID'] . "_%",
+                                              "obs_" . $picdetails['specimenID'] . "_%"
+                                            ]
+                                         ],
+                             'id'     => 1
+                            ],
                 'verify' => false
             ]);
             $data = json_decode($response1->getBody()->getContents(), true);
             if (!empty($data['error'])) {
                 $ok = false;
                 $errorRPC = $data['error'];
+                $filename = $picdetails['originalFilename'];
             } elseif (empty($data['result'][0])) {
                 $ok = false;
                 $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
+                $filename = $picdetails['originalFilename'];
             } elseif ($data['result'][0] != $picdetails['filename']) {
                 $ok = false;
                 $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                $filename = $data['result'][0];
+            } else {
+                $filename = $picdetails['originalFilename'];
             }
         }
         catch( Exception $e ) {
@@ -85,21 +106,34 @@ foreach ($rows as $row) {
         }
 
         try {
-            $response2 = $client->request('GET', "https://www.jacq.org/image.php?filename=$specimenID&method=thumbs", [
-                'verify' => false
+            // Construct URL to djatoka-resolver
+            $url = preg_replace('/([^:])\/\//', '$1/', $picdetails['url'] . "adore-djatoka/resolver"
+                                                     . "?url_ver=Z39.88-2004"
+                                                     . "&rft_id=$filename"
+                                                     . "&svc_id=info:lanl-repo/svc/getRegion"
+                                                     . "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"
+                                                     . "&svc.format=image/jpeg"
+                                                     . "&svc.scale=0.1");
+            $response2 = $client->request('GET', $url, [
+                'verify'      => false,
+                'http_errors' => false
             ]);
-            $data = json_decode($response2->getBody()->getContents(), true);
-            if ($response2->getStatusCode() != 200) {
+//            $data = json_decode($response2->getBody()->getContents(), true);
+            $statusCode = $response2->getStatusCode();
+            if ($statusCode != 200) {
                 $ok = false;
-                $errorImage = "FAIL";
-            } elseif (empty($data['pics'])) {
-                $ok = false;
-                $errorImage = "FAIL: no image";
+                if ($statusCode == 404) {
+                    $errorImage = "FAIL: <404> Image not found";
+                } elseif ($statusCode == 500) {
+                    $errorImage = "FAIL: <500> Server Error";
+                } else {
+                    $errorImage = "FAIL: Status Code <$statusCode>";
+                }
             }
         }
         catch( Exception $e ) {
             $ok = false;
-            $errorImage = $e->getMessage();
+            $errorImage = htmlentities($e->getMessage());
         }
         if ($ok) {
             $checks['ok'][] = ['source_id'  => $row['source_id_fk'],
@@ -124,10 +158,10 @@ foreach ($rows as $row) {
 <?php if (!empty($checks['fail'])): ?>
   <h3>Servers with errors</h3>
   <table>
-    <tr><th>source-id</th><th>source</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
+    <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
 <?php
     foreach ($checks['fail'] as $row) {
-        echo "<tr><td>" . $row['source_id'] . "</td><td>" . $row['source'] . "</td><td>" . $row['specimenID'] . "</td>";
+        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>";
         if (!empty($row['errorRPC'])) {
             echo "<td class='fail'>" . $row['errorRPC'] . "</td>";
         } else {
@@ -147,10 +181,10 @@ foreach ($rows as $row) {
 <?php if (!empty($checks['ok'])): ?>
   <h3>Servers without errors</h3>
   <table>
-    <tr><th>source-id</th><th>source</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
+    <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
 <?php
     foreach ($checks['ok'] as $row) {
-        echo "<tr><td>" . $row['source_id'] . "</td><td>" . $row['source'] . "</td><td>" . $row['specimenID'] . "</td>"
+        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>"
            . "<td class='ok'>OK</td>"
            . "<td class='ok'>OK</td>"
            . "<tr>\n";
@@ -162,10 +196,10 @@ foreach ($rows as $row) {
 <?php if (!empty($checks['noPicture'])): ?>
   <h3>Servers with no available pictures</h3>
   <table>
-    <tr><th>source-id</th><th>source</th></tr>
+    <tr><th>source (id)</th></tr>
 <?php
     foreach ($checks['noPicture'] as $row) {
-        echo "<tr><td>" . $row['source_id'] . "</td><td>" . $row['source'] . "</td><tr>\n";
+        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><tr>\n";
     }
 ?>
   </table>
