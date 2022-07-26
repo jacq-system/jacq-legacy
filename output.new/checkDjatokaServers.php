@@ -57,13 +57,7 @@ foreach ($rows as $row) {
     if ($result->num_rows > 0) {
         $specimenID = $result->fetch_assoc()['specimen_ID'];
         $picdetails = getPicDetails($specimenID);
-
-//        $picdetails = getPicDetails($specimenID);
-//        $picinfo = getPicInfo($picdetails);
-//        if (!empty($picinfo['error'])) {
-//            $ok = false;
-//            $errorRPC = $picinfo['error'];
-//        }
+        $filename   = $picdetails['originalFilename'];
 
         try{
             $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
@@ -87,17 +81,13 @@ foreach ($rows as $row) {
             if (!empty($data['error'])) {
                 $ok = false;
                 $errorRPC = $data['error'];
-                $filename = $picdetails['originalFilename'];
             } elseif (empty($data['result'][0])) {
                 $ok = false;
                 $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
-                $filename = $picdetails['originalFilename'];
             } elseif ($data['result'][0] != $picdetails['filename']) {
                 $ok = false;
                 $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
                 $filename = $data['result'][0];
-            } else {
-                $filename = $picdetails['originalFilename'];
             }
         }
         catch( Exception $e ) {
