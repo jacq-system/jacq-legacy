@@ -298,7 +298,8 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
             $info = curl_getinfo($ch);
             if ($info['http_code'] == 200) {
                 $phaidra = true;
-                $output['phaidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
+                $output['phaidraUrl'] = 'https://' . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . '/'
+                                      . '?manifest=' . $_CONFIG['JACQ_SERVICES'] . 'iiif/manifest/' . $specimen['specimen_ID'];
                 $ch2 = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID']);
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 $curl_response2 = curl_exec($ch2);
@@ -309,7 +310,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     foreach ($sequence['canvases'] as $canvas) {
                         foreach ($canvas['images'] as $image) {
                             $output['phaidraThumbs'][] = array('img'    => $image['resource']['service']['@id'],
-                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'], // TODO: use db-entries instead
+                                                               'viewer' => $output['phaidraUrl'],
                                                                'file'   => $picname);
                         }
                     }

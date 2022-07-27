@@ -121,7 +121,7 @@ function getPicDetails($request, $sid = '')
             $HerbNummer = str_replace(' ', '', $HerbNummer);
             $filename = sprintf($HerbNummer);
             $key = $row['key'];
-        } elseif ($row['imgserver_type'] == 'baku') {
+        } elseif ($row['imgserver_type'] == 'baku') {       // depricated
             $html = $row['Bemerkungen'];
             // create new ImageQuery object
             $query = new ImageQuery();
@@ -326,9 +326,9 @@ function getPicInfo($picdetails)
             $return['pics'] = $response_decoded['result'];
             fclose($fp);
         }
-    } else if ($picdetails['imgserver_type'] == 'baku') {
+    } else if ($picdetails['imgserver_type'] == 'baku') {   // depricated
         $return['pics'] = $picdetails['filename'];
-    } else {  // old legacy
+    } else {  // old legacy, depricated
         $url = "{$picdetails['url']}/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID={$picdetails['specimenID']}";
 
         $response = file_get_contents($url, "r");

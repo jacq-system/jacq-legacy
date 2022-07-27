@@ -94,14 +94,14 @@ function doRedirectShowPic($picdetails)
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         // Construct URL to viewer
         $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
-    } else if ($picdetails['imgserver_type'] == 'baku') {
+    } else if ($picdetails['imgserver_type'] == 'baku') {  // depricated
         // Get additional identifiers (if available)
         //$picinfo = getPicInfo($picdetails);
         //$identifiers = implode($picinfo['pics'], ',');
         // Construct URL to viewer
 
         $url = $picdetails['key'];
-    } else {
+    } else {                                               // depricated
         $q = '';
         foreach ($_GET as $k => $v) {
             if (in_array($k, array('method', 'filename', 'format')) === false) {
@@ -170,9 +170,8 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
 
         // Construct URL to Berlin Server
         // Remove hyphens
-        $HerbNummer = str_replace('-', '', $picdetails['filename']);
-        $url2 = 'http://ww2.bgbm.org/rest/herb/image/' . $HerbNummer;
-        $fp = fopen($url2, "r");
+        $fp = fopen('http://ww2.bgbm.org/rest/herb/image/' . str_replace('-', '', $picdetails['filename']), "r");
+        $response = "";
         while ($row = fgets($fp)) {
             $response .= trim($row) . "\n";
         }
@@ -180,7 +179,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         //$url = $picdetails['url'].'images'.$response_decoded['value'];
         $url = cleanURL('http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source=' . $response_decoded['value']);
 
-    } else if ($picdetails['imgserver_type'] == 'baku') {
+    } else if ($picdetails['imgserver_type'] == 'baku') {           // depricated
     //... Check if we are using djatoka = 3 (Baku image server)
         // Check requested format
         switch ($format) {
@@ -194,7 +193,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
 
         $url = cleanURL($picdetails['url'] . $picdetails['originalFilename']);
 
-    } else {
+    } else {                                                        // depricated
         // ... if not fall back to old system
         switch ($format) {
             case'tiff':

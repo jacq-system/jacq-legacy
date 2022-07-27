@@ -1,7 +1,7 @@
 <table border='0'>
   <tr>
     <td style="vertical-align: top; width: 30px;">
-      <a href='<?php echo $thumb['viewer'] ?>' target='_blank'><img height='15' width='15' src='images/logo-iiif.png'></a>
+      <a href='<?php echo $output['phaidraUrl']; ?>' target='_blank'><img height='15' width='15' src='images/logo-iiif.png'></a>
     </td>
     <?php foreach ($output['phaidraThumbs'] as $thumb): ?>
       <td valign='top' align='center'>
