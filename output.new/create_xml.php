@@ -28,30 +28,6 @@ function protolog($row)
     return $text;
 }
 
-// Returns 'false' if we can't open a connection to the location
-// OR if the result is empty.
-
-function get_directory_match($url,$base)
-{
-    $url = parse_url($url);
-    $fp = fsockopen($url['host'],80,$errno,$errstr,30);
-
-    if(!$fp) {
-        return false; // Can't open a connection
-    } else {
-        set_socket_blocking($fp, true);
-        fputs($fp, "GET ".$url['path']." HTTP/1.0\r\nHost: ".$url['host']."\r\n\r\n");
-        for ($result = ""; !feof($fp); $result .= fgets($fp,128));
-        fclose($fp);
-    }
-
-    if (preg_match_all("/>$base(\\w+).jpg<\\/a>/i", $result, $match)) {
-        return $match[1];
-    } else {
-        return false;
-    }
-}
-
 function makeTypus($ID)
 {
     global $dbLink;
@@ -270,7 +246,7 @@ while( $data_row = $data_result->fetch_array() ) {
     // Ort
     $out->writeElement( 'ort', 'NHM Wien - Botanische Abteilung' );
     // Inventarnummer
-    $out->writeElement( 'inventarnummer', $inventarnummer );
+    $out->writeElement( 'inventarnummer', $inventarnummer ?? '' );
     // Sammlung
     if( empty($row['coll_descr'] ) ) {
         echo "ERROR: Empty Description!";

@@ -2,15 +2,17 @@
 require("inc/functions.php");
 require_once('inc/imageFunctions.php');
 
+/** @var mysqli $dbLink */
+
 require __DIR__ . '/vendor/autoload.php';
 use GuzzleHttp\Client;
 
 ?><!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <title>JACQ - Virtual Herbaria</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <style type="text/css">
+  <style>
     table, th, td {
       border: 1px solid;
     }

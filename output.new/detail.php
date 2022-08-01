@@ -8,6 +8,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 require("inc/functions.php");
 require_once('inc/imageFunctions.php');
 
+/** @var mysqli $dbLink */
+/** @var array $_CONFIG */
+
 if (isset($_GET['ID'])) {
     $ID = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
 } else {
@@ -269,6 +272,7 @@ if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFI
     // create new id object
     $id = new MyTripleID($specimen['HerbNummer']);
     // create new AnnotationQuery object
+    /** @var string $serviceUri */
     $query = new AnnotationQuery($serviceUri);
     // fetch annotation metadata
     $annotations = $query->getAnnotationMetadata($id);

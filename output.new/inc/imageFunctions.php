@@ -79,8 +79,8 @@ function getPicDetails($request, $sid = '')
             if ($HerbNummer) {
                 // Find entry in specimens table and return specimen ID for it
                 $sql = "SELECT s.`specimen_ID`
-                        FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-                         LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                        FROM `tbl_specimens` s
+                         LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
                         WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
                          AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
                 $result = $dbLink->query($sql);
@@ -95,9 +95,9 @@ function getPicDetails($request, $sid = '')
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
                    mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
-            FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
+            FROM `tbl_specimens` s
+             LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+             LEFT JOIN `tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
             WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'";
 
     // Fetch information for this image

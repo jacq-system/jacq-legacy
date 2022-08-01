@@ -6,31 +6,38 @@ require_once('StableIdentifier.php');
 
 // Connect to output DB by default
 
-/** @var mysqli $dbLink */
-$dbLink = new mysqli($_CONFIG['DATABASES']['OUTPUT']['host'], $_CONFIG['DATABASES']['OUTPUT']['readonly']['user'], $_CONFIG['DATABASES']['OUTPUT']['readonly']['pass'], $_CONFIG['DATABASES']['OUTPUT']['db']);
+/** @var array $_CONFIG */
+
+$dbLink = new mysqli($_CONFIG['DATABASES']['OUTPUT']['host'],
+                     $_CONFIG['DATABASES']['OUTPUT']['readonly']['user'],
+                     $_CONFIG['DATABASES']['OUTPUT']['readonly']['pass'],
+                     $_CONFIG['DATABASES']['OUTPUT']['db']);
 if ($dbLink->connect_errno) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
-    "<html>\n" .
-    "<head><titel>Sorry, no connection ...</title></head>\n" .
+    "<html lang='en'>\n" .
+    "<head><title>Sorry, no connection ...</title></head>\n" .
     "<body><p>Sorry, no connection to database ...</p></body>\n" .
     "</html>\n";
     exit();
 }
 $dbLink->set_charset('utf8');
 
-/** @var mysqli $dbLink2 */
-$dbLink_pictures = new mysqli($_CONFIG['DATABASES']['PICTURES']['host'], $_CONFIG['DATABASES']['PICTURES']['readonly']['user'], $_CONFIG['DATABASES']['PICTURES']['readonly']['pass'], $_CONFIG['DATABASES']['PICTURES']['db']);
+/** @var mysqli $dbLink_pictures */
+$dbLink_pictures = new mysqli($_CONFIG['DATABASES']['PICTURES']['host'],
+                              $_CONFIG['DATABASES']['PICTURES']['readonly']['user'],
+                              $_CONFIG['DATABASES']['PICTURES']['readonly']['pass'],
+                              $_CONFIG['DATABASES']['PICTURES']['db']);
 if ($dbLink_pictures->connect_errno) {
     echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
-    "<html>\n" .
-    "<head><titel>Sorry, no connection ...</title></head>\n" .
+    "<html lang='en'>\n" .
+    "<head><title>Sorry, no connection ...</title></head>\n" .
     "<body><p>Sorry, no connection to database ...</p></body>\n" .
     "</html>\n";
     exit();
 }
 $dbLink_pictures->set_charset('utf8');
 
-function collection($row)
+function collection($row): string
 {
     $text = $row['Sammler'];
     if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
@@ -68,21 +75,21 @@ function collection($row)
     return trim($text);
 }
 
-function rdfcollection($row, $isBotanyPilot = false)
+function rdfcollection($row, $isBotanyPilot = false): string
 {
     if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID'] || $row['ORCID']){
         $text = "";
         if ($row['WIKIDATA_ID']) {
-           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" alt="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" width="20px"></a>&nbsp;';
+           $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" alt="wikidata" width="20px"></a>&nbsp;';
         }
         if ($row['HUH_ID']) {
-           $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" alt="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" height="20px"></a>&nbsp;';
+           $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" alt="Index of Botanists (HUH)" height="20px"></a>&nbsp;';
         }
         if ($row['VIAF_ID']) {
-           $text .= "<a href=\"" . $row['VIAF_ID'] . '" title="VIAF" alt="VIAF" target="_blank" class="leftnavi"><img src="assets/images/viaf.png" width="20px"></a>&nbsp;';
+           $text .= "<a href=\"" . $row['VIAF_ID'] . '" title="VIAF" target="_blank" class="leftnavi"><img src="assets/images/viaf.png" alt="VIAF" width="20px"></a>&nbsp;';
         }
         if ($row['ORCID']) {
-           $text .= "<a href=\"" . $row['ORCID'] . '" title="ORCID" alt="ORCID" target="_blank" class="leftnavi"><img src="assets/images/orcid.logo.icon.svg" width="20px"></a>&nbsp;';
+           $text .= "<a href=\"" . $row['ORCID'] . '" title="ORCID" target="_blank" class="leftnavi"><img src="assets/images/orcid.logo.icon.svg" alt="ORCID" width="20px"></a>&nbsp;';
         }
 
         if (getBloodhoundID($row)) {
@@ -166,7 +173,7 @@ class MyTripleID extends TripleID
 }
 
 
-function generateAnnoTable($metadata)
+function generateAnnoTable($metadata): string
 {
     // table header
     $str = '<table width="100%"><tr><td align="left">'
@@ -186,12 +193,12 @@ function generateAnnoTable($metadata)
     return $str;
 }
 
-function collectionID($row)
+function collectionID($row): string
 {
     if ($row['source_id'] == '29') {
-        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
+        $text = ($row['HerbNummer']) ?: ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
     } elseif ($row['source_id'] == '50') {
-        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
+        $text = ($row['HerbNummer']) ?: ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
     } else {
         $text = $row['collection'] . " " . $row['HerbNummer'];
     }
@@ -199,12 +206,12 @@ function collectionID($row)
     return trim($text);
 }
 
-function HerbariumNr($row)
+function HerbariumNr($row): string
 {
     if ($row['source_id'] == '29') {
-        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
+        $text = ($row['HerbNummer']) ?: ('B (JACQ-ID ' . $row['specimen_ID'] . ')');
     } elseif ($row['source_id'] == '50') {
-        $text = ($row['HerbNummer']) ? $row['HerbNummer'] : ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
+        $text = ($row['HerbNummer']) ?: ('Willing (JACQ-ID ' . $row['specimen_ID'] . ')');
     } else {
         $text = $row['source_code'] . " " . $row['HerbNummer'];
     }
@@ -296,7 +303,7 @@ function taxonWithHybrids($row)
     }
 }
 
-function getTaxonAuth($taxid)
+function getTaxonAuth($taxid): string
 {
     global $dbLink;
 
@@ -317,23 +324,7 @@ function getTaxonAuth($taxid)
     return $text;
 }
 
-function getGeonamesID($HerbNummer)
-{
-    global $dbLink;
-
-    $result = $dbLink->query("SELECT GeonamesID FROM lagu_pilot.geonames_data WHERE GeonamesID like 'h%' AND kBarcode LIKE '$HerbNummer'");
-     $text = '';
-    if ($result && $result->num_rows > 0) {
-    // output data of each row
-        while($row = $result->fetch_assoc()) {
-            $text = "<br> Reference in: <a href='" . $row["GeonamesID"]. "' target='_blank' title='Geonames' alt='Geonames'>Geonames</a>; ";
-        }
-       // $text = '';
-    }
-    return $text;
-}
-
-function getBloodhoundID($row)
+function getBloodhoundID($row): string
 {
     global $dbLink;
 
@@ -342,7 +333,7 @@ function getBloodhoundID($row)
     if ($result && $result->num_rows > 0) {
     // output data of each row
         while($row = $result->fetch_assoc()) {
-            $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia' alt='Bionomia'><img src='assets/images/bionomia_logo.png' width='20px'></a>&nbsp;";
+            $text = "<a href='" . $row["Bloodhound_ID"]. "' target='_blank' title='Bionomia'><img src='assets/images/bionomia_logo.png' alt='Bionomia' width='20px'></a>&nbsp;";
         }
     }
     return $text;
@@ -379,7 +370,7 @@ function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP)
   Contact:     webmaster@phpeasycode.com
  * ******************************************************************************** */
 
-function paginate_three($page, $tpages, $adjacents)
+function paginate_three($page, $tpages, $adjacents): string
 {
     $prevlabel = "<i class='material-icons'>chevron_left</i>";
     $nextlabel = "<i class='material-icons'>chevron_right</i>";

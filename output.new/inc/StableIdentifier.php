@@ -75,10 +75,12 @@ function getStableIdentifier($specimenID)
  */
 function getManifestURI($stableIdentifier)
 {
-    /** @var mysqli_result $result */
     global $dbLink_pictures;
 
-    $sql4 = 'SELECT manifest FROM stblid_manifest WHERE stableIdentifier like "' . $stableIdentifier . '" LIMIT 1';
+    $sql4 = 'SELECT manifest 
+             FROM stblid_manifest 
+             WHERE stableIdentifier LIKE "' . $stableIdentifier . '" 
+             LIMIT 1';
     $result = $dbLink_pictures->query($sql4);
     $manifest = '';
 
