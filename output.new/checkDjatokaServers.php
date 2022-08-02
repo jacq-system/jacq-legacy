@@ -4,7 +4,6 @@ require_once('inc/imageFunctions.php');
 
 /** @var mysqli $dbLink */
 
-require __DIR__ . '/vendor/autoload.php';
 use GuzzleHttp\Client;
 
 ?><!DOCTYPE html>

@@ -1,4 +1,8 @@
 <?php
+
+use Jacq\AnnotationQuery;
+use Jacq\TripleID;
+
 session_start();
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
@@ -166,7 +170,7 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.habitat, s.habitus, s.altitude_min, s.altitude_max,
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
-                             m.source_code,
+                             m.source_code, m.source_name,
                              tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
@@ -270,10 +274,9 @@ if ($specimen['source_id'] == '35') {
 if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
     $output['newAnno'] = true;
     // create new id object
-    $id = new MyTripleID($specimen['HerbNummer']);
+    $id = new TripleID($specimen['source_code'], $specimen['source_name'], $specimen['HerbNummer']);
     // create new AnnotationQuery object
-    /** @var string $serviceUri */
-    $query = new AnnotationQuery($serviceUri);
+    $query = new AnnotationQuery("https://annosys.bgbm.fu-berlin.de/AnnoSys");
     // fetch annotation metadata
     $annotations = $query->getAnnotationMetadata($id);
     // build URI for new annotation

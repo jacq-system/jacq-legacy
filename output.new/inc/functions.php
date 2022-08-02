@@ -1,8 +1,7 @@
 <?php
 require_once('variables.php');
-require_once('AnnotationQuery.inc.php');
-require_once('ImagePreview.inc.php');
 require_once('StableIdentifier.php');
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // Connect to output DB by default
 
@@ -143,35 +142,6 @@ function rdfcollection($row, $isBotanyPilot = false): string
 
     return trim($text);
 }
-
-
-// new triple id class
-class MyTripleID extends TripleID
-{
-    public function __construct($id) {
-        global $dbLink;
-
-        // do some conversion stuff
-        // ex.: database query for institution, source, object ...
-        //      sql = "SELECT * FROM table WHERE id=" . $id
-        // fill variables with data from database
-
-        $query = "SELECT s.specimen_ID, mc.collection, mc.collectionID, s.HerbNummer, md.SourceInstitutionID, md.SourceID
-                  FROM tbl_specimens s
-                   LEFT JOIN tbl_management_collections mc ON mc.collectionID=s.collectionID
-                   LEFT JOIN metadata md ON md.db_id=mc.source_id
-                  WHERE HerbNummer like '" . ($id)."'";
-        $result = $dbLink->query($query);
-
-        if ($dbLink->connect_errno) {
-            echo $query . "<br>\n";
-            echo $dbLink->error . "<br>\n";
-        }
-        $row = $result->fetch_array();
-        parent::__construct($row['SourceInstitutionID'], $row['SourceID'], $row['HerbNummer']);
-    }
-}
-
 
 function generateAnnoTable($metadata): string
 {

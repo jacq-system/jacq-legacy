@@ -1,5 +1,7 @@
 <?php
 // can only be used if inc/functions.php is included beforehand
+use Jacq\ImageQuery;
+
 require_once("jsonRPCClient.php");
 
 ini_set("default_socket_timeout", 5);

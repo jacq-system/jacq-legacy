@@ -7,6 +7,12 @@
     "guzzlehttp/guzzle": "^7.0",
     "ext-mysqli": "*",
     "ext-json": "*",
-    "ext-ctype": "*"
+    "ext-ctype": "*",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "Jacq\\": "classes/"
+    }
   }
 }
