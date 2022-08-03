@@ -2,8 +2,6 @@
 // can only be used if inc/functions.php is included beforehand
 use Jacq\ImageQuery;
 
-require_once("jsonRPCClient.php");
-
 ini_set("default_socket_timeout", 5);
 
 /**
@@ -161,16 +159,21 @@ function getPicDetails($request, $sid = '')
                  */
                 $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 try {  // ask the picture server for a picture with the new filename
-                    $service = new jsonRPCClient($url . 'jacq-servlet/ImageServer');
-                    $pics = $service->listResources($row['key'],
-                                                    array($filename,
-                                                          $filename . "_%",
-                                                          $filename . "A",
-                                                          $filename . "B",
-                                                          "tab_" . $filename,
-                                                          "obs_" . $filename,
-                                                          "tab_" . $filename . "_%",
-                                                          "obs_" . $filename . "_%"));
+                    $service = new \JsonRPC\Client($url . 'jacq-servlet/ImageServer');
+                    $pics = $service->execute('listResources',
+                                                [
+                                                    $row['key'],
+                                                    [
+                                                        $filename,
+                                                        $filename . "_%",
+                                                        $filename . "A",
+                                                        $filename . "B",
+                                                        "tab_" . $filename,
+                                                        "obs_" . $filename,
+                                                        "tab_" . $filename . "_%",
+                                                        "obs_" . $filename . "_%"
+                                                    ]
+                                                ]);
                 }
                 catch( Exception $e ) {
                     $pics = array();  // something has gone wrong, so no picture can be found anyway
@@ -266,16 +269,21 @@ function getPicInfo($picdetails)
 
         // Create a service instance and send requests to jacq-servlet
         try {
-            $service = new jsonRPCClient($url);
-            $return['pics'] = $service->listResources($picdetails['key'],
-                                                      array($picdetails['filename'],
-                                                            $picdetails['filename'] . "_%",
-                                                            $picdetails['filename'] . "A",
-                                                            $picdetails['filename'] . "B",
-                                                            "tab_" . $picdetails['specimenID'],
-                                                            "obs_" . $picdetails['specimenID'],
-                                                            "tab_" . $picdetails['specimenID'] . "_%",
-                                                            "obs_" . $picdetails['specimenID'] . "_%"));
+            $service = new \JsonRPC\Client($url);
+            $return['pics'] = $service->execute('listResources',
+                                                [
+                                                    $picdetails['key'],
+                                                    [
+                                                        $picdetails['filename'],
+                                                        $picdetails['filename'] . "_%",
+                                                        $picdetails['filename'] . "A",
+                                                        $picdetails['filename'] . "B",
+                                                        "tab_" . $picdetails['specimenID'],
+                                                        "obs_" . $picdetails['specimenID'],
+                                                        "tab_" . $picdetails['specimenID'] . "_%",
+                                                        "obs_" . $picdetails['specimenID'] . "_%"
+                                                    ]
+                                                ]);
         }
         catch( Exception $e ) {
             $return['error'] = 'Unable to connect to ' . $url . " with Error: " . $e->getMessage();

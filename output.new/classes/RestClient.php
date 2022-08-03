@@ -1,5 +1,7 @@
 <?php
 
+namespace Jacq;
+
 //$rest = new RestClient("http://localhost/develop.jacq/services/rest/");
 //var_dump($rest->get("classification/children", array("citation", 31070), array("taxonID" => 233647)));
 
