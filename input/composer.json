@@ -1,7 +1,8 @@
 {
-    "require": {
-        "php": ">=7.4",
-        "jaxon-php/jaxon-core": "~3.2",
-        "phpoffice/phpspreadsheet": "^1.20"
-    }
+  "require": {
+    "php": ">=7.4",
+    "jaxon-php/jaxon-core": "~3.2",
+    "phpoffice/phpspreadsheet": "^1.20",
+    "ext-mysqli": "*"
+  }
 }
