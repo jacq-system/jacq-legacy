@@ -1,10 +1,13 @@
 <?php
-require 'inc/variables.php'; // require configuration
-require 'inc/RestClient.php';
-require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\RestClient;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+
+require 'inc/variables.php'; // require configuration
+require __DIR__ . '/vendor/autoload.php';
+
+/** @var array $_CONFIG */
 
 //http://localhost/develop.jacq/legacy/output.new/classificationBrowser_download.php?referenceType=citation&referenceId=31070&scientificNameId=363825
 

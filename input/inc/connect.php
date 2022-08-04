@@ -3,6 +3,8 @@ require_once( 'variables.php' );
 require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
+/** @var array $_CONFIG */
+
 if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     if (substr(getcwd(), -5) == "/ajax") {
         die();
@@ -11,26 +13,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
         exit();
     }  // TODO: remove the remaining lines up to $dbLink... when removing the mysql-part
 }
-//else if (!@mysql_connect( $_CONFIG['DATABASE']['INPUT']['host'], $_SESSION['username'], $_SESSION['password'])) {
-//    if (substr(getcwd(), -5) == "/ajax") {
-//        die();
-//    } else {
-//        header("Location: login.php");
-//        exit();
-//    }
-//} else if (!@mysql_select_db($_CONFIG['DATABASE']['INPUT']['name'])) {
-//    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n"
-//       . "<html>\n"
-//       . "<head><titel>Sorry, no connection ...</title></head>\n"
-//       . "<body><p>Sorry, no connection to database ...</p></body>\n"
-//       . "</html>\n";
-//    exit();
-//}
-//
-//mysql_query("SET character set utf8");
-// remove up to here
 
-/** @var mysqli $dbLink */
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
                      $_SESSION['username'],
                      $_SESSION['password'],
@@ -131,7 +114,7 @@ function dbi_query($sql, $debug = false)
  * (makes it unnecessary to use global variable $dbLink
  *
  * @global mysqli $dbLink
- * @param type $text text to escape
+ * @param string $text text to escape
  * @return string escaped text
  */
 function dbi_escape_string($text)
@@ -156,7 +139,7 @@ function dbi_insert_id()
 }
 
 /**
- * quotes a string or returns NULL if string is empty
+ * quotes a string or returns NULL if string is empty or is NULL
  *
  * @global mysqli $dbLink link to mysql-db
  * @param string $text what to quote
@@ -177,7 +160,7 @@ function quoteString($text)
  * checks an INT-value and returns NULL if zero
  *
  * @param integer $value
- * @return integer or NULL
+ * @return string or NULL
  */
 function makeInt($value)
 {
@@ -237,7 +220,7 @@ function isLocked($table, $id)
 		if (!$where) {
             return false;
         }
-		$res = dbi_query("SELECT {$lock} FROM {$table} WHERE {$where}");
+		$res = dbi_query("SELECT $lock FROM $table WHERE $where");
 
 		if ($res && $row = $res->fetch_array()){
 			if (isset($row[$lock]) && $row[$lock]){
@@ -296,7 +279,7 @@ function formatUnitID($specimenID)
         if ($result->num_rows > 0) {
             $row1 = $result->fetch_array();
             $found = false;
-            if ($result->num_rows() > 1) {
+            if ($result->num_rows > 1) {
                 $sql2 = "SELECT digits, replace_char
                          FROM tbl_labels_numbering
                          WHERE replace_char IS NOT NULL

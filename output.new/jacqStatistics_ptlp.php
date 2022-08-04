@@ -1,9 +1,13 @@
 <?php
 // this is the local pass through landing page for all ajax-operations of the statistics browser
 
+use Jacq\RestClient;
+
 // require configuration
 require('inc/variables.php');
-require('inc/RestClient.php');
+require __DIR__ . '/vendor/autoload.php';
+
+/** @var array $_CONFIG */
 
 $rest = new RestClient($_CONFIG['JACQ_SERVICES']);
 

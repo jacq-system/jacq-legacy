@@ -1,4 +1,8 @@
 <?php
+
+use Jacq\AnnotationQuery;
+use Jacq\TripleID;
+
 session_start();
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
@@ -7,6 +11,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 
 require("inc/functions.php");
 require_once('inc/imageFunctions.php');
+
+/** @var mysqli $dbLink */
+/** @var array $_CONFIG */
 
 if (isset($_GET['ID'])) {
     $ID = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
@@ -163,7 +170,7 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.habitat, s.habitus, s.altitude_min, s.altitude_max,
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
-                             m.source_code,
+                             m.source_code, m.source_name,
                              tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
@@ -193,7 +200,8 @@ $specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              LEFT JOIN tbl_tax_genera tg                 ON tg.genID = ts.genID
                              LEFT JOIN tbl_tax_families tf               ON tf.familyID = tg.familyID
                              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                            WHERE specimen_ID = '" . intval($ID) . "'")
+                            WHERE s.accessible != '0'
+                             AND s.specimen_ID = '" . intval($ID) . "'")
                    ->fetch_array();
 
 $output['ID'] = $ID;
@@ -266,9 +274,9 @@ if ($specimen['source_id'] == '35') {
 if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
     $output['newAnno'] = true;
     // create new id object
-    $id = new MyTripleID($specimen['HerbNummer']);
+    $id = new TripleID($specimen['source_code'], $specimen['source_name'], $specimen['HerbNummer']);
     // create new AnnotationQuery object
-    $query = new AnnotationQuery($serviceUri);
+    $query = new AnnotationQuery("https://annosys.bgbm.fu-berlin.de/AnnoSys");
     // fetch annotation metadata
     $annotations = $query->getAnnotationMetadata($id);
     // build URI for new annotation
@@ -297,7 +305,8 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
             $info = curl_getinfo($ch);
             if ($info['http_code'] == 200) {
                 $phaidra = true;
-                $output['phaidraUrl'] = $_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID'];
+                $output['phaidraUrl'] = 'https://' . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . '/'
+                                      . '?manifest=' . $_CONFIG['JACQ_SERVICES'] . 'iiif/manifest/' . $specimen['specimen_ID'];
                 $ch2 = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID']);
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 $curl_response2 = curl_exec($ch2);
@@ -308,7 +317,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     foreach ($sequence['canvases'] as $canvas) {
                         foreach ($canvas['images'] as $image) {
                             $output['phaidraThumbs'][] = array('img'    => $image['resource']['service']['@id'],
-                                                               'viewer' => "https://iiif.jacq.org/viewer/?manifest=" . $output['phaidraUrl'], // TODO: use db-entries instead
+                                                               'viewer' => $output['phaidraUrl'],
                                                                'file'   => $picname);
                         }
                     }

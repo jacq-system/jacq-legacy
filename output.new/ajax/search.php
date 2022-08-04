@@ -1,5 +1,6 @@
 <?php
 require_once 'inc/functions.php';
+/** @var mysqli $dbLink */
 
 if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
@@ -45,7 +46,7 @@ if (!empty($_POST['submit'])) {
                     AND mc.source_ID = m.source_ID
                     AND s.accessible != '0' ";
     $sql_restrict_specimen = $sql_restrict_species = "";
-    while (list($var, $value) = each($_POST)) {
+    foreach ($_POST as $var => $value) {
         // echo "$var = $value<br>\n";
         if (trim($value) != "" && $var != "submit" && $var != "PHPSESSID") {
             if ($var != "type" && $var != "images" && $var != "synonym") {

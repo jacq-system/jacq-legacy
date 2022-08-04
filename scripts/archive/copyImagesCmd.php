@@ -43,7 +43,7 @@ if ($argc != 2 || in_array($argv[1], array('--help', '-help', '-h', '-?'))) {
 } else {
   $resultID = $dbLink->query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk='".intval($argv[1])."'");
   while ($rowID = mysqli_fetch_array($resultID)) {
-    $sql = "SELECT HerbNummer, specimen_ID, img_coll_short, img_directory, tbl_specimens.collectionID ".
+    $sql = "SELECT HerbNummer, specimen_ID, img_coll_short, tbl_specimens.collectionID ".
            "FROM tbl_specimens, tbl_management_collections, tbl_img_definition ".
            "WHERE tbl_specimens.collectionID=tbl_management_collections.collectionID ".
             "AND tbl_management_collections.source_id=tbl_img_definition.source_id_fk ".

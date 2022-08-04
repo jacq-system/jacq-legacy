@@ -13,7 +13,7 @@ $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   //  search for label **
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   // search for label **
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "useGeoname");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeLinktext");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editLink");
@@ -172,7 +172,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
                 WHERE specimen_ID = " . extractID($_GET['sel']);
         $result = dbi_query($sql);
-        $resultValid = (mysqli_num_rows($result)>0) ? true : false;
+        $resultValid = mysqli_num_rows($result) > 0;
     } else {
         $resultValid = false;
     }
@@ -282,8 +282,8 @@ if (isset($_GET['sel'])) {
             $p_collection = "";
         }
     }
-    $edit = (!empty($_GET['edit'])) ? true : false;
-    if ($swBatch && isset($_GET['sel'])) {
+    $edit = !empty($_GET['edit']);
+    if ($swBatch) {
         // read tbl_api_specimens
         $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
@@ -420,7 +420,7 @@ if (isset($_GET['sel'])) {
                     WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                      AND specimen_ID = '" . intval($_POST['specimen_ID']) . "'";
             $dummy = dbi_query($sql)->fetch_array();
-            $checkSource = ($dummy['source_id']==$_SESSION['sid']) ? true : false;
+            $checkSource = $dummy['source_id'] == $_SESSION['sid'];
 
             $sql = "UPDATE tbl_specimens SET "
                  .  $sqldata . " "
@@ -443,8 +443,9 @@ if (isset($_GET['sel'])) {
                                 FROM `tbl_specimens` s, `tbl_management_collections` mc
                                 WHERE s.`collectionID` = mc.`collectionID`
                                  AND s.`HerbNummer` = " . quoteString($p_HerbNummer) . "
-                                 AND mc.`collectionID` = " . intval($p_collection) . "
                                  AND mc.`allowDuplicateHerbNr` = 0
+                                 AND (   (mc.findDuplicatesIn = 'source' AND mc.source_id = " . intval($p_institution) . ")
+                                      OR (mc.findDuplicatesIn = 'collection' AND mc.collectionID = " . intval($p_collection) . "))
                                  AND s.`specimen_ID` != '" . intval($_POST['specimen_ID']) . "'");
             if (mysqli_num_rows($dummy) > 0) {
                 $updateBlocked = true;
@@ -481,11 +482,6 @@ if (isset($_GET['sel'])) {
             $blockCause = 2;  // no write access to the new collection
             $edit = ($_POST['edit']) ? true : false;
             $p_specimen_ID = $_POST['specimen_ID'];
-        }
-        if ($swBatch && isset($_GET['sel'])) {
-            // read tbl_api_specimens
-            $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
-            $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
         }
     } else if (!empty($_POST['submitNewCopy'])) {
         $p_specimen_ID = "";
@@ -529,261 +525,324 @@ if (isset($_GET['sel'])) {
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
-    var reload = false;
-    var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
+      var reload = false;
+      var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
 
-    function makeOptions() {
-      options = "width=";
-      if (screen.availWidth<990)
-        options += (screen.availWidth - 10) + ",height=";
-      else
-        options += "990, height=";
-      if (screen.availHeight<710)
-        options += (screen.availHeight - 10);
-      else
-        options += "710";
-      options += ", top=10,left=10,scrollbars=yes,resizable=yes";
-      return options;
-    }
-    function editCollector(sel) {
-      target = "editCollector.php?sel=" + encodeURIComponent(sel.value);
-      MeinFenster = window.open(target,"editCollector","width=850,height=250,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function editCollector2(sel) {
-      target = "editCollector2.php?sel=" + encodeURIComponent(sel.value);
-      MeinFenster = window.open(target,"editCollector2","width=500,height=130,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function searchCollector() {
-      MeinFenster = window.open("searchCollector.php","searchCollector","scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function searchCollector2() {
-      MeinFenster = window.open("searchCollector2.php","searchCollector2","scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function editSpecies(sel) {
-      target = "editSpecies.php?sel=" + encodeURIComponent(sel.value);
-      MeinFenster = window.open(target,"Species",makeOptions());
-      MeinFenster.focus();
-    }
-    function editVoucher() {
-      target = "editVoucher.php?sel=" + document.f.voucher.options[document.f.voucher.selectedIndex].value;
-      MeinFenster = window.open(target,"editVoucher","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function editSeries() {
-        target = "editSeries.php?sel=" + $( '#seriesIndex' ).val();
-      MeinFenster = window.open(target,"editSeries","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-    function editSpecimensTypes(sel) {
-      target = "listSpecimensTypes.php?ID=" + encodeURIComponent(sel);
-      MeinFenster = window.open(target,"listSpecimensTypes","width=800,height=400,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
-
-    function editLabel(sel) {
-      target = "editLabel.php?sel=<" + sel + ">";
-      MeinFenster = window.open(target,"Labels",makeOptions());
-      MeinFenster.focus();
-    }
-
-    function updateBatch(sel,sw) {
-      if (document.f.batch.checked==true || sw)
-        option2 = "&sw=2";
-      else
-        option2 = "&sw=1";
-      target = "updateBatch.php?nr=" + encodeURIComponent(sel) + option2;
-      MeinFenster = window.open(target,"updateBatch","width=800,height=400,top=50,left=50,scrollbars=yes,resizable=yes");
-    }
-
-    function reloadButtonPressed() {
-      reload = true;
-    }
-    function checkMandatory(outText) {
-      var missing = 0;
-      var text = "";
-      var outtext = "";
-
-      if (reload==true) return true;
-
-      if (document.f.collection.selectedIndex==0) {
-        missing++; text += "Collection\n";
-      }
-      if (document.f.taxon.value.indexOf("<")<0 || document.f.taxon.value.indexOf(">")<0) {
-        missing++; text += "taxon\n";
-      }
-      if (document.f.det.value.length==0) {
-        missing++; text += "det / rev / conf\n";
-      }
-      if (document.f.taxon_alt.value.length==0) {
-        missing++; text += "ident. history\n";
-      }
-      if (document.f.sammler.value.indexOf("<")<0 || document.f.sammler.value.indexOf(">")<0) {
-        missing++; text += "collector\n";
-      }
-      if (document.f.Nummer.value.length==0 && document.f.alt_number.value.length==0) {
-        missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
-      }
-      if (document.f.Datum.value.length==0) {
-        missing++; text += "Date\n";
-      }
-      if (document.f.Fundort1.value.length==0) {
-        missing++; text += "Locality\n";
+      function makeOptions()
+      {
+          let options = "width=";
+          if (screen.availWidth<990) {
+              options += (screen.availWidth - 10) + ",height=";
+          } else {
+              options += "990, height=";
+          }
+          if (screen.availHeight<710) {
+              options += (screen.availHeight - 10);
+          } else {
+              options += "710";
+          }
+          options += ", top=10,left=10,scrollbars=yes,resizable=yes";
+          return options;
       }
 
-      if (missing>0) {
-        if (missing>1)
-          outtext = "The following " + missing + " entries are missing or invalid:\n";
-        else
-          outtext = "The following entry is missing or invalid:\n";
-        if (outText!=0) alert (outtext + text);
-        return false;
-      }
-      else
-        return true;
-    }
+      function editCollector(sel)
+      {
+          let target, MeinFenster;
 
-    function doSubmit( p_type ) {
-        // If all fields are set, trigger a submit
-        if( checkMandatory(1) ) {
-            $( '#submit_type' ).val( p_type );
-            $( '#f' ).submit();
-        }
-    }
-
-    function quadrant2LatLon(quadrant,quadrant_sub) {
-      var xx = quadrant.substr(quadrant.length-2,2);
-      var yy = quadrant.substr(0,quadrant.length-2);
-
-      var xD = parseInt(((xx - 2) / 6) + 6);
-      var xM = 0;
-      var xS = Math.round((((((xx - 2) / 6) + 6) * 60) % 60) * 60);
-      var yD = parseInt(((-yy / 10) + 56));
-      var yM = 0;
-      var yS = Math.round(((((-yy / 10) + 56) * 60) % 60) * 60);
-
-      if (quadrant_sub==0 || quadrant_sub>4) {
-        xM += 5;
-        yM -= 3;
-      }
-      else {
-        xS += ((quadrant_sub - 1) % 2) * (5 * 60);
-        yS -= parseInt((quadrant_sub - 1) / 2) * (3 * 60);
-        xS += (60 * 5) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
-        yS -= (60 * 3) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
+          target = "editCollector.php?sel=" + encodeURIComponent(sel.value);
+          MeinFenster = window.open(target, "editCollector", "width=850,height=250,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
       }
 
-      var latLon = new Array(2);
-      latLon[1] = xD + (xM / 60) + (xS / 3600);
-      latLon[0] = yD + (yM / 60) + (yS / 3600);
+      function editCollector2(sel)
+      {
+          let target, MeinFenster;
 
-      return latLon;
-    }
-
-    function convert() {
-      var latLon = quadrant2LatLon(document.f.quadrant.value,document.f.quadrant_sub.value);
-
-      if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
-        alert('Coordinates have already been entered');
+          target = "editCollector2.php?sel=" + encodeURIComponent(sel.value);
+          MeinFenster = window.open(target, "editCollector2", "width=500,height=130,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
       }
-      else {
-        document.f.lon_deg.value = Math.floor(Math.abs(latLon[1]));
-        document.f.lon_min.value = Math.floor(Math.abs(latLon[1]) * 60 % 60);
-        document.f.lon_sec.value = Math.floor(Math.abs(latLon[1]) * 3600 % 60);
-        if (latLon[1]<0)
-          document.f.lon.options.selectedIndex = 0;
-        else
-          document.f.lon.options.selectedIndex = 1;
-        document.f.lat_deg.value = Math.floor(Math.abs(latLon[0]));
-        document.f.lat_min.value = Math.floor(Math.abs(latLon[0]) * 60 % 60);
-        document.f.lat_sec.value = Math.floor(Math.abs(latLon[0]) * 3600 % 60);
-        if (latLon[0]>=0)
-          document.f.lat.options.selectedIndex = 0;
-        else
-          document.f.lat.options.selectedIndex = 1;
+
+      function searchCollector()
+      {
+          let MeinFenster = window.open("searchCollector.php", "searchCollector", "scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
       }
-    }
 
-    function fillLocation(lon_deg, lon_min, lon_sec, lon_dir, lat_deg, lat_min, lat_sec, lat_dir, nationID) {
-      if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
-        alert('Coordinates have already been entered');
+      function searchCollector2()
+      {
+        let MeinFenster = window.open("searchCollector2.php", "searchCollector2", "scrollbars=yes,resizable=yes");
+        MeinFenster.focus();
       }
-      else {
-        document.f.lon_deg.value = lon_deg;
-        document.f.lon_min.value = lon_min;
-        document.f.lon_sec.value = lon_sec;
-        if (lon_dir == 'W')
-          document.f.lon.options.selectedIndex = 0;
-        else
-          document.f.lon.options.selectedIndex = 1;
-        document.f.lat_deg.value = lat_deg;
-        document.f.lat_min.value = lat_min;
-        document.f.lat_sec.value = lat_sec;
-        if (lat_dir == 'N')
-          document.f.lat.options.selectedIndex = 0;
-        else
-          document.f.lat.options.selectedIndex = 1;
+
+      function editSpecies(sel)
+      {
+          let target, MeinFenster;
+
+          target = "editSpecies.php?sel=" + encodeURIComponent(sel.value);
+          MeinFenster = window.open(target,"Species",makeOptions());
+          MeinFenster.focus();
       }
-      for (i=0; i<document.f.nation.length; i++) {
-        if (document.f.nation.options[i].value == nationID) {
-          document.f.nation.selectedIndex = i;
-          break;
-        }
+
+      function editVoucher()
+      {
+          let target, MeinFenster;
+
+          target = "editVoucher.php?sel=" + document.f.voucher.options[document.f.voucher.selectedIndex].value;
+          MeinFenster = window.open(target,"editVoucher","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
       }
-      reload=true;
-      self.document.f.submit();
-    }
 
-    function editNCBI(sel) {
-      target = "editNCBI.php?id=" + sel;
-      MeinFenster = window.open(target,"editNCBI","width=350,height=130,top=50,left=50,scrollbars=yes,resizable=yes");
-      MeinFenster.focus();
-    }
+      function editSeries()
+      {
+          let target, MeinFenster;
 
-    function goBack(sel,check,edit,pid) {
-      if (!check && checkMandatory(0))
-        move = confirm("Are you sure you want to leave?\nDataset will not be inserted!");
-      else if (check && edit)
-        move = confirm("Are you sure you want to leave?\nDataset will not be updated!");
-      else
-        move = true;
-      if (move) {
-        if (pid)
-          self.location.href = 'listTypeSpecimens.php?ID=' + pid + '&nr=' + sel;
-        else
-          self.location.href = 'listSpecimens.php?nr=' + sel;
+          target = "editSeries.php?sel=" + $( '#seriesIndex' ).val();
+          MeinFenster = window.open(target,"editSeries","width=500,height=150,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
       }
-    }
 
-    function call_toggleLanguage() {
-      jaxon_toggleLanguage(jaxon.getFormValues('f'));
-      return false;
-    }
+      function editSpecimensTypes(sel)
+      {
+          let target, MeinFenster;
 
-    function call_makeAutocompleter(name) {
-      $('#' + name).autocomplete ({
-        source: 'index_jq_autocomplete.php?field=taxon',
-        minLength: 2
-      });
-    }
+          target = "listSpecimensTypes.php?ID=" + encodeURIComponent(sel);
+          MeinFenster = window.open(target,"listSpecimensTypes","width=800,height=400,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
+      }
 
-    jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
-    $(function() {
-        $('#iBox_content').dialog( {
-          autoOpen: false,
-          modal: true,
-          bgiframe: true,
-          width: 750,
-          height: 600
-        } );
-        $('#sammlerIndex').change(function() {
-          jaxon_displayCollectorLinks($(this).val());
-        } );
-        $('#sammlerIndex').change();
-    } );
+      function editLabel(sel)
+      {
+          let target, MeinFenster;
+
+          target = "editLabel.php?sel=<" + sel + ">";
+          MeinFenster = window.open(target,"Labels",makeOptions());
+          MeinFenster.focus();
+      }
+
+      function updateBatch(sel,sw)
+      {
+          let target, MeinFenster;
+
+          if (document.f.batch.checked==true || sw) {
+              option2 = "&sw=2";
+          } else {
+              option2 = "&sw=1";
+          }
+          target = "updateBatch.php?nr=" + encodeURIComponent(sel) + option2;
+          MeinFenster = window.open(target,"updateBatch","width=800,height=400,top=50,left=50,scrollbars=yes,resizable=yes");
+      }
+
+      function reloadButtonPressed()
+      {
+        reload = true;
+      }
+
+      function checkMandatory(outText)
+      {
+          var missing = 0;
+          var text = "";
+          var outtext = "";
+
+          if (reload==true) {
+              return true;
+          }
+
+          if (document.f.collection.selectedIndex==0) {
+              missing++; text += "Collection\n";
+          }
+          if (document.f.taxon.value.indexOf("<")<0 || document.f.taxon.value.indexOf(">")<0) {
+              missing++; text += "taxon\n";
+          }
+          if (document.f.det.value.length==0) {
+              missing++; text += "det / rev / conf\n";
+          }
+          if (document.f.taxon_alt.value.length==0) {
+              missing++; text += "ident. history\n";
+          }
+          if (document.f.sammler.value.indexOf("<")<0 || document.f.sammler.value.indexOf(">")<0) {
+              missing++; text += "collector\n";
+          }
+          if (document.f.Nummer.value.length==0 && document.f.alt_number.value.length==0) {
+              missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
+          }
+          if (document.f.Datum.value.length==0) {
+              missing++; text += "Date\n";
+          }
+          if (document.f.Fundort1.value.length==0) {
+              missing++; text += "Locality\n";
+          }
+
+          if (missing>0) {
+              if (missing>1) {
+                  outtext = "The following " + missing + " entries are missing or invalid:\n";
+              } else {
+                  outtext = "The following entry is missing or invalid:\n";
+              }
+              if (outText!=0) {
+                  alert(outtext + text);
+              }
+              return false;
+          } else {
+              return true;
+          }
+      }
+
+      function doSubmit( p_type )
+      {
+          // If all fields are set, trigger a submit
+          if( checkMandatory(1) ) {
+              $( '#submit_type' ).val( p_type );
+              $( '#f' ).submit();
+          }
+      }
+
+      function quadrant2LatLon(quadrant,quadrant_sub)
+      {
+          var xx = quadrant.substr(quadrant.length-2,2);
+          var yy = quadrant.substr(0,quadrant.length-2);
+
+          var xD = parseInt(((xx - 2) / 6) + 6);
+          var xM = 0;
+          var xS = Math.round((((((xx - 2) / 6) + 6) * 60) % 60) * 60);
+          var yD = parseInt(((-yy / 10) + 56));
+          var yM = 0;
+          var yS = Math.round(((((-yy / 10) + 56) * 60) % 60) * 60);
+
+          if (quadrant_sub==0 || quadrant_sub>4) {
+              xM += 5;
+              yM -= 3;
+          } else {
+              xS += ((quadrant_sub - 1) % 2) * (5 * 60);
+              yS -= parseInt((quadrant_sub - 1) / 2) * (3 * 60);
+              xS += (60 * 5) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
+              yS -= (60 * 3) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
+          }
+
+          var latLon = new Array(2);
+          latLon[1] = xD + (xM / 60) + (xS / 3600);
+          latLon[0] = yD + (yM / 60) + (yS / 3600);
+
+          return latLon;
+      }
+
+      function convert()
+      {
+          var latLon = quadrant2LatLon(document.f.quadrant.value,document.f.quadrant_sub.value);
+
+          if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
+              alert('Coordinates have already been entered');
+          } else {
+              document.f.lon_deg.value = Math.floor(Math.abs(latLon[1]));
+              document.f.lon_min.value = Math.floor(Math.abs(latLon[1]) * 60 % 60);
+              document.f.lon_sec.value = Math.floor(Math.abs(latLon[1]) * 3600 % 60);
+              if (latLon[1]<0) {
+                  document.f.lon.options.selectedIndex = 0;
+              } else {
+                  document.f.lon.options.selectedIndex = 1;
+              }
+              document.f.lat_deg.value = Math.floor(Math.abs(latLon[0]));
+              document.f.lat_min.value = Math.floor(Math.abs(latLon[0]) * 60 % 60);
+              document.f.lat_sec.value = Math.floor(Math.abs(latLon[0]) * 3600 % 60);
+              if (latLon[0]>=0) {
+                  document.f.lat.options.selectedIndex = 0;
+              } else {
+                  document.f.lat.options.selectedIndex = 1;
+              }
+          }
+      }
+
+      function fillLocation(lon_deg, lon_min, lon_sec, lon_dir, lat_deg, lat_min, lat_sec, lat_dir, nationID)
+      {
+          if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
+              alert('Coordinates have already been entered');
+          }
+          else {
+              document.f.lon_deg.value = lon_deg;
+              document.f.lon_min.value = lon_min;
+              document.f.lon_sec.value = lon_sec;
+              if (lon_dir == 'W') {
+                  document.f.lon.options.selectedIndex = 0;
+              } else {
+                  document.f.lon.options.selectedIndex = 1;
+              }
+              document.f.lat_deg.value = lat_deg;
+              document.f.lat_min.value = lat_min;
+              document.f.lat_sec.value = lat_sec;
+              if (lat_dir == 'N') {
+                  document.f.lat.options.selectedIndex = 0;
+              } else {
+                  document.f.lat.options.selectedIndex = 1;
+              }
+          }
+          for (i = 0; i < document.f.nation.length; i++) {
+              if (document.f.nation.options[i].value == nationID) {
+                  document.f.nation.selectedIndex = i;
+                  break;
+              }
+          }
+          reload=true;
+          self.document.f.submit();
+      }
+
+      function editNCBI(sel)
+      {
+          let target, MeinFenster;
+
+          target = "editNCBI.php?id=" + sel;
+          MeinFenster = window.open(target,"editNCBI","width=350,height=130,top=50,left=50,scrollbars=yes,resizable=yes");
+          MeinFenster.focus();
+      }
+
+      function goBack(sel,check,edit,pid)
+      {
+          let move;
+
+          if (!check && checkMandatory(0)) {
+              move = confirm("Are you sure you want to leave?\nDataset will not be inserted!");
+          } else if (check && edit) {
+              move = confirm("Are you sure you want to leave?\nDataset will not be updated!");
+          } else {
+              move = true;
+          }
+          if (move) {
+              if (pid) {
+                  self.location.href = 'listTypeSpecimens.php?ID=' + pid + '&nr=' + sel;
+              } else {
+                  self.location.href = 'listSpecimens.php?nr=' + sel;
+              }
+          }
+      }
+
+      function call_toggleLanguage()
+      {
+          jaxon_toggleLanguage(jaxon.getFormValues('f'));
+          return false;
+      }
+
+      function call_makeAutocompleter(name)
+      {
+          $('#' + name).autocomplete ({
+              source: 'index_jq_autocomplete.php?field=taxon',
+              minLength: 2
+          });
+      }
+
+      jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
+      $(function()
+      {
+          $('#iBox_content').dialog( {
+              autoOpen: false,
+              modal: true,
+              bgiframe: true,
+              width: 750,
+              height: 600
+          } );
+          $('#sammlerIndex').change(function() {
+              jaxon_displayCollectorLinks($(this).val());
+          } );
+          $('#sammlerIndex').change();
+      } );
   </script>
 </head>
 
@@ -915,9 +974,7 @@ if ($p_specimen_ID) {
         echo "<input type=\"hidden\" name=\"edit\" value=\"$edit\">\n";
         $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>$p_specimen_ID</b>&nbsp;</span>";
     } else {
-        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>"
-              . "&nbsp;<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
-              . "<img height='10' src='webimages/JACQ_LOGO.png'></a>";
+        $text = "<a href=\"javascript:editLabel('$p_specimen_ID');\" title=\"Label\">$p_specimen_ID</a>";
     }
 } else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";
@@ -943,15 +1000,19 @@ if ($p_digital_image && $p_specimen_ID) {
 }
 $cf->checkbox(32, $y, "digital_image", $p_digital_image);
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(41, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
+    $cf->label(42, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
 } else {
-    $cf->label(41, $y, "dig.im.obs.");
+    $cf->label(42, $y, "dig.im.obs.");
 }
-$cf->checkbox(41, $y, "digital_image_obs", $p_digital_image_obs);
+$cf->checkbox(42, $y, "digital_image_obs", $p_digital_image_obs);
 $cf->labelMandatory(50.5, $y, 5, "checked");
 $cf->checkbox(50.5, $y, "checked", $p_checked);
 $cf->labelMandatory(60.5, $y, 6, "accessible");
 $cf->checkbox(60.5, $y, "accessible", $p_accessible);
+if ($p_specimen_ID && !$edit) {
+    $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
+                        . "<img src='webimages/JACQ_LOGO.png'></a>");
+}
 
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
@@ -1074,20 +1135,20 @@ echo "<img border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\"
 $y += 2;
 $cf->label(11, $y, "Lat");
 $cf->inputText(11, $y, 2, "lat_deg", $p_lat_deg, 5);
-$cf->text(14, $y - 0.3, "<font size=\"+1\">&deg;</font>");
+$cf->text(14, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
 $cf->inputText(15, $y, 1.5, "lat_min", $p_lat_min, 5);
-$cf->text(17.5, $y - 0.3, "<font size=\"+1\">&prime;</font>");
+$cf->text(17.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
 $cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5);
-$cf->text(21, $y - 0.3, "<font size=\"+1\">&Prime;</font>");
+$cf->text(21, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
 $cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"));
 
 $cf->label(31, $y, "Lon");
 $cf->inputText(31, $y, 2, "lon_deg", $p_lon_deg, 5);
-$cf->text(34, $y - 0.3, "<font size=\"+1\">&deg;</font>");
+$cf->text(34, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
 $cf->inputText(35, $y, 1.5, "lon_min", $p_lon_min, 5);
-$cf->text(37.5, $y - 0.3, "<font size=\"+1\">&prime;</font>");
+$cf->text(37.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
 $cf->inputText(38.5, $y, 1.5, "lon_sec", $p_lon_sec, 5);
-$cf->text(41, $y - 0.3, "<font size=\"+1\">&Prime;</font>");
+$cf->text(41, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
 $cf->dropdown(42, $y, "lon", $p_lon, array("W", "E"), array("W", "E"));
 
 $cf->label(54, $y, "exactn. (m)");
@@ -1181,7 +1242,7 @@ if ($updateBlocked) {
                         //console.log("Success, you submit your form" + data);
                     }
                 });
-                var HerbNummer = this.value;
+                HerbNummer = this.value;
                 var institutionNr = $('[name="institution"]').val();
                 var institutionName = $('[name="institution"] option:selected').text();
             }

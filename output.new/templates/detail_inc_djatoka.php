@@ -9,7 +9,7 @@ if (!empty($output['djatoka_options'])):
       <?php foreach ($output['djatoka_options'] as $option): ?>
         <td valign='top' align='center'>
           <a href='image.php?<?php echo $option; ?>&method=show' target='imgBrowser'>
-            <img src='image.php?<?php echo $option; ?>&method=thumb' border='2'>
+            <img src='image.php?<?php echo $option; ?>&method=thumb' style='border: 2px;'>
           </a>
           <br>
           (<a href='image.php?<?php echo $option; ?>&method=download&format=jpeg2000'>JPEG2000</a>,

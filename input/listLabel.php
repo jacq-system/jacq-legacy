@@ -54,6 +54,9 @@ if (!isset($_SESSION['labelProvince']))   $_SESSION['labelProvince']   = '';
 if (!isset($_SESSION['labelLoc']))        $_SESSION['labelLoc']        = '';
 if (!isset($_SESSION['labelTyp']))        $_SESSION['labelTyp']        = false;
 if (!isset($_SESSION['labelImages']))     $_SESSION['labelImages']     = false;
+if (!isset($_SESSION['labelOrder']))      $_SESSION['labelOrder']      = "genus, te.epithet, ta.author, "
+                                                                       . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
+                                                                       . "typus_lat";
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 

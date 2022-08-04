@@ -1,6 +1,6 @@
 <?php
 // can only be used if inc/functions.php is included beforehand
-require_once("jsonRPCClient.php");
+use Jacq\ImageQuery;
 
 ini_set("default_socket_timeout", 5);
 
@@ -79,8 +79,8 @@ function getPicDetails($request, $sid = '')
             if ($HerbNummer) {
                 // Find entry in specimens table and return specimen ID for it
                 $sql = "SELECT s.`specimen_ID`
-                        FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-                         LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+                        FROM `tbl_specimens` s
+                         LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
                         WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
                          AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
                 $result = $dbLink->query($sql);
@@ -95,9 +95,9 @@ function getPicDetails($request, $sid = '')
     $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
                    mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
-            FROM `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_specimens` s
-             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-             LEFT JOIN `" . $_CONFIG['DATABASES']['OUTPUT']['db'] . "`.`tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
+            FROM `tbl_specimens` s
+             LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
+             LEFT JOIN `tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
             WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'";
 
     // Fetch information for this image
@@ -121,7 +121,7 @@ function getPicDetails($request, $sid = '')
             $HerbNummer = str_replace(' ', '', $HerbNummer);
             $filename = sprintf($HerbNummer);
             $key = $row['key'];
-        } elseif ($row['imgserver_type'] == 'baku') {
+        } elseif ($row['imgserver_type'] == 'baku') {       // depricated
             $html = $row['Bemerkungen'];
             // create new ImageQuery object
             $query = new ImageQuery();
@@ -159,16 +159,21 @@ function getPicDetails($request, $sid = '')
                  */
                 $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 try {  // ask the picture server for a picture with the new filename
-                    $service = new jsonRPCClient($url . 'jacq-servlet/ImageServer');
-                    $pics = $service->listResources($row['key'],
-                                                    array($filename,
-                                                          $filename . "_%",
-                                                          $filename . "A",
-                                                          $filename . "B",
-                                                          "tab_" . $filename,
-                                                          "obs_" . $filename,
-                                                          "tab_" . $filename . "_%",
-                                                          "obs_" . $filename . "_%"));
+                    $service = new \JsonRPC\Client($url . 'jacq-servlet/ImageServer');
+                    $pics = $service->execute('listResources',
+                                                [
+                                                    $row['key'],
+                                                    [
+                                                        $filename,
+                                                        $filename . "_%",
+                                                        $filename . "A",
+                                                        $filename . "B",
+                                                        "tab_" . $filename,
+                                                        "obs_" . $filename,
+                                                        "tab_" . $filename . "_%",
+                                                        "obs_" . $filename . "_%"
+                                                    ]
+                                                ]);
                 }
                 catch( Exception $e ) {
                     $pics = array();  // something has gone wrong, so no picture can be found anyway
@@ -264,16 +269,21 @@ function getPicInfo($picdetails)
 
         // Create a service instance and send requests to jacq-servlet
         try {
-            $service = new jsonRPCClient($url);
-            $return['pics'] = $service->listResources($picdetails['key'],
-                                                      array($picdetails['filename'],
-                                                            $picdetails['filename'] . "_%",
-                                                            $picdetails['filename'] . "A",
-                                                            $picdetails['filename'] . "B",
-                                                            "tab_" . $picdetails['specimenID'],
-                                                            "obs_" . $picdetails['specimenID'],
-                                                            "tab_" . $picdetails['specimenID'] . "_%",
-                                                            "obs_" . $picdetails['specimenID'] . "_%"));
+            $service = new \JsonRPC\Client($url);
+            $return['pics'] = $service->execute('listResources',
+                                                [
+                                                    $picdetails['key'],
+                                                    [
+                                                        $picdetails['filename'],
+                                                        $picdetails['filename'] . "_%",
+                                                        $picdetails['filename'] . "A",
+                                                        $picdetails['filename'] . "B",
+                                                        "tab_" . $picdetails['specimenID'],
+                                                        "obs_" . $picdetails['specimenID'],
+                                                        "tab_" . $picdetails['specimenID'] . "_%",
+                                                        "obs_" . $picdetails['specimenID'] . "_%"
+                                                    ]
+                                                ]);
         }
         catch( Exception $e ) {
             $return['error'] = 'Unable to connect to ' . $url . " with Error: " . $e->getMessage();
@@ -326,9 +336,9 @@ function getPicInfo($picdetails)
             $return['pics'] = $response_decoded['result'];
             fclose($fp);
         }
-    } else if ($picdetails['imgserver_type'] == 'baku') {
+    } else if ($picdetails['imgserver_type'] == 'baku') {   // depricated
         $return['pics'] = $picdetails['filename'];
-    } else {  // old legacy
+    } else {  // old legacy, depricated
         $url = "{$picdetails['url']}/detail_server.php?key=DKsuuewwqsa32czucuwqdb576i12&ID={$picdetails['specimenID']}";
 
         $response = file_get_contents($url, "r");
