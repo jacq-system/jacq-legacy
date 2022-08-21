@@ -36,10 +36,27 @@ use GuzzleHttp\Client;
 $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
 $client = new Client(['timeout' => 8]);
 
+$constraint = '';
+if (!empty($_GET['source'])) {
+    if (is_numeric($_GET['source'])) {
+        $constraint = " AND source_ID_fk = " . intval($_GET['source']);
+    } else {
+        $stmt = $dbLink->prepare("SELECT source_id
+                                  FROM meta
+                                  WHERE source_code LIKE ?");
+        $stmt->bind_param('s', $_GET['source']);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_array(MYSQLI_ASSOC);
+        if (!empty($row['source_id'])) {
+            $constraint = " AND source_ID_fk = " . $row['source_id'];
+        }
+    }
+}
 $rows = $dbLink->query("SELECT source_id_fk, img_coll_short
                         FROM tbl_img_definition
                         WHERE imgserver_type = 'djatoka'
                          AND source_id_fk != 1
+                         $constraint
                         ORDER BY img_coll_short")
                ->fetch_all(MYSQLI_ASSOC);
 foreach ($rows as $row) {
@@ -195,5 +212,6 @@ foreach ($rows as $row) {
 ?>
   </table>
 <?php endif; ?>
+<p>To scan just a single source, add either the parameter "?source=&lt;id&gt;" or "?source=&lt;source&gt;" to the URL.</p>
 </body>
 </html>
