@@ -36,7 +36,7 @@ use GuzzleHttp\Client;
 $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
 $client = new Client(['timeout' => 8]);
 
-$constraint = '';
+$constraint = ' AND source_id_fk != 1';
 if (!empty($_GET['source'])) {
     if (is_numeric($_GET['source'])) {
         $constraint = " AND source_ID_fk = " . intval($_GET['source']);
@@ -55,7 +55,6 @@ if (!empty($_GET['source'])) {
 $rows = $dbLink->query("SELECT source_id_fk, img_coll_short
                         FROM tbl_img_definition
                         WHERE imgserver_type = 'djatoka'
-                         AND source_id_fk != 1
                          $constraint
                         ORDER BY img_coll_short")
                ->fetch_all(MYSQLI_ASSOC);
