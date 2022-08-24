@@ -32,8 +32,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
     <title>JACQ - Virtual Herbaria</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="FW4 DW4 HTML">
-    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
+      <link type="text/css" rel="stylesheet" href="assets/gfont/gfont.css">
+      <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
     <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
     <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -85,24 +85,24 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                 <p>The JACQ system has been populated with identifiers from external resources for people and scientific names. On the basis of these identifiers external portals can be reached directly by clicking on the respective icon(s) for a given entity.</p>
                 <h6><b>Scientific Names</b></h6>
                 <ul>
-                  <li><a href="https://ipni.org/" target="_blank"><img src="assets/images/serviceID1_logo.png" height="20" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
-                  <li><a href="http://powo.science.kew.org/" target="_blank"><img src="assets/images/serviceID49_logo.png" height="20" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
-                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img src="assets/images/serviceID3_logo.png" height="20" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
-                  <li><a href="https://www.europlusmed.org/" target="_blank"><img src="assets/images/serviceID10_logo.png" height="20" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
-                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img src="assets/images/serviceID2_logo.png" height="20" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
-                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img src="assets/images/serviceID21_logo.png" height="20" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
-                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img src="assets/images/serviceID51_logo.png" height="20" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
-                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img src="assets/images/serviceID45_logo.png" height="20" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
-                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img src="assets/images/serviceID11_logo.png" height="20" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
+                  <li><a href="https://ipni.org/" target="_blank"><img loading="lazy" src="assets/images/serviceID1_logo.png" height="20" alt="IPNI Logo"></a> IPNI - International Plant Names Index / Royal Botanic Gardens Kew - Richmond, Enland</li>
+                  <li><a href="http://powo.science.kew.org/" target="_blank"><img loading="lazy" src="assets/images/serviceID49_logo.png" height="20" alt="IPNI Logo"></a> Plants of the World Online / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="http://www.indexfungorum.org/" target="_blank"><img loading="lazy" src="assets/images/serviceID3_logo.png" height="20" alt="IPNI Logo"></a> Index Fungorum / Royal Botanic Gardens Kew - Richmond, England</li>
+                  <li><a href="https://www.europlusmed.org/" target="_blank"><img loading="lazy" src="assets/images/serviceID10_logo.png" height="20" alt="Euro+Med Logo"></a> Euro+Med PlantBase / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://www.tropicos.org/nameSearch" target="_blank"><img loading="lazy" src="assets/images/serviceID2_logo.png" height="20" alt="Western Australia Flora Logo"></a> Tropicos / Missouri Botanical Garden - Saint Louis, MO, USA</li>
+                  <li><a href="http://reflora.jbrj.gov.br/reflora/listaBrasil/ConsultaPublicaUC/ConsultaPublicaUC.do#CondicaoTaxonCP" target="_blank"><img loading="lazy" src="assets/images/serviceID21_logo.png" height="20" alt="REFLORA Logo"></a> REFLORA Flora do Brasil 2020 / Jardim Botânico do Rio de Janeiro - Rio de Janeiro, Brasil</li>
+                  <li><a href="https://www.gbif.org/species/search?q=" target="_blank"><img loading="lazy" src="assets/images/serviceID51_logo.png" height="20" alt="Tropicos Logo"></a> GBIF / Global Biodiversity Information Facility - Copenhagen, Denmark</li>
+                  <li><a href="http://portal.cybertaxonomy.org/flora-cuba/" target="_blank"><img loading="lazy" src="assets/images/serviceID45_logo.png" height="20" alt="Flora Cuba Logo"></a> Spermatophyta and Pteridophyta of Cuba / Botanischer Garten und Botanisches Museum - Berlin, Germany</li>
+                  <li><a href="https://florabase.dpaw.wa.gov.au/search/advanced" target="_blank"><img loading="lazy" src="assets/images/serviceID11_logo.png" height="20" alt="Western Australia Flora Logo"></a> FloraBase the Western Australia Flora / Western Australian Herbarium - Kensington, Australia</li>
                 </ul>
 
                 <h6><b>Persons</b></h6>
                 <ul>
-                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img src="assets/images/wikidata.png" width="20" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
-                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img src="assets/images/huh.png" height="20"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
-                  <li><a href="https://viaf.org/" target="_blank"><img src="assets/images/viaf.png" width="20" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
-                  <li><a href="https://orcid.org/" target="_blank"><img src="assets/images/orcid.logo.icon.svg" width="20" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
-                  <li><a href="https://bionomia.net/" target="_blank"><img src="assets/images/bionomia_logo.png" width="20" alt="Bionomia Logo"></a> Bionomia / David Shorthouse - Ottawa, ON, Canada</li>
+                  <li><a href="https://www.wikidata.org/wiki/Wikidata:Main_Page" target="_blank"><img loading="lazy" src="assets/images/wikidata.png" width="20" alt="WIKIDATA Logo"></a> WIKIDATA / WIKIMEDIA Foundation - San Francisco, CA, USA</li>
+                  <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank"><img loading="lazy" src="assets/images/huh.png" height="20" alt="HUH Logo"></a> Harvard University Herbaria - Botanists / Harvard University Herbaria - Cambridge, MA, USA</li>
+                  <li><a href="https://viaf.org/" target="_blank"><img loading="lazy" src="assets/images/viaf.png" width="20" alt="VIAF Logo"></a> Virtual International Authority File - VIAF / OCLC, Dublin, OH, USA</li>
+                  <li><a href="https://orcid.org/" target="_blank"><img loading="lazy" src="assets/images/orcid.logo.icon.svg" width="20" alt="ORCID Logo"></a> ORCID / Washington, DC, & Columbus, OH, USA</li>
+                  <li><a href="https://bionomia.net/" target="_blank"><img loading="lazy" src="assets/images/bionomia_logo.png" width="20" alt="Bionomia Logo"></a> Bionomia / David Shorthouse - Ottawa, ON, Canada</li>
                 </ul>
               </div>
             </li>
@@ -164,32 +164,32 @@ header("Cache-Control: post-check=0, pre-check=0", false);
               <div class="collapsible-header"><i class="fas fa-angle-down"></i>Acknowledgements</div>
               <div class="collapsible-body">
                   <div id="partners">
-                  <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bo.berlin/" target="_blank"><img src="assets/images/Bo_Logo.png" height ="70" alt="Bo Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.univie.ac.at/" target="_blank"><img loading="lazy" src="assets/images/univie.png" alt="UNIVIE Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.oeaw.ac.at/" target="_blank"><img loading="lazy" src="assets/images/oeaw.png" alt="OEAW Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.nhm-wien.ac.at/" target="_blank"><img loading="lazy" src="assets/images/nhm_wien.png" alt="NHM Wien Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bo.berlin/" target="_blank"><img loading="lazy" src="assets/images/Bo_Logo.png" height ="70" alt="Bo Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.cetaf.org" target="_blank"><img loading="lazy" src="assets/images/cetaf_logo_cmyk.png" alt="CETAF Logo"></a></div>
                 </div>
                 <div id="partners">
-                  <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
-                  <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
-                  <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
-                  <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.gbif.org" target="_blank"><img loading="lazy" src="assets/images/GBIF-2015-dotorg-stacked.png" alt="GBIF Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.biocase.org" target="_blank"><img loading="lazy" src="assets/images/biocase_logo.png" alt="Biocase Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.tdwg.org" target="_blank"><img loading="lazy" src="assets/images/tdwg.png" alt="TDWG Logo"></a></div>
+                  <div class="partnerlogo"><a href="http://www.eu-nomen.eu/portal/" target="_blank"><img loading="lazy" src="assets/images/PESI_logo_small.gif" alt="PESI Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.sp2000.org/home" target="_blank"><img loading="lazy" src="assets/images/sp2000.png" alt="Species 2000 Logo"></a></div>
                   </div>
                 <div id="partners">
-                  <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
-                  <div class="partnerlogo"><img src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
-                  <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
-                  <div class="partnerlogo"><img src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
-                  <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://mellon.org/" target="_blank"><img loading="lazy" src="assets/images/mellon_foundation_logo.png" alt="Mellon Foundation Logo"></a></div>
+                  <div class="partnerlogo"><img loading="lazy" src="assets/images/eu_ictpsp.png" alt="EU ICT PSP"></div>
+                  <div class="partnerlogo"><a href="https://www.synthesys.info/" target="_blank"><img loading="lazy" src="assets/images/synthesys-plus-logo.png" alt="SYNTHESYS+ Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.dissco.eu/" target="_blank"><img loading="lazy" src="assets/images/dissco-logo.png" alt="DiSSCo Logo"></a></div>
+                  <div class="partnerlogo"><img loading="lazy" src="assets/images/dissco-prepare-logo.png" alt="DiSSCo Prepare Logo"></div>
+                  <div class="partnerlogo"><a href="https://www.mobilise-action.eu/" target="_blank"><img loading="lazy" src="assets/images/cropped-mobilise-logo-1.png" alt="MOBILISE Logo"></a></div>
                 </div>
                 <div id="partners">
-                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img src="assets/images/BKA_Logo.png"  height="70" alt="BKA Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img src="assets/images/BMK_Logo.png" height="70" alt="BMK Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img src="assets/images/BMBWF_Logo.png"  height="60" alt="BMBWF Logo"></a></div>
-                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img src="assets/images/BMKOES_Logo.png"  height="70" alt="BMKOES Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bundeskanzleramt.gv.at/" target="_blank"><img loading="lazy" src="assets/images/BKA_Logo.png"  height="70" alt="BKA Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmk.gv.at/" target="_blank"><img loading="lazy" src="assets/images/BMK_Logo.png" height="70" alt="BMK Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmbwf.gv.at/" target="_blank"><img loading="lazy" src="assets/images/BMBWF_Logo.png"  height="60" alt="BMBWF Logo"></a></div>
+                  <div class="partnerlogo"><a href="https://www.bmkoes.gv.at/" target="_blank"><img loading="lazy" src="assets/images/BMKOES_Logo.png"  height="70" alt="BMKOES Logo"></a></div>
                 </div>
            </div>
           </li>
@@ -437,7 +437,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
         <div id="collections">
             <div class="row">
             <div id="jacq-map" class="col s12">
-                <iframe class="center-align pushpin" style="width:100%; height: 500px" data-target="institutions" src="https://www.google.com/maps/d/embed?mid=1xk4fZ8Rs2V1hu_vgAC4iIFoAV_Q"></iframe>
+                <iframe loading="lazy" class="center-align pushpin" style="width:100%; height: 500px" data-target="institutions" src="https://www.google.com/maps/d/embed?mid=1xk4fZ8Rs2V1hu_vgAC4iIFoAV_Q"></iframe>
             </div>
           </div>
            <div class="row"> 
