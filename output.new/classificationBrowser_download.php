@@ -1,17 +1,17 @@
 <?php
 
 use Jacq\RestClient;
+use Jacq\Settings;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
-require 'inc/variables.php'; // require configuration
-require __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-/** @var array $_CONFIG */
+$config = Settings::Load();
 
 //http://localhost/develop.jacq/legacy/output.new/classificationBrowser_download.php?referenceType=citation&referenceId=31070&scientificNameId=363825
 
-$rest = new RestClient($_CONFIG['JACQ_SERVICES']);
+$rest = new RestClient($config->get('JACQ_SERVICES'));
 
 $data = $rest->jsonGet('classification/download', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING),
                                                         intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT))),

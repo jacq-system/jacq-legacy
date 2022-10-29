@@ -1,8 +1,9 @@
 <?php
 session_start();
-require("inc/functions.php");
-require __DIR__ . '/vendor/autoload.php';
+require_once "inc/functions.php";
+require_once __DIR__ . '/vendor/autoload.php';
 
+use Jacq\DbAccess;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -30,7 +31,7 @@ function protolog($row)
 
 function makeTypus($ID)
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     $sql = "SELECT typus_lat, tg.genus,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
@@ -53,7 +54,7 @@ function makeTypus($ID)
             WHERE tst.typusID = tt.typusID
              AND tst.taxonID = ts.taxonID
              AND specimenID = '" . intval($ID) . "'";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 
     $text = "";
     while ($row = $result->fetch_array()) {
@@ -76,7 +77,7 @@ function makeTypus($ID)
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                       LEFT JOIN tbl_tax_genera   tg  ON tg.genID      = ts.genID
                      WHERE taxonID = " . $row['synID'];
-            $result3 = $dbLink->query($sql3);
+            $result3 = $dbLnk2->query($sql3);
             $row3 = $result3->fetch_array();
             $accName = taxonWithHybrids($row3);
         } else {
@@ -89,7 +90,7 @@ function makeTypus($ID)
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
                   LEFT JOIN tbl_lit_authors     la ON la.autorID      = l.editorsID
                  WHERE ti.taxonID = '" . $row['taxonID'] . "'";
-        $result2 = $dbLink->query($sql2);
+        $result2 = $dbLnk2->query($sql2);
 
         $text .= $row['typus_lat'] . " for " . taxonWithHybrids($row) . " ";
         while ($row2 = $result2->fetch_array()) {
@@ -104,8 +105,10 @@ function makeTypus($ID)
 }
 
 // extend memory and timeout settings
-if (!empty($_CONFIG['EXPORT']['memory_limit'])) {
-    ini_set("memory_limit", $_CONFIG['EXPORT']['memory_limit']);
+$config = \Jacq\Settings::Load();
+$memoryLimit = $config->get('EXPORT', 'memory_limit');
+if ($memoryLimit) {
+    ini_set("memory_limit", $memoryLimit);
 }
 set_time_limit(0);
 
@@ -178,11 +181,11 @@ $spreadsheet->getActiveSheet()
         ->setCellValue('BE1', 'stable identifier')
 ;
 
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
-
-$result = $dbLink->query($sql);
+$result = $dbLnk2->query($sql);
 if (!$result) {
-    error_log($sql . "\n" . $dbLink->error . "\n");
+    error_log($sql . "\n" . $dbLnk2->error . "\n");
     die();
 }
 
@@ -234,9 +237,9 @@ $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.seri
                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
                 WHERE specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
-$resultSpecimen = $dbLink->query($sqlSpecimen);
+$resultSpecimen = $dbLnk2->query($sqlSpecimen);
 if (!$resultSpecimen) {
-    error_log($sql . "\n" . $dbLink->error . "\n");
+    error_log($sql . "\n" . $dbLnk2->error . "\n");
     die();
 }
 

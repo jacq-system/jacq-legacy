@@ -1,10 +1,10 @@
 <?php
-require("inc/functions.php");
-require_once('inc/imageFunctions.php');
-
-/** @var mysqli $dbLink */
+require_once "inc/functions.php";
+require_once 'inc/imageFunctions.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use GuzzleHttp\Client;
+use Jacq\DbAccess;
 
 ?><!DOCTYPE html>
 <html lang="en">
@@ -35,13 +35,14 @@ use GuzzleHttp\Client;
 <?php
 $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
 $client = new Client(['timeout' => 8]);
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
 $constraint = ' AND source_id_fk != 1';
 if (!empty($_GET['source'])) {
     if (is_numeric($_GET['source'])) {
         $constraint = " AND source_ID_fk = " . intval($_GET['source']);
     } else {
-        $stmt = $dbLink->prepare("SELECT source_id
+        $stmt = $dbLnk2->prepare("SELECT source_id
                                   FROM meta
                                   WHERE source_code LIKE ?");
         $stmt->bind_param('s', $_GET['source']);
@@ -52,7 +53,7 @@ if (!empty($_GET['source'])) {
         }
     }
 }
-$rows = $dbLink->query("SELECT source_id_fk, img_coll_short
+$rows = $dbLnk2->query("SELECT source_id_fk, img_coll_short
                         FROM tbl_img_definition
                         WHERE imgserver_type = 'djatoka'
                          $constraint
@@ -63,7 +64,7 @@ foreach ($rows as $row) {
     $ok = true;
     $errorRPC = $errorImage = "";
 
-    $result = $dbLink->query("SELECT s.specimen_ID
+    $result = $dbLnk2->query("SELECT s.specimen_ID
                               FROM tbl_specimens s, tbl_management_collections mc
                               WHERE s.collectionID = mc.collectionID
                                AND s.accessible = 1

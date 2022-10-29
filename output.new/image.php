@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once("./inc/functions.php");
-require_once('inc/imageFunctions.php');
+require_once "inc/functions.php";
+require_once 'inc/imageFunctions.php';
 
 /*
   image/specimenID|obs_specimenID|tab_specimenID|img_coll_short_HerbNummer[/download|thumb|resized|thumbs|show]/format[tiff/jpc]

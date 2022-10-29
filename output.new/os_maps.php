@@ -1,6 +1,9 @@
 <?php
+use Jacq\DbAccess;
+
 session_start();
-require("inc/functions.php");
+require_once "inc/functions.php";
+require_once __DIR__ . '/vendor/autoload.php';
 
 $specimen_ID = intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT));
 
@@ -39,9 +42,10 @@ function contains ($points, $point, $limit = 6)
 }
 
 
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $points = null;
 if (empty($specimen_ID)) {
-    $result = $dbLink->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
+    $result = $dbLnk2->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
 } else {
     $sql = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
                    s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -77,7 +81,7 @@ if (empty($specimen_ID)) {
                    AND tg.genID = ts.genID
                    AND mc.collectionID = s.collectionID
                    AND s.specimen_ID = '$specimen_ID'";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 }
 while ($row = $result->fetch_array()) {
     $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']);

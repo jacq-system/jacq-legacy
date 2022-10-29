@@ -1,4 +1,9 @@
 <?php
+
+use Jacq\DbAccess;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
 /**
  * Returns the stable identifier. Tries to make one if none is found in database
  *
@@ -51,10 +56,10 @@ function StableIdentifier($source_id, $HerbNummer, $specimen_ID)
  */
 function getStableIdentifier($specimenID)
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     /** @var mysqli_result $result */
-    $result = $dbLink->query("SELECT stableIdentifier
+    $result = $dbLnk2->query("SELECT stableIdentifier
                               FROM tbl_specimens_stblid
                               WHERE specimen_ID = '" . intval($specimenID) . "'
                               ORDER BY timestamp DESC
@@ -65,30 +70,4 @@ function getStableIdentifier($specimenID)
     } else {
         return "";
     }
-}
-
-/**
- * get the manifest url for LZ stable identifier from herbar_pictures.stblid_manifest
- *
- * @param string $stableIdentifier the stable identifier
- * @return string the manifest URI
- */
-function getManifestURI($stableIdentifier)
-{
-    global $dbLink_pictures;
-
-    $sql4 = 'SELECT manifest 
-             FROM stblid_manifest 
-             WHERE stableIdentifier LIKE "' . $stableIdentifier . '" 
-             LIMIT 1';
-    $result = $dbLink_pictures->query($sql4);
-    $manifest = '';
-
-    if ($result && $result->num_rows > 0) {
-        while($row = $result->fetch_assoc()) {
-            $manifest = $row["manifest"];
-       }
-    }
-
-    return $manifest;
 }

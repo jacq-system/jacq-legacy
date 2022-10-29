@@ -1,6 +1,8 @@
 <?php
 
 use Jacq\AnnotationQuery;
+use Jacq\DbAccess;
+use Jacq\Settings;
 use Jacq\TripleID;
 
 session_start();
@@ -9,17 +11,18 @@ header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
-require("inc/functions.php");
-require_once('inc/imageFunctions.php');
-
-/** @var mysqli $dbLink */
-/** @var array $_CONFIG */
+require_once "inc/functions.php";
+require_once 'inc/imageFunctions.php';
+require_once 'inc/StableIdentifier.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 if (isset($_GET['ID'])) {
     $ID = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
 } else {
     $ID = 0;
 }
+
+$config = Settings::Load();
 
 
 /********************************
@@ -68,8 +71,9 @@ function makeCellWithLink($text)
     }
 }
 
-function makeTypus($ID) {
-    global $dbLink;
+function makeTypus($ID)
+{
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     $sql = "SELECT typus_lat, tg.genus,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -94,7 +98,7 @@ function makeTypus($ID) {
             WHERE tst.typusID=tt.typusID
              AND tst.taxonID=ts.taxonID
              AND specimenID=" . intval($ID) . " ORDER by tst.typified_Date DESC";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 
     $text = "";
     while ($row = $result->fetch_array()) {
@@ -119,7 +123,7 @@ function makeTypus($ID) {
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID=" . $row['synID'];
-            $result3 = $dbLink->query($sql3);
+            $result3 = $dbLnk2->query($sql3);
             $row3 = $result3->fetch_array();
             $accName = taxonWithHybrids($row3);
         } else {
@@ -132,7 +136,7 @@ function makeTypus($ID) {
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
                   LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
                  WHERE ti.taxonID='" . $row['taxonID'] . "'";
-        $result2 = $dbLink->query($sql2);
+        $result2 = $dbLnk2->query($sql2);
 
         $text .= "<tr>"
                .   "<td nowrap align=\"right\">" . $row['typus_lat'] . " of&nbsp;</td>"
@@ -163,7 +167,9 @@ function makeTypus($ID) {
 /**********************************
  * main query
  **********************************/
-$specimen = $dbLink->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+
+$specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
                              s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified, s.typusID,
                              s.digital_image, s.digital_image_obs, s.HerbNummer, s.CollNummer, s.ncbi_accession, s.observation,
                              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -271,7 +277,7 @@ if ($specimen['source_id'] == '35') {
     $output['annotations'] = $specimen['Bemerkungen'];
 }
 
-if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $_CONFIG['ANNOSYS']['ACTIVE'] ){
+if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $config->get('ANNOSYS', 'ACTIVE')){
     $output['newAnno'] = true;
     // create new id object
     $id = new TripleID($specimen['source_code'], $specimen['source_name'], $specimen['HerbNummer']);
@@ -306,8 +312,8 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
             if ($info['http_code'] == 200) {
                 $phaidra = true;
                 $output['phaidraUrl'] = 'https://' . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . '/'
-                                      . '?manifest=' . $_CONFIG['JACQ_SERVICES'] . 'iiif/manifest/' . $specimen['specimen_ID'];
-                $ch2 = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifest/" . $specimen['specimen_ID']);
+                                      . '?manifest=' . $config->get('JACQ_SERVICES') . 'iiif/manifest/' . $specimen['specimen_ID'];
+                $ch2 = curl_init($config->get('JACQ_SERVICES') . "iiif/manifest/" . $specimen['specimen_ID']);
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 $curl_response2 = curl_exec($ch2);
                 curl_close($ch2);
@@ -333,7 +339,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
     } else {
         if ($specimen['imgserver_type'] == 'bgbm') {
             if ($specimen['iiif_capable']) {
-                $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/" . $specimen['specimen_ID']);
+                $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $specimen['specimen_ID']);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 $curl_response = curl_exec($ch);
                 if ($curl_response !== false) {
@@ -343,12 +349,6 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     $output['manifest'] = "";
                 }
                 curl_close($ch);
-//                if ($specimen['source_id'] == '32'){
-//                    $output['manifest'] = getManifestURI(getStableIdentifier($specimen['specimen_ID']));
-//                } else {
-//                    // force https to always call iiif images with https
-//                    $output['manifest'] = str_replace('http:', 'https:', StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID'])) . '/manifest.json';
-//                }
             } else {
                 $output['bgbm_options'] = '?filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
             }
@@ -370,7 +370,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
                     $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen['specimen_ID'];
                     error_log($transfer['error']);
                 } else {
-                    if (count($transfer['pics']) > 0) {
+                    if (count($transfer['pics'] ?? array()) > 0) {
                         foreach ($transfer['pics'] as $v) {
                             $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
                         }

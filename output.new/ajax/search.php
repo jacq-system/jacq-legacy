@@ -1,6 +1,11 @@
 <?php
+
+use Jacq\DbAccess;
+
 require_once 'inc/functions.php';
-/** @var mysqli $dbLink */
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
 if (!empty($_POST['submit'])) {
     $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
@@ -50,8 +55,8 @@ if (!empty($_POST['submit'])) {
         // echo "$var = $value<br>\n";
         if (trim($value) != "" && $var != "submit" && $var != "PHPSESSID") {
             if ($var != "type" && $var != "images" && $var != "synonym") {
-                $varE   = $dbLink->real_escape_string(trim($var));
-                $valueE = $dbLink->real_escape_string(trim($value));
+                $varE   = $dbLnk2->real_escape_string(trim($var));
+                $valueE = $dbLnk2->real_escape_string(trim($value));
                 if ($var == "taxon") {
                     $pieces = explode(" ", $valueE);
                     $part1 = array_shift($pieces);
@@ -128,7 +133,7 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_specimen .= "AND (s.SammlerID IN (";
                     // first search in tbl_collector for collector and similar entries
                     $results = array();
-                    $rows = $dbLink->query("SELECT SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID
+                    $rows = $dbLnk2->query("SELECT SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhound_ID
                                             FROM tbl_collector
                                             WHERE Sammler LIKE '$valueE%'")
                                    ->fetch_all(MYSQLI_ASSOC);
@@ -146,7 +151,7 @@ if (!empty($_POST['submit'])) {
                             }
                         }
                         if ($othersFlag) {
-                            $others = $dbLink->query($sql . ')')->fetch_all(MYSQLI_ASSOC);
+                            $others = $dbLnk2->query($sql . ')')->fetch_all(MYSQLI_ASSOC);
                             foreach ($others as $item) {
                                 $results[] = $item['SammlerID'];
                             }
@@ -155,7 +160,7 @@ if (!empty($_POST['submit'])) {
                     $sql_restrict_specimen .= (($results) ? implode(', ', $results) : 'NULL') . ")";
 
                     // second search in tbl_collector_2
-                    $rows2 = $dbLink->query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 LIKE '%$valueE%'")->fetch_all(MYSQLI_ASSOC);
+                    $rows2 = $dbLnk2->query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 LIKE '%$valueE%'")->fetch_all(MYSQLI_ASSOC);
                     if (!empty($rows2)) {
                         $sql_restrict_specimen .= " OR s.Sammler_2ID IN (" . implode(', ', array_column($rows2, 'Sammler_2ID')) . ")";
                     }
@@ -196,7 +201,7 @@ if (!empty($_POST['submit'])) {
                      LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                     WHERE tg.genID = ts.genID
                      AND tf.familyID = tg.familyID " . $sql_restrict_species;
-        $res_sub = $dbLink->query($sql_sub);
+        $res_sub = $dbLnk2->query($sql_sub);
         $array_sub_taxonID = array();
         $array_sub_basID   = array();
         $array_sub_synID   = array();

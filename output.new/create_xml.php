@@ -1,10 +1,14 @@
 <?php
+
+use Jacq\DbAccess;
+
 ini_set( 'error_reporting', 'E_NONE' );
-ini_set( 'display_errors', Off );
+ini_set( 'display_errors', '0' );
 
 session_start();
-require_once("inc/functions.php");
-require_once('inc/imageFunctions.php');
+require_once "inc/functions.php";
+require_once 'inc/imageFunctions.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 function protolog($row)
 {
@@ -30,7 +34,7 @@ function protolog($row)
 
 function makeTypus($ID)
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     $text = "";
 
@@ -57,7 +61,7 @@ function makeTypus($ID)
             WHERE tst.typusID=tt.typusID
              AND tst.taxonID=ts.taxonID
              AND specimenID='" . intval($ID) . "'";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 
     while ($row = $result->fetch_array()) {
         if ($row['synID']) {
@@ -81,7 +85,7 @@ function makeTypus($ID)
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID=".$row['synID'];
-            $result3 = $dbLink->query($sql3);
+            $result3 = $dbLnk2->query($sql3);
             $row3 = $result3->fetch_array();
             $accName = taxonWithHybrids($row3);
         } else {
@@ -95,7 +99,7 @@ function makeTypus($ID)
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
                   LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
                  WHERE ti.taxonID='".$row['taxonID']."'";
-        $result2 = $dbLink->query($sql2);
+        $result2 = $dbLnk2->query($sql2);
 
         $text = $row['typus_lat']." for " . taxonWithHybrids($row) . ": ";
         $protologs = array();
@@ -128,10 +132,11 @@ $out->setIndent( true );
 $out->startDocument( "1.0", "UTF-8" );
 $out->startElement( 'kulturpool' );
 
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 //Fetch all IDs (with pictures) and start to output the XML-Data
 $query = "SELECT specimen_ID FROM tbl_specimens WHERE digital_image = 1 AND ( collectionID IN ( 96, 91, 31, 37, 106, 107, 34, 35, 28, 29, 38, 36, 20, 21 ) OR ( collectionID = 19 AND SammlerID IN ( 7079, 9209, 10745, 6066, 8060, 8311, 11364, 916, 10397, 11089, 10183, 1116, 9603, 8116, 9812, 9002, 9003, 9004, 6119, 17120 ) ) ) ORDER BY specimen_ID LIMIT 100";
 //$query = "SELECT specimen_ID FROM tbl_specimens WHERE digital_image = 1 AND ( collectionID IN ( 96, 91, 31, 37, 106, 107, 34, 35, 38, 36 ) ) ORDER BY specimen_ID";
-$data_result = $dbLink->query($query);
+$data_result = $dbLnk2->query($query);
 $num_rows = $data_result->num_rows;
 $curr_row = 0;
 
@@ -181,7 +186,7 @@ while( $data_row = $data_result->fetch_array() ) {
                LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
                LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
               WHERE specimen_ID='".intval($ID)."'";
-    $result = $dbLink->query($query);
+    $result = $dbLnk2->query($query);
 
     $row = $result->fetch_array();
 

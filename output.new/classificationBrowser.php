@@ -1,5 +1,5 @@
 <?php
-require('inc/variables.php'); // require configuration
+require_once __DIR__ . '/vendor/autoload.php';
 
 // get all parameters
 $filterId      = intval(filter_input(INPUT_GET, 'filterId', FILTER_SANITIZE_NUMBER_INT));
@@ -28,6 +28,8 @@ if ($referenceType == 'citation' && $referenceId > 0) {
 } else {
     $data = null;
 }
+
+$config = \Jacq\Settings::Load();
 
 ?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -69,7 +71,7 @@ if ($referenceType == 'citation' && $referenceId > 0) {
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
         var insertSeries = <?php echo $insertSeries; ?>;
         var editSeries = <?php echo $editSeries; ?>;
-        var JACQServices = '<?php echo $_CONFIG['JACQ_SERVICES']; ?>';
+        var JACQServices = '<?php echo $config->get('JACQ_SERVICES'); ?>';
     </script>
     <style>
         .ui-autocomplete-loading {

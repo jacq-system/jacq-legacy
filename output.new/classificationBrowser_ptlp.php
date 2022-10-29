@@ -2,14 +2,14 @@
 // this is the local pass through landing page for all ajax-operations of the classification browser
 
 use Jacq\RestClient;
+use Jacq\Settings;
 
-require('inc/variables.php'); // require configuration
-require('inc/classificationBrowser_jstreeFunctions.php');
-require __DIR__ . '/vendor/autoload.php';
+require 'inc/classificationBrowser_jstreeFunctions.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
-/** @var array $_CONFIG */
+$config = Settings::Load();
 
-$rest = new RestClient($_CONFIG['JACQ_SERVICES']);
+$rest = new RestClient($config->get('JACQ_SERVICES'));
 
 header('Content-Type: application/json');
 

@@ -1,7 +1,12 @@
 <?php
+
+use Jacq\DbAccess;
+use Jacq\Settings;
+
 if (empty($_SESSION['s_query'])) { die(); } // nothing to do
 
 require_once 'inc/functions.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 // user wants to change order
 if (isset($_GET['order'])) {
@@ -48,9 +53,10 @@ else {
 /**
  * pagination
  */
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $sql .= " LIMIT " . ($_SESSION['ITEMS_PER_PAGE'] * ($page - 1)) . ", " . $_SESSION['ITEMS_PER_PAGE'];
-$result = $dbLink->query($sql);                     // get the result of the query for further processing
-$res_count = $dbLink->query("select found_rows()"); // and the complete number of found rows
+$result = $dbLnk2->query($sql);                     // get the result of the query for further processing
+$res_count = $dbLnk2->query("select found_rows()"); // and the complete number of found rows
 if ($res_count) {
 	$res_count_row = $res_count->fetch_row();
 	$nrRows = intval($res_count_row[0]);
@@ -169,7 +175,8 @@ while ($row = $result->fetch_array()) {
         echo "<td class=\"result\">";
         if ($link) {
             if ($row['iiif_capable'] || $row['phaidraID']) {
-                $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/" . $row['specimen_ID']);
+                $config = Settings::Load();
+                $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $row['specimen_ID']);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 $curl_response = curl_exec($ch);
                 if ($curl_response !== false) {
@@ -179,13 +186,6 @@ while ($row = $result->fetch_array()) {
                     $manifest = "";
                 }
                 curl_close($ch);
-//                $manifest = '';
-//                if ($row['source_id'] == '32'){
-//                    $manifest = getManifestURI(getStableIdentifier($row['specimen_ID']));
-//                } else {
-//                    // force https to always call iiif images with https
-//                    $manifest = str_replace('http:', 'https:', StableIdentifier($row['source_id'], $row['HerbNummer'], $row['specimen_ID'])) . '/manifest.json';
-//                }
             	echo "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
                    . "<img border='2' height='15' src='images/$image' width='15'>"
                    . "</a>&nbsp;"

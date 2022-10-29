@@ -1,40 +1,8 @@
 <?php
-require_once('variables.php');
-require_once('StableIdentifier.php');
+
+use Jacq\DbAccess;
+
 require_once __DIR__ . '/../vendor/autoload.php';
-
-// Connect to output DB by default
-
-/** @var array $_CONFIG */
-
-$dbLink = new mysqli($_CONFIG['DATABASES']['OUTPUT']['host'],
-                     $_CONFIG['DATABASES']['OUTPUT']['readonly']['user'],
-                     $_CONFIG['DATABASES']['OUTPUT']['readonly']['pass'],
-                     $_CONFIG['DATABASES']['OUTPUT']['db']);
-if ($dbLink->connect_errno) {
-    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
-    "<html lang='en'>\n" .
-    "<head><title>Sorry, no connection ...</title></head>\n" .
-    "<body><p>Sorry, no connection to database ...</p></body>\n" .
-    "</html>\n";
-    exit();
-}
-$dbLink->set_charset('utf8');
-
-/** @var mysqli $dbLink_pictures */
-$dbLink_pictures = new mysqli($_CONFIG['DATABASES']['PICTURES']['host'],
-                              $_CONFIG['DATABASES']['PICTURES']['readonly']['user'],
-                              $_CONFIG['DATABASES']['PICTURES']['readonly']['pass'],
-                              $_CONFIG['DATABASES']['PICTURES']['db']);
-if ($dbLink_pictures->connect_errno) {
-    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
-    "<html lang='en'>\n" .
-    "<head><title>Sorry, no connection ...</title></head>\n" .
-    "<body><p>Sorry, no connection to database ...</p></body>\n" .
-    "</html>\n";
-    exit();
-}
-$dbLink_pictures->set_charset('utf8');
 
 function collection($row): string
 {
@@ -216,14 +184,14 @@ function taxon($row)
 
 function taxonWithHybrids($row)
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     if ($row['statusID'] == 1 && strlen($row['epithet']) == 0 && strlen($row['author']) == 0) {
-        $resultHybrid = $dbLink->query("SELECT parent_1_ID, parent_2_ID
+        $resultHybrid = $dbLnk2->query("SELECT parent_1_ID, parent_2_ID
                                         FROM tbl_tax_hybrids
                                         WHERE taxon_ID_fk = '" . $row['taxonID'] . "'");
         $rowHybrid = $resultHybrid->fetch_array(MYSQLI_ASSOC);
-        $result1 = $dbLink->query("SELECT tg.genus,
+        $result1 = $dbLnk2->query("SELECT tg.genus,
                                     ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                                     ta4.author author4, ta5.author author5,
                                     te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -244,7 +212,7 @@ function taxonWithHybrids($row)
                                     LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
                                    WHERE taxonID = '" . $rowHybrid['parent_1_ID'] . "'");
         $row1 = $result1->fetch_array(MYSQLI_ASSOC);
-        $result2 = $dbLink->query("SELECT tg.genus,
+        $result2 = $dbLnk2->query("SELECT tg.genus,
                                     ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                                     ta4.author author4, ta5.author author5,
                                     te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -275,9 +243,9 @@ function taxonWithHybrids($row)
 
 function getTaxonAuth($taxid): string
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
-    $result = $dbLink->query("SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = $taxid");
+    $result = $dbLnk2->query("SELECT serviceID, hyper FROM herbar_view.view_taxon_link_service WHERE taxonID = $taxid");
     $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row
@@ -296,9 +264,9 @@ function getTaxonAuth($taxid): string
 
 function getBloodhoundID($row): string
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
-    $result = $dbLink->query("SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "'");
+    $result = $dbLnk2->query("SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "'");
     $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row

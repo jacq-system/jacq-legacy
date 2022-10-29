@@ -1,6 +1,10 @@
 <?php
+
+use Jacq\DbAccess;
+
 session_start();
-require("inc/functions.php");
+require_once "inc/functions.php";
+require_once __DIR__ . '/vendor/autoload.php';
 
 function replaceNewline($text)
 {
@@ -52,7 +56,7 @@ function protolog($row)
 
 function makeTypus($ID)
 {
-    global $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     $sql = "SELECT typus_lat, tg.genus,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
@@ -77,7 +81,7 @@ function makeTypus($ID)
             WHERE tst.typusID=tt.typusID
              AND tst.taxonID=ts.taxonID
              AND specimenID='" . intval($ID) . "'";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 
     $text = "";
     while ($row = $result->fetch_array()) {
@@ -102,7 +106,7 @@ function makeTypus($ID)
                       LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID=".$row['synID'];
-            $result3 = $dbLink->query($sql3);
+            $result3 = $dbLnk2->query($sql3);
             $row3 = $result3->fetch_array();
             $accName = taxonWithHybrids($row3);
         } else {
@@ -116,7 +120,7 @@ function makeTypus($ID)
                   LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
                   LEFT JOIN tbl_lit_authors la ON la.autorID=l.editorsID
                  WHERE ti.taxonID='".$row['taxonID']."'";
-        $result2 = $dbLink->query($sql2);
+        $result2 = $dbLnk2->query($sql2);
 
         $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
         while ($row2 = $result2->fetch_array()) {
@@ -132,12 +136,14 @@ function makeTypus($ID)
 
 //---------- main ----------
 
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
 
-$result = $dbLink->query($sql);
+$result = $dbLnk2->query($sql);
 if (!$result) {
     echo $sql . "<br>\n";
-    echo $dbLink->error . "<br>\n";
+    echo $dbLnk2->error . "<br>\n";
 }
 
 $kmlData = '';
@@ -178,10 +184,10 @@ while ($row = $result->fetch_array()) {
              LEFT JOIN tbl_tax_families tf ON tf.familyID=tg.familyID
              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID=tsc.categoryID
             WHERE specimen_ID='" . intval($row['specimen_ID']) . "'";
-    $resultSpecimen = $dbLink->query($sql);
+    $resultSpecimen = $dbLnk2->query($sql);
     if (!$resultSpecimen) {
         echo $sql."<br>\n";
-        echo $dbLink->error . "<br>\n";
+        echo $dbLnk2->error . "<br>\n";
     }
     $rowSpecimen = $resultSpecimen->fetch_array();
 
