@@ -252,7 +252,7 @@ if ($specimen['Coord_W'] > 0 || $specimen['W_Min'] > 0 || $specimen['W_Sec'] > 0
     $lon = 0;
 }
 if ($lat != 0 || $lon != 0) {
-    $output['location'] .= " &mdash; " . round($lat,2) . "&deg; / " . round($lon,2) . "&deg; ";
+    $output['location'] .= " &mdash; " . round($lat,5) . "&deg; / " . round($lon,5) . "&deg; ";
 
     $point['lat'] = dms2sec($specimen['Coord_S'], $specimen['S_Min'], $specimen['S_Sec'], $specimen['Coord_N'], $specimen['N_Min'], $specimen['N_Sec']) / 3600.0;
     $point['lng'] = dms2sec($specimen['Coord_W'], $specimen['W_Min'], $specimen['W_Sec'], $specimen['Coord_E'], $specimen['E_Min'], $specimen['E_Sec']) / 3600.0;

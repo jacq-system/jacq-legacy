@@ -59,7 +59,8 @@ if (empty($specimen_ID)) {
                    ta4.author author4, ta5.author author5,
                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                    te4.epithet epithet4, te5.epithet epithet5,
-                   ts.taxonID, ts.statusID
+                   ts.taxonID, ts.statusID,
+                   `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
                   FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
                    LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                    LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
@@ -93,7 +94,8 @@ while ($row = $result->fetch_array()) {
         $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
-             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
+//             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
+             . htmlentities($row['scientificName'], ENT_QUOTES | ENT_HTML401)
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
              . htmlentities(collection($row), ENT_QUOTES | ENT_HTML401) . " / "

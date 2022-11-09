@@ -266,7 +266,7 @@ while ($row = $result->fetch_array()) {
         $lon = 0;
     }
     if ($lat != 0 || $lon != 0) {
-        echo "<td class='result' style='text-align: center' title='" . round($lat, 2) . "&deg; / " . round($lon,2) . "&deg;'>"
+        echo "<td class='result' style='text-align: center' title='" . round($lat, 5) . "&deg; / " . round($lon,5) . "&deg;'>"
 //            . "<a href='https://opentopomap.org/#marker=12/$lat/$lon' target='_blank'>"
            . "<a href='#' onClick='osMap(" . $row['specimen_ID'] . "); return false;'>"
            . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
