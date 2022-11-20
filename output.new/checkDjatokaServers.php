@@ -62,7 +62,7 @@ $rows = $dbLnk2->query("SELECT source_id_fk, img_coll_short
 foreach ($rows as $row) {
 
     $ok = true;
-    $errorRPC = $errorImage = "";
+    $errorRPC = $warningRPC = $errorImage = "";
 
     $result = $dbLnk2->query("SELECT s.specimen_ID
                               FROM tbl_specimens s, tbl_management_collections mc
@@ -104,7 +104,11 @@ foreach ($rows as $row) {
                 $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
             } elseif ($data['result'][0] != $picdetails['filename']) {
                 $ok = false;
-                $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                if (substr(mb_strtolower($data['result'][0]), 0, mb_strlen($picdetails['filename'])) != mb_strtolower($picdetails['filename'])) {
+                    $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                } else {
+                    $warningRPC = "WARNING: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                }
                 $filename = $data['result'][0];
             }
         }
@@ -148,13 +152,20 @@ foreach ($rows as $row) {
                                'source'     => $row['img_coll_short'],
                                'specimenID' => $specimenID
                               ];
+        } elseif ($warningRPC) {
+            $checks['warn'][] = ['source_id'  => $row['source_id_fk'],
+                                 'source'     => $row['img_coll_short'],
+                                 'specimenID' => $specimenID,
+                                 'warningRPC' => $warningRPC,
+                                 'errorImage' => $errorImage
+                                ];
         } else {
             $checks['fail'][] = ['source_id'  => $row['source_id_fk'],
                                  'source'     => $row['img_coll_short'],
                                  'specimenID' => $specimenID,
                                  'errorRPC'   => $errorRPC,
                                  'errorImage' => $errorImage
-                                ];
+            ];
         }
     } else {
         $checks['noPicture'][] = ['source_id' => $row['source_id_fk'],
@@ -186,6 +197,29 @@ foreach ($rows as $row) {
   </table>
   <hr>
 <?php endif; ?>
+  <?php if (!empty($checks['warn'])): ?>
+      <h3>Servers with warnings</h3>
+      <table>
+          <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
+          <?php
+          foreach ($checks['warn'] as $row) {
+              echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>";
+              if (!empty($row['warningRPC'])) {
+                  echo "<td class='fail'>" . $row['warningRPC'] . "</td>";
+              } else {
+                  echo "<td class='ok'>OK</td>";
+              }
+              if (!empty($row['errorImage'])) {
+                  echo "<td class='fail'>" . $row['errorImage'] . "</td>";
+              } else {
+                  echo "<td class='ok'>OK</td>";
+              }
+              echo "<tr>\n";
+          }
+          ?>
+      </table>
+      <hr>
+  <?php endif; ?>
 <?php if (!empty($checks['ok'])): ?>
   <h3>Servers without errors</h3>
   <table>
