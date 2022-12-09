@@ -1,4 +1,7 @@
 <?php
+
+use Jacq\DbAccess;
+
 define('INDEX_START', true);
 if(!empty($_GET)) {
     // someone followed an external link to a direct search, so let the script click the search button automatically
@@ -7,7 +10,19 @@ if(!empty($_GET)) {
 }
 
 session_start();
-require("inc/functions.php");
+require_once "inc/functions.php";
+require_once __DIR__ . '/vendor/autoload.php';
+
+try {
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+} catch (Exception $e) {
+    echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n" .
+        "<html lang='en'>\n" .
+        "<head><title>Sorry, no connection ...</title></head>\n" .
+        "<body><p>Sorry, no connection to database ... {$e->getMessage()}</p></body>\n" .
+        "</html>\n";
+    exit();
+}
 
 // if script was called from the outside with some search parameters already in place, put the in variables
 // else leave these variables empty
@@ -32,8 +47,8 @@ header("Cache-Control: post-check=0, pre-check=0", false);
     <title>JACQ - Virtual Herbaria</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="description" content="FW4 DW4 HTML">
-      <link type="text/css" rel="stylesheet" href="assets/gfont/gfont.css">
-      <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
+    <link type="text/css" rel="stylesheet" href="assets/gfont/gfont.css">
+    <link type="text/css" rel="stylesheet" href="assets/materialize/css/materialize.min.css"  media="screen"/>
     <link type="text/css" rel="stylesheet" href="assets/fontawesome/css/all.css">
     <link type="text/css" rel="stylesheet" href="assets/custom/styles/jacq.css"  media="screen"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -245,7 +260,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                   <select id="ajax_source_name" name="source_name">
                       <option value="" selected>all herbaria</option>
                       <?php
-                      $result = $dbLink->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
+                      $result = $dbLnk2->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
                                                 FROM `meta`
                                                 WHERE `source_id`
                                                 IN (
@@ -316,7 +331,7 @@ header("Cache-Control: post-check=0, pre-check=0", false);
                                       <select id="ajax_collection" name="collection">
                                           <option value="" selected>all subcollections</option>
                                           <?php
-                                          $result_collection = $dbLink->query("SELECT `collection`
+                                          $result_collection = $dbLnk2->query("SELECT `collection`
                                                                                FROM `tbl_management_collections`
                                                                                WHERE `collectionID`
                                                                                IN (

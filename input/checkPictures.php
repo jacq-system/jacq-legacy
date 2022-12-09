@@ -1,5 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-       "http://www.w3.org/TR/html4/transitional.dtd">
+<?php
+session_start();
+require("inc/connect.php");
+require("inc/cssf.php");
+
+$db = clsDbAccess::Connect('INPUT');
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
  <title>herbardb - check djatoka pictures</title>
@@ -27,13 +34,6 @@
 </head>
 
 <?php
-session_start();
-require("inc/connect.php");
-require("inc/cssf.php");
-
-$db = clsDbAccess::Connect('INPUT');
-
-
 $_dvar=array(
 	'serverIP'=>false,
 	'family'=>false,

@@ -1,6 +1,9 @@
 <?php
+use Jacq\DbAccess;
+
 session_start();
-require("inc/functions.php");
+require_once "inc/functions.php";
+require_once __DIR__ . '/vendor/autoload.php';
 
 $specimen_ID = intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT));
 
@@ -39,9 +42,10 @@ function contains ($points, $point, $limit = 6)
 }
 
 
+$dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $points = null;
 if (empty($specimen_ID)) {
-    $result = $dbLink->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
+    $result = $dbLnk2->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
 } else {
     $sql = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
                    s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -55,7 +59,8 @@ if (empty($specimen_ID)) {
                    ta4.author author4, ta5.author author5,
                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                    te4.epithet epithet4, te5.epithet epithet5,
-                   ts.taxonID, ts.statusID
+                   ts.taxonID, ts.statusID,
+                   `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
                   FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
                    LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                    LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
@@ -77,7 +82,7 @@ if (empty($specimen_ID)) {
                    AND tg.genID = ts.genID
                    AND mc.collectionID = s.collectionID
                    AND s.specimen_ID = '$specimen_ID'";
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
 }
 while ($row = $result->fetch_array()) {
     $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']);
@@ -89,7 +94,8 @@ while ($row = $result->fetch_array()) {
         $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
-             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
+//             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
+             . htmlentities($row['scientificName'], ENT_QUOTES | ENT_HTML401)
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
              . htmlentities(collection($row), ENT_QUOTES | ENT_HTML401) . " / "

@@ -1,21 +1,22 @@
 <?php
 // can only be used if inc/functions.php is included beforehand
+use Jacq\DbAccess;
 use Jacq\ImageQuery;
+
+require_once __DIR__ . '/../vendor/autoload.php';
 
 ini_set("default_socket_timeout", 5);
 
 /**
  * get all details of a given picture
  *
- * @global array $_CONFIG all configuration parameters given in variables.php
- * @global mysqli $dbLink link to output-database
  * @param mixed $request either the specimen_ID or the wanted filename
  * @param string $sid specimenID (optional, default=empty)
  * @return array return the wanted data if found or an empty array
  */
 function getPicDetails($request, $sid = '')
 {
-    global $_CONFIG, $dbLink;
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
     $specimenID = 0;
     $originalFilename = null;
@@ -81,9 +82,9 @@ function getPicDetails($request, $sid = '')
                 $sql = "SELECT s.`specimen_ID`
                         FROM `tbl_specimens` s
                          LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-                        WHERE (s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLink->real_escape_string($HerbNummerAlternative) . "' )
-                         AND mc.`coll_short_prj` = '" . $dbLink->real_escape_string($coll_short_prj) . "'";
-                $result = $dbLink->query($sql);
+                        WHERE (s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "' )
+                         AND mc.`coll_short_prj` = '" . $dbLnk2->real_escape_string($coll_short_prj) . "'";
+                $result = $dbLnk2->query($sql);
                 if ($result->num_rows > 0) {
                     $row = $result->fetch_array(MYSQLI_ASSOC);
                     $specimenID = $row['specimen_ID'];
@@ -98,10 +99,10 @@ function getPicDetails($request, $sid = '')
             FROM `tbl_specimens` s
              LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
              LEFT JOIN `tbl_img_definition` id ON id.`source_id_fk` = mc.`source_id`
-            WHERE s.`specimen_ID` = '" . $dbLink->real_escape_string($specimenID) . "'";
+            WHERE s.`specimen_ID` = '" . $dbLnk2->real_escape_string($specimenID) . "'";
 
     // Fetch information for this image
-    $result = $dbLink->query($sql);
+    $result = $dbLnk2->query($sql);
     if ($result->num_rows > 0) {
         $row = $result->fetch_array(MYSQLI_ASSOC);
 

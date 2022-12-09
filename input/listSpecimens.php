@@ -400,6 +400,11 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       MeinFenster.focus();
     }
 
+    function osMap(sid) {
+      OSMwindow = window.open('osm_leaflet.php?sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
+      OSMwindow.focus();
+    }
+
     jaxon_checkTypeLabelMapPdfButton();
     jaxon_checkTypeLabelSpecPdfButton();
     jaxon_checkStandardLabelPdfButton();
