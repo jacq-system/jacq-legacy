@@ -5,6 +5,7 @@
  * function is separated for cleaner code only
  */
 require_once("../inc/herbardb_input_functions.php");
+require_once('../inc/variables.php');
 
 use Jaxon\Response\Response;
 
@@ -16,6 +17,8 @@ use Jaxon\Response\Response;
  * @return Response
  */
 function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
+    global $_CONFIG;
+
     ob_start();
 
     // check value of items per page
@@ -185,31 +188,31 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
                 if ($row['digital_image']) {
                     $resImage = dbi_query("SELECT tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, ph.specimenID AS phaidraID
-                    FROM tbl_specimens s
-                    LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
-                    LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                    LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
-                    WHERE specimen_ID = '" . $row['specimen_ID']. "'");
+                                           FROM tbl_specimens s
+                                            LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
+                                            LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                            LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
+                                           WHERE specimen_ID = '" . $row['specimen_ID']. "'");
                     $rowImage = $resImage->fetch_assoc();
                     if ($rowImage['iiif_capable'] || $rowImage['phaidraID']) {
                         $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/".$row['specimen_ID']);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                         $curl_response = curl_exec($ch);
-                            if ($curl_response !== false) {
+                        if ($curl_response !== false) {
                             $curl_result = json_decode($curl_response, true);
                             $manifest = $curl_result['uri'];
-                            } else {
+                        } else {
                             $manifest = "";
-                            }
+                        }
                         curl_close($ch);
                         $target = "https://" . $rowImage['iiif_proxy'] . $rowImage['iiif_dir'] . "/?manifest=$manifest";
-                        $digitalImage = "<a href=\"javascript:showIiif('" . $target . "')\">"
-                            . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
-                            . "</a>";
+                        $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
+                                      . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
+                                      . "</a>";
                     } else {
-                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
-                            . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
-                            . "</a>";
+                        $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
+                                      . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
+                                      . "</a>";
                     }
                 } else {
                     $digitalImage = "";
