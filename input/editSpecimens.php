@@ -994,7 +994,29 @@ if ($swBatch) {
 }
 
 if ($p_digital_image && $p_specimen_ID) {
-    $cf->label(32, $y, "dig.image", "javascript:showImage('$p_specimen_ID')");
+    $resImage = dbi_query("SELECT tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, ph.specimenID AS phaidraID
+                           FROM tbl_specimens s
+                            LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
+                            LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                            LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
+                           WHERE specimen_ID = $p_specimen_ID");
+    $rowImage = $resImage->fetch_assoc();
+    if ($rowImage['iiif_capable'] || $rowImage['phaidraID']) {
+        $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/$p_specimen_ID");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($ch);
+        if ($curl_response !== false) {
+            $curl_result = json_decode($curl_response, true);
+            $manifest = $curl_result['uri'];
+        } else {
+            $manifest = "";
+        }
+        curl_close($ch);
+        $target = "https://" . $rowImage['iiif_proxy'] . $rowImage['iiif_dir'] . "/?manifest=$manifest";
+        $cf->label(32, $y, "dig.image", "javascript:showIiif('$target')");
+    } else {
+        $cf->label(32, $y, "dig.image", "javascript:showImage('$p_specimen_ID')");
+    }
 } else {
     $cf->label(32, $y, "dig.image");
 }
