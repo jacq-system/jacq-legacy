@@ -7,6 +7,7 @@ require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jaxon\Jaxon;
+use Jacq\Settings;
 
 $jaxon = jaxon();
 $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
@@ -1002,7 +1003,8 @@ if ($p_digital_image && $p_specimen_ID) {
                            WHERE specimen_ID = $p_specimen_ID");
     $rowImage = $resImage->fetch_assoc();
     if ($rowImage['iiif_capable'] || $rowImage['phaidraID']) {
-        $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/$p_specimen_ID");
+        $config = Settings::Load();
+        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/$p_specimen_ID");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curl_response = curl_exec($ch);
         if ($curl_response !== false) {
@@ -1042,11 +1044,11 @@ $cf->label(11, $y, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
 $cf->label(23, $y, "HerbarNr.");
-$cf->inputText(23, $y, 7, "HerbNummer", $p_HerbNummer, 100);
-$cf->labelMandatory(37, $y, 5.5, "Collection");
-$cf->dropdown(37.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
-$cf->label(55, $y, "Nr.");
-$cf->inputText(55, $y, 6, "CollNummer", $p_CollNummer, 25);
+$cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
+$cf->labelMandatory(40, $y, 5.5, "Collection");
+$cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
+$cf->label(58, $y, "Nr.");
+$cf->inputText(58, $y, 6, "CollNummer", $p_CollNummer, 25);
 
 $y += 2;
 $cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
@@ -1075,21 +1077,21 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
     $cf->labelMandatory(11, $y, 8, "taxon");
 }
 //$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
-$cf->inputJqAutocomplete(11, $y, 50, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
+$cf->inputJqAutocomplete(11, $y, 53, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 
 $y += 4;
 $cf->labelMandatory(10, $y, 8, "det / rev / conf");
-$cf->inputText(11, $y, 50, "det", $p_det, 255);
+$cf->inputText(11, $y, 53, "det", $p_det, 255);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 8, "ident. history");
-$cf->inputText(11, $y, 50, "taxon_alt", $p_taxon_alt, 255);
+$cf->inputText(11, $y, 53, "taxon_alt", $p_taxon_alt, 255);
 
 $y += 2;
 $cf->label(11, $y, "typified by");
-$cf->inputText(11, $y, 50, "typified", $p_typified, 255);
+$cf->inputText(11, $y, 53, "typified", $p_typified, 255);
 
 $y += 2;
 //$cf->label(9, $y, "Series", "javascript:editSeries()");
@@ -1097,14 +1099,14 @@ $y += 2;
 //$cf->label(49.5, $y, "ser.Nr.");
 //$cf->inputText(49.5, $y, 5.5, "series_number", $p_series_number, 50);
 $cf->label(11, $y, "Series", "javascript:editSeries()");
-$cf->inputJqAutocomplete(11, $y, 32, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2, "", "", false, true );
-$cf->label(55.5, $y, "ser.Nr.");
-$cf->inputText(55.5, $y, 5.5, "series_number", $p_series_number, 50);
+$cf->inputJqAutocomplete(11, $y, 35, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2, "", "", false, true );
+$cf->label(58.5, $y, "ser.Nr.");
+$cf->inputText(58.5, $y, 5.5, "series_number", $p_series_number, 50);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
-$cf->inputJqAutocomplete(11, $y, 50, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
+$cf->inputJqAutocomplete(11, $y, 53, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
 echo "<div style='position: absolute; left: 62em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
@@ -1112,20 +1114,20 @@ $y += 4;
 $cf->labelMandatory(11, $y, 8, "Number");
 $cf->inputText(11, $y, 4, "Nummer", $p_Nummer, 10);
 $cf->label(22, $y, "alt.Nr.");
-$cf->inputText(22, $y, 17, "alt_number", $p_alt_number, 50);
-$cf->labelMandatory(46, $y, 3, "Date");
-$cf->inputText(46, $y, 5.5, "Datum", $p_Datum, 25);
-$cf->text(53.5, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
-$cf->inputText(55.5, $y, 5.5, "Datum2", $p_Datum2, 25);
+$cf->inputText(22, $y, 18, "alt_number", $p_alt_number, 50);
+$cf->labelMandatory(47, $y, 3, "Date");
+$cf->inputText(47, $y, 6.5, "Datum", $p_Datum, 25);
+$cf->text(55.5, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
+$cf->inputText(57.5, $y, 6.5, "Datum2", $p_Datum2, 25);
 
 $y += 2;
 $cf->label(11, $y, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
 //$cf->editDropdown(9, $y, 46, "sammler2", $p_sammler2, makeSammler2($p_sammler2, 2), 270);
-$cf->inputJqAutocomplete(11, $y, 50, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
+$cf->inputJqAutocomplete(11, $y, 53, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector2()");
 
 $y += 3.25;
-echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\"><hr></div>\n";
+echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\"><hr></div>\n";
 
 $y += 1.25;
 $cf->labelMandatory(11, $y, 8, "Country");
@@ -1134,8 +1136,8 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
 } else {
     $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
 }
-$cf->label(46, $y, "Province");
-$cf->dropdown(46, $y, "province", $p_province, $province[0], $province[1]);
+$cf->label(49, $y, "Province");
+$cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1]);
 
 $y += 2;
 $cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
@@ -1148,11 +1150,11 @@ $cf->inputText(11, $y, 5, "altitude_min", $p_altitude_min, 10);
 $cf->text(17, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
 $cf->inputText(18, $y, 5, "altitude_max", $p_altitude_max, 10);
 
-$cf->label(54, $y, "Quadrant");
-$cf->inputText(54, $y, 3, "quadrant", $p_quadrant, 10);
-$cf->inputText(58, $y, 1, "quadrant_sub", $p_quadrant_sub, 10);
+$cf->label(57, $y, "Quadrant");
+$cf->inputText(57, $y, 3, "quadrant", $p_quadrant, 10);
+$cf->inputText(61, $y, 1, "quadrant_sub", $p_quadrant_sub, 10);
 echo "<img border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
-   . "style=\"position:absolute; left:60.5em; top:" . ($y + .1) . "em\" onclick=\"convert()\">\n";
+   . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\" onclick=\"convert()\">\n";
 
 $y += 2;
 $cf->label(11, $y, "Lat");
@@ -1173,8 +1175,8 @@ $cf->inputText(38.5, $y, 1.5, "lon_sec", $p_lon_sec, 5);
 $cf->text(41, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
 $cf->dropdown(42, $y, "lon", $p_lon, array("W", "E"), array("W", "E"));
 
-$cf->label(54, $y, "exactn. (m)");
-$cf->inputText(54, $y, 7, "exactness", $p_exactness, 30);
+$cf->label(56, $y, "exactn. (m)");
+$cf->inputText(56, $y, 8, "exactness", $p_exactness, 30);
 //$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
 
 $y += 1.75;
@@ -1183,20 +1185,20 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\">
 
 $y += 1.05;
 $cf->labelMandatory(11, $y, 8, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
-$cf->textarea(11, $y, 50, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
+$cf->textarea(11, $y, 53, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
 
 $y += 4.4;
 $cf->label(11, $y, "habitat");
 $cf->label(11, $y + 1, "phorophyte");
-$cf->textarea(11, $y, 22, 2.4, "habitat", $p_habitat);
-$cf->label(39, $y, "habitus");
-$cf->textarea(39, $y, 22, 2.4, "habitus", $p_habitus);
+$cf->textarea(11, $y, 23.5, 2.4, "habitat", $p_habitat);
+$cf->label(40.5, $y, "habitus");
+$cf->textarea(40.5, $y, 23.5, 2.4, "habitus", $p_habitus);
 
 $y += 3.3;
 $cf->label(11, $y, "annotations");
-$cf->textarea(11, $y, 50, 2.4, "Bemerkungen", $p_Bemerkungen);
+$cf->textarea(11, $y, 53, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
 if (($_SESSION['editControl'] & 0x2000) != 0) {
@@ -1211,7 +1213,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
         //$cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
-        $cf->buttonJavaScript(53, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
+        $cf->buttonJavaScript(56, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
 //        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
@@ -1219,7 +1221,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
 //        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
         $cf->buttonJavaScript(37, $y, " Insert &amp; Copy", "doSubmit( 'submitUpdateCopy' );", "", "submitUpdateCopy" );
 //        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
-        $cf->buttonJavaScript(53, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
+        $cf->buttonJavaScript(56, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
     }
 }
 $cf->buttonJavaScript(2, $y, " < Specimens ", "goBack($nr," . intval($p_specimen_ID) . "," . intval($edit) . "," . $_SESSION['sPTID'] . ")");
@@ -1259,14 +1261,15 @@ if ($updateBlocked) {
                     url: "ajax/convStabURItoHerbnummer.php",
                     data: {stableuri: HerbNummer},
                     type: 'post',
+                    dataType: "json",
                     success: function (data) {
-                        $('[name="HerbNummer"]').val(data).change();
+                        $('[name="HerbNummer"]').val(data['HerbNummer']).change();
                         //console.log("Success, you submit your form" + data);
                     }
                 });
-                HerbNummer = this.value;
-                var institutionNr = $('[name="institution"]').val();
-                var institutionName = $('[name="institution"] option:selected').text();
+                // HerbNummer = this.value;
+                // var institutionNr = $('[name="institution"]').val();
+                // var institutionName = $('[name="institution"] option:selected').text();
             }
         })
         // catch enter keypress to trigger blur event

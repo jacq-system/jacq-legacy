@@ -7,6 +7,7 @@
 require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/variables.php');
 
+use Jacq\Settings;
 use Jaxon\Response\Response;
 
 /**
@@ -17,8 +18,6 @@ use Jaxon\Response\Response;
  * @return Response
  */
 function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
-    global $_CONFIG;
-
     ob_start();
 
     // check value of items per page
@@ -195,7 +194,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                                            WHERE specimen_ID = '" . $row['specimen_ID']. "'");
                     $rowImage = $resImage->fetch_assoc();
                     if ($rowImage['iiif_capable'] || $rowImage['phaidraID']) {
-                        $ch = curl_init($_CONFIG['JACQ_SERVICES'] . "iiif/manifestUri/".$row['specimen_ID']);
+                        $config = Settings::Load();
+                        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/".$row['specimen_ID']);
                         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                         $curl_response = curl_exec($ch);
                         if ($curl_response !== false) {
