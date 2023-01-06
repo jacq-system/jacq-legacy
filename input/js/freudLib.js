@@ -11,6 +11,11 @@ function showImageObs(sel) {
 	MeinFenster = window.open(target,"imgBrowser");
 	MeinFenster.focus();
 }
+
+function showIiif(target) {
+	MeinFenster = window.open(target,"imgBrowser");
+	MeinFenster.focus();
+}
 /*
 function editCollector(sel) {
 	target = "editCollector.php?sel=" + encodeURIComponent(sel.value);

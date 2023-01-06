@@ -804,8 +804,9 @@ if ($error) {
                     url: "ajax/convStabURItoHerbnummer.php",
                     data: {stableuri: number},
                     type: 'post',
+                    dataType: "json",
                     success: function (data) {
-                        $('[name="number"]').val(data).change();
+                        $('[name="number"]').val(data['HerbNummer']).change();
                         //console.log("Success, you submit your form" + data);
                     }
                 });   
@@ -818,15 +819,15 @@ if ($error) {
        })
         // catch enter keypress to trigger blur event before search submit
         .keydown(function(event){
-        if (event.keyCode == 13){
-            event.preventDefault()
-            event.stopPropagation()
-            $('[name="number"]').change(function(){
-                //console.log("Funktion Change")
-                $('[name="search"]').click()
-            }).blur()
-            return false;
-        }
+            if (event.keyCode == 13){
+                event.preventDefault()
+                event.stopPropagation()
+                $('[name="number"]').change(function(){
+                    //console.log("Funktion Change")
+                    $('[name="search"]').click()
+                }).blur()
+                return false;
+            }
        })
     });
  </script>
