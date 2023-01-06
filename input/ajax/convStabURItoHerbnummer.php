@@ -1,11 +1,11 @@
 <?php
-/*
+
 require __DIR__ . '/../vendor/autoload.php';
 
 $herbnummer = new \Jacq\HerbNummerScan($_POST['stableuri']);
 echo json_encode(array('HerbNummer' => $herbnummer->getHerbNummer()), JSON_NUMERIC_CHECK);
-*/
 
+/*
 $url = $_POST['stableuri'];
 
 if (filter_var($url, FILTER_VALIDATE_URL)) {
@@ -67,3 +67,4 @@ switch($col)
 }
 
 echo json_encode(array('HerbNummer' => $herbnummer), JSON_NUMERIC_CHECK);
+*/
