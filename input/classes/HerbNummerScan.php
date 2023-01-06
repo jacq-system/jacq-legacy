@@ -2,6 +2,8 @@
 
 namespace Jacq;
 
+use Exception;
+
 class HerbNummerScan
 {
     private string $HerbNummer;
@@ -10,6 +12,7 @@ class HerbNummerScan
      * find a new HerbNummer within a scantext which is either a stable-ID or a barcode-text
      *
      * @param string $searchtext scantext
+     * @throws Exception
      */
     public function __construct(string $searchtext)
     {

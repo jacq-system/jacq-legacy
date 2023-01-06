@@ -1,10 +1,11 @@
 <?php
+/*
 require __DIR__ . '/../vendor/autoload.php';
 
 $herbnummer = new \Jacq\HerbNummerScan($_POST['stableuri']);
 echo json_encode(array('HerbNummer' => $herbnummer->getHerbNummer()), JSON_NUMERIC_CHECK);
+*/
 
-/*
 $url = $_POST['stableuri'];
 
 if (filter_var($url, FILTER_VALIDATE_URL)) {
@@ -29,7 +30,7 @@ switch($col)
                 else
                     {
                         $herbnummer = substr($herbariumid, 0, 1).' -'.substr($herbariumid, 1, 1).' '.substr($herbariumid, 2, 6).'-'.substr($herbariumid, 8, 2).' '.substr($herbariumid, -1, 1);
-                    };
+                    }
             break;
             case 'B31':
                 $herbnummer = substr($herbariumid, 0, 1).' '.substr($herbariumid, 1, 2).' '.substr($herbariumid, 3, 4).' '.substr($herbariumid, strlen($herbariumid_length)+6);
@@ -64,5 +65,5 @@ switch($col)
 } else {
          $herbnummer = $url;
 }
-    echo $herbnummer;
-*/
+
+echo json_encode(array('HerbNummer' => $herbnummer), JSON_NUMERIC_CHECK);
