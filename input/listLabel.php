@@ -528,9 +528,16 @@ if ($_SESSION['labelType'] == 1) { ?>
             $linkList[$nr] = $id = $row['specimen_ID'];
 
             if ($row['digital_image']) {
-                $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
-                              .  "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
-                              . "</a>";
+                $target = getIiifLink($row['specimen_ID']);
+                if ($target) {
+                    $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
+                        . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
+                        . "</a>";
+                } else {
+                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
+                        . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
+                        . "</a>";
+                }
             } else {
                 $digitalImage = "";
             }

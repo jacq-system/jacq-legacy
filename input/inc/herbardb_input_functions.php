@@ -1,14 +1,21 @@
 <?php
+
+use Jacq\DbAccess;
+use Jacq\Settings;
+
 require_once( 'tools.php' );
+require __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Return scientific name for a given taxon_id
+ *
  * @param int $taxon_id Taxon-id to search for
- * @param boolean $withDT Include dallatorre-id
- * @param boolean $withID Include taxon-id
+ * @param bool $withDT Include dallatorre-id, defaults to no
+ * @param bool $withID Include taxon-id, defaults to no
+ * @param bool $p_bAvoidHybridFormula avoid hybrids, defaults to no
  * @return string
  */
-function getScientificName ($taxon_id, $withDT = false, $withID = true, $p_bAvoidHybridFormula = false)
+function getScientificName (int $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
 {
     // wrong call with empty taxon-ID
     if (empty($taxon_id)) {
@@ -44,6 +51,44 @@ function getScientificName ($taxon_id, $withDT = false, $withID = true, $p_bAvoi
     }
 
     return $scientificName;
+}
+
+/**
+ * constructs the link to the image on an IIIF-Server for a specimen, if iiif for this source is activated
+ *
+ * @param int $specimenID specimen-ID
+ * @return string link to the image
+ * @throws Exception
+ */
+function getIiifLink(int $specimenID): string
+{
+    $specimenID_filtered = intval($specimenID);
+
+    $dbLink = DbAccess::ConnectTo('INPUT');
+    $image = $dbLink->query("SELECT tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, ph.specimenID AS phaidraID
+                             FROM tbl_specimens s
+                              LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
+                              LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                              LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
+                             WHERE s.specimen_ID = '$specimenID_filtered'")
+                    ->fetch_assoc();
+    if ($image['iiif_capable'] || $image['phaidraID']) {
+        $config = Settings::Load();
+        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/$specimenID_filtered");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($ch);
+        if ($curl_response !== false) {
+            $curl_result = json_decode($curl_response, true);
+            $manifest = $curl_result['uri'];
+        } else {
+            $manifest = "";
+        }
+        curl_close($ch);
+
+        return "https://" . $image['iiif_proxy'] . $image['iiif_dir'] . "/?manifest=$manifest";
+    } else {
+        return '';
+    }
 }
 
 function taxon($row, $withDT = false, $withID = true)
