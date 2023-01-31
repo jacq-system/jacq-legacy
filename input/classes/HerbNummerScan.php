@@ -6,10 +6,12 @@ use Exception;
 
 class HerbNummerScan
 {
-    private string $HerbNummer;
+    private string $HerbNummer = '';
+    private int $source_id = 0;
 
     /**
      * find a new HerbNummer within a scantext which is either a stable-ID or a barcode-text
+     * cut off any trailing non-numeric characters beforehand
      *
      * @param string $searchtext scantext
      * @throws Exception
@@ -18,17 +20,34 @@ class HerbNummerScan
     {
         $dbLink = DbAccess::ConnectTo('INPUT');
 
+        $posProt = strpos($searchtext, '://');
+        if ($posProt !== false) {
+            $searchtext = substr($searchtext, $posProt + 3);
+            $isStableID = 1;
+        } else {
+            $isStableID = 0;
+        }
+
         $row = $dbLink->query("SELECT id, source_id, collectionID, `text`, HerbNummerConstruct, LENGTH(`text`) AS match_length
                                      FROM scanHerbNummer 
                                      WHERE `text` = SUBSTRING('" . $dbLink->real_escape_string($searchtext) . "', 1, LENGTH(`text`))
+                                      AND isStableID = $isStableID
                                      ORDER BY match_length DESC")
                       ->fetch_assoc();
         if (empty($row)) {
             $this->HerbNummer = $searchtext;
+            $this->source_id = 0;
         } else {
-            $remainingText = substr($searchtext, $row['match_length']);
-            $constructor = $this->findConstructor($row['HerbNummerConstruct'], strlen($remainingText));
-            $this->HerbNummer = $this->generateHerbNummer($remainingText, $constructor);
+            preg_match("/^\d+/", substr($searchtext, $row['match_length']), $matches);  // cut off any trailing non-numeric characters
+            if (empty($matches)) {
+                $this->HerbNummer = $searchtext;
+                $this->source_id = 0;
+            } else {
+                $remainingText = $matches[0];
+                $constructor = $this->findConstructor($row['HerbNummerConstruct'], strlen($remainingText));
+                $this->HerbNummer = $this->generateHerbNummer($remainingText, $constructor);
+                $this->source_id = $row['source_id'];
+            }
         }
     }
 
@@ -38,6 +57,14 @@ class HerbNummerScan
     public function getHerbNummer(): string
     {
         return $this->HerbNummer;
+    }
+
+    /**
+     * @return int
+     */
+    public function getSourceId(): int
+    {
+        return $this->source_id;
     }
 
     // ---------------------------------------
