@@ -506,23 +506,23 @@ function displayCollectorLinks($collectorID)
                       FROM tbl_collector
                       WHERE SammlerID = '" . intval($collectorID) . "'")
            ->fetch_assoc();
-    if (substr(trim($row['WIKIDATA_ID']), 0, 4) == 'http') {
+    if (!empty($row['WIKIDATA_ID']) && substr(trim($row['WIKIDATA_ID']), 0, 4) == 'http') {
         $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' alt='wikidata' target='_blank'>"
                . "<img src='webimages/wikidata.png' width='20px'></a>";
     }
-    if (substr(trim($row['HUH_ID']), 0, 4) == 'http') {
+    if (!empty($row['HUH_ID']) && substr(trim($row['HUH_ID']), 0, 4) == 'http') {
         $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' alt='Index of Botanists (HUH)' target='_blank'>"
                . "<img src='webimages/huh.png' width='20px'></a>";
     }
-    if (substr(trim($row['VIAF_ID']), 0, 4) == 'http') {
+    if (!empty($row['VIAF_ID']) && substr(trim($row['VIAF_ID']), 0, 4) == 'http') {
         $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' alt='VIAF' target='_blank'>"
                . "<img src='webimages/viaf.png' width='20px'></a>";
     }
-    if (substr(trim($row['ORCID']), 0, 4) == 'http') {
+    if (!empty($row['ORCID']) && substr(trim($row['ORCID']), 0, 4) == 'http') {
         $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' alt='ORCID' target='_blank'>"
                . "<img src='webimages/orcid.logo.icon.svg' width='20px'></a>";
     }
-    if (substr(trim($row['Bloodhound_ID']), 0, 4) == 'http') {
+    if (!empty($row['Bloodhound_ID']) && substr(trim($row['Bloodhound_ID']), 0, 4) == 'http') {
         $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' alt='Bionomia' target='_blank'>"
                . "<img src='webimages/bionomia_logo.png' width='20px'></a>";
     }

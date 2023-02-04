@@ -843,7 +843,37 @@ if (isset($_GET['sel'])) {
               jaxon_displayCollectorLinks($(this).val());
           } );
           $('#sammlerIndex').change();
-      } );
+
+          $('[name="HerbNummer"]').blur(function() {
+              this.value = this.value.trim();
+              var HerbNummer = this.value;
+              // convert StableURI to collection HerbNummer
+              // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+              // if (r.test(HerbNummer)) { // Yes, a valid url
+                  $.ajax({
+                      url: "ajax/convStabURItoHerbnummer.php",
+                      data: {querytext: HerbNummer},
+                      type: 'post',
+                      dataType: "json",
+                      success: function (data) {
+                          $('[name="HerbNummer"]').val(data['HerbNummer']).change();
+                          //console.log("Success, you submit your form" + data);
+                      }
+                  });
+                  // HerbNummer = this.value;
+                  // var institutionNr = $('[name="institution"]').val();
+                  // var institutionName = $('[name="institution"] option:selected').text();
+              // }
+          })
+          .keydown(function(event){
+              if (event.keyCode == 13){
+                  event.preventDefault()
+                  event.stopPropagation()
+                  $('[name="HerbNummer"]').blur()
+                  return false;
+              }
+          })
+      });
   </script>
 </head>
 
@@ -1235,40 +1265,5 @@ if ($updateBlocked) {
     }
 }
 ?>
-<script type="text/javascript">
-    // added trim for HerbNummer to prevent spaces and tabs
-    $(document).ready(function() {
-        $('[name="HerbNummer"]').blur(function() {
-            this.value = this.value.trim();
-            var HerbNummer = this.value;
-            // convert StableURI to collection HerbNummer
-            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-            if (r.test(HerbNummer)) { // Yes, a valid url
-                $.ajax({
-                    url: "ajax/convStabURItoHerbnummer.php",
-                    data: {stableuri: HerbNummer},
-                    type: 'post',
-                    dataType: "json",
-                    success: function (data) {
-                        $('[name="HerbNummer"]').val(data['HerbNummer']).change();
-                        //console.log("Success, you submit your form" + data);
-                    }
-                });
-                // HerbNummer = this.value;
-                // var institutionNr = $('[name="institution"]').val();
-                // var institutionName = $('[name="institution"] option:selected').text();
-            }
-        })
-        // catch enter keypress to trigger blur event
-        .keydown(function(event){
-            if (event.keyCode == 13){
-                event.preventDefault()
-                event.stopPropagation()
-                $('[name="HerbNummer"]').blur()
-                return false;
-            }
-       })
-    });
-</script>
 </body>
 </html>
