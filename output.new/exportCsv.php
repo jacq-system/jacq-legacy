@@ -4,6 +4,7 @@ require_once "inc/functions.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
+use Jacq\StableIdentifier;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -392,7 +393,7 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         ((substr($rowSpecimen['Bemerkungen'], 0, 1) == '=') ? " " : "") . $rowSpecimen['Bemerkungen'],  // to prevent a starting "=" (would be interpreted as a formula)
         ((substr($rowSpecimen['habitat'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitat'],          // to prevent a starting "=" (would be interpreted as a formula)
         ((substr($rowSpecimen['habitus'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitus'],          // to prevent a starting "=" (would be interpreted as a formula)
-        getStableIdentifier($rowSpecimen['specimen_ID'])
+        StableIdentifier::make($rowSpecimen['specimen_ID'])->getStblID()
     ), null, 'A' . $i);
 
     $i++;

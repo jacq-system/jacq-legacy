@@ -3,6 +3,7 @@
 use Jacq\AnnotationQuery;
 use Jacq\DbAccess;
 use Jacq\Settings;
+use Jacq\StableIdentifier;
 use Jacq\TripleID;
 
 session_start();
@@ -13,7 +14,6 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 
 require_once "inc/functions.php";
 require_once 'inc/imageFunctions.php';
-require_once 'inc/StableIdentifier.php';
 require_once __DIR__ . '/vendor/autoload.php';
 
 if (isset($_GET['ID'])) {
@@ -212,7 +212,7 @@ $specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
 
 $output['ID'] = $ID;
 
-$output['stblid'] = StableIdentifier($specimen['source_id'], $specimen['HerbNummer'], $specimen['specimen_ID']);
+$output['stblid'] = StableIdentifier::make($specimen['specimen_ID'], $specimen['source_id'], $specimen['HerbNummer'] ?? '')->getStblID();
 
 $output['HerbariumNr'] = HerbariumNr($specimen);
 
