@@ -327,4 +327,3 @@ foreach ($tbls as $tbl) {
     $result->free();
 }
 //                 recordURI = "  . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : $dbLink2->quoteString($recordURI)) . ",
-?>

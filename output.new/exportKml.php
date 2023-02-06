@@ -1,6 +1,7 @@
 <?php
 
 use Jacq\DbAccess;
+use Jacq\StableIdentifier;
 
 session_start();
 require_once "inc/functions.php";
@@ -225,7 +226,7 @@ while ($row = $result->fetch_array()) {
               . "      " . addLine($rowSpecimen['Datum'])
               . "      " . addLine($location)
               . "      " . addLine($rowSpecimen['Fundort'])
-              . "      " . addLine(getStableIdentifier($rowSpecimen['specimen_ID']))
+              . "      " . addLine(StableIdentifier::make($rowSpecimen['specimen_ID'])->getStblID())
               . "      <a href=\"http://herbarium.univie.ac.at/database/detail.php?ID=" . $row['specimen_ID'] . "\">link</a>\n"
               . "    ]]>\n"
               . "  </description>\n"

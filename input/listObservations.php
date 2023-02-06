@@ -390,7 +390,7 @@ if ($_SESSION['obsType']==1) {
            . "</td></tr></table>\n<p>\n";
     }
 
-    $sql = "SELECT wg.specimen_ID, tg.genus, wg.digital_image,
+    $sql = "SELECT wg.specimen_ID, tg.genus, wg.digital_image_obs,
              c.Sammler, c2.Sammler_2, ss.series, wg.series_number,
              wg.Nummer, wg.alt_number, wg.Datum, wg.HerbNummer,
              n.nation_engl, p.provinz, wg.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -481,7 +481,7 @@ if ($_SESSION['obsType']==1) {
         $sql .= " AND wg.typusID != 0";
     }
     if ($_SESSION['obsImages']) {
-        $sql .= " AND wg.digital_image != 0";
+        $sql .= " AND wg.digital_image_obs != 0";
     }
 
     $sql .= " ORDER BY " . $_SESSION['obsOrder'];
@@ -508,10 +508,17 @@ if ($_SESSION['obsType']==1) {
         while ($row = mysqli_fetch_array($result)) {
             $linkList[$nr] = $row['specimen_ID'];
 
-            if ($row['digital_image']) {
-                $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
-                              .  "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
-                              . "</a>";
+            if ($row['digital_image_obs']) {
+                $target = getIiifLink($row['specimen_ID']);
+                if ($target) {
+                    $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
+                        . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
+                        . "</a>";
+                } else {
+                    $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
+                        . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
+                        . "</a>";
+                }
             } else {
                 $digitalImage = "";
             }

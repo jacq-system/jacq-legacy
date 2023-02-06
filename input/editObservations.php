@@ -443,8 +443,8 @@ if (isset($_GET['sel'])) {
         $p_specimen_ID = $_POST['specimen_ID'];
     }
 }
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -766,7 +766,12 @@ $cf->label(9, 0.5, "specimen_ID");
 $cf->text(9, 0.5, "&nbsp;" . $text);
 
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(33.5, 0, "digital image", "javascript:showImage('$p_specimen_ID')");
+    $target = getIiifLink($p_specimen_ID);
+    if ($target) {
+        $cf->label(33.5, 0, "digital image", "javascript:showIiif('$target')");
+    } else {
+        $cf->label(33.5, 0, "digital image", "javascript:showImage('$p_specimen_ID')");
+    }
 } else {
     $cf->label(33.5, 0, "digital image");
 }

@@ -124,8 +124,8 @@ if (mysqli_num_rows($result)>0) {
   $_SESSION['labelSpecimen_ID'] = $db_specimen_ID;
 } else
   die('No valid dataset selected');
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -214,8 +214,13 @@ $cf->label(9,0.5,"specimen_ID");
 $cf->text(9,0.5,"&nbsp;".$p_specimen_ID);
 
 if ($p_digital_image && $p_specimen_ID) {
-  $cf->label(33.5,0,"digital image","javascript:showImage('$p_specimen_ID')");
-  $cf->text(33.5,0,"&nbsp;&radic;");
+    $target = getIiifLink($p_specimen_ID);
+    if ($target) {
+        $cf->label(33.5, 0, "digital image", "javascript:showIiif('$target')");
+    } else {
+        $cf->label(33.5, 0, "digital image", "javascript:showImage('$p_specimen_ID')");
+    }
+    $cf->text(33.5,0,"&nbsp;&radic;");
 }
 if ($p_checked) {
   $cf->label(42,0,"checked");

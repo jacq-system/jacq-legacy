@@ -843,7 +843,37 @@ if (isset($_GET['sel'])) {
               jaxon_displayCollectorLinks($(this).val());
           } );
           $('#sammlerIndex').change();
-      } );
+
+          $('[name="HerbNummer"]').blur(function() {
+              this.value = this.value.trim();
+              var HerbNummer = this.value;
+              // convert StableURI to collection HerbNummer
+              // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+              // if (r.test(HerbNummer)) { // Yes, a valid url
+                  $.ajax({
+                      url: "ajax/convStabURItoHerbnummer.php",
+                      data: {querytext: HerbNummer},
+                      type: 'post',
+                      dataType: "json",
+                      success: function (data) {
+                          $('[name="HerbNummer"]').val(data['HerbNummer']).change();
+                          //console.log("Success, you submit your form" + data);
+                      }
+                  });
+                  // HerbNummer = this.value;
+                  // var institutionNr = $('[name="institution"]').val();
+                  // var institutionName = $('[name="institution"] option:selected').text();
+              // }
+          })
+          .keydown(function(event){
+              if (event.keyCode == 13){
+                  event.preventDefault()
+                  event.stopPropagation()
+                  $('[name="HerbNummer"]').blur()
+                  return false;
+              }
+          })
+      });
   </script>
 </head>
 
@@ -994,27 +1024,10 @@ if ($swBatch) {
     $cf->checkbox(22.5, $y, "batch\" onchange=\"updateBatch('$p_specimen_ID',0);", $p_batch);
 }
 
+// if speimen-ID is valid and there are any pictures, check if they are on an iiif-server
+$target = (($p_digital_image || $p_digital_image_obs) && $p_specimen_ID) ? getIiifLink($p_specimen_ID) : '';
 if ($p_digital_image && $p_specimen_ID) {
-    $resImage = dbi_query("SELECT tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, ph.specimenID AS phaidraID
-                           FROM tbl_specimens s
-                            LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
-                            LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                            LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
-                           WHERE specimen_ID = $p_specimen_ID");
-    $rowImage = $resImage->fetch_assoc();
-    if ($rowImage['iiif_capable'] || $rowImage['phaidraID']) {
-        $config = Settings::Load();
-        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/$p_specimen_ID");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curl_response = curl_exec($ch);
-        if ($curl_response !== false) {
-            $curl_result = json_decode($curl_response, true);
-            $manifest = $curl_result['uri'];
-        } else {
-            $manifest = "";
-        }
-        curl_close($ch);
-        $target = "https://" . $rowImage['iiif_proxy'] . $rowImage['iiif_dir'] . "/?manifest=$manifest";
+    if ($target) {
         $cf->label(32, $y, "dig.image", "javascript:showIiif('$target')");
     } else {
         $cf->label(32, $y, "dig.image", "javascript:showImage('$p_specimen_ID')");
@@ -1024,7 +1037,11 @@ if ($p_digital_image && $p_specimen_ID) {
 }
 $cf->checkbox(32, $y, "digital_image", $p_digital_image);
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $cf->label(42, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
+    if ($target) {
+        $cf->label(42, $y, "dig.im.obs.", "javascript:showIiif('$target')");
+    } else {
+        $cf->label(42, $y, "dig.im.obs.", "javascript:showImageObs('$p_specimen_ID')");
+    }
 } else {
     $cf->label(42, $y, "dig.im.obs.");
 }
@@ -1107,7 +1124,7 @@ $y += 2;
 $cf->labelMandatory(11, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
 $cf->inputJqAutocomplete(11, $y, 53, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
-echo "<div style='position: absolute; left: 62em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
+echo "<div style='position: absolute; left: 65em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;
@@ -1248,40 +1265,5 @@ if ($updateBlocked) {
     }
 }
 ?>
-<script type="text/javascript">
-    // added trim for HerbNummer to prevent spaces and tabs
-    $(document).ready(function() {
-        $('[name="HerbNummer"]').blur(function() {
-            this.value = this.value.trim();
-            var HerbNummer = this.value;
-            // convert StableURI to collection HerbNummer
-            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-            if (r.test(HerbNummer)) { // Yes, a valid url
-                $.ajax({
-                    url: "ajax/convStabURItoHerbnummer.php",
-                    data: {stableuri: HerbNummer},
-                    type: 'post',
-                    dataType: "json",
-                    success: function (data) {
-                        $('[name="HerbNummer"]').val(data['HerbNummer']).change();
-                        //console.log("Success, you submit your form" + data);
-                    }
-                });
-                // HerbNummer = this.value;
-                // var institutionNr = $('[name="institution"]').val();
-                // var institutionName = $('[name="institution"] option:selected').text();
-            }
-        })
-        // catch enter keypress to trigger blur event
-        .keydown(function(event){
-            if (event.keyCode == 13){
-                event.preventDefault()
-                event.stopPropagation()
-                $('[name="HerbNummer"]').blur()
-                return false;
-            }
-       })
-    });
-</script>
 </body>
 </html>

@@ -405,6 +405,46 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       OSMwindow.focus();
     }
 
+    $(function()
+    {
+        // added trim for HerbNummer to prevent spaces and tabs
+        $('[name="number"]').blur(function() {
+            this.value = this.value.trim();
+            var number = this.value;
+            // convert StableURI to collection HerbNummer
+            // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
+            // if (r.test(number)) { // Yes, a valid url
+                $.ajax({
+                    url: "ajax/convStabURItoHerbnummer.php",
+                    data: {querytext: number},
+                    type: 'post',
+                    dataType: "json",
+                    success: function (data) {
+                        $('[name="number"]').val(data['HerbNummer']).change();
+                        //console.log("Success, you submit your form" + data);
+                    }
+                });
+                var number = this.value;
+            // }
+            // else
+            // {
+            //     $('[name="number"]').change();
+            // }
+        })
+        // catch enter keypress to trigger blur event before search submit
+        .keydown(function(event){
+            if (event.keyCode == 13){
+                event.preventDefault()
+                event.stopPropagation()
+                $('[name="number"]').change(function(){
+                    //console.log("Funktion Change")
+                    $('[name="search"]').click()
+                }).blur()
+                return false;
+            }
+        })
+    });
+
     jaxon_checkTypeLabelMapPdfButton();
     jaxon_checkTypeLabelSpecPdfButton();
     jaxon_checkStandardLabelPdfButton();
@@ -791,45 +831,5 @@ if ($error) {
 }
 ?>
 </form>
-<script type="text/javascript">
-    // added trim for HerbNummer to prevent spaces and tabs
-    $(document).ready(function() {
-        $('[name="number"]').blur(function() {
-            this.value = this.value.trim();
-            var number = this.value;
-            // convert StableURI to collection HerbNummer
-            var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-            if (r.test(number)) { // Yes, a valid url
-                $.ajax({
-                    url: "ajax/convStabURItoHerbnummer.php",
-                    data: {stableuri: number},
-                    type: 'post',
-                    dataType: "json",
-                    success: function (data) {
-                        $('[name="number"]').val(data['HerbNummer']).change();
-                        //console.log("Success, you submit your form" + data);
-                    }
-                });   
-                var number = this.value;
-           }
-           else
-           {
-            $('[name="number"]').change();
-           }
-       })
-        // catch enter keypress to trigger blur event before search submit
-        .keydown(function(event){
-            if (event.keyCode == 13){
-                event.preventDefault()
-                event.stopPropagation()
-                $('[name="number"]').change(function(){
-                    //console.log("Funktion Change")
-                    $('[name="search"]').click()
-                }).blur()
-                return false;
-            }
-       })
-    });
- </script>
 </body>
 </html>
