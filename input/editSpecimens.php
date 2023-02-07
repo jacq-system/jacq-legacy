@@ -846,13 +846,14 @@ if (isset($_GET['sel'])) {
 
           $('[name="HerbNummer"]').blur(function() {
               this.value = this.value.trim();
-              var HerbNummer = this.value;
+              var number = this.value;
               // convert StableURI to collection HerbNummer
               // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-              // if (r.test(HerbNummer)) { // Yes, a valid url
+              var r = /^\D/  // RegEx; searchstring must start with any non-digit char
+              if (r.test(number)) {
                   $.ajax({
                       url: "ajax/convStabURItoHerbnummer.php",
-                      data: {querytext: HerbNummer},
+                      data: {querytext: number},
                       type: 'post',
                       dataType: "json",
                       success: function (data) {
@@ -863,7 +864,7 @@ if (isset($_GET['sel'])) {
                   // HerbNummer = this.value;
                   // var institutionNr = $('[name="institution"]').val();
                   // var institutionName = $('[name="institution"] option:selected').text();
-              // }
+              }
           })
           .keydown(function(event){
               if (event.keyCode == 13){

@@ -6,7 +6,7 @@ $settings = \Jacq\Settings::Load();
 
 if ($settings->get('TEXTTOHERBNR', 'METHOD') == 'db') {
     $herbnummer = new \Jacq\HerbNummerScan($_POST['querytext']);
-    echo json_encode(array('HerbNummer' => $herbnummer->getHerbNummer()), JSON_NUMERIC_CHECK);
+    echo json_encode(array('HerbNummer' => $herbnummer->getHerbNummer()));
 
 } else {
 

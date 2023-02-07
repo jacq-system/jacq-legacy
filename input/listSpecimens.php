@@ -413,7 +413,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
             var number = this.value;
             // convert StableURI to collection HerbNummer
             // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-            // if (r.test(number)) { // Yes, a valid url
+            var r = /^\D/  // RegEx; searchstring must start with any non-digit char
+            if (r.test(number)) {
                 $.ajax({
                     url: "ajax/convStabURItoHerbnummer.php",
                     data: {querytext: number},
@@ -425,11 +426,9 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
                     }
                 });
                 var number = this.value;
-            // }
-            // else
-            // {
-            //     $('[name="number"]').change();
-            // }
+            } else {
+                $('[name="number"]').change();
+            }
         })
         // catch enter keypress to trigger blur event before search submit
         .keydown(function(event){
