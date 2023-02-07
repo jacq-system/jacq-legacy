@@ -846,14 +846,14 @@ if (isset($_GET['sel'])) {
 
           $('[name="HerbNummer"]').blur(function() {
               this.value = this.value.trim();
-              var HerbNummer = this.value;
+              var number = this.value;
               // convert StableURI to collection HerbNummer
               // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
               var r = /^\D/  // RegEx; searchstring must start with any non-digit char
-              if (r.test(HerbNummer)) {
+              if (r.test(number)) {
                   $.ajax({
                       url: "ajax/convStabURItoHerbnummer.php",
-                      data: {querytext: HerbNummer},
+                      data: {querytext: number},
                       type: 'post',
                       dataType: "json",
                       success: function (data) {
