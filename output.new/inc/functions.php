@@ -44,66 +44,68 @@ function collection($row): string
 
 function rdfcollection($row, $isBotanyPilot = false): string
 {
-    if ($row['WIKIDATA_ID'] || $row['HUH_ID'] || $row['VIAF_ID'] || $row['ORCID']){
+    if (!empty($row['WIKIDATA_ID']) || !empty($row['HUH_ID']) || !empty($row['VIAF_ID']) || !empty($row['ORCID'])){
         $text = "";
-        if ($row['WIKIDATA_ID']) {
+        if (!empty($row['WIKIDATA_ID'])) {
            $text .= "<a href=\"" . $row['WIKIDATA_ID'] . '" title="wikidata" target="_blank" class="leftnavi"><img src="assets/images/wikidata.png" alt="wikidata" width="20px"></a>&nbsp;';
         }
-        if ($row['HUH_ID']) {
+        if (!empty($row['HUH_ID'])) {
            $text .= "<a href=\"" . $row['HUH_ID'] . '" title="Index of Botanists (HUH)" target="_blank" class="leftnavi"><img src="assets/images/huh.png" alt="Index of Botanists (HUH)" height="20px"></a>&nbsp;';
         }
-        if ($row['VIAF_ID']) {
+        if (!empty($row['VIAF_ID'])) {
            $text .= "<a href=\"" . $row['VIAF_ID'] . '" title="VIAF" target="_blank" class="leftnavi"><img src="assets/images/viaf.png" alt="VIAF" width="20px"></a>&nbsp;';
         }
-        if ($row['ORCID']) {
+        if (!empty($row['ORCID'])) {
            $text .= "<a href=\"" . $row['ORCID'] . '" title="ORCID" target="_blank" class="leftnavi"><img src="assets/images/orcid.logo.icon.svg" alt="ORCID" width="20px"></a>&nbsp;';
         }
 
-        if (getBloodhoundID($row)) {
-        $text .= getBloodhoundID($row);
+        if (!empty($row['SammlerID'])) {
+            $text .= (getBloodhoundID($row['SammlerID'])) ?: '';
         }
-        $text .=  $row['Sammler'];
+        $text .=  $row['Sammler'] ?? '';
     } else {
-        $text =  $row['Sammler'];
+        $text =  $row['Sammler'] ?? '';
     }
 
-    if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
-        $text .= " et al.";
-    } else if ($row['Sammler_2']) {
-        $text .= " & " . $row['Sammler_2'];
+    if (!empty($row['Sammler_2'])) {
+        if (strstr($row['Sammler_2'], "&") || strstr($row['Sammler_2'], "et al.")) {
+            $text .= " et al.";
+        } else {
+            $text .= " & " . $row['Sammler_2'];
+        }
     }
 
-    if ($row['series_number']) {
-        if ($row['Nummer']) {
+    if (!empty($row['series_number'])) {
+        if (!empty($row['Nummer'])) {
             $text .= " " . $row['Nummer'];
         }
-        if ($row['alt_number'] && $row['alt_number'] != "s.n.") {
+        if (!empty($row['alt_number']) && $row['alt_number'] != "s.n.") {
             $text .= " " . $row['alt_number'];
         }
-        if ($row['series']) {
+        if (!empty($row['series'])) {
             $text .= " " . $row['series'];
         }
         $text .= " " . $row['series_number'];
     } else {
-        if ($row['series']) {
+        if (!empty($row['series'])) {
             $text .= " " . $row['series'];
         }
-        if ($row['Nummer']) {
+        if (!empty($row['Nummer'])) {
             $text .= " " . $row['Nummer'];
         }
-        if ($row['alt_number']) {
+        if (!empty($row['alt_number'])) {
             $text .= " " . $row['alt_number'];
         }
     }
 
     if ($isBotanyPilot){
-        if ($row['WIKIDATA_ID']) {
+        if (!empty($row['WIKIDATA_ID'])) {
             $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/q/" . basename($row['WIKIDATA_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-        } elseif ($row['HUH_ID']) {
+        } elseif (!empty($row['HUH_ID'])) {
             $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/h/" . basename($row['HUH_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-        } elseif ($row['VIAF_ID']) {
+        } elseif (!empty($row['VIAF_ID'])) {
             $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/v/" . basename($row['VIAF_ID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
-        } elseif ($row['ORCID']) {
+        } elseif (!empty($row['ORCID'])) {
             $text .= "&nbsp;<a href=\"https://services.bgbm.org/botanypilot/person/o/" . basename($row['ORCID']) . '" target="_blank" class="leftnavi">(link to CETAF Botany Pilot)</a>&nbsp;';
         }
     }
@@ -159,23 +161,23 @@ function HerbariumNr($row): string
 
 function taxon($row)
 {
-    $text = $row['genus'];
-    if ($row['epithet']) {
+    $text = $row['genus'] ?? '';
+    if (!empty($row['epithet'])) {
         $text .= " " . $row['epithet'] . " " . $row['author'];
     }
-    if ($row['epithet1']) {
+    if (!empty($row['epithet1'])) {
         $text .= " subsp. " . $row['epithet1'] . " " . $row['author1'];
     }
-    if ($row['epithet2']) {
+    if (!empty($row['epithet2'])) {
         $text .= " var. " . $row['epithet2'] . " " . $row['author2'];
     }
-    if ($row['epithet3']) {
+    if (!empty($row['epithet3'])) {
         $text .= " subvar. " . $row['epithet3'] . " " . $row['author3'];
     }
-    if ($row['epithet4']) {
+    if (!empty($row['epithet4'])) {
         $text .= " forma " . $row['epithet4'] . " " . $row['author4'];
     }
-    if ($row['epithet5']) {
+    if (!empty($row['epithet5'])) {
         $text .= " subforma " . $row['epithet5'] . " " . $row['author5'];
     }
 
@@ -241,7 +243,7 @@ function taxonWithHybrids($row)
     }
 }
 
-function getTaxonAuth($taxid): string
+function getTaxonAuth(int $taxid): string
 {
     $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
@@ -262,11 +264,11 @@ function getTaxonAuth($taxid): string
     return $text;
 }
 
-function getBloodhoundID($row): string
+function getBloodhoundID(int $SammlerID): string
 {
     $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
-    $result = $dbLnk2->query("SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '" . ($row['SammlerID']) . "'");
+    $result = $dbLnk2->query("SELECT Bloodhound_ID FROM herbarinput.tbl_collector WHERE Bloodhound_ID like 'h%' AND SammlerID like '$SammlerID'");
     $text = '';
     if ($result && $result->num_rows > 0) {
     // output data of each row

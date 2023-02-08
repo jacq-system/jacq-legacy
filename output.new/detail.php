@@ -29,7 +29,7 @@ $config = Settings::Load();
  * functions
  ********************************/
 
-function protolog($row)
+function protolog($row): string
 {
     $text = "";
     if ($row['suptitel']) {
@@ -71,7 +71,7 @@ function makeCellWithLink($text)
     }
 }
 
-function makeTypus($ID)
+function makeTypus($ID): string
 {
     $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
@@ -207,8 +207,31 @@ $specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              LEFT JOIN tbl_tax_families tf               ON tf.familyID = tg.familyID
                              LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
                             WHERE s.accessible != '0'
-                             AND s.specimen_ID = '" . intval($ID) . "'")
+                             AND s.specimen_ID = '$ID'")
                    ->fetch_array();
+
+if (empty($specimen)) {
+    $specimen = array(
+        'specimen_ID'    => 0,
+        'source_id'      => 0,
+        'HerbNummer'     => '',
+        'source_code'    => '',
+        'collection'     => '',
+        'CollNummer'     => '',
+        'statusID'       => 0,
+        'taxid'          => 0,
+        'ncbi_accession' => '',
+        'genus'          => '',
+        'epithet'        => '',
+        'family'         => '',
+        'det'            => '',
+        'taxon_alt'      => '',
+        'Datum'          => '',
+        'Fundort'        => '',
+        'habitat'        => '',
+        'habitus'        => ''
+    );
+}
 
 $output['ID'] = $ID;
 
@@ -228,41 +251,41 @@ $output['typusText'] = makeTypus($ID);
 $output['sammler'] = rdfcollection($specimen, true);
 
 if ($specimen['ncbi_accession']) {
-    $output['sammler'] .=  " &mdash; " . $specimen['ncbi_accession']
-                        .  " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" .  $specimen['ncbi_accession'] . "' target='_blank'>"
-                        .  "<img border='0' height='16' src='images/ncbi.gif' width='14'></a>";
+    $output['sammler'] .= " &mdash; " . $specimen['ncbi_accession']
+        . " <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=Nucleotide&cmd=search&term=" . $specimen['ncbi_accession'] . "' target='_blank'>"
+        . "<img border='0' height='16' src='images/ncbi.gif' width='14'></a>";
 }
 
-$output['location'] = $specimen['nation_engl'];
-if (strlen(trim($specimen['provinz'])) > 0) {
+$output['location'] = $specimen['nation_engl'] ?? '';
+if (strlen(trim($specimen['provinz'] ?? '')) > 0) {
     $output['location'] .= " / " . trim($specimen['provinz']);
 }
-if ($specimen['Coord_S'] > 0 || $specimen['S_Min'] > 0 || $specimen['S_Sec'] > 0) {
-    $lat = -($specimen['Coord_S'] + $specimen['S_Min'] / 60 + $specimen['S_Sec'] / 3600);
-} else if ($specimen['Coord_N'] > 0 || $specimen['N_Min'] > 0 || $specimen['N_Sec'] > 0) {
-    $lat = $specimen['Coord_N'] + $specimen['N_Min'] / 60 + $specimen['N_Sec'] / 3600;
+if (($specimen['Coord_S'] ?? 0) > 0 || ($specimen['S_Min'] ?? 0) > 0 || ($specimen['S_Sec'] ?? 0) > 0) {
+    $lat = -(intval($specimen['Coord_S']) + intval($specimen['S_Min']) / 60.0 + doubleval($specimen['S_Sec']) / 3600.0);
+} else if (($specimen['Coord_N'] ?? 0) > 0 || ($specimen['N_Min'] ?? 0) > 0 || ($specimen['N_Sec'] ?? 0) > 0) {
+    $lat = intval($specimen['Coord_N']) + intval($specimen['N_Min']) / 60.0 + doubleval($specimen['N_Sec']) / 3600.0;
 } else {
     $lat = 0;
 }
-if ($specimen['Coord_W'] > 0 || $specimen['W_Min'] > 0 || $specimen['W_Sec'] > 0) {
-    $lon = -($specimen['Coord_W'] + $specimen['W_Min'] / 60 + $specimen['W_Sec'] / 3600);
-} else if ($specimen['Coord_E'] > 0 || $specimen['E_Min'] > 0 || $specimen['E_Sec'] > 0) {
-    $lon = $specimen['Coord_E'] + $specimen['E_Min'] / 60 + $specimen['E_Sec'] / 3600;
+if (($specimen['Coord_W'] ?? 0) > 0 || ($specimen['W_Min'] ?? 0) > 0 || ($specimen['W_Sec'] ?? 0) > 0) {
+    $lon = -(intval($specimen['Coord_W']) + intval($specimen['W_Min']) / 60.0 + doubleval($specimen['W_Sec']) / 3600.0);
+} else if (($specimen['Coord_E'] ?? 0) > 0 || ($specimen['E_Min'] ?? 0) > 0 || ($specimen['E_Sec'] ?? 0) > 0) {
+    $lon = intval($specimen['Coord_E']) + intval($specimen['E_Min']) / 60.0 + doubleval($specimen['E_Sec']) / 3600.0;
 } else {
     $lon = 0;
 }
 if ($lat != 0 || $lon != 0) {
-    $output['location'] .= " &mdash; " . round($lat,5) . "&deg; / " . round($lon,5) . "&deg; ";
+    $output['location'] .= " &mdash; " . round($lat, 5) . "&deg; / " . round($lon, 5) . "&deg; ";
 
     $point['lat'] = dms2sec($specimen['Coord_S'], $specimen['S_Min'], $specimen['S_Sec'], $specimen['Coord_N'], $specimen['N_Min'], $specimen['N_Sec']) / 3600.0;
     $point['lng'] = dms2sec($specimen['Coord_W'], $specimen['W_Min'], $specimen['W_Sec'], $specimen['Coord_E'], $specimen['E_Min'], $specimen['E_Sec']) / 3600.0;
     $url = "https://www.jacq.org/detail.php?ID=" . $specimen['specimen_ID'];
     $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
-         . htmlspecialchars(taxonWithHybrids($specimen))
-         . "</div>"
-         . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
-         . htmlentities(collection($specimen), ENT_QUOTES | ENT_HTML401) . " / "
-         . $specimen['Datum'] . " / ";
+        . htmlspecialchars(taxonWithHybrids($specimen))
+        . "</div>"
+        . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
+        . htmlentities(collection($specimen), ENT_QUOTES | ENT_HTML401) . " / "
+        . $specimen['Datum'] . " / ";
     if ($specimen['typusID']) {
         $txt .= htmlspecialchars($specimen['typusID']) . " / ";
     }
@@ -274,10 +297,10 @@ if ($lat != 0 || $lon != 0) {
 if ($specimen['source_id'] == '35') {
     $output['annotations'] = (preg_replace("#<a .*a>#", "", $specimen['Bemerkungen']));
 } else {
-    $output['annotations'] = $specimen['Bemerkungen'];
+    $output['annotations'] = $specimen['Bemerkungen'] ?? '';
 }
 
-if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $config->get('ANNOSYS', 'ACTIVE')){
+if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $config->get('ANNOSYS', 'ACTIVE')) {
     $output['newAnno'] = true;
     // create new id object
     $id = new TripleID($specimen['source_code'], $specimen['source_name'], $specimen['HerbNummer']);
@@ -296,7 +319,7 @@ if (($specimen['source_id'] == '29' || $specimen['source_id'] == '6') && $config
     $output['newAnno'] = false;
 }
 
-if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
+if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])) {
     $phaidra = false;
     if ($specimen['source_id'] == '1') {
         // for now, special treatment for phaidra is needed when wu has images
@@ -334,7 +357,7 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
     }
     if ($phaidra) {  // phaidra picture found
         $output['picture_include'] = 'templates/detail_inc_phaidra.php';
-        include 'templates/detail_base.php';
+//        include 'templates/detail_base.php';
 //        include 'templates/detail_phaidra.php';  // just needed for testing
     } else {
         if ($specimen['imgserver_type'] == 'bgbm') {
@@ -389,9 +412,9 @@ if (($specimen['digital_image'] || $specimen['digital_image_obs'])) {
         } else {
             $output['picture_include'] = 'templates/detail_inc_noPictures.php';
         }
-        include 'templates/detail_base.php';
     }
 } else {
     $output['picture_include'] = '';
-    include 'templates/detail_base.php';
 }
+
+include 'templates/detail_base.php';
