@@ -1,5 +1,9 @@
 <?php
 /**
+ * the complete file is no longer needed
+ * kept just for the records :-)
+ */
+/**
  * Base class for all xajax-classes to be called by the dispatcher - general methods and variables
  *
  * @author Johannes Schachner

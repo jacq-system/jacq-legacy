@@ -49,36 +49,38 @@ require("inc/connect.php");
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
 
-<table><tr>
-<td>
-  Institution:
-  <select size="1" name="source_id">
-  <option value="0">--- all ---</option>
+<table>
+    <tr>
+        <td colspan="9">
+            Institution:
+            <select size="1" name="source_id">
+<option value="0">--- all ---</option>
 <?php
-  $sql = "SELECT source_name, tbl_management_collections.source_id
-          FROM tbl_management_collections, herbarinput.meta
-          WHERE tbl_management_collections.source_id = herbarinput.meta.source_id
-          GROUP BY source_name ORDER BY source_name";
-  $result = dbi_query($sql);
-  while ($row = mysqli_fetch_array($result)) {
-      echo "<option value=\"{$row['source_id']}\"";
-      if ($_POST['source_id'] == $row['source_id']) echo " selected";
-      echo ">{$row['source_name']}</option>\n";
-  }
+      $sql = "SELECT source_name, tbl_management_collections.source_id
+              FROM tbl_management_collections, herbarinput.meta
+              WHERE tbl_management_collections.source_id = herbarinput.meta.source_id
+              GROUP BY source_name ORDER BY source_name";
+      $result = dbi_query($sql);
+      while ($row = mysqli_fetch_array($result)) {
+          echo "                <option value=\"{$row['source_id']}\"";
+          if (($_POST['source_id'] ?? 0) == $row['source_id']) echo " selected";
+          echo ">{$row['source_name']}</option>\n";
+      }
 ?>
-  </select>
-</td><td width="10">&nbsp;</td><td>
-  Family: <input type="text" name="family" value="<?php echoSpecial('family', 'POST'); ?>">
-</td><td width="10">&nbsp;</td><td>
-  Genus: <input type="text" name="genus" value="<?php echoSpecial('genus', 'POST'); ?>">
-</td><td width="10">&nbsp;</td><td>
-  Author: <input type="text" name="author" value="<?php echoSpecial('author', 'POST'); ?>">
-</td><td width="10">&nbsp;</td><td>
-  Collector: <input type="text" name="collector" value="<?php echoSpecial('collector', 'POST'); ?>">
-</td><td width="10">&nbsp;</td><td>
-  <input type="submit" name="btnCheck" value="check">
-</td>
-</tr></table>
+            </select>
+        </td>
+    </tr><tr>
+        <td>Family: <input type="text" name="family" value="<?php echoSpecial('family', 'POST'); ?>"></td>
+        <td width="10">&nbsp;</td>
+        <td>Genus: <input type="text" name="genus" value="<?php echoSpecial('genus', 'POST'); ?>"></td>
+        <td width="10">&nbsp;</td>
+        <td>Author: <input type="text" name="author" value="<?php echoSpecial('author', 'POST'); ?>"></td>
+        <td width="10">&nbsp;</td>
+        <td>Collector: <input type="text" name="collector" value="<?php echoSpecial('collector', 'POST'); ?>"></td>
+        <td width="10">&nbsp;</td>
+        <td><input type="submit" name="btnCheck" value="check"></td>
+    </tr>
+</table>
 </form>
 
 <?php
@@ -116,7 +118,7 @@ if (isset($_POST['btnCheck']) && $_POST['btnCheck']) {
     if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . dbi_escape_string(trim($_POST['collector'])) . "%'";
     $sql .= " ORDER BY coll_short, specimen_ID";
     $result = dbi_query($sql);
-    unset($themesMissing);
+    $themesMissing = array();
     while ($row = mysqli_fetch_array($result)) {
         $themesMissing[$row['specimen_ID']] = htmlspecialchars($row['coll_short'])
                                             . " &mdash; "

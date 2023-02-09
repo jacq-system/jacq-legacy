@@ -235,7 +235,7 @@ if (empty($specimen)) {
 
 $output['ID'] = $ID;
 
-$output['stblid'] = StableIdentifier::make($specimen['specimen_ID'], $specimen['source_id'], $specimen['HerbNummer'] ?? '')->getStblID();
+$output['stblid'] = StableIdentifier::make($specimen['specimen_ID'], $specimen['source_id'], $specimen['HerbNummer'])->getStblID();
 
 $output['HerbariumNr'] = HerbariumNr($specimen);
 
