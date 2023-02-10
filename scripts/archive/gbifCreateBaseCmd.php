@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 require 'inc/variables.php';
-require '../../output.new/inc/StableIdentifier.php';
+require 'inc/StableIdentifier.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
