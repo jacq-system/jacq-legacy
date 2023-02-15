@@ -428,7 +428,7 @@ function PostIt(method, params, callback){
 
 <?php
 // Output helper links to switch between different checkPictures versions
-echo $cf->label(6, 0, 'Djatoka' );
+//echo $cf->label(6, 0, 'Djatoka' );
 //echo $cf->label(15, 0, 'ImageBrowser', 'checkPicturesOld.php' );
 ?>
 

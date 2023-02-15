@@ -372,10 +372,11 @@ if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])
                     $output['manifest'] = "";
                 }
                 curl_close($ch);
+                $output['picture_include'] = 'templates/detail_inc_iiif.php';
             } else {
                 $output['bgbm_options'] = '?filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
+                $output['picture_include'] = 'templates/detail_inc_bgbm.php';
             }
-            $output['picture_include'] = 'templates/detail_inc_bgbm.php';
     //    'baku' is depricated and no loner used
     //    } elseif ($specimen['imgserver_type'] == 'baku') {
     //        $options = 'filename=' . rawurlencode(basename($specimen['specimen_ID'])) . '&sid=' . $specimen['specimen_ID'];
@@ -384,31 +385,45 @@ if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])
     //           . "(<a href='image.php?{$options}&method=show' target='imgBrowser'>Open viewer</a>)"
     //           . "</td>";
         } elseif ($specimen['imgserver_type'] == 'djatoka') {
-            $picdetails = getPicDetails($specimen['specimen_ID']);
-            $transfer   = getPicInfo($picdetails);
-            $output['djatoka_options'] = array();
-            if ($transfer) {
-                if (!empty($transfer['error'])) {
-                    $output['djatoka']['error'] = "Picture server list error. Falling back to original image name";
-                    $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen['specimen_ID'];
-                    error_log($transfer['error']);
+            if ($specimen['iiif_capable']) {
+                $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $specimen['specimen_ID']);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $curl_response = curl_exec($ch);
+                if ($curl_response !== false) {
+                    $curl_result = json_decode($curl_response, true);
+                    $output['manifest'] = $curl_result['uri'];
                 } else {
-                    if (count($transfer['pics'] ?? array()) > 0) {
-                        foreach ($transfer['pics'] as $v) {
-                            $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
-                        }
-                        $output['djatoka']['error'] = "";
-                    } else {
-                        $output['djatoka']['error'] = "no pictures found";
-                    }
-                    if (trim($transfer['output'])) {
-                        $output['djatoka_transfer_output'] = "\n" . $transfer['output'] . "\n";
-                    }
+                    $output['manifest'] = "";
                 }
+                curl_close($ch);
+                $output['picture_include'] = 'templates/detail_inc_iiif.php';
             } else {
-                $output['djatoka']['error'] = "transmission error";
+                $picdetails = getPicDetails($specimen['specimen_ID']);
+                $transfer = getPicInfo($picdetails);
+                $output['djatoka_options'] = array();
+                if ($transfer) {
+                    if (!empty($transfer['error'])) {
+                        $output['djatoka']['error'] = "Picture server list error. Falling back to original image name";
+                        $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($picdetails['filename'])) . '&sid=' . $specimen['specimen_ID'];
+                        error_log($transfer['error']);
+                    } else {
+                        if (count($transfer['pics'] ?? array()) > 0) {
+                            foreach ($transfer['pics'] as $v) {
+                                $output['djatoka_options'][] = 'filename=' . rawurlencode(basename($v)) . '&sid=' . $specimen['specimen_ID'];
+                            }
+                            $output['djatoka']['error'] = "";
+                        } else {
+                            $output['djatoka']['error'] = "no pictures found";
+                        }
+                        if (trim($transfer['output'])) {
+                            $output['djatoka_transfer_output'] = "\n" . $transfer['output'] . "\n";
+                        }
+                    }
+                } else {
+                    $output['djatoka']['error'] = "transmission error";
+                }
+                $output['picture_include'] = 'templates/detail_inc_djatoka.php';
             }
-            $output['picture_include'] = 'templates/detail_inc_djatoka.php';
         } else {
             $output['picture_include'] = 'templates/detail_inc_noPictures.php';
         }
