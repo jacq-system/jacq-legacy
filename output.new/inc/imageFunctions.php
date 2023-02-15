@@ -261,7 +261,7 @@ function getPicDetails($request, $sid = '')
 function getPicInfo($picdetails)
 {
     $return = array('output' => '',
-                    'pics'   => '',
+                    'pics'   => array(),
                     'error'  => '');
 
     if ($picdetails['imgserver_type'] == 'djatoka') {
