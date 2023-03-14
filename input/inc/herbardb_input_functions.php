@@ -9,13 +9,13 @@ require __DIR__ . '/../vendor/autoload.php';
 /**
  * Return scientific name for a given taxon_id
  *
- * @param int $taxon_id Taxon-id to search for
+ * @param int|null $taxon_id Taxon-id to search for
  * @param bool $withDT Include dallatorre-id, defaults to no
  * @param bool $withID Include taxon-id, defaults to no
  * @param bool $p_bAvoidHybridFormula avoid hybrids, defaults to no
  * @return string
  */
-function getScientificName (int $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
+function getScientificName (?int $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
 {
     // wrong call with empty taxon-ID
     if (empty($taxon_id)) {
