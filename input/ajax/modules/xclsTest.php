@@ -1,5 +1,9 @@
 <?php
 /**
+ * the complete file is no longer needed
+ * kept just for the records :-)
+ */
+/**
  * xajax-class to be called by the dispatcher - tests
  *
  * An example for a dispatcher-class

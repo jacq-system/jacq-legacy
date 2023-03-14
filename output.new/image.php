@@ -170,14 +170,14 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
 
         // Construct URL to Berlin Server
         // Remove hyphens
-        $fp = fopen('http://ww2.bgbm.org/rest/herb/image/' . str_replace('-', '', $picdetails['filename']), "r");
+        $fp = fopen('http://ww2.bgbm.org/rest/herb/thumb/' . $picdetails['filename'], "r");
         $response = "";
         while ($row = fgets($fp)) {
             $response .= trim($row) . "\n";
         }
         $response_decoded = json_decode($response, true);
         //$url = $picdetails['url'].'images'.$response_decoded['value'];
-        $url = cleanURL('http://mediastorage.bgbm.org/fsi/server?type=image&width=160&profile=jpeg&quality=95&source=' . $response_decoded['value']);
+        $url = cleanURL('https://image.bgbm.org/images/herbarium/' . $response_decoded['value']);
 
     } else if ($picdetails['imgserver_type'] == 'baku') {           // depricated
     //... Check if we are using djatoka = 3 (Baku image server)

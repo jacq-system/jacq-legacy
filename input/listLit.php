@@ -5,8 +5,9 @@ require("inc/herbardb_input_functions.php");
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
-if (!isset($_SESSION['litBestand'])) $_SESSION['litBestand'] = "everything";
-if (!isset($_SESSION['litCategory'])) $_SESSION['litCategory'] = "everything";
+if (!isset($_SESSION['litBestand']))   { $_SESSION['litBestand'] = "everything";  }
+if (!isset($_SESSION['litCategory']))  { $_SESSION['litCategory'] = "everything"; }
+if (!isset($_SESSION['litContainer'])) { $_SESSION['litContainer'] = 0;           }
 
 if (isset($_POST['search'])) {
     $_SESSION['litType']      = 1;
@@ -261,8 +262,6 @@ if ($result = dbi_query($sql)) {
 </head>
 
 <body>
-
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST">
 <table cellspacing="5" cellpadding="0">

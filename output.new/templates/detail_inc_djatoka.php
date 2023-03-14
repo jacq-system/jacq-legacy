@@ -1,5 +1,5 @@
 <?php
-if ($output['djatoka']['error']) {
+if (!empty($output['djatoka']['error'])) {
     echo $output['djatoka']['error'];
 }
 if (!empty($output['djatoka_options'])):

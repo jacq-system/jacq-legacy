@@ -51,7 +51,7 @@ function showList($link, $withID=true)
     echo "</ul>\n";
 }
 
-function showEditFields($date_supplied, $remarks = "", $batchID = 0,$exclude_tab_obs)
+function showEditFields($date_supplied, $remarks = "", $batchID = 0, $exclude_tab_obs = 0)
 {
     if (!$batchID) {
         $pre = "new_";

@@ -43,8 +43,6 @@ if (isset($_GET['order'])) {
 
 <body>
 
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
-
 <h1>Manage Users</h1>
 
 <input class="button" type="button" value=" new User " onclick="self.location.href='editUser.php?sel=0'">

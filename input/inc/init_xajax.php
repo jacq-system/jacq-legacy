@@ -1,5 +1,9 @@
 <?php
 /**
+ * the complete file is no longer needed
+ * kept just for the records :-)
+ */
+/**
  * xajax INIT Module
  *
  * This file prepares all the stuff for usage of xajax

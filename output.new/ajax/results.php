@@ -204,7 +204,7 @@ while ($row = $result->fetch_array()) {
         echo "<td class=\"result\"></td>\n";
     }
     echo "<td class='result' valign='top'>"
-        . "<a href='detail.php?ID=" . $row['specimen_ID'] . "' target='_blank'>" . taxonWithHybrids($row) . "</a>". getTaxonAuth($row['taxid'])
+        . "<a href='detail.php?ID=" . $row['specimen_ID'] . "' target='_blank'>" . taxonWithHybrids($row) . "</a>". getTaxonAuth($row['taxid'] ?? 0)
         ."</td>"
         . "<td class=\"result\" valign=\"top\">"
         . rdfcollection($row)

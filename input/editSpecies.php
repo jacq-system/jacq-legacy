@@ -747,7 +747,7 @@ WHERE
 
 $row1=mysqli_fetch_row($res);
 if ($row1[0] > 0) {
-	$cf->label(29.5, 5.5, "specimens ({$row1[0]})", "javascript:listSpecimens('$p_taxonID')");
+	$cf->label(72.5, 7.5, "specimens ({$row1[0]})", "javascript:listSpecimens('$p_taxonID')");
 }
 
 

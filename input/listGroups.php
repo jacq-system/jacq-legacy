@@ -14,8 +14,6 @@ require("inc/herbardb_input_functions.php");
 
 <body>
 
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
-
 <h1>Manage Groups</h1>
 
 <input class="button" type="button" value=" new Group " onclick="self.location.href='editGroup.php?sel=0'">

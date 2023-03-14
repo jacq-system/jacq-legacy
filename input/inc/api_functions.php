@@ -279,23 +279,28 @@ function helper_tbl_api_units_identifications ($id, $row, $det, $date, $identHis
            WHERE taxonID = '" . dbi_escape_string($row['taxonID']) . "'";
     $result = dbi_query($sql);
     $row_citation = mysqli_fetch_array($result);
-    $citation = $row_citation['autor'] . " (" . substr($row_citation['jahr'], 0, 4) . ")";
-    if ($row_citation['suptitel']) {
-        $citation .= " in " . $row_citation['editor'] . ": " . $row_citation['suptitel'];
-    }
-    if ($row_citation['periodicalID']) {
-        $citation .= " " . $row_citation['periodical'];
-    }
-    $citation .= " " . $row_citation['vol'];
-    if ($row_citation['part']) {
-        $citation .= " (" . $row_citation['part'] . ")";
-    }
-    $citation .= ": " . $row_citation['paginae'] . ". " . $row_citation['figures'];
+    if ($row_citation) {
+        $citation = $row_citation['autor'] . " (" . substr($row_citation['jahr'], 0, 4) . ")";
+        if ($row_citation['suptitel']) {
+            $citation .= " in " . $row_citation['editor'] . ": " . $row_citation['suptitel'];
+        }
+        if ($row_citation['periodicalID']) {
+            $citation .= " " . $row_citation['periodical'];
+        }
+        $citation .= " " . $row_citation['vol'];
+        if ($row_citation['part']) {
+            $citation .= " (" . $row_citation['part'] . ")";
+        }
+        $citation .= ": " . $row_citation['paginae'] . ". " . $row_citation['figures'];
 
-    if (strlen($row_citation['bestand']) == 0 || $row_citation['bestand'] == 'missing' || $row_citation['bestand'] == 'open') {
-        $checked = 'false';
+        if (strlen($row_citation['bestand']) == 0 || $row_citation['bestand'] == 'missing' || $row_citation['bestand'] == 'open') {
+            $checked = 'false';
+        } else {
+            $checked = 'true';
+        }
     } else {
-        $checked = 'true';
+        $citation = '';
+        $checked = 'false';
     }
 
     // insert into tbl_api_units_identifications

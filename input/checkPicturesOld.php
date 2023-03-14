@@ -1,5 +1,9 @@
 <?php
 /**
+ * the complete file is no longer needed
+ * kept just for the records :-)
+ */
+/**
  * this script checks for missing pictures (both database and harddisk)
  */
 require("inc/init.php");

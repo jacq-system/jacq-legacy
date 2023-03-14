@@ -12,12 +12,15 @@ $jaxon->setOption('core.request.uri', 'ajax/listObservationsServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
 
-if (!isset($_SESSION['obsCollection'])) $_SESSION['obsCollection'] = '';
-if (!isset($_SESSION['obsTyp'])) $_SESSION['obsTyp'] = '';
-if (!isset($_SESSION['obsType'])) $_SESSION['obsType'] = 0;
-if (!isset($_SESSION['obsImages'])) $_SESSION['obsImages'] = '';
-if (!isset($_SESSION['obsUserID'])) $_SESSION['obsUserID'] = 0;
-if (!isset($_SESSION['obsLinkList'])) $_SESSION['obsLinkList'] = array();
+if (!isset($_SESSION['obsCollection'])) { $_SESSION['obsCollection'] = '';      }
+if (!isset($_SESSION['obsTyp']))        { $_SESSION['obsTyp']        = '';      }
+if (!isset($_SESSION['obsType']))       { $_SESSION['obsType']       = 0;       }
+if (!isset($_SESSION['obsImages']))     { $_SESSION['obsImages']     = '';      }
+if (!isset($_SESSION['obsUserID']))     { $_SESSION['obsUserID']     = 0;       }
+if (!isset($_SESSION['obsLinkList']))   { $_SESSION['obsLinkList']   = array(); }
+if (!isset($_SESSION['obsDate']))       { $_SESSION['obsDate']       = '';      }
+if (!isset($_SESSION['obsGeoGeneral'])) { $_SESSION['obsGeoGeneral'] = '';      }
+if (!isset($_SESSION['obsGeoRegion']))  { $_SESSION['obsGeoRegion']  = '';      }
 
 $nrSel = isset($_GET['nr']) ? intval($_GET['nr']) : 0;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
@@ -142,8 +145,9 @@ function makeDropdownDate()
     $sql .= "GROUP BY date
              ORDER BY date";
     $result = dbi_query($sql);
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
     echo "<select size=\"1\" name=\"user_date\" id=\"user_date\">\n";
-    while ($row = mysqli_fetch_array($result)) {
+    foreach ($rows as $row) {
         echo "  <option ";
         if ($_SESSION['obsDate'] == $row['date']) echo " selected";
         echo ">" . htmlspecialchars($row['date']) . "</option>\n";
@@ -233,8 +237,6 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
 </head>
 
 <body>
-
-<input class="button" type="button" value=" close window " onclick="self.close()" id="close">
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm1">
 <table cellspacing="5" cellpadding="0">

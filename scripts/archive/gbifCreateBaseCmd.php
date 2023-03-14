@@ -1,7 +1,7 @@
 #!/usr/bin/php -q
 <?php
 require 'inc/variables.php';
-require '../../output.new/inc/StableIdentifier.php';
+require 'inc/StableIdentifier.php';
 
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
@@ -278,11 +278,11 @@ foreach ($tbls as $tbl) {
          * LastEditor
          * DateLastEdited
          */
-        $sql = "SELECT u.firstname, u.surname, u.timestamp
+        $sql = "SELECT u.firstname, u.surname, ls.timestamp
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users u
                 WHERE ls.userID = u.userID
                  AND ls.specimenID = '" . $row['specimen_ID'] . "'
-                ORDER BY u.timestamp DESC";
+                ORDER BY ls.timestamp DESC";
         $rowLog = $dbLink2->query($sql)->fetch_array();
         if ($rowLog) {
             $LastEditor = $rowLog['surname'] . ", " . $rowLog['firstname'];
