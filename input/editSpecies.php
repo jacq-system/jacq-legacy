@@ -724,30 +724,26 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
-$res = dbi_query("SELECT COUNT(*)  FROM tbl_specimens_types WHERE taxonID = '$p_taxonID'");
-$row1=mysqli_fetch_row($res);
-
-if ($row1[0] > 0) {
-    $cf->label(22.5, 5.5, "type specimens ({$row1[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
+// check for specimens and link to them
+$row_s = dbi_query("SELECT COUNT(*) 
+                    FROM tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc
+                    WHERE ts.taxonID = s.taxonID
+                     AND tg.genID = ts.genID
+                     AND tf.familyID = tg.familyID
+                     AND mc.collectionID = s.collectionID
+                     AND ts.taxonID = '$p_taxonID'")
+         ->fetch_row();
+if ($row_s[0] > 0) {
+	$cf->label(73.5, 7.5, "specimens ({$row_s[0]})", "javascript:listSpecimens('$p_taxonID')");
 }
 
-
-$res = dbi_query("SELECT COUNT(*) FROM
- tbl_specimens s,
- tbl_tax_species ts,
- tbl_tax_genera tg,
- tbl_tax_families tf,
- tbl_management_collections mc
-WHERE
-     ts.taxonID = s.taxonID
- AND tg.genID = ts.genID
- AND tf.familyID = tg.familyID
- AND mc.collectionID = s.collectionID
- AND ts.taxonID='$p_taxonID'");
-
-$row1=mysqli_fetch_row($res);
-if ($row1[0] > 0) {
-	$cf->label(72.5, 7.5, "specimens ({$row1[0]})", "javascript:listSpecimens('$p_taxonID')");
+// check for typeSpecimens and link to them
+$row_ts = dbi_query("SELECT COUNT(*) 
+                     FROM tbl_specimens_types 
+                     WHERE taxonID = '$p_taxonID'")
+          ->fetch_row();
+if ($row_ts[0] > 0) {
+    $cf->label(73.5, 9.5, "type specimens ({$row_ts[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
 }
 
 

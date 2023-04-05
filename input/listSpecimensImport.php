@@ -202,7 +202,7 @@ function makeDropdownInstitution()
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
-        if (-$_SESSION['wuCollection'] == $row['source_id']) echo " selected";
+        if ($_SESSION['wuCollection'] == -$row['source_id']) echo " selected";
         echo ">" . htmlspecialchars($row['source_code']) . "</option>\n";
     }
 
