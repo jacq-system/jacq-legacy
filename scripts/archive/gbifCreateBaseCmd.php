@@ -66,6 +66,25 @@ $dbLink2->query("INSERT $dbt.tbl_specimens_types_mv
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
+    if ($tbl['source_id'] == 29) {  // B needs to find duplicates on collection level
+        $sql_IN = "SELECT s2.specimen_ID 
+                   FROM tbl_specimens s2, tbl_management_collections mc2
+                   WHERE s2.collectionID = mc2.collectionID
+                    AND  mc2.source_id = 29
+                    AND  s2.`accessible` > 0
+                    AND  s2.HerbNummer IS NOT NULL
+                   GROUP by s2.HerbNummer, s2.collectionID  
+                   HAVING count(*) = 1";
+    } else {                        // anyone else on source level
+        $sql_IN = "SELECT s2.specimen_ID 
+                   FROM tbl_specimens s2, tbl_management_collections mc2
+                   WHERE s2.collectionID = mc2.collectionID
+                    AND  mc2.source_id = '" . $tbl['source_id'] . "'
+                    AND  s2.`accessible` > 0
+                    AND  s2.HerbNummer IS NOT NULL
+                   GROUP by s2.HerbNummer 
+                   HAVING count(*) = 1";
+    }
     $dbLink2->query("INSERT INTO $dbt." . $tbl['name'] . "
                             (NameAuthorYearString,                        Genus,    FirstEpithet, Rank,     HigherTaxon, ISODateTimeEnd, LocalityText, LocalityDetailed, habitat,   habitus,   CountryName,    ISO3Letter,          MeasurmentLowerValue, MeasurmentUpperValue, exactness,   PrimaryCollector, CollectorTeam, IdentificationHistory, NamedCollection,    UnitIDNumeric, UnitDescription, source_id_fk, det,   RecordBasis)
                       SELECT herbar_view.GetScientificName(s.taxonID, 0), tg.genus, te.epithet,   ttr.rank, tf.family,   s.Datum2,       s.Fundort,    s.Fundort,        s.habitat, s.habitus, gn.nation_engl, gn.iso_alpha_3_code, s.altitude_min,       s.altitude_max,       s.exactness, c.Sammler,        ' ',           s.taxon_alt,           mc.coll_gbif_pilot, s.specimen_ID, s.Bemerkungen,   mc.source_id, s.det, ' '
@@ -79,7 +98,8 @@ foreach ($tbls as $tbl) {
                        AND ts.tax_rankID = ttr.tax_rankID
                        AND s.collectionID = mc.collectionID
                        AND s.accessible > 0
-                       AND mc.source_id = '" . $tbl['source_id'] . "'");
+                       AND mc.source_id = '" . $tbl['source_id'] . "'
+                       AND (s.specimen_ID IN ($sql_IN) OR s.HerbNummer IS NULL)");
 
     $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.det,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
@@ -119,7 +139,8 @@ foreach ($tbls as $tbl) {
              AND s.taxonID = ts.taxonID
              AND s.collectionID = mc.collectionID
              AND s.accessible > 0
-             AND mc.source_id = '" . $tbl['source_id'] . "'";
+             AND mc.source_id = '" . $tbl['source_id'] . "'
+             AND (s.specimen_ID IN ($sql_IN) OR s.HerbNummer IS NULL)";
     $result = $dbLink1->query($sql, MYSQLI_USE_RESULT);
     while ($row = $result->fetch_array()) {
 
