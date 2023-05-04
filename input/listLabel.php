@@ -357,12 +357,14 @@ function collectionItem($coll)
 </form>
 <form action="pdfLabelQRCode.php" target="_blank" method="POST" name="f2">
   <table cellspacing="2" cellpadding="0"><tr><td>
-    <b>Institution:</b>
+    <label><b>Institution:</b>
         <select size="1" name="institution_QR" id="institution_QR" onchange="jaxon_changeDropdownCollectionQR(document.getElementById('institution_QR').value); return false;">
-        <?php makeDropdownInstitution(); ?></select>&nbsp;
-    <b>Collection:</b> <select size="1" name="collection_QR" id="collection_QR"><option value="0"></option></select>&nbsp;
-    <b>start number:</b> <input type="text" name="start" size="10">&nbsp;
-    <b>end number:</b> <input type="text" name="stop" size="10">&nbsp;
+            <?php makeDropdownInstitution(); ?></select></label>&nbsp;
+    <label><b>Collection:</b> <select size="1" name="collection_QR" id="collection_QR"><option value="0"></option></select></label>&nbsp;
+    <label><b>start nr.:</b> <input type="text" name="start" size="10"></label>&nbsp;
+    <label><b>end nr.:</b> <input type="text" name="stop" size="10"></label>&nbsp;&nbsp;
+    <label><input type="checkbox" name="qr_large" checked><b>large</b></label>&nbsp;&nbsp;
+    <label><input type="checkbox" name="qr_small" checked><b>small</b></label>&nbsp;&nbsp;
     <input class="button" type="submit" name="select_qr" value=" make standard QR-Code Labels ">
   </td></tr></table>
 </form>

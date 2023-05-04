@@ -125,7 +125,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql2 .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['sProvince'])) . "%'";
         }
         if (trim($_SESSION['sLoc'])) {
-            $sql2 .= " AND s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%'";
+            $sql2 .= " AND (s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%' "
+                   .       "OR s.Fundort_engl LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%')";
         }
         if (trim($_SESSION['sHabitat'])) {
             $sql2 .= " AND s.habitat LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitat'])) . "%'";

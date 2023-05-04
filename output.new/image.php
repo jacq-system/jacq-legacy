@@ -20,13 +20,13 @@ if (!empty($picdetails['url'])) {
         default:
             doRedirectDownloadPic($picdetails, $method, 0);
             break;
-        case 'download':
+        case 'download':    // detail
             doRedirectDownloadPic($picdetails, $format, 0);
             break;
-        case 'thumb':
+        case 'thumb':       // detail
             doRedirectDownloadPic($picdetails, $format, 1);
             break;
-        case 'resized':
+        case 'resized':     // create_xml.php
             doRedirectDownloadPic($picdetails, $format, 2);
             break;
         case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
@@ -39,12 +39,12 @@ if (!empty($picdetails['url'])) {
         case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
             doRedirectDownloadPic($picdetails, $format, 4);
             break;
-        case 'thumbs':
+        case 'thumbs':      // unused
             header('Content-type: text/json');
             header('Content-type: application/json');
             echo json_encode(getPicInfo($picdetails));
             break;
-        case 'show':
+        case 'show':        // detail, ajax/results.php
             doRedirectShowPic($picdetails);
             break;
     }

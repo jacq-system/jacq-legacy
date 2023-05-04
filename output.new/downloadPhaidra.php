@@ -1,5 +1,5 @@
 <?php
-$file = filter_input(INPUT_GET, 'filename', FILTER_SANITIZE_STRING);
+$file = htmlspecialchars($_GET['filename']);
 $url  = filter_input(INPUT_GET, 'url', FILTER_SANITIZE_URL);
 
 header('Content-Type: image/jpeg');

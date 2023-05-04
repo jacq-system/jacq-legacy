@@ -271,21 +271,27 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
              ORDER BY " . $_SESSION['labelOrder'];
     $result_ID = dbi_query($sql);
     //$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
-    while ($row_ID = $result_ID->fetch_array()) {
-        $labelText = makeText($row_ID['specimen_ID']);
-        if (count($labelText) > 0) {
-            $pdf->makeLabel($labelText);
+
+    if (!empty($_POST['qr_large'])) {
+        while ($row_ID = $result_ID->fetch_array()) {
+            $labelText = makeText($row_ID['specimen_ID']);
+            if (count($labelText) > 0) {
+                $pdf->makeLabel($labelText);
+            }
         }
     }
-    // make small labels
-    $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
-    $pdf->AddPage();
-    $pdf->SetFont('helvetica', '', 8);
-    $result_ID->data_seek(0);
-    while ($row_ID = $result_ID->fetch_array()) {
-        $labelText = makeText($row_ID['specimen_ID']);
-        if (count($labelText) > 0) {
-            $pdf->makeSmallLabel($labelText);
+
+    if (!empty($_POST['qr_small'])) {
+        // make small labels
+        $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 8);
+        $result_ID->data_seek(0);
+        while ($row_ID = $result_ID->fetch_array()) {
+            $labelText = makeText($row_ID['specimen_ID']);
+            if (count($labelText) > 0) {
+                $pdf->makeSmallLabel($labelText);
+            }
         }
     }
 } else {    // make standard-labels to stick on the herbarium specimen
@@ -320,59 +326,63 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
         $digits      = ($digits) ? $digits : strlen($input_start);
     }
 
-    // make large labels
-    $labels = array();
-    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
-    $page = 0;
-    for ($i = $numberStart; $i <= $numberEnd; $i++) {
-        $labels[$page++][] = $i;
-        if ($page >= $nrOfPages) {
-            $page = 0;
+    if (!empty($_POST['qr_large'])) {
+        // make large labels
+        $labels = array();
+        $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
+        $page = 0;
+        for ($i = $numberStart; $i <= $numberEnd; $i++) {
+            $labels[$page++][] = $i;
+            if ($page >= $nrOfPages) {
+                $page = 0;
+            }
         }
-    }
 
-    for ($page = 0; $page < $nrOfPages; $page++) {
-        for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
-            if (!empty($labels[$page][$i])) {
-                $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
-                if (count($labelText) > 0) {
-                    $pdf->makeLabel($labelText);
+        for ($page = 0; $page < $nrOfPages; $page++) {
+            for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
+                if (!empty($labels[$page][$i])) {
+                    $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
+                    if (count($labelText) > 0) {
+                        $pdf->makeLabel($labelText);
+                    }
+                } else {
+                    if ($page < $nrOfPages - 1) {
+                        $pdf->AddPage();
+                    }
+                    break;
                 }
-            } else {
-                if ($page < $nrOfPages - 1) {
-                    $pdf->AddPage();
-                }
-                break;
             }
         }
     }
 
-    // make small labels
-    $pdf->setQRLabelSettings(20, 9, 20, 8, 2);
-    $pdf->AddPage();
-    $pdf->SetFont('helvetica', '', 7);
-    $labels = array();
-    $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
-    $page = 0;
-    for ($i = $numberStart; $i <= $numberEnd; $i++) {
-        $labels[$page++][] = $i;
-        if ($page >= $nrOfPages) {
-            $page = 0;
+    if (!empty($_POST['qr_small'])) {
+        // make small labels
+        $pdf->setQRLabelSettings(20, 9, 20, 8, 2);
+        $pdf->AddPage();
+        $pdf->SetFont('helvetica', '', 7);
+        $labels = array();
+        $nrOfPages = ceil(($numberEnd - $numberStart + 1) / $pdf->getLabelsPerPage());
+        $page = 0;
+        for ($i = $numberStart; $i <= $numberEnd; $i++) {
+            $labels[$page++][] = $i;
+            if ($page >= $nrOfPages) {
+                $page = 0;
+            }
         }
-    }
 
-    for ($page = 0; $page < $nrOfPages; $page++) {
-        for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
-            if (!empty($labels[$page][$i])) {
-                $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
-                if (count($labelText) > 0) {
-                    $pdf->makeSmallLabel($labelText);
+        for ($page = 0; $page < $nrOfPages; $page++) {
+            for ($i = 0; $i < $pdf->getLabelsPerPage(); $i++) {
+                if (!empty($labels[$page][$i])) {
+                    $labelText = makePreText($sourceID, $collectionID, $preamble . sprintf("%0{$digits}d", $labels[$page][$i]));
+                    if (count($labelText) > 0) {
+                        $pdf->makeSmallLabel($labelText);
+                    }
+                } else {
+                    if ($page < $nrOfPages - 1) {
+                        $pdf->AddPage();
+                    }
+                    break;
                 }
-            } else {
-                if ($page < $nrOfPages - 1) {
-                    $pdf->AddPage();
-                }
-                break;
             }
         }
     }

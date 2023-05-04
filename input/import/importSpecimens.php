@@ -22,7 +22,7 @@ require_once('../inc/clsTaxonTokenizer.php');
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
-    if (count($parts) >= $minNumOfParts) {
+    if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {
         return false;
@@ -499,6 +499,7 @@ if ($run == 2) {  // file uploaded
                 }
             }
         }
+        error_log("check");
 
        /**
         * obtain suggestions for a taxon name by TaxaMatch
