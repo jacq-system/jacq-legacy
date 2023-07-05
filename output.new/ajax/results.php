@@ -104,6 +104,7 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
             <tr>
               <td colspan='2'><b><?php echo $nrRows; ?> record<?php echo ($nrRows > 1) ? "s" : ""; ?> found</b></td>
               <td colspan="7" align="right">
+                <?php if (!empty($_SESSION['s_query'])): ?>
                 <form style="display:inline;" action="javascript:osMap();" method="post">
                    <button class="btn-flat waves-effect waves-light" type="button" name="action" value="Create map" onClick="osMap(-1)">Create map
                   </button>
@@ -121,6 +122,7 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
                 <form style="display:inline;" action="exportCsv.php?type=csv" method="post" target="_blank">
                     <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
                 </form>
+                <?php endif; ?>
               </td>
             </tr>
             <tr>

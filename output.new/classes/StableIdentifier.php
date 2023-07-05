@@ -31,7 +31,7 @@ public static function make(int $specimen_ID, int $source_id = 0,  $HerbNummer =
  * @param string $HerbNummer Collection Herb.#
  * @throws Exception
  */
-private function __construct(int $specimen_ID, int $source_id = 0, string $HerbNummer = '')
+private function __construct(int $specimen_ID, int $source_id = 0, $HerbNummer = '')
 {
     $this->stblID = $this->getStableIdentifier($specimen_ID);   // get one from database
     if (empty($this->stblID) && !empty($source_id) && !empty($HerbNummer)) {    // if nothing found, try to construct one, if possible
