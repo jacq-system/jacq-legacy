@@ -272,26 +272,23 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     $result_ID = dbi_query($sql);
     //$result_ID = dbi_query("SELECT specimen_ID, label FROM tbl_labels WHERE (label&4)>'0' AND userID='".$_SESSION['uid']."'");
 
-    if (!empty($_POST['qr_large'])) {
-        while ($row_ID = $result_ID->fetch_array()) {
-            $labelText = makeText($row_ID['specimen_ID']);
-            if (count($labelText) > 0) {
-                $pdf->makeLabel($labelText);
-            }
+    // make large labels
+    while ($row_ID = $result_ID->fetch_array()) {
+        $labelText = makeText($row_ID['specimen_ID']);
+        if (count($labelText) > 0) {
+            $pdf->makeLabel($labelText);
         }
     }
 
-    if (!empty($_POST['qr_small'])) {
-        // make small labels
-        $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
-        $pdf->AddPage();
-        $pdf->SetFont('helvetica', '', 8);
-        $result_ID->data_seek(0);
-        while ($row_ID = $result_ID->fetch_array()) {
-            $labelText = makeText($row_ID['specimen_ID']);
-            if (count($labelText) > 0) {
-                $pdf->makeSmallLabel($labelText);
-            }
+    // make small labels
+    $pdf->setQRLabelSettings(17, 9, 15, 10, 2);
+    $pdf->AddPage();
+    $pdf->SetFont('helvetica', '', 8);
+    $result_ID->data_seek(0);
+    while ($row_ID = $result_ID->fetch_array()) {
+        $labelText = makeText($row_ID['specimen_ID']);
+        if (count($labelText) > 0) {
+            $pdf->makeSmallLabel($labelText);
         }
     }
 } else {    // make standard-labels to stick on the herbarium specimen
