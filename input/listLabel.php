@@ -347,6 +347,7 @@ function collectionItem($coll)
 </form>
 
 <p>
+<hr>
 <form action="pdfLabelBarcode.php" target="_blank" method="POST" name="f2">
   <table cellspacing="2" cellpadding="0"><tr><td>
     <b>Institution:</b> <select size="1" name="collection"><?php makeDropdownInstitution(); ?></select>&nbsp;
@@ -370,6 +371,7 @@ function collectionItem($coll)
 </form>
 
 <p>
+<hr>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f3">
 <table cellspacing="0" cellpadding="0"><tr>
 <td>
@@ -383,8 +385,6 @@ function collectionItem($coll)
 <b>Labels</b>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
 <p>
-<?php
-if ($_SESSION['labelType'] == 1) { ?>
   <table cellpadding="0" cellspacing="4">
     <tr>
       <td align="center"><input type="button" class="button" value=" set all " onclick="jaxon_setAll()"></td>
@@ -402,8 +402,9 @@ if ($_SESSION['labelType'] == 1) { ?>
       <td align="center"><input type="button" class="button" value="clear all standard" id="btClearStandardLabels" onClick="jaxon_clearStandardLabels(); return false;"></td>
     </tr>
   </table>
-  <p>
+<p>
 <?php
+if ($_SESSION['labelType'] == 1) {
     $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.typusID, l.label,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
