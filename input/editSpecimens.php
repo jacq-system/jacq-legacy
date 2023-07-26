@@ -34,7 +34,7 @@ if (isset($_GET['ptid'])) {
 }
 
 $nr = isset($_GET['nr']) ? intval(filter_input(INPUT_GET, 'nr')) : 0;
-$linkList = $_SESSION['sLinkList'];
+$linkList = $_SESSION['sLinkList'] ?? array();
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" kann Batches aendern
 
 
@@ -486,6 +486,7 @@ if (isset($_GET['sel'])) {
         }
     } else if (!empty($_POST['submitNewCopy'])) {
         $p_specimen_ID = "";
+        $p_digital_image = $p_digital_image_obs = "";  // don't copy digital image checkmark
         $edit = false;
     } else {
         $edit = (!empty($_POST['edit'])) ? true : false;
@@ -494,14 +495,28 @@ if (isset($_GET['sel'])) {
 }
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-       "http://www.w3.org/TR/html4/transitional.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
   <title>herbardb - edit Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+<!--    <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">-->
   <style type="text/css">
+    .important {
+      background-color: lightgreen;
+    }
+    .lat_lon_dialog td {
+      padding: 2px 1ex;
+    }
+    .lat_lon_dialog td span {
+      font-size: x-large;
+    }
+    #open_latLonQuDialog {
+      padding: 0;
+      margin: 1px;
+    }
     #log { position:absolute; bottom:1em; right:1em }
 	.ui-autocomplete {
         font-size: 0.9em;  /* smaller size */
@@ -521,13 +536,23 @@ if (isset($_GET['sel'])) {
   </style>
   <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" src="js/lib/overlib/overlib.js"></script>
-  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
-  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+          integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+          crossorigin="anonymous">
+  </script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+          integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+          crossorigin="anonymous">
+  </script>
+  <script type="application/javascript" language="JavaScript" src="js/jacqLatLonQuad.js"></script>
+<!--  <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>-->
+<!--  <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>-->
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
       var reload = false;
       var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
+      let dialog_latLonQu;
 
       function makeOptions()
       {
@@ -698,60 +723,60 @@ if (isset($_GET['sel'])) {
           }
       }
 
-      function quadrant2LatLon(quadrant,quadrant_sub)
-      {
-          var xx = quadrant.substr(quadrant.length-2,2);
-          var yy = quadrant.substr(0,quadrant.length-2);
-
-          var xD = parseInt(((xx - 2) / 6) + 6);
-          var xM = 0;
-          var xS = Math.round((((((xx - 2) / 6) + 6) * 60) % 60) * 60);
-          var yD = parseInt(((-yy / 10) + 56));
-          var yM = 0;
-          var yS = Math.round(((((-yy / 10) + 56) * 60) % 60) * 60);
-
-          if (quadrant_sub==0 || quadrant_sub>4) {
-              xM += 5;
-              yM -= 3;
-          } else {
-              xS += ((quadrant_sub - 1) % 2) * (5 * 60);
-              yS -= parseInt((quadrant_sub - 1) / 2) * (3 * 60);
-              xS += (60 * 5) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
-              yS -= (60 * 3) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
-          }
-
-          var latLon = new Array(2);
-          latLon[1] = xD + (xM / 60) + (xS / 3600);
-          latLon[0] = yD + (yM / 60) + (yS / 3600);
-
-          return latLon;
-      }
-
-      function convert()
-      {
-          var latLon = quadrant2LatLon(document.f.quadrant.value,document.f.quadrant_sub.value);
-
-          if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
-              alert('Coordinates have already been entered');
-          } else {
-              document.f.lon_deg.value = Math.floor(Math.abs(latLon[1]));
-              document.f.lon_min.value = Math.floor(Math.abs(latLon[1]) * 60 % 60);
-              document.f.lon_sec.value = Math.floor(Math.abs(latLon[1]) * 3600 % 60);
-              if (latLon[1]<0) {
-                  document.f.lon.options.selectedIndex = 0;
-              } else {
-                  document.f.lon.options.selectedIndex = 1;
-              }
-              document.f.lat_deg.value = Math.floor(Math.abs(latLon[0]));
-              document.f.lat_min.value = Math.floor(Math.abs(latLon[0]) * 60 % 60);
-              document.f.lat_sec.value = Math.floor(Math.abs(latLon[0]) * 3600 % 60);
-              if (latLon[0]>=0) {
-                  document.f.lat.options.selectedIndex = 0;
-              } else {
-                  document.f.lat.options.selectedIndex = 1;
-              }
-          }
-      }
+      // function quadrant2LatLon(quadrant,quadrant_sub)
+      // {
+      //     var xx = quadrant.substr(quadrant.length-2,2);
+      //     var yy = quadrant.substr(0,quadrant.length-2);
+      //
+      //     var xD = parseInt(((xx - 2) / 6) + 6);
+      //     var xM = 0;
+      //     var xS = Math.round((((((xx - 2) / 6) + 6) * 60) % 60) * 60);
+      //     var yD = parseInt(((-yy / 10) + 56));
+      //     var yM = 0;
+      //     var yS = Math.round(((((-yy / 10) + 56) * 60) % 60) * 60);
+      //
+      //     if (quadrant_sub==0 || quadrant_sub>4) {
+      //         xM += 5;
+      //         yM -= 3;
+      //     } else {
+      //         xS += ((quadrant_sub - 1) % 2) * (5 * 60);
+      //         yS -= parseInt((quadrant_sub - 1) / 2) * (3 * 60);
+      //         xS += (60 * 5) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
+      //         yS -= (60 * 3) / 2;   // Verschiebung zum Quadranten-Zentrum in Sekunden
+      //     }
+      //
+      //     var latLon = new Array(2);
+      //     latLon[1] = xD + (xM / 60) + (xS / 3600);
+      //     latLon[0] = yD + (yM / 60) + (yS / 3600);
+      //
+      //     return latLon;
+      // }
+      //
+      // function convert()
+      // {
+      //     var latLon = quadrant2LatLon(document.f.quadrant.value,document.f.quadrant_sub.value);
+      //
+      //     if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
+      //         alert('Coordinates have already been entered');
+      //     } else {
+      //         document.f.lon_deg.value = Math.floor(Math.abs(latLon[1]));
+      //         document.f.lon_min.value = Math.floor(Math.abs(latLon[1]) * 60 % 60);
+      //         document.f.lon_sec.value = Math.floor(Math.abs(latLon[1]) * 3600 % 60);
+      //         if (latLon[1]<0) {
+      //             document.f.lon.options.selectedIndex = 0;
+      //         } else {
+      //             document.f.lon.options.selectedIndex = 1;
+      //         }
+      //         document.f.lat_deg.value = Math.floor(Math.abs(latLon[0]));
+      //         document.f.lat_min.value = Math.floor(Math.abs(latLon[0]) * 60 % 60);
+      //         document.f.lat_sec.value = Math.floor(Math.abs(latLon[0]) * 3600 % 60);
+      //         if (latLon[0]>=0) {
+      //             document.f.lat.options.selectedIndex = 0;
+      //         } else {
+      //             document.f.lat.options.selectedIndex = 1;
+      //         }
+      //     }
+      // }
 
       function fillLocation(lon_deg, lon_min, lon_sec, lon_dir, lat_deg, lat_min, lat_sec, lat_dir, nationID)
       {
@@ -873,7 +898,13 @@ if (isset($_GET['sel'])) {
                   $('[name="HerbNummer"]').blur()
                   return false;
               }
-          })
+          });
+          jacqLatLonQuadInit();
+          $("#open_latLonQuDialog").button({
+              icon: "ui-icon-pencil",
+              showLabel: false,
+              label: "Edit Lat/Lon and Quadrant"
+          });
       });
   </script>
 </head>
@@ -1168,34 +1199,36 @@ $cf->inputText(11, $y, 5, "altitude_min", $p_altitude_min, 10);
 $cf->text(17, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
 $cf->inputText(18, $y, 5, "altitude_max", $p_altitude_max, 10);
 
-$cf->label(57, $y, "Quadrant");
-$cf->inputText(57, $y, 3, "quadrant", $p_quadrant, 10);
-$cf->inputText(61, $y, 1, "quadrant_sub", $p_quadrant_sub, 10);
-echo "<img border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
-   . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\" onclick=\"convert()\">\n";
-
-$y += 2;
-$cf->label(11, $y, "Lat");
-$cf->inputText(11, $y, 2, "lat_deg", $p_lat_deg, 5);
-$cf->text(14, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
-$cf->inputText(15, $y, 1.5, "lat_min", $p_lat_min, 5);
-$cf->text(17.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
-$cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5);
-$cf->text(21, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"));
-
-$cf->label(31, $y, "Lon");
-$cf->inputText(31, $y, 2, "lon_deg", $p_lon_deg, 5);
-$cf->text(34, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
-$cf->inputText(35, $y, 1.5, "lon_min", $p_lon_min, 5);
-$cf->text(37.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
-$cf->inputText(38.5, $y, 1.5, "lon_sec", $p_lon_sec, 5);
-$cf->text(41, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(42, $y, "lon", $p_lon, array("W", "E"), array("W", "E"));
-
 $cf->label(56, $y, "exactn. (m)");
 $cf->inputText(56, $y, 8, "exactness", $p_exactness, 30);
 //$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
+
+$y += 2;
+$cf->label(11, $y, "Lat");
+$cf->inputText(11, $y, 2, "lat_deg", $p_lat_deg, 5, '', '', '', true);
+$cf->text(14, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
+$cf->inputText(15, $y, 1.5, "lat_min", $p_lat_min, 5, '', '', '', true);
+$cf->text(17.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
+$cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5, '', '', '', true);
+$cf->text(21, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
+$cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"), '', true);
+
+$cf->label(29, $y, "Lon");
+$cf->inputText(29, $y, 2, "lon_deg", $p_lon_deg, 5, '', '', '', true);
+$cf->text(32, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
+$cf->inputText(33, $y, 1.5, "lon_min", $p_lon_min, 5, '', '', '', true);
+$cf->text(35.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
+$cf->inputText(36.5, $y, 1.5, "lon_sec", $p_lon_sec, 5, '', '', '', true);
+$cf->text(39, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
+$cf->dropdown(40, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '', true);
+
+echo "<div style='position:absolute; left: 46em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
+
+$cf->label(56, $y, "Quadrant");
+$cf->inputText(56, $y, 5, "quadrant", $p_quadrant, 10, '', '', '', true);
+$cf->inputText(62, $y, 2, "quadrant_sub", $p_quadrant_sub, 10, '', '', '', true);
+//echo "<img id=\"open_latLonQuDialog\" border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
+//    . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\">\n";
 
 $y += 1.75;
 echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\"><hr></div>\n";
@@ -1266,5 +1299,44 @@ if ($updateBlocked) {
     }
 }
 ?>
+<div style="display:none" id="latLonQuDialog" title="Edit Lat/Lon and Quadrant">
+    <form action="javascript:void(0);">
+        <table class="lat_lon_dialog">
+            <tr><td></td><th>Latitude (+N/-S)</th><th>Longitude (+E/-W)</th><td></td></tr>
+            <tr>
+                <td></td>
+                <td><input class="dialog_sint important" style="width: 2em;" type="text" name="lat_dms_d"><span>&deg;</span>
+                    <input class="dialog_int important" style="width: 2em;" type="text" name="lat_dms_m"><span>&prime;</span>
+                    <input class="dialog_float important" style="width: 3em;" type="text" name="lat_dms_s"><span>&Prime;</span></td>
+                <td><input class="dialog_sint important" style="width: 2em;" type="text" name="lon_dms_d"><span>&deg;</span>
+                    <input class="dialog_int important" style="width: 2em;" type="text" name="lon_dms_m"><span>&prime;</span>
+                    <input class="dialog_float important" style="width: 3em;" type="text" name="lon_dms_s"><span>&Prime;</span></td>
+                <td><button id="d_btn_dms_convert">convert</button></td>
+            </tr><tr>
+                <td style="font-weight: bold">OR</td>
+                <td><input class="dialog_sint" style="width: 2em;" type="text" name="lat_dmm_d"><span>&deg;</span>
+                    <input class="dialog_float" style="width: 4em;" type="text" name="lat_dmm_m"><span>&prime;</span></td>
+                <td><input class="dialog_sint" style="width: 2em;" type="text" name="lon_dmm_d"><span>&deg;</span>
+                    <input class="dialog_float" style="width: 4em;" type="text" name="lon_dmm_m"><span>&prime;</span></td>
+                <td><button id="d_btn_dmm_convert">convert</button></td>
+            </tr><tr>
+                <td style="font-weight: bold">OR</td>
+                <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lat_ddd"><span>&deg;</span></td>
+                <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lon_ddd"><span>&deg;</span></td>
+                <td><button id="d_btn_ddd_convert">convert</button></td>
+            </tr><tr>
+                <td colspan="4">&nbsp;</td>
+            </tr><tr>
+                <td></td>
+                <td style="text-align: right; font-weight: bold;">Quadrant </td>
+                <td><input class="dialog_int important" style="width: 5em;" type="text" name="quad"> <span>/</span>
+                    <input class="dialog_int important" style="width: 2em;" type="text" name="quad_sub">
+                </td>
+                <td><button id="d_btn_quad_convert">convert</button></td>
+            </tr>
+        </table>
+    </form>
+</div>
+
 </body>
 </html>
