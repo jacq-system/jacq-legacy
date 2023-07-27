@@ -188,10 +188,10 @@ while ($row = $result->fetch_array()) {
                     $manifest = "";
                 }
                 curl_close($ch);
-            	echo "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='imgBrowser'>"
+            	echo "<a href='" . $row['iiif_url'] . "?manifest=$manifest' target='imgBrowser'>"
                    . "<img border='2' height='15' src='images/$image' width='15'>"
                    . "</a>&nbsp;"
-                   . "<a href='https://" . $row['iiif_proxy'] . $row['iiif_dir'] . "/?manifest=$manifest' target='_blank'>"
+                   . "<a href='" . $row['iiif_url'] . "?manifest=$manifest' target='_blank'>"
                    . "<img border='2' height='15' src='images/logo-iiif.png' width='15'>"
                    . "</a>";
             } else {

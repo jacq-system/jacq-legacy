@@ -177,7 +177,7 @@ $specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                              n.nation_engl, p.provinz, s.Fundort, tf.family, tsc.cat_description, s.taxonID taxid,
                              mc.collection, mc.collectionID, mc.source_id, mc.coll_short, mc.coll_gbif_pilot,
                              m.source_code, m.source_name,
-                             tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, tid.HerbNummerNrDigits,
+                             tid.imgserver_type, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, tid.HerbNummerNrDigits,
                              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
                              ts.synID, ts.taxonID, ts.statusID
@@ -334,8 +334,7 @@ if (!empty($specimen['digital_image']) || !empty($specimen['digital_image_obs'])
             $info = curl_getinfo($ch);
             if ($info['http_code'] == 200) {
                 $phaidra = true;
-                $output['phaidraUrl'] = 'https://' . $specimen['iiif_proxy'] . $specimen['iiif_dir'] . '/'
-                                      . '?manifest=' . $config->get('JACQ_SERVICES') . 'iiif/manifest/' . $specimen['specimen_ID'];
+                $output['phaidraUrl'] = $specimen['iiif_url'] . '?manifest=' . $config->get('JACQ_SERVICES') . 'iiif/manifest/' . $specimen['specimen_ID'];
                 $ch2 = curl_init($config->get('JACQ_SERVICES') . "iiif/manifest/" . $specimen['specimen_ID']);
                 curl_setopt($ch2, CURLOPT_RETURNTRANSFER, true);
                 $curl_response2 = curl_exec($ch2);
