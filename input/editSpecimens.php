@@ -504,6 +504,9 @@ if (isset($_GET['sel'])) {
   <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
 <!--    <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">-->
   <style type="text/css">
+    html.waiting, html.waiting * {
+      cursor: wait !important;
+    }
     .important {
       background-color: lightgreen;
     }
@@ -515,7 +518,7 @@ if (isset($_GET['sel'])) {
     }
     #open_latLonQuDialog {
       padding: 0;
-      margin: 1px;
+      margin: 2px;
     }
     #log { position:absolute; bottom:1em; right:1em }
 	.ui-autocomplete {
@@ -553,6 +556,7 @@ if (isset($_GET['sel'])) {
       var reload = false;
       var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
       let dialog_latLonQu;
+      let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
 
       function makeOptions()
       {
@@ -855,6 +859,19 @@ if (isset($_GET['sel'])) {
       }
 
       jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
+      $.extend({ alert: function (message, title) {
+              $("<div></div>").dialog( {
+                  buttons: { "Ok": function () { $(this).dialog("close"); } },
+                  close: function (event, ui) { $(this).remove(); },
+                  resizable: false,
+                  title: title,
+                  modal: true,
+                  height: 'auto',
+                  width: 'auto',
+                  position: { my: "right center", at: "center", of: window },
+              }).html(message);
+          }
+      });
       $(function()
       {
           $('#iBox_content').dialog( {
@@ -1205,28 +1222,28 @@ $cf->inputText(56, $y, 8, "exactness", $p_exactness, 30);
 
 $y += 2;
 $cf->label(11, $y, "Lat");
-$cf->inputText(11, $y, 2, "lat_deg", $p_lat_deg, 5, '', '', '', true);
+$cf->inputText(11, $y, 2, "lat_deg", $p_lat_deg, 5);
 $cf->text(14, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
-$cf->inputText(15, $y, 1.5, "lat_min", $p_lat_min, 5, '', '', '', true);
+$cf->inputText(15, $y, 1.5, "lat_min", $p_lat_min, 5);
 $cf->text(17.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
-$cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5, '', '', '', true);
+$cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5);
 $cf->text(21, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"), '', true);
+$cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"));
 
 $cf->label(29, $y, "Lon");
-$cf->inputText(29, $y, 2, "lon_deg", $p_lon_deg, 5, '', '', '', true);
+$cf->inputText(29, $y, 2, "lon_deg", $p_lon_deg, 5);
 $cf->text(32, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
-$cf->inputText(33, $y, 1.5, "lon_min", $p_lon_min, 5, '', '', '', true);
+$cf->inputText(33, $y, 1.5, "lon_min", $p_lon_min, 5);
 $cf->text(35.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
-$cf->inputText(36.5, $y, 1.5, "lon_sec", $p_lon_sec, 5, '', '', '', true);
+$cf->inputText(36.5, $y, 1.5, "lon_sec", $p_lon_sec, 5);
 $cf->text(39, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(40, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '', true);
+$cf->dropdown(40, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
 
 echo "<div style='position:absolute; left: 46em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
 
 $cf->label(56, $y, "Quadrant");
-$cf->inputText(56, $y, 5, "quadrant", $p_quadrant, 10, '', '', '', true);
-$cf->inputText(62, $y, 2, "quadrant_sub", $p_quadrant_sub, 10, '', '', '', true);
+$cf->inputText(56, $y, 5, "quadrant", $p_quadrant, 10);
+$cf->inputText(62, $y, 2, "quadrant_sub", $p_quadrant_sub, 10);
 //echo "<img id=\"open_latLonQuDialog\" border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
 //    . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\">\n";
 
@@ -1302,7 +1319,7 @@ if ($updateBlocked) {
 <div style="display:none" id="latLonQuDialog" title="Edit Lat/Lon and Quadrant">
     <form action="javascript:void(0);">
         <table class="lat_lon_dialog">
-            <tr><td></td><th>Latitude (+N/-S)</th><th>Longitude (+E/-W)</th><td></td></tr>
+            <tr><td></td><th>Latitude (+N/-S)</th><th>Longitude (+E/-W)</th><td colspan="2"></td></tr>
             <tr>
                 <td></td>
                 <td><input class="dialog_sint important" style="width: 2em;" type="text" name="lat_dms_d"><span>&deg;</span>
@@ -1312,6 +1329,7 @@ if ($updateBlocked) {
                     <input class="dialog_int important" style="width: 2em;" type="text" name="lon_dms_m"><span>&prime;</span>
                     <input class="dialog_float important" style="width: 3em;" type="text" name="lon_dms_s"><span>&Prime;</span></td>
                 <td><button id="d_btn_dms_convert">convert</button></td>
+                <td></td>
             </tr><tr>
                 <td style="font-weight: bold">OR</td>
                 <td><input class="dialog_sint" style="width: 2em;" type="text" name="lat_dmm_d"><span>&deg;</span>
@@ -1319,11 +1337,13 @@ if ($updateBlocked) {
                 <td><input class="dialog_sint" style="width: 2em;" type="text" name="lon_dmm_d"><span>&deg;</span>
                     <input class="dialog_float" style="width: 4em;" type="text" name="lon_dmm_m"><span>&prime;</span></td>
                 <td><button id="d_btn_dmm_convert">convert</button></td>
+                <td></td>
             </tr><tr>
                 <td style="font-weight: bold">OR</td>
                 <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lat_ddd"><span>&deg;</span></td>
                 <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lon_ddd"><span>&deg;</span></td>
                 <td><button id="d_btn_ddd_convert">convert</button></td>
+                <td><button id="d_btn_check">check</button></td>
             </tr><tr>
                 <td colspan="4">&nbsp;</td>
             </tr><tr>

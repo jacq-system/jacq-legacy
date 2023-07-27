@@ -19,6 +19,8 @@ function jacqLatLonQuadInit()
     });
     $("#open_latLonQuDialog").on("click", function() {
         dialog_latLonQu.dialog("open");
+        // const dialog_btn_check = $("#d_btn_check");
+        // dialog_btn_check.height(dialog_btn_check.parent().height() - 10);
         return false;
     });
     $("#d_btn_dms_convert").on("click", function () {
@@ -99,6 +101,31 @@ function jacqLatLonQuadInit()
         }
         return false;
     });
+    $("#d_btn_check").on("click", function () {
+       // alert(geoname_user + $("input[name='lat_ddd']").val() + " / " + $("input[name='lon_ddd']").val());
+       $('html').addClass('waiting');
+       const url = "https://secure.geonames.org/countrySubdivisionJSON?username=" + geoname_user
+           + "&radius=10&lat=" + $("input[name='lat_ddd']").val() + "&lng=" + $("input[name='lon_ddd']").val();
+       $.getJSON("jacqServices_ptlp.php?type=raw&resource=" + encodeURIComponent(url), function(data) {
+           $('html').removeClass('waiting');
+           if (data.countryName == $("select[name='nation'] option:selected").text() && data.adminName1 == $("select[name='province'] option:selected").text()) {
+               $.alert("Country and Province seem to be OK", "coordinates checked");
+           } else if (data.status && data.status.message) {
+               $.alert(data.status.message, "coordinates checked");
+           } else if (!data.adminName1) {
+               $.alert("Country should be " + data.countryName + "<br>Province could not be found", "coordinates checked");
+           } else {
+               $.alert("Country should be " + data.countryName + "<br>Province should be " + data.adminName1, "coordinates checked");
+           }
+       });
+       // $.ajax({
+       //     url: url,
+       //     crossDomain: true,
+       //     success: function (data) {
+       //         alert(data);
+       //     }
+       // })
+    });
     $(".dialog_int").on("keydown", function (event) {
         const num = event.keyCode;
         if ((num > 95 && num < 106) || (num > 36 && num < 41) || num == 9) {
@@ -161,6 +188,7 @@ function quadrant2LatLon(quadrant, quadrant_sub)
     } else {
         if (quadrant_sub == 0 || quadrant_sub > 4) {
             xM += 5;
+            xS += 0.001;  // to prevent rounding errors
             yM -= 3;
         } else {
             xM += ((quadrant_sub - 1) % 2) * 5;
