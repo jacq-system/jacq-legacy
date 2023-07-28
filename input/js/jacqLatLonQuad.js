@@ -132,12 +132,25 @@ function jacqLatLonQuadInit()
            + "&radius=10&lat=" + $("input[name='lat_ddd']").val() + "&lng=" + $("input[name='lon_ddd']").val();
        $.getJSON("jacqServices_ptlp.php?type=raw&resource=" + encodeURIComponent(url), function(data) {
            $('html').removeClass('waiting');
-           if (data.countryName == $("select[name='nation'] option:selected").text() && data.adminName1 == $("select[name='province'] option:selected").text()) {
+           const countryCode = ($("select[name='nation'] option:selected").text()).split('(')[1].slice(0, -1);
+           const full_province = $("select[name='province'] option:selected").text();
+           let province;
+           let adminCode1;
+           if (full_province.indexOf('(') > -1) {
+               province = full_province.split(' (')[0];
+               adminCode1 = full_province.split(' (')[1].slice(0, -1);
+           } else {
+               province = full_province;
+               adminCode1 = '';
+           }
+           if (data.countryCode == countryCode && (data.adminName1 == province || data.adminCode1 == adminCode1)) {
                $.alert("Country and Province seem to be OK", "coordinates checked");
            } else if (data.status && data.status.message) {
                $.alert(data.status.message, "coordinates checked");
            } else if (!data.adminName1) {
                $.alert("Country should be " + data.countryName + "<br>Province could not be found", "coordinates checked");
+           } else if (data.countryCode == countryCode) {
+               $.alert("Country seem to be OK<br>Province should be " + data.adminName1, "coordinates checked");
            } else {
                $.alert("Country should be " + data.countryName + "<br>Province should be " + data.adminName1, "coordinates checked");
            }
