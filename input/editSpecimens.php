@@ -1343,7 +1343,7 @@ if ($updateBlocked) {
                 <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lat_ddd"><span>&deg;</span></td>
                 <td><input class="dialog_sfloat" style="width: 5em;" type="text" name="lon_ddd"><span>&deg;</span></td>
                 <td><button id="d_btn_ddd_convert">convert</button></td>
-                <td><button id="d_btn_check">check</button></td>
+                <td><button id="d_btn_check">check with geonames</button></td>
             </tr><tr>
                 <td colspan="4">&nbsp;</td>
             </tr><tr>
@@ -1352,7 +1352,13 @@ if ($updateBlocked) {
                 <td><input class="dialog_int important" style="width: 5em;" type="text" name="quad"> <span>/</span>
                     <input class="dialog_int important" style="width: 2em;" type="text" name="quad_sub">
                 </td>
-                <td><button id="d_btn_quad_convert">convert</button></td>
+                <td colspan="2"><button id="d_btn_quad_convert">convert to Lat/Lon</button></td>
+            </tr><tr>
+                <td></td>
+                <td style="text-align: right; font-weight: bold;">UTM </td>
+                <td><input style="width: 10em;" type="text" name="utm">
+                </td>
+                <td colspan="2"><button id="d_btn_utm_convert">convert to Lat/Lon</button></td>
             </tr>
         </table>
     </form>

@@ -101,6 +101,30 @@ function jacqLatLonQuadInit()
         }
         return false;
     });
+    $("#d_btn_utm_convert").on("click", function () {
+        $('html').addClass('waiting');
+        $.ajax({
+            url: "https://services.jacq.org/jacq-services/rest/coords/convert?utm=" + $("input[name='utm']").val(),
+            crossDomain: true,
+            success: function (data) {
+                $('html').removeClass('waiting');
+                const lat_mc = (data.lat - Math.floor(data.lat)) * 60.0;
+                const lon_mc = (data.lon - Math.floor(data.lon)) * 60.0;
+                $("input[name='lat_dms_d']").val(Math.floor(data.lat));
+                $("input[name='lat_dms_m']").val(Math.floor(lat_mc));
+                $("input[name='lat_dms_s']").val(Math.round((lat_mc - Math.floor(lat_mc)) * 6000) / 100);
+                $("input[name='lon_dms_d']").val(Math.floor(data.lon));
+                $("input[name='lon_dms_m']").val(Math.floor(lon_mc));
+                $("input[name='lon_dms_s']").val(Math.round((lon_mc - Math.floor(lon_mc)) * 6000) / 100);
+                $("input[name='lat_dmm_d']").val(Math.floor(data.lat));
+                $("input[name='lat_dmm_m']").val(Math.round(lat_mc * 10000) / 10000);
+                $("input[name='lon_dmm_d']").val(Math.floor(data.lon));
+                $("input[name='lon_dmm_m']").val(Math.round(lon_mc * 10000) / 10000);
+                $("input[name='lat_ddd']").val(Math.round(data.lat * 100000) / 100000);
+                $("input[name='lon_ddd']").val(Math.round(data.lon * 100000) / 100000);
+            }
+        });
+    });
     $("#d_btn_check").on("click", function () {
        // alert(geoname_user + $("input[name='lat_ddd']").val() + " / " + $("input[name='lon_ddd']").val());
        $('html').addClass('waiting');
