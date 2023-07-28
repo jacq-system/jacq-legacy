@@ -994,23 +994,23 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 unset($nation);
 $nation[0][] = 0; $nation[1][] = "";
-$result = dbi_query("SELECT nation_engl, nationID FROM tbl_geo_nation ORDER BY nation_engl");
+$result = dbi_query("SELECT nation_engl, nationID, iso_alpha_2_code FROM tbl_geo_nation ORDER BY nation_engl");
 if ($result && mysqli_num_rows($result) > 0) {
     while ($row = mysqli_fetch_array($result)) {
         $nation[0][] = $row['nationID'];
-        $nation[1][] = $row['nation_engl'];
+        $nation[1][] = $row['nation_engl'] . " (" . $row['iso_alpha_2_code'] . ")";
     }
 }
 
 unset($province);
 $province[0][] = 0; $province[1][] = "";
-$result = dbi_query("SELECT provinz, provinceID FROM tbl_geo_province
+$result = dbi_query("SELECT provinz, provinceID, usgs_number FROM tbl_geo_province
                     WHERE nationID = '" . intval($p_nation) . "'
                     ORDER BY provinz");
 if ($result && mysqli_num_rows($result) > 0) {
     while ($row = mysqli_fetch_array($result)) {
         $province[0][] = $row['provinceID'];
-        $province[1][] = $row['provinz'];
+        $province[1][] = $row['provinz'] . (($row['usgs_number']) ? " ({$row['usgs_number']})" : '');
     }
 }
 
