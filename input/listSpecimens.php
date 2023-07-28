@@ -219,7 +219,7 @@ function makeDropdownUsername()
         }
         echo ">";
         if (trim($row['firstname']) || trim($row['surname'])) {
-            echo htmlspecialchars($row['firstname']) . " " . htmlspecialchars($row['surname']);
+            echo htmlspecialchars($row['surname']) . ", " . htmlspecialchars($row['firstname']);
         } else {
             echo htmlspecialchars("<" . $row['username'] . ">");
         }
