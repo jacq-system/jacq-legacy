@@ -252,7 +252,7 @@ class CSSF{
 		print "></div>\n";
 	}
 
-	public function dropdown($x, $y, $name, $select, $value, $text, $bgcol = "")
+	public function dropdown($x, $y, $name, $select, $value, $text, $bgcol = "", $disabled = "")
     {
 		$this->_divclass($x,$y,"cssfinput");
 		print "<select tabindex=\"{$this->tabindex}\" class=\"cssf\"";
@@ -261,6 +261,9 @@ class CSSF{
         }
 		if ($this->nameIsID) {
             print " id=\"$name\"";
+        }
+        if ($disabled) {
+            print " disabled";
         }
 		print " name=\"$name\">\n";
 		for ($i=0; $i<count($value); $i++) {
@@ -686,7 +689,7 @@ EOF;
 		print "</div>\n";
 	}
 
-	public function inputText ($x, $y, $w, $name, $value, $maxsize = 0, $bgcol = "", $title = "", $readonly = '')
+	public function inputText ($x, $y, $w, $name, $value, $maxsize = 0, $bgcol = "", $title = "", $readonly = '', $disabled = '')
     {
 		$this->_divclass($x,$y,"cssfinput");
 		print "<input  tabindex=\"{$this->tabindex}\" class=\"cssftext\" style=\"width: " . $w . "em;";
@@ -705,6 +708,9 @@ EOF;
         }
 		if ($readonly) {
             print " readonly";
+        }
+        if ($disabled) {
+            print " disabled";
         }
 		print "></div>\n";
 		$this->tabindex++;
