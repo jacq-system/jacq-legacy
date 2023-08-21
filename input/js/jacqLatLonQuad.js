@@ -108,20 +108,20 @@ function jacqLatLonQuadInit()
             crossDomain: true,
             success: function (data) {
                 $('html').removeClass('waiting');
-                const lat_mc = (data.lat - Math.floor(data.lat)) * 60.0;
-                const lon_mc = (data.lon - Math.floor(data.lon)) * 60.0;
-                $("input[name='lat_dms_d']").val(Math.floor(data.lat));
+                const lat_mc = (data.latlon.lat - Math.floor(data.latlon.lat)) * 60.0;
+                const lon_mc = (data.latlon.lon - Math.floor(data.latlon.lon)) * 60.0;
+                $("input[name='lat_dms_d']").val(Math.floor(data.latlon.lat));
                 $("input[name='lat_dms_m']").val(Math.floor(lat_mc));
                 $("input[name='lat_dms_s']").val(Math.round((lat_mc - Math.floor(lat_mc)) * 6000) / 100);
-                $("input[name='lon_dms_d']").val(Math.floor(data.lon));
+                $("input[name='lon_dms_d']").val(Math.floor(data.latlon.lon));
                 $("input[name='lon_dms_m']").val(Math.floor(lon_mc));
                 $("input[name='lon_dms_s']").val(Math.round((lon_mc - Math.floor(lon_mc)) * 6000) / 100);
-                $("input[name='lat_dmm_d']").val(Math.floor(data.lat));
+                $("input[name='lat_dmm_d']").val(Math.floor(data.latlon.lat));
                 $("input[name='lat_dmm_m']").val(Math.round(lat_mc * 10000) / 10000);
-                $("input[name='lon_dmm_d']").val(Math.floor(data.lon));
+                $("input[name='lon_dmm_d']").val(Math.floor(data.latlon.lon));
                 $("input[name='lon_dmm_m']").val(Math.round(lon_mc * 10000) / 10000);
-                $("input[name='lat_ddd']").val(Math.round(data.lat * 100000) / 100000);
-                $("input[name='lon_ddd']").val(Math.round(data.lon * 100000) / 100000);
+                $("input[name='lat_ddd']").val(Math.round(data.latlon.lat * 100000) / 100000);
+                $("input[name='lon_ddd']").val(Math.round(data.latlon.lon * 100000) / 100000);
             }
         });
     });

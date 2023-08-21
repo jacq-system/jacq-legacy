@@ -1356,9 +1356,15 @@ if ($updateBlocked) {
             </tr><tr>
                 <td></td>
                 <td style="text-align: right; font-weight: bold;">UTM </td>
-                <td><input style="width: 10em;" type="text" name="utm">
+                <td><input style="width: 12em;" type="text" name="utm" placeholder="eg. 33 N 601779 5340548">
                 </td>
                 <td colspan="2"><button id="d_btn_utm_convert">convert to Lat/Lon</button></td>
+            </tr><tr>
+                <td></td>
+                <td style="text-align: right; font-weight: bold;">MGRS </td>
+                <td><input style="width: 12em;" type="text" name="mgrs" placeholder="eg. 33UXP0177940548">
+                </td>
+                <td colspan="2"><button id="d_btn_mgrs_convert">convert to Lat/Lon</button></td>
             </tr>
         </table>
     </form>
