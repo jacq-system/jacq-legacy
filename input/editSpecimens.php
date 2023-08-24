@@ -261,7 +261,7 @@ if (isset($_GET['sel'])) {
             $p_external = null;
         }
     } else {
-        $p_specimen_ID = $p_HerbNummer = $p_CollNummer = $p_identstatus = "";
+        $p_specimen_ID = $p_CollNummer = $p_identstatus = "";
         $p_checked = $p_accessible = "1";
         $p_series = $p_series_number = $p_Nummer = $p_alt_number = $p_Datum = $p_Datum2 = $p_det = "";
         $p_typified = $p_taxon_alt = $p_taxon = $p_Bezirk = "";
@@ -282,6 +282,7 @@ if (isset($_GET['sel'])) {
         } else {
             $p_collection = "";
         }
+        $p_HerbNummer = $_GET['HerbNummer'] ?? "";
     }
     $edit = !empty($_GET['edit']);
     if ($swBatch) {
@@ -1364,7 +1365,7 @@ if ($updateBlocked) {
                 <td style="text-align: right; font-weight: bold;">MGRS </td>
                 <td><input style="width: 12em;" type="text" name="mgrs" placeholder="eg. 33UXP0177940548">
                 </td>
-                <td colspan="2"><button id="d_btn_mgrs_convert">convert to Lat/Lon</button></td>
+                <td colspan="2"><button id="d_btn_mgrs_convert">convert to Lat/Lon + UTM</button></td>
             </tr>
         </table>
     </form>

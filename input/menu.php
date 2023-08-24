@@ -117,9 +117,13 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
       </td></tr>
       <tr align="left"><td>
 <?php if (checkRight('btnImg')): ?>
-        <input class="button" type="button" value="Images" onClick="openWindow('checkPictures.php','checkPictures')">
+        <input class="button" type="button" value="lonely Images" onClick="openWindow('surplusImages.php','surplusImages')">
 <?php endif; ?>
-      </td><td style="width:20px">&nbsp;</td><td></td></tr>
+      </td><td style="width:20px">&nbsp;</td><td>
+<?php if (checkRight('btnImg')): ?>
+        <input class="button" type="button" value="check Djatoka" onClick="openWindow('checkPictures.php','checkPictures')">
+<?php endif; ?>
+      </td></tr>
       <tr align="left"><td>
 <?php if (checkRight('btnNom')): ?>
         <input class="button" type="button" value="Nomenclature" onClick="openWindow('checkNomenclature.php','checkNomenclature')">
