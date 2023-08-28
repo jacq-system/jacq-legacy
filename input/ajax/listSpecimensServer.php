@@ -94,7 +94,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
         if (trim($_SESSION['sNumber'])) {
-            $sql2 .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumber'])) . "%'";
+            if (strpos($_SESSION['sNumber'], '-') !== false) {  // search for a range of herb-numbers
+                $parts = explode('-', $_SESSION['sNumber']);
+                $sql2 .= " AND (s.HerbNummer >= " . intval(trim($parts[0])) . " AND s.HerbNummer <= " . intval(trim($parts[1])) . ")";
+            } else {
+                $sql2 .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumber'])) . "%'";
+            }
         }
         if (trim($_SESSION['sFamily'])) {
             $sql2 .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['sFamily'])) . "%'";
@@ -103,11 +108,13 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql2 .= " AND (c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%' OR
 						   c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%')";
         }
-        if (trim($_SESSION['sNumberC'])) {
-            $sql2 .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%' OR
-							s.series_number LIKE '" . dbi_escape_string(trim($_SESSION['sNumberC'])) . "%') ";
+        if (trim($_SESSION['sNumberCollector'])) {
+            $sql2 .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
+							s.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
+							s.series_number LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%') ";
+        }
+        if (trim($_SESSION['sNumberCollection'])) {
+            $sql2 .= " AND s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollection'])) . "%'";
         }
         if (trim($_SESSION['sDate'])) {
             $sql2 .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['sDate'])) . "%'";

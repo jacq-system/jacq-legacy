@@ -44,46 +44,48 @@ $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" k
 
 if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 1;
-	if(isset($_GET['taxonID'])){
-		$_SESSION['taxonID'] = intval($_GET['taxonID']);
-		$_SESSION['wuCollection']=0; // = $_POST['collection'];
-		$_SESSION['sNumber']='';//      = $_POST['number'];
-		$_SESSION['sSeries']='' ;//     = $_POST['series'];
-		$_SESSION['sFamily']='' ;//     = $_POST['family'];
-		$_SESSION['sTaxon'] ='' ;//     = $_POST['taxon'];
-		$_SESSION['sTaxonAlt'] ='';//   = $_POST['taxon_alt'];
-		$_SESSION['sCollector'] ='';//  = $_POST['collector'];
-		$_SESSION['sNumberC'] ='' ;//   = $_POST['numberC'];
-		$_SESSION['sDate']   =''  ;//   = $_POST['date'];
-		$_SESSION['sGeoGeneral']='';// = $_POST['geo_general'];
-		$_SESSION['sGeoRegion']=''  ;// = $_POST['geo_region'];
-		$_SESSION['sCountry']='' ;//    = $_POST['country'];
-		$_SESSION['sProvince']='' ;//   = $_POST['province'];
-		$_SESSION['sLoc']   =''   ;//   = $_POST['loc'];
-        $_SESSION['sHabitat'] = '';//   = $_POST['habitat'];
-        $_SESSION['sHabitus'] = '';//   = $_POST['habitus'];
-		$_SESSION['sBemerkungen'] ='';//= $_POST['annotations'];
-		$_SESSION['sTyp'] ='' ;//  = (($_POST['typ']=="only"='' ? true : false='';
-		$_SESSION['sImages']='';// = $_POST['images'];
-	}else{
+	if (isset($_GET['taxonID'])) {
+		$_SESSION['taxonID']           = intval($_GET['taxonID']);
+		$_SESSION['wuCollection']      = 0;   // = $_POST['collection'];
+		$_SESSION['sNumber']           = '';  // = $_POST['number'];
+		$_SESSION['sSeries']           = '';  // = $_POST['series'];
+		$_SESSION['sFamily']           = '';  // = $_POST['family'];
+		$_SESSION['sTaxon']            = '';  // = $_POST['taxon'];
+		$_SESSION['sTaxonAlt']         = '';  // = $_POST['taxon_alt'];
+		$_SESSION['sCollector']        = '';  // = $_POST['collector'];
+		$_SESSION['sNumberCollector']  = '';  // = $_POST['numberCollector'];
+        $_SESSION['sNumberCollection'] = '';  // = $_POST['numberCollection'];
+		$_SESSION['sDate']             = '';  // = $_POST['date'];
+		$_SESSION['sGeoGeneral']       = '';  // = $_POST['geo_general'];
+		$_SESSION['sGeoRegion']        = '';  // = $_POST['geo_region'];
+		$_SESSION['sCountry']          = '';  // = $_POST['country'];
+		$_SESSION['sProvince']         = '';  // = $_POST['province'];
+		$_SESSION['sLoc']              = '';  // = $_POST['loc'];
+        $_SESSION['sHabitat']          = '';  // = $_POST['habitat'];
+        $_SESSION['sHabitus']          = '';  // = $_POST['habitus'];
+		$_SESSION['sBemerkungen']      = '';  // = $_POST['annotations'];
+		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
+		$_SESSION['sImages']           = '';  // = $_POST['images'];
+	} else {
 		unset($_SESSION['taxonID']);
-		$_SESSION['wuCollection'] = $_POST['collection'];
-		$_SESSION['sNumber']      = $_POST['number'];
-		$_SESSION['sSeries']      = $_POST['series'];
-		$_SESSION['sFamily']      = $_POST['family'];
-		$_SESSION['sTaxon']       = $_POST['taxon'];
-		$_SESSION['sTaxonAlt']    = $_POST['taxon_alt'];
-		$_SESSION['sCollector']   = $_POST['collector'];
-		$_SESSION['sNumberC']     = $_POST['numberC'];
-		$_SESSION['sDate']        = $_POST['date'];
-		$_SESSION['sGeoGeneral']  = $_POST['geo_general'];
-		$_SESSION['sGeoRegion']   = $_POST['geo_region'];
-		$_SESSION['sCountry']     = $_POST['country'];
-		$_SESSION['sProvince']    = $_POST['province'];
-		$_SESSION['sLoc']         = $_POST['loc'];
-        $_SESSION['sHabitat']     = $_POST['habitat'];
-        $_SESSION['sHabitus']     = $_POST['habitus'];
-		$_SESSION['sBemerkungen'] = $_POST['annotations'];
+		$_SESSION['wuCollection']      = $_POST['collection'];
+		$_SESSION['sNumber']           = $_POST['number'];
+		$_SESSION['sSeries']           = $_POST['series'];
+		$_SESSION['sFamily']           = $_POST['family'];
+		$_SESSION['sTaxon']            = $_POST['taxon'];
+		$_SESSION['sTaxonAlt']         = $_POST['taxon_alt'];
+		$_SESSION['sCollector']        = $_POST['collector'];
+        $_SESSION['sNumberCollector']  = $_POST['numberCollector'];
+        $_SESSION['sNumberCollection'] = $_POST['numberCollection'];
+		$_SESSION['sDate']             = $_POST['date'];
+		$_SESSION['sGeoGeneral']       = $_POST['geo_general'];
+		$_SESSION['sGeoRegion']        = $_POST['geo_region'];
+		$_SESSION['sCountry']          = $_POST['country'];
+		$_SESSION['sProvince']         = $_POST['province'];
+		$_SESSION['sLoc']              = $_POST['loc'];
+        $_SESSION['sHabitat']          = $_POST['habitat'];
+        $_SESSION['sHabitus']          = $_POST['habitus'];
+		$_SESSION['sBemerkungen']      = $_POST['annotations'];
 
 		$_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
 		$_SESSION['sImages'] = $_POST['images'];
@@ -98,7 +100,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 2;
     $_SESSION['wuCollection'] = 0;
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
-    $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
+    $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
@@ -110,7 +112,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 3;
     $_SESSION['wuCollection'] = 0;
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
-    $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberC'] = "";
+    $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
@@ -460,7 +462,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     </td>
     <td id="drpInstitutionCollection"><?php ($_SESSION['wuCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
   <td align="right">&nbsp;<b>Herbar Nr.&nbsp;</b></td>
-    <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>"></td>
+    <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
   <td align="right">&nbsp;<b>Series&nbsp;</b></td>
     <td><input type="text" name="series" value="<?php echoSpecial('sSeries', 'SESSION'); ?>"></td>
   <td></td><td></td>
@@ -471,16 +473,15 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <td><input type="text" name="taxon" value="<?php echoSpecial('sTaxon', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>ident. history</b></td>
     <td><input type="text" name="taxon_alt" value="<?php echoSpecial('sTaxonAlt', 'SESSION'); ?>"></td>
-  <td></td><td></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
     <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>Collector #&nbsp;</b></td>
-    <td><input type="text" name="numberC" value="<?php echoSpecial('sNumberC', 'SESSION'); ?>"></td>
+    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>Date&nbsp;</b></td>
     <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Habitat&nbsp;</b></td>
-    <td><input type="text" name="habitat" value="<?php echoSpecial('sHabitat', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b>Collection #&nbsp;</b></td>
+    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Continent&nbsp;</b></td>
     <td>
@@ -518,8 +519,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     </td>
   <td align="right">&nbsp;<b>Loc.&nbsp;</b></td>
     <td><input type="text" name="loc" value="<?php echoSpecial('sLoc', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
-    <td><input type="text" name="habitus" value="<?php echoSpecial('sHabitus', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b>Habitat&nbsp;</b></td>
+    <td><input type="text" name="habitat" value="<?php echoSpecial('sHabitat', 'SESSION'); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Country&nbsp;</b></td>
     <td><input type="text" name="country" value="<?php echoSpecial('sCountry', 'SESSION'); ?>"></td>
@@ -527,7 +528,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <td><input type="text" name="province" value="<?php echoSpecial('sProvince', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
     <td><input type="text" name="annotations" value="<?php echoSpecial('sBemerkungen', 'SESSION'); ?>"></td>
-  <td></td><td></td>
+  <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
+    <td><input type="text" name="habitus" value="<?php echoSpecial('sHabitus', 'SESSION'); ?>"></td>
 </tr><tr>
   <td colspan="2">
     <input type="radio" name="typ" value="all"<?php if(!$_SESSION['sTyp']) echo " checked"; ?>>
