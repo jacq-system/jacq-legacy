@@ -12,6 +12,23 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
 
 $dbLnk = DbAccess::ConnectTo('INPUT');
 
+$constraintSource = '';
+if (!empty($_GET['source'])) {
+    if (is_numeric($_GET['source'])) {
+        $constraintSource = " AND mc.source_id = " . intval($_GET['source']);
+    } else {
+        $stmt = $dbLnk->prepare("SELECT source_id
+                                 FROM meta
+                                 WHERE source_code LIKE ?");
+        $stmt->bind_param('s', $_GET['source']);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_array(MYSQLI_ASSOC);
+        if (!empty($row['source_id'])) {
+            $constraintSource = " AND mc.source_id = " . $row['source_id'];
+        }
+    }
+}
+
 function formatLink($specimenID): string
 {
     return  "<a href=\"javascript:editSpecimens('<$specimenID>')\">$specimenID</a>: ";
@@ -22,7 +39,7 @@ function formatTableLine($specimen, $lat, $lon, $text)
     return "<tr><td >" . formatLink($specimen['specimen_ID']) . "</td>"
          . "<td>" . dms($lat) . " / " . dms($lon) . "</td>"
          . "<td>" . $specimen['quadrant'] . " / " . ($specimen['quadrant_sub'] ?? '??') . "</td>"
-         . "<td>$text</td>\n";
+         . "<td>$text</td></tr>\n";
 }
 
 function quadrant2LatLon($quadrant, $quadrant_sub)
@@ -150,8 +167,10 @@ $specimens = $dbLnk->query("SELECT s.specimen_ID, s.quadrant, s.quadrant_sub, s.
                              s.Coord_N, s.N_Min, s.N_Sec, s.Coord_S, s.S_Min, s.S_Sec,
                              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_E, s.E_Min, s.E_Sec
                             FROM tbl_specimens s
+                             LEFT JOIN tbl_management_collections mc ON s.collectionID = mc.collectionID
                             WHERE (s.Coord_N > 0 OR s.Coord_S > 0)
                              AND  (s.Coord_E > 0 OR s.Coord_W > 0)
+                             $constraintSource 
                              AND s.quadrant > 0")
                    ->fetch_all(MYSQLI_ASSOC);
 foreach ($specimens as $specimen) {
@@ -247,7 +266,7 @@ $types = array('ok_but_sub_null'     => "are in the correkt quadrant but have an
                'other'               => "have other problems",
 );
 echo "<table>\n"
-   . "<tr><td>$correct</td><td>are correct</td></tr>\n";
+   . "<tr><td>$correct</td><td>(total) are correct</td></tr>\n";
 foreach ($types as $type => $text) {
     if (!empty($answers[$type])) {
         echo "<tr><td style='text-align: right'>" . count($answers[$type]) . "</td><td><a href='#$type'>$text</a></td></tr>\n";
