@@ -109,15 +109,35 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 						   c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%')";
         }
         if (trim($_SESSION['sNumberCollector'])) {
-            $sql2 .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
+            if (strpos($_SESSION['sNumberCollector'], '-') !== false) {  // search for a range of collector-numbers
+                $parts = explode('-', $_SESSION['sNumberCollector']);
+                $sql2 .= " AND ((s.Nummer >= " . intval(trim($parts[0])) . " AND s.Nummer <= " . intval(trim($parts[1])) . ") OR
+                                (s.alt_number >= " . intval(trim($parts[0])) . " AND s.alt_number <= " . intval(trim($parts[1])) . ") OR
+                                (s.series_number >= " . intval(trim($parts[0])) . " AND s.series_number <= " . intval(trim($parts[1])) . ")) ";
+            } else {
+                $sql2 .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
 							s.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
 							s.series_number LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%') ";
+            }
         }
         if (trim($_SESSION['sNumberCollection'])) {
-            $sql2 .= " AND s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollection'])) . "%'";
+            if (strpos($_SESSION['sNumberCollection'], '-') !== false) {  // search for a range of collection-numbers
+                $parts = explode('-', $_SESSION['sNumberCollection']);
+                $sql2 .= " AND (s.CollNummer >= " . intval(trim($parts[0])) . " AND s.CollNummer <= " . intval(trim($parts[1])) . ")";
+            } else {
+                $sql2 .= " AND s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollection'])) . "%'";
+            }
         }
         if (trim($_SESSION['sDate'])) {
-            $sql2 .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['sDate'])) . "%'";
+            $occurrences = substr_count($_SESSION['sDate'], '-');
+            if ($occurrences == 5) {
+                $parts = explode('-', $_SESSION['sDate']);
+                $dateStart = dbi_escape_string(sprintf("%4d-%02d-%02d", trim($parts[0]), trim($parts[1]), trim($parts[2])));
+                $dateEnd   = dbi_escape_string(sprintf("%4d-%02d-%02d", trim($parts[3]), trim($parts[4]), trim($parts[5])));
+                $sql2 .= " AND (s.Datum >= '$dateStart' AND s.Datum <= '$dateEnd')";
+            } else {
+                $sql2 .= " AND s.Datum LIKE '" . dbi_escape_string(trim($_SESSION['sDate'])) . "%'";
+            }
         }
         if (trim($_SESSION['sGeoGeneral'])) {
             $sql2 .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['sGeoGeneral'])) . "%'";

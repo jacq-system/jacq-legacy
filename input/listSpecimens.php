@@ -477,11 +477,11 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
     <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>Collector #&nbsp;</b></td>
-    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>"></td>
+    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
   <td align="right">&nbsp;<b>Date&nbsp;</b></td>
-    <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>"></td>
+    <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>" placeholder="single date or range (....-....)"></td>
   <td align="right">&nbsp;<b>Collection #&nbsp;</b></td>
-    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>"></td>
+    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Continent&nbsp;</b></td>
     <td>
@@ -580,6 +580,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 <td style="width: 2em">&nbsp;</td><td>
   <b>User&nbsp;</b> <?php makeDropdownUsername(); ?> <?php makeDropdownDate(); ?>
   <input class="button" type="submit" name="selectUser" value=" search ">
+  <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=user&type=xlsx';return false;" name="userXLSX" src="webimages/disk.png" title="download user Labels XLS">
 </td>
 <?php endif; ?>
 </tr></table>
