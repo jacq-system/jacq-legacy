@@ -1154,9 +1154,9 @@ $cf->inputText(11, $y, 53, "det", $p_det, 255);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 8, "ident. history");
-$cf->inputText(11, $y, 53, "taxon_alt", $p_taxon_alt, 255);
+$cf->textarea(11, $y, 53, 2.4, "taxon_alt", $p_taxon_alt);
 
-$y += 2;
+$y += 3.5;
 $cf->label(11, $y, "typified by");
 $cf->inputText(11, $y, 53, "typified", $p_typified, 255);
 

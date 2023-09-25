@@ -37,7 +37,7 @@ $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
 $client = new Client(['timeout' => 8]);
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
-$constraint = ' AND source_id_fk != 1';
+$constraint = ' AND source_id_fk != 1 AND source_id_fk != 55';   // wu and dr need special treatment
 if (!empty($_GET['source'])) {
     if (is_numeric($_GET['source'])) {
         $constraint = " AND source_ID_fk = " . intval($_GET['source']);

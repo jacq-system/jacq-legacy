@@ -104,8 +104,8 @@ function jacqLatLonQuadInit()
     $("#d_btn_utm_convert").on("click", function () {
         $('html').addClass('waiting');
         $.ajax({
-            // url: "https://services.jacq.org/jacq-services/rest/coords/convert?utm=" + $("input[name='utm']").val(),
-            url: "http://localhost/develop.jacq/services/rest/coords/convert?utm=" + $("input[name='utm']").val(),
+            // url: "https://services.jacq.org/jacq-services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
+            url: "http://localhost/develop.jacq/services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
             crossDomain: true,
             success: function (data) {
                 $('html').removeClass('waiting');
@@ -129,8 +129,8 @@ function jacqLatLonQuadInit()
     $("#d_btn_mgrs_convert").on("click", function () {
         $('html').addClass('waiting');
         $.ajax({
-            // url: "https://services.jacq.org/jacq-services/rest/coords/convert?utm=" + $("input[name='utm']").val(),
-            url: "http://localhost/develop.jacq/services/rest/coords/convert?mgrs=" + $("input[name='mgrs']").val(),
+            // url: "https://services.jacq.org/jacq-services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
+            url: "http://localhost/develop.jacq/services/rest/geo/convert?mgrs=" + $("input[name='mgrs']").val(),
             crossDomain: true,
             success: function (data) {
                 $('html').removeClass('waiting');
