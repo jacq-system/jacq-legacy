@@ -343,6 +343,7 @@ foreach ($tbls as $tbl) {
                  DateLastEdited = " . $dbLink2->quoteString($DateLastEdited) . ",
                  RecordBasis = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
                 WHERE UnitIDNumeric = " . $row['specimen_ID'];
+        // TODO: add field "Notes" to fill conditionally with tbl_specimens.Bemerkungen if a flag in "meta" is set
         $dbLink2->query($sql);
     }
     $result->free();
