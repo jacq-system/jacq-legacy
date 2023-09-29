@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use Jacq\DbAccess;
 
 if (in_array("-h", $argv) || in_array("--help", $argv) || count($argv) == 1) {
-    echo $argv[0] . " x             scan image Server with ID x for lonely images\n"
+    echo $argv[0] . " x             scan image Server with ID x for standalone images\n"
        . $argv[0] . " -h  --help    this explanation\n";
     die();
 }

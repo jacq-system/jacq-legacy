@@ -117,7 +117,7 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
       </td></tr>
       <tr align="left"><td>
 <?php if (checkRight('btnImg')): ?>
-        <input class="button" type="button" value="lonely Images" onClick="openWindow('surplusImages.php','surplusImages')">
+        <input class="button" type="button" value="standalone Images" onClick="openWindow('surplusImages.php','surplusImages')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
 <?php if (checkRight('btnImg')): ?>
