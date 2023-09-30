@@ -24,6 +24,9 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
         html.waiting, html.waiting * {
             cursor: wait !important;
         }
+        .highlight {
+            background-color: rgba(255, 233, 89, 0.6);
+        }
     </style>
     <?php echo $jaxon->getScript(true, true); ?>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"
@@ -31,6 +34,13 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
             crossorigin="anonymous">
     </script>
     <script type="text/javascript" language="JavaScript">
+        function activateHighlighting()
+        {
+            $("a").on("click", function() {
+                $(".highlight").removeClass("highlight");
+                $(this).addClass("highlight");
+            });
+        }
         function getOptions()
         {
             let options = "width=";
@@ -41,7 +51,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
             if (screen.availHeight<710)
                 options += (screen.availHeight - 10);
             else
-                options += "710";
+                options += "810";
             options += ", top=10,left=10,scrollbars=yes,resizable=yes";
 
             return options;

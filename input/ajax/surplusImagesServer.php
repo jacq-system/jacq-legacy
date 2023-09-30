@@ -63,6 +63,7 @@ function listSurplusImages($server_id)
     $response = new Response();
     $response->assign("totalSurplusImages", "innerHTML", count($listData) . " image files");
     $response->assign("surplusImageList", "innerHTML", implode("<br>", $listData));
+    $response->call("activateHighlighting()");
     return $response;
 }
 
@@ -97,7 +98,7 @@ function checkServer($serverID)
     $response = new Response();
     $client   = new Client(['timeout' => 2]);
 
-    $imageDef = dbi_query("SELECT imgserver_type, imgserver_url, `key`
+    $imageDef = dbi_query("SELECT img_coll_short, imgserver_type, imgserver_url, `key`
                            FROM `tbl_img_definition`
                            WHERE `img_def_ID` = '$serverID'")
                       ->fetch_assoc();
@@ -105,8 +106,10 @@ function checkServer($serverID)
         case "djatoka":
             try {
                 $clResponse = $client->request('POST', $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer', [
-                                                    'json' => ['method' => 'listDjatokaImages', 'params' => [$imageDef['key']], 'id' => '1'],
-                                                    'verify' => false
+                                                'json' => ['method' => 'listResources',
+                                                           'params' => [$imageDef['key'], [$imageDef['img_coll_short'] . '%']],
+                                                           'id'     => '1'],
+                                                'verify' => false
                                                 ]);
                 $data = json_decode($clResponse->getBody()->getContents(), true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
                 $ok = true;

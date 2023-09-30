@@ -15,7 +15,7 @@ $server_id = intval($argv[1]);
 
 $dbLnk = DbAccess::ConnectTo('INPUT');
 
-$imageDef = $dbLnk->query("SELECT imgserver_type, imgserver_url, `key`
+$imageDef = $dbLnk->query("SELECT img_coll_short, imgserver_type, imgserver_url, `key`
                            FROM `tbl_img_definition`
                            WHERE `img_def_ID` = $server_id")
                   ->fetch_assoc();
@@ -29,8 +29,10 @@ switch ($imageDef['imgserver_type']) {
 
         try {
             $response = $client->request('POST', $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer', [
-                                            'json' => ['method' => 'listDjatokaImages', 'params' => [$imageDef['key']], 'id' => '1'],
-                                            'verify' => false
+                                          'json' => ['method' => 'listResources',
+                                                     'params' => [$imageDef['key'], [$imageDef['img_coll_short'] . '%']],
+                                                     'id'     => '1'],
+                                          'verify' => false
                                         ]);
             $data = json_decode($response->getBody()->getContents(), true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
             $ok = true;
