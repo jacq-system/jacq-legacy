@@ -65,7 +65,7 @@ if (!empty($_POST['rescan']) || !empty($_GET['rescan'])) {
                                       WHERE mc.source_id = " . $row_sources['source_id'] . "
                                        AND s.HerbNummer IS NOT NULL
                                        AND s.HerbNummer != 0
-                                       AND s.specimen_ID NOT IN (SELECT specimen_ID FROM tbl_specimens_stblid)
+                                       AND s.specimen_ID NOT IN (SELECT specimen_ID FROM tbl_specimens_stblid WHERE stableIdentifier IS NOT NULL)
                                       ORDER BY mc.collectionID, s.specimen_ID");
         while ($row_specimen = $result_specimen->fetch_array()) {
             $result_number = dbi_query("SELECT count(s.HerbNummer) AS number
