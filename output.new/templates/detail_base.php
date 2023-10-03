@@ -64,7 +64,7 @@
         <?php
             if ($output['stblids']) {
                 foreach ($output['stblids'] as $line) {?>
-                    <b><a href="<?php echo $line['link']; ?>" target="_blank"><?php echo $line['stblid']; ?></a></b>
+                    <b><a href="<?php echo $line['stblid']; ?>" target="_blank"><?php echo $line['stblid']; ?></a></b>
                     <?php echo ($line['timestamp']) ? "({$line['timestamp']})" : ''; ?><br>
           <?php }
             } ?>
