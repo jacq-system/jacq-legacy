@@ -96,6 +96,7 @@ private function getStableIdentifier(int $specimenID): string
     $result = $dbLnk2->query("SELECT stableIdentifier
                               FROM tbl_specimens_stblid
                               WHERE specimen_ID = '$specimenID'
+                               AND visible = 1
                               ORDER BY timestamp DESC
                               LIMIT 1");
     if ($result && $result->num_rows > 0) {
