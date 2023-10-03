@@ -59,11 +59,15 @@
 <div id="details" class="container">
   <table class="striped">
     <tr>
-      <td align="right" width="30%">Stable identifier</td>
+      <td align="right" width="30%">Stable identifier<?php echo (count($output['stblids']) > 0) ? 's' : ''; ?></td>
       <td>
-        <?php if ($output['stblid']): ?>
-          <b><a href="<?php echo $output['stblid']; ?>" target="_blank"><?php echo $output['stblid']; ?></a></b>
-        <?php endif; ?>
+        <?php
+            if ($output['stblids']) {
+                foreach ($output['stblids'] as $line) {?>
+                    <b><a href="<?php echo $line['link']; ?>" target="_blank"><?php echo $line['stblid']; ?></a></b>
+                    <?php echo ($line['timestamp']) ? "({$line['timestamp']})" : ''; ?><br>
+          <?php }
+            } ?>
       </td>
     </tr>
     <tr>

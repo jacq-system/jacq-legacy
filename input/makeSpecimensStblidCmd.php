@@ -91,9 +91,10 @@ if (!$check_source_id) {
 while ($row_specimen = $result_specimen->fetch_array()) {
     $stblid = makeStableIdentifier($row_specimen['source_id'], array('specimen_ID' => $row_specimen['specimen_ID']), $row_specimen['collectionID']);
     if ($stblid) {
-        $result_test_spcId  = dbi_query("SELECT id FROM tbl_specimens_stblid WHERE specimen_ID = " . $row_specimen['specimen_ID']);
-        $result_test_stblId = dbi_query("SELECT id FROM tbl_specimens_stblid WHERE stableIdentifier = '$stblid'");
+        $result_test_stblId = dbi_query("SELECT id, specimen_ID FROM tbl_specimens_stblid WHERE stableIdentifier = '$stblid'");
         if ($result_test_stblId->num_rows == 0) {
+            $result_test_spcId  = dbi_query("SELECT id FROM tbl_specimens_stblid WHERE specimen_ID = " . $row_specimen['specimen_ID']);
+            dbi_query("DELETE FROM tbl_specimens_stblid WHERE specimen_ID = {$row_specimen['specimen_ID']} AND `error` IS NOT NULL");
             dbi_query("INSERT INTO tbl_specimens_stblid SET specimen_ID = '" . $row_specimen['specimen_ID'] . "', stableIdentifier = '$stblid'");
             if ($result_test_spcId->num_rows > 0) {
                 $count_changed++;
@@ -108,6 +109,18 @@ while ($row_specimen = $result_specimen->fetch_array()) {
                     $count[$row_specimen['source_id']]['new']++;
                 } else {
                     $count[$row_specimen['source_id']]['new'] = 1;
+                }
+            }
+        } else {
+            $row_stblId = $result_test_stblId->fetch_assoc();
+            if ($row_stblId['specimen_ID'] != $row_specimen['specimen_ID']) {
+                $result_test_error = dbi_query("SELECT id FROM tbl_specimens_stblid WHERE specimen_ID = {$row_specimen['specimen_ID']} AND `error` IS NOT NULL");
+                if ($result_test_error->num_rows == 0) {
+                    dbi_query("INSERT INTO tbl_specimens_stblid SET 
+                                specimen_ID = '{$row_specimen['specimen_ID']}',
+                                visible     = 0,
+                                error       = 'stblId $stblid already exists ({$row_stblId['specimen_ID']})'"
+                             );
                 }
             }
         }

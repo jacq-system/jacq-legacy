@@ -12,7 +12,7 @@ function init()
     $selectData = "<select size='1' id='collection' onchange=\"jaxon_showLatestUpdate(jaxon.$('collection').value)\">\n"
                 . "  <option value='0'></option>\n";
 
-    $rows = dbi_query("SELECT id.imgserver_url, m.source_name, id.img_def_ID 
+    $rows = dbi_query("SELECT id.imgserver_url, m.source_code, id.img_def_ID 
                        FROM tbl_img_definition id
                         LEFT JOIN meta m ON m.source_id = id.source_id_fk 
                        WHERE id.img_def_ID IN 
@@ -20,10 +20,11 @@ function init()
                             SELECT server_id 
                             FROM herbar_pictures.djatoka_images 
                             GROUP BY server_id
-                          )")
+                          )
+                       ORDER BY m.source_code")
             ->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as $row) {
-        $selectData .= "  <option value='{$row['img_def_ID']}'>{$row['imgserver_url']} ({$row['source_name']}, ID {$row['img_def_ID']})</option>\n";
+        $selectData .= "  <option value='{$row['img_def_ID']}'>{$row['source_code']}, ID {$row['img_def_ID']} ({$row['imgserver_url']})</option>\n";
     }
 
     $selectData .= "</select>\n";
