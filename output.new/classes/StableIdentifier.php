@@ -8,6 +8,7 @@ class StableIdentifier
 {
 
 private string $stblID = '';
+private int $specimen_ID = 0;
 
 /**
  * makes the stable identifier. Tries to make one if none is found in database
@@ -33,6 +34,7 @@ public static function make(int $specimen_ID, int $source_id = 0,  $HerbNummer =
  */
 private function __construct(int $specimen_ID, int $source_id = 0, $HerbNummer = '')
 {
+    $this->specimen_ID = $specimen_ID;
     $this->stblID = $this->getStableIdentifier($specimen_ID);   // get one from database
     if (empty($this->stblID) && !empty($source_id) && !empty($HerbNummer)) {    // if nothing found, try to construct one, if possible
         $HerbNummer = str_replace(' ', '', $HerbNummer);
@@ -68,6 +70,19 @@ public function getStblID(): string
 }
 
 /**
+ * @return array
+ */
+public function getAllStblIDs(): array
+{
+    $data = $this->getAllStableIdentifiers($this->specimen_ID);
+    if (count($data) == 1) {
+        return array(['stblid' => $this->getStblID(), 'timestamp' => '']);
+    } else {
+        return $data;
+    }
+}
+
+/**
  * get the latest stable identifier from tbl_specimens_stblid
  *
  * @param int $specimenID the specimen-ID
@@ -81,6 +96,7 @@ private function getStableIdentifier(int $specimenID): string
     $result = $dbLnk2->query("SELECT stableIdentifier
                               FROM tbl_specimens_stblid
                               WHERE specimen_ID = '$specimenID'
+                               AND visible = 1
                               ORDER BY timestamp DESC
                               LIMIT 1");
     if ($result && $result->num_rows > 0) {
@@ -88,6 +104,37 @@ private function getStableIdentifier(int $specimenID): string
         return  $row['stableIdentifier'];
     } else {
         return '';
+    }
+}
+
+/**
+ * get all stable identifiers from tbl_specimens_stblid sorted by date (DESC)
+ *
+ * @param int $specimenID the specimen-ID
+ * @return array the stable identifiers
+ * @throws Exception
+ */
+private function getAllStableIdentifiers(int $specimenID): array
+{
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+
+    $result = $dbLnk2->query("SELECT stableIdentifier, timestamp
+                          FROM tbl_specimens_stblid
+                          WHERE specimen_ID = '$specimenID'
+                           AND visible = 1
+                          ORDER BY timestamp DESC");
+    if ($result && $result->num_rows > 0) {
+        $rows = $result->fetch_all(MYSQLI_ASSOC);
+        $data = array();
+        foreach ($rows as $row) {
+            $data[] = [
+                        'stblid'    => $row['stableIdentifier'],
+                        'timestamp' => $row['timestamp']
+                      ];
+        }
+        return $data;
+    } else {
+        return array();
     }
 }
 

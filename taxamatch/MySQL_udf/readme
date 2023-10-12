@@ -33,6 +33,9 @@ How to add UDF-function to MariaDB:
 ===================================
 prerequisite: libmariadbclient-dev
 
+Ubuntu 22.04:
+  use the file libmysqlmdldutf8.so of Ubuntu 18.04 and move it to /usr/lib/mysql/plugin
+
 Ubuntu 18.04:
   g++ -I /usr/include/mysql/ -o libmysqlmdldutf8.so -shared mdldutf8.cpp -fPIC
   cp libmysqlmdldutf8.so /usr/lib/x86_64-linux-gnu/mariadb18/plugin

@@ -352,6 +352,8 @@ function getPicInfo($picdetails)
 
     return $return;
 }
+
+
 /**
  * parse text into parts and tokens (text within '<>')
  *
@@ -370,4 +372,18 @@ function parser ($text)
         }
     }
     return $result;
+}
+
+
+/**
+ * @param int|null $specimenID
+ * @return bool
+ * @throws Exception
+ */
+function checkPhaidra (?int $specimenID): bool
+{
+    $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+    $result = $dbLnk2->query("SELECT specimenID FROM herbar_pictures.phaidra_cache WHERE specimenID = $specimenID");
+
+    return ($result->num_rows > 0);
 }

@@ -101,7 +101,7 @@ foreach ($tbls as $tbl) {
                        AND mc.source_id = '" . $tbl['source_id'] . "'
                        AND (s.specimen_ID IN ($sql_IN) OR s.HerbNummer IS NULL)");
 
-    $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.det,
+    $sql = "SELECT s.specimen_ID, s.taxonID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.det, s.Bemerkungen,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
              s.digital_image, s.observation, s.digital_image_obs, s.HerbNummer,
@@ -318,31 +318,33 @@ foreach ($tbls as $tbl) {
          * UPDATE database
          */
         $sql = "UPDATE $dbt." . $tbl['name'] . " SET
-                 UnitID = " . $dbLink2->quoteString(($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQ-ID ' . $row['specimen_ID'])) . ",
-                 AuthorTeam = " . $dbLink2->quoteString($AuthorTeam) . ",
-                 SecondEpithet = " . $dbLink2->quoteString($SecondEpithet) . ",
-                 HybridFlag = " . (($row['statusID'] == 1) ? "1" : "NULL") . ",
-                 ISODateTimeBegin = " . $dbLink2->quoteString((trim($row['Datum']) == "s.d.") ? "" : $row['Datum']) . ",
-                 NamedAreaName = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? mb_substr($row['provinz'], 0, 2) : $row['provinz']) . ",
-                 NamedAreaClass = " . (($row['nation_engl'] == "Austria") ? "'Bundesland'" : "NULL") . ",
-                 LatitudeDecimal = " . $dbLink2->quoteString($LatitudeDecimal) . ",
-                 LongitudeDecimal = " . $dbLink2->quoteString($LongitudeDecimal) . ",
-                 SpatialDatum = " . $dbLink2->quoteString($SpatialDatum) . ",
-                 CollectorsFieldNumber = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
-                 GatheringAgentsText = " . $dbLink2->quoteString($GatheringAgentsText) . ",
-                 CollectorTeam = '" . $dbLink2->real_escape_string($CollectorTeam) . "',
-                 IdentificationDate = " . $dbLink2->quoteString($IdentificationDate) . ",
-                 image_url = " . $dbLink2->quoteString($image_url) . ",
-                 thumb_url = " . $dbLink2->quoteString($thumb_url) . ",
-                 MultimediaIPR = " . (($image_url) ? $dbLink2->quoteString($row['ipr']) : "NULL") . ",
-                 copyright = " . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
-                 rights_url = " . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
+                 UnitID                   = " . $dbLink2->quoteString(($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQ-ID ' . $row['specimen_ID'])) . ",
+                 AuthorTeam               = " . $dbLink2->quoteString($AuthorTeam) . ",
+                 SecondEpithet            = " . $dbLink2->quoteString($SecondEpithet) . ",
+                 HybridFlag               = " . (($row['statusID'] == 1) ? "1" : "NULL") . ",
+                 ISODateTimeBegin         = " . $dbLink2->quoteString((trim($row['Datum']) == "s.d.") ? "" : $row['Datum']) . ",
+                 NamedAreaName            = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? mb_substr($row['provinz'], 0, 2) : $row['provinz']) . ",
+                 NamedAreaClass           = " . (($row['nation_engl'] == "Austria") ? "'Bundesland'" : "NULL") . ",
+                 LatitudeDecimal          = " . $dbLink2->quoteString($LatitudeDecimal) . ",
+                 LongitudeDecimal         = " . $dbLink2->quoteString($LongitudeDecimal) . ",
+                 SpatialDatum             = " . $dbLink2->quoteString($SpatialDatum) . ",
+                 CollectorsFieldNumber    = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
+                 GatheringAgentsText      = " . $dbLink2->quoteString($GatheringAgentsText) . ",
+                 CollectorTeam            = '" . $dbLink2->real_escape_string($CollectorTeam) . "',
+                 IdentificationDate       = " . $dbLink2->quoteString($IdentificationDate) . ",
+                 image_url                = " . $dbLink2->quoteString($image_url) . ",
+                 thumb_url                = " . $dbLink2->quoteString($thumb_url) . ",
+                 MultimediaIPR            = " . (($image_url) ? $dbLink2->quoteString($row['ipr']) : "NULL") . ",
+                 copyright                = " . (($image_url) ? $dbLink2->quoteString($row['copyright']) : "NULL") . ",
+                 rights_url               = " . (($image_url) ? $dbLink2->quoteString($row['rights_url']) : "NULL") . ",
                  multimedia_object_format = " . (($image_url) ? $dbLink2->quoteString($row['multimedia_object_format']) : "NULL") . ",
-                 recordURI = "  . $dbLink2->quoteString($recordURI) . ",
-                 LastEditor = " . $dbLink2->quoteString($LastEditor) . ",
-                 DateLastEdited = " . $dbLink2->quoteString($DateLastEdited) . ",
-                 RecordBasis = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . "
+                 recordURI                = "  . $dbLink2->quoteString($recordURI) . ",
+                 LastEditor               = " . $dbLink2->quoteString($LastEditor) . ",
+                 DateLastEdited           = " . $dbLink2->quoteString($DateLastEdited) . ",
+                 RecordBasis              = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . ",
+                 Notes                    = " . ((false) ? $dbLink2->quoteString($row['Bemerkungen']) : "NULL") . "
                 WHERE UnitIDNumeric = " . $row['specimen_ID'];
+        // TODO: add field "Notes" to fill conditionally with tbl_specimens.Bemerkungen if a flag in "meta" is set
         $dbLink2->query($sql);
     }
     $result->free();

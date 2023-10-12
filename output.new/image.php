@@ -30,9 +30,15 @@ if (!empty($picdetails['url'])) {
             doRedirectDownloadPic($picdetails, $format, 2);
             break;
         case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-            $picinfo = getPicInfo($picdetails);
-            if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
-                $picdetails['originalFilename'] = $picinfo['pics'][0];
+            if (strtolower(substr($picdetails['requestFileName'], 0, 3)) == 'wu_' && checkPhaidra($picdetails['specimenID'])) {
+                // Phaidra (only WU)
+                $picdetails['imgserver_type'] = 'phaidra';
+            } else {
+                // Djatoka
+                $picinfo = getPicInfo($picdetails);
+                if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+                    $picdetails['originalFilename'] = $picinfo['pics'][0];
+                }
             }
             doRedirectDownloadPic($picdetails, $format, 3);
             break;
@@ -156,6 +162,35 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
              .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}"
              .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$mime}&svc.scale={$scale}");
 
+    } else if ($picdetails['imgserver_type'] == 'phaidra') {  // special treatment for PHAIDRA (WU only), for europeana only
+        $ch = curl_init("https://app05a.phaidra.org/manifests/WU" . substr($picdetails['requestFileName'], 3));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($ch);
+        curl_close($ch);
+        $decoded = json_decode($curl_response, true);
+        $phaidraImages = array();
+        foreach ($decoded['sequences'] as $sequence) {
+            foreach ($sequence['canvases'] as $canvas) {
+                foreach ($canvas['images'] as $image) {
+                    $phaidraImages[] = $image['resource']['service']['@id'];
+                }
+            }
+        }
+        if (!empty($phaidraImages)) {
+            switch ($thumb) {
+                case 0:
+                    $scale = "pct:25";  // about 50%
+                    break;
+                case 3:
+                    $scale = "1200,";   // europeana
+                    break;
+                default:
+                    $scale = "160,";    // default thumbnail
+            }
+            $url = $phaidraImages[0] . "/full/$scale/0/default.jpg";
+        } else {
+            $url = "";
+        }
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         //... Check if we are using djatoka = 2 (Berlin image server)
         // Check requested format

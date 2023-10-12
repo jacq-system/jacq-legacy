@@ -62,3 +62,15 @@ $dbLink->query("UPDATE `herbar_pictures`.`phaidra_status` SET
                 WHERE id = $statusID");
 
 ob_end_flush();
+
+/*
+SELECT s.*
+FROM herbarinput.tbl_specimens s
+ LEFT JOIN herbarinput.tbl_management_collections mc ON mc.collectionID = s.collectionID
+ LEFT JOIN herbar_pictures.phaidra_cache pc ON pc.specimenID = s.specimen_ID
+WHERE mc.source_id = 1
+ AND s.digital_image = 1
+ AND pc.specimenID IS NULL
+
+9.8.2023: 9174 Items
+*/

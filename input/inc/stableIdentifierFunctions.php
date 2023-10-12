@@ -3,7 +3,7 @@
  * make a stable identifier by using the textes and patterns in meta_stblid
  *
  * if there are one or more table references in meta_stblid and one of them holds no data, the stable identifier is considered empty
- * if there is somethin in $stringInsteadColumn, this is used instead of the result of the query of the column stated in meta_stblid.table_column
+ * if there is something in $stringInsteadColumn, this is used instead of the result of the query of the column stated in meta_stblid.table_column
  *
  * @param int $source_id source-ID
  * @param array $constraints holds the primary key used in the referenced table (if any)
@@ -18,7 +18,7 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
 
     // first find a specific entry with source_id and collectionID if there is one
     if (!empty($collection_id)) {
-        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`
+        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`, `alternative`
                                          FROM `meta_stblid`
                                          WHERE `source_id` = '$source_id'
                                           AND `collectionID` = '$collection_id'
@@ -30,7 +30,7 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
         $rows_meta_stblid = $result_meta_stblid->fetch_all(MYSQLI_ASSOC);
     } else {
         // no luck, so we search an entry which is valid for any collection of a given source_id
-        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`
+        $result_meta_stblid = dbi_query("SELECT `text`, `table_column`, `pattern`, `replacement`, `alternative`
                                          FROM `meta_stblid`
                                          WHERE `source_id` = '$source_id'
                                           AND `collectionID` IS NULL
@@ -60,6 +60,22 @@ function makeStableIdentifier($source_id, $constraints, $collection_id = null, $
                     $row = $result->fetch_array();
                     if (trim($row[$column])) {
                         $stblid .= preg_replace($row_meta_stblid['pattern'], $row_meta_stblid['replacement'], $row[$column]);
+                    } elseif (!empty($row_meta_stblid['alternative'])) {
+                        $parts = _meta_stblid_parser($row_meta_stblid['alternative']);
+                        foreach ($parts as $part) {
+                            if ($part['token']) {
+                                $tokenParts = explode(':', $part['text']);
+                                $token = $tokenParts[0];
+                                $subtoken = (isset($tokenParts[1])) ? $tokenParts[1] : '';  // for future add-on
+                                switch ($token) {
+                                    case 'specimenID':
+                                        $stblid .= $constraints['specimen_ID'];
+                                        break;
+                                }
+                            } else {
+                                $stblid .= $part['text'];
+                            }
+                        }
                     } else {
                         $valid = FALSE; // we found a column, but it is empty, therefore the stable id is invalidated
                     }
@@ -91,6 +107,7 @@ function getStableIdentifier($specimenID)
     $result = dbi_query("SELECT stableIdentifier
                          FROM tbl_specimens_stblid
                          WHERE specimen_ID = '" . intval($specimenID) . "'
+                          AND stableIdentifier IS NOT NULL
                          ORDER BY timestamp DESC
                          LIMIT 1");
     if ($result && $result->num_rows > 0) {
@@ -99,4 +116,25 @@ function getStableIdentifier($specimenID)
     } else {
         return "";
     }
+}
+
+
+/**
+ * parse text into parts and tokens (text within '<>')
+ *
+ * @param string $text text to tokenize
+ * @return array found parts
+ */
+function _meta_stblid_parser (string $text): array
+{
+    $parts = explode('<', $text);
+    $result = array(array('text' => $parts[0], 'token' => false));
+    for ($i = 1; $i < count($parts); $i++) {
+        $subparts = explode('>', $parts[$i]);
+        $result[] = array('text' => $subparts[0], 'token' => true);
+        if (!empty($subparts[1])) {
+            $result[] = array('text' => $subparts[1], 'token' => false);
+        }
+    }
+    return $result;
 }

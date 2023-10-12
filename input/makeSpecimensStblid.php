@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+<?php
+session_start();
+require("inc/connect.php");
+require __DIR__ . '/vendor/autoload.php';
+
+if (!checkRight('admin')) {
+    die("You don't have the right to do that.");
+}
+?><!DOCTYPE html>
 <html>
 <head>
   <title>herbardb - make StblID</title>

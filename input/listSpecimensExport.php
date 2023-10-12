@@ -10,16 +10,16 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 $select = filter_input(INPUT_GET, 'select');
-if ($select != 'labels' && $select != 'list') {
+if ($select != 'labels' && $select != 'user' && $select != 'list') {
     die();
 }
 
-function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum) {
+function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
+{
     $text = $Sammler;
     if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
         $text .= " et al.";
-    }
-    elseif ($Sammler_2) {
+    } elseif ($Sammler_2) {
         $text .= " & " . $Sammler_2;
     }
     if ($series_number) {
@@ -33,8 +33,7 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
             $text .= " " . $series;
         }
         $text .= " " . $series_number;
-    }
-    else {
+    } else {
         if ($series) {
             $text .= " " . $series;
         }
@@ -52,14 +51,13 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
     return $text;
 }
 
-function makeTaxon($taxonID) {
+function makeTaxon($taxonID)
+{
     // prepare variables
     $taxonID = intval($taxonID);
     $scientificName = null;
 
-    // prepare query
-    $sql = "SELECT `herbar_view`.GetScientificName( $taxonID, 0 ) AS `scientificName`";
-    $result = dbi_query($sql);
+    $result = dbi_query("SELECT `herbar_view`.GetScientificName($taxonID, 0) AS `scientificName`");
 
     // check if we found a result
     if (mysqli_num_rows($result) > 0) {
@@ -70,7 +68,8 @@ function makeTaxon($taxonID) {
     return $scientificName;
 }
 
-function makeTypus($ID) {
+function makeTypus($ID)
+{
     $sql = "SELECT typus_lat, tg.genus,
            ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
            ta4.author author4, ta5.author author5,
@@ -123,8 +122,7 @@ function makeTypus($ID) {
               $row3 = mysqli_fetch_array($result3);
               $accName = taxonWithHybrids($row3); */
             $accName = makeTaxon($row['synID']);
-        }
-        else {
+        } else {
             $accName = "";
         }
 
@@ -277,8 +275,7 @@ $sqlJoin = " LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seri
 if ($select == 'labels') {
     if (isset($_SESSION['sLabelDate'])) {
         $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
-    }
-    else {
+    } else {
         $searchDate = '2000-01-01';
     }
     $sqlFrom = " FROM (herbarinput_log.log_specimens ls, tbl_specimens s) ";
@@ -289,8 +286,22 @@ if ($select == 'labels') {
 //    if (isset($_SESSION['sOrder'])) {
 //        $sqlWhere .= " ORDER BY " . $_SESSION['sOrder'];
 //    }
-}
-else {
+} elseif ($select == 'user') {
+    if ($_SESSION['sUserID'] > 0) {
+        if (isset($_SESSION['sUserDate'])) {
+            $searchDate = dbi_escape_string(trim($_SESSION['sUserDate']));
+        } else {
+            $searchDate = '2000-01-01';
+        }
+        $sqlFrom = " FROM (herbarinput_log.log_specimens ls, tbl_specimens s) ";
+        $sqlWhere = " WHERE ls.specimenID = s.specimen_ID
+                       AND ls.userID = '" . intval($_SESSION['sUserID']) . "'
+                       AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate', '1')
+                      GROUP BY ls.specimenID ";
+    } else {
+        die();  //wrong call
+    }
+} else {
     $sqlFrom = " FROM tbl_specimens s ";
     $sqlWhere = " WHERE 1 ";
 
