@@ -45,9 +45,10 @@ if (isset($_GET['ID'])) {
             FROM tbl_tax_hybrids
             WHERE taxon_ID_fk = '$id'";
     $row = dbi_query($sql)->fetch_array();
-    $newHybrid = ($row['taxon_ID_fk']) ? false : true;
+    if (!empty($row)) {
+        $newHybrid = ($row['taxon_ID_fk']) ? false : true;
 
-    $sql = "SELECT ts.taxonID, tg.genus,
+        $sql = "SELECT ts.taxonID, tg.genus,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -68,16 +69,20 @@ if (isset($_GET['ID'])) {
              LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
              LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID\n";
-    if ($row['parent_1_ID']) {
-        $p_parent_1_ID = getScientificName( $row['parent_1_ID'] );
-    } else {
-        $p_parent_1_ID = "";
-    }
+        if ($row['parent_1_ID']) {
+            $p_parent_1_ID = getScientificName($row['parent_1_ID']);
+        } else {
+            $p_parent_1_ID = "";
+        }
 
-    if ($row['parent_2_ID']) {
-        $p_parent_2_ID = getScientificName( $row['parent_2_ID'] );
+        if ($row['parent_2_ID']) {
+            $p_parent_2_ID = getScientificName($row['parent_2_ID']);
+        } else {
+            $p_parent_2_ID = "";
+        }
     } else {
-        $p_parent_2_ID = "";
+        $newHybrid = true;
+        $p_parent_1_ID = $p_parent_2_ID = "";
     }
 } else {
     // reload oder update

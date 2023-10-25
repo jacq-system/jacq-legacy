@@ -130,8 +130,8 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                              authorID = ".makeInt($authorID).",
                              DallaTorreIDs = ".quoteString($dtid).",
                              DallaTorreZusatzIDs = ".quoteString($dtzid).",
-                             hybrid = ".(($_POST['hybrid']) ? "'X'" : "NULL").",
-                             accepted = ".(($_POST['accepted']) ? "'1'" : "'0'").",
+                             hybrid = ".(($_POST['hybrid'] ?? 0) ? "'X'" : "NULL").",
+                             accepted = ".(($_POST['accepted'] ?? 0) ? "'1'" : "'0'").",
                              familyID = ".makeInt($familyID).",
                              fk_taxonID = ".makeInt($taxonID).",
                              remarks = ".quoteString($remarks)."

@@ -35,7 +35,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
     if ($sw) {
         $bpf = trim($_POST['Brummit_Powell_full']);
         if (checkRight('unlock_tbl_tax_authors')) {
-            $lock = ", locked = " . (($_POST['locked']) ? "'1'" : "'0'");
+            $lock = ", locked = " . (($_POST['locked'] ?? 0) ? "'1'" : "'0'");
         } else {
             $lock = "";
         }
@@ -46,7 +46,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
                 $sql = "UPDATE tbl_tax_authors SET
                          author = " . quoteString($_POST['author']) . ",
                          Brummit_Powell_full = " . quoteString($bpf) . ",
-                         external = " . ((!empty($_POST['external'])) ? 1 : 0) . "
+                         external = " . ((!empty($_POST['external'] ?? 0)) ? 1 : 0) . "
                          $lock
                         WHERE authorID = " . intval($_POST['ID']);
                 $result = dbi_query($sql);
@@ -106,7 +106,11 @@ $sql = "SELECT authorID, author, Brummit_Powell_full, locked, external
         FROM tbl_tax_authors
         WHERE authorID = " . intval($id);
 $result = dbi_query($sql);
-$row = mysqli_fetch_array($result);
+if ($result->num_rows > 0) {
+    $row = mysqli_fetch_array($result);
+} else {
+    $row = array('authorID' => '', 'author' => '', 'Brummit_Powell_full' => '', 'locked' => 0, 'external' =>0);
+}
 
 $cf = new CSSF();
 

@@ -271,7 +271,7 @@ function logGenera ($ID, $updated)
                 genID               = " . quoteString($ID) . ",
                 genID_old           = " . quoteString($row['genID_old']) . ",
                 genus               = " . quoteString($row['genus']) . ",
-                DallaTorreIDs       = " . uoteString($row['DallaTorreIDs']) . ",
+                DallaTorreIDs       = " . quoteString($row['DallaTorreIDs']) . ",
                 DallaTorreZusatzIDs = " . quoteString($row['DallaTorreZusatzIDs']) . ",
                 genID_inc0406       = " . quoteString($row['genID_inc0406']) . ",
                 hybrid              = " . quoteString($row['hybrid']) . ",

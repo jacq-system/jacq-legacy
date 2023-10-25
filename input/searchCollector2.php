@@ -27,13 +27,13 @@ echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 $cf = new CSSF();
 
 $cf->label(15,2,"search add. Collector(s)");
-$cf->inputText(15,2,25,"sammler2",$_POST['sammler2'],120);
+$cf->inputText(15,2,25,"sammler2",($_POST['sammler2'] ?? ''),120);
 $cf->buttonSubmit(42,2,"submit"," Search ");
 $cf->buttonJavaScript(52,2," Cancel ","self.close()");
 
 echo "</form>\n";
 
-if ($_POST['submit']) {
+if (!empty($_POST['submit'])) {
   echo "<div style=\"position: absolute; left: 2em; top: 5em;\">\n";
 
   $sql = "SELECT Sammler_2, Sammler_2ID ".
