@@ -41,44 +41,50 @@ function clearExternal($table, $id)
 }
 
 $blocked = false;
-if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
-    $sql = "SELECT ts.taxonID, ts.synID, ts.basID, ts.genID, ts.annotation, ts.external,
-             tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tag.author author_g,
-             tf.family, tsc.category, tst.status, tst.statusID, tr.rank, tr.tax_rankID,
-             ta.author, ta.authorID, ta.Brummit_Powell_full,
-             ta1.author author1, ta1.authorID authorID1, ta1.Brummit_Powell_full bpf1,
-             ta2.author author2, ta2.authorID authorID2, ta2.Brummit_Powell_full bpf2,
-             ta3.author author3, ta3.authorID authorID3, ta3.Brummit_Powell_full bpf3,
-             ta4.author author4, ta4.authorID authorID4, ta4.Brummit_Powell_full bpf4,
-             ta5.author author5, ta5.authorID authorID5, ta5.Brummit_Powell_full bpf5,
-             te.epithet, te.epithetID,
-             te1.epithet epithet1, te1.epithetID epithetID1,
-             te2.epithet epithet2, te2.epithetID epithetID2,
-             te3.epithet epithet3, te3.epithetID epithetID3,
-             te4.epithet epithet4, te4.epithetID epithetID4,
-             te5.epithet epithet5, te5.epithetID epithetID5
-            FROM tbl_tax_species ts
-             LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-             LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-             LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-             LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-             LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-             LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-             LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-             LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-             LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-             LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-             LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-             LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-             LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
-             LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID
-             LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-             LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
-             LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
-             LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-            WHERE taxonID = " . extractID($_GET['sel']);
-    $result = dbi_query($sql);
-    if (mysqli_num_rows($result) > 0) {
+if (isset($_GET['sel'])) {
+    if (extractID($_GET['sel']) != "NULL") {
+        $sql = "SELECT ts.taxonID, ts.synID, ts.basID, ts.genID, ts.annotation, ts.external,
+                 tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tag.author author_g,
+                 tf.family, tsc.category, tst.status, tst.statusID, tr.rank, tr.tax_rankID,
+                 ta.author, ta.authorID, ta.Brummit_Powell_full,
+                 ta1.author author1, ta1.authorID authorID1, ta1.Brummit_Powell_full bpf1,
+                 ta2.author author2, ta2.authorID authorID2, ta2.Brummit_Powell_full bpf2,
+                 ta3.author author3, ta3.authorID authorID3, ta3.Brummit_Powell_full bpf3,
+                 ta4.author author4, ta4.authorID authorID4, ta4.Brummit_Powell_full bpf4,
+                 ta5.author author5, ta5.authorID authorID5, ta5.Brummit_Powell_full bpf5,
+                 te.epithet, te.epithetID,
+                 te1.epithet epithet1, te1.epithetID epithetID1,
+                 te2.epithet epithet2, te2.epithetID epithetID2,
+                 te3.epithet epithet3, te3.epithetID epithetID3,
+                 te4.epithet epithet4, te4.epithetID epithetID4,
+                 te5.epithet epithet5, te5.epithetID epithetID5
+                FROM tbl_tax_species ts
+                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                 LEFT JOIN tbl_tax_status tst ON tst.statusID = ts.statusID
+                 LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID
+                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                 LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
+                 LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+                 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
+                WHERE taxonID = " . extractID($_GET['sel']);
+        $result = dbi_query($sql);
+        $resultValid = mysqli_num_rows($result) > 0;
+    } else {
+        $resultValid = false;
+    }
+
+    if ($resultValid) {
         $row = mysqli_fetch_array($result);
         $p_taxonID      = $row['taxonID'];
 
@@ -189,7 +195,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_bas        = $_POST['bas'];
     $p_basIndex   = (strlen(trim($_POST['bas'])) > 0) ? $_POST['basIndex'] : 0;
     $p_annotation = $_POST['annotation'];
-    $p_external   = $_POST['external'];
+    $p_external   = $_POST['external'] ?? 0;
 
     if ($_POST['rankIndex']) {
         $p_rankIndex = $_POST['rankIndex'];
