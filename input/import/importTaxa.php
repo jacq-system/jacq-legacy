@@ -507,11 +507,13 @@ if ($type==1 && !$blocked) {  // file uploaded
                                     param2=" . quoteString($import[$i][7]);
                     dbi_query($sqlService);
                 }
-                for ($j = 0; $j < count($hybrid[$i]); $j++) {
-                    echo "<tr><td colspan=\"9\">"
-                       . "<a href=\"../editSpecies.php?sel=" . htmlspecialchars("<" . $hybrid[$i][$j] . ">") . "\" target=\"Species\">"
-                       . getTaxon($hybrid[$i][$j]) . "</a></td>";
-                    echo "</tr>\n";
+                if (!empty($hybrid[$i])) {
+                    for ($j = 0; $j < count($hybrid[$i]); $j++) {
+                        echo "<tr><td colspan=\"9\">"
+                           . "<a href=\"../editSpecies.php?sel=" . htmlspecialchars("<" . $hybrid[$i][$j] . ">") . "\" target=\"Species\">"
+                           . getTaxon($hybrid[$i][$j]) . "</a></td>"
+                           . "</tr>\n";
+                    }
                 }
                 if (count($taxamatch[$i]) > 0) {
                     echo "<tr><td style=\"background-color:yellow\" colspan=\"9\">";
@@ -629,13 +631,13 @@ if ($type==1 && !$blocked) {  // file uploaded
         $taxonID = 0;
         $result = dbi_query($sql1);
         if (mysqli_num_rows($result) == 0) {
-            $result = dbi_query($sql2);
-            if ($result) {
+            $result2 = dbi_query($sql2);
+            if ($result2) {
                 $taxonID = dbi_insert_id();
                 logSpecies($taxonID, 0);
                 updateTblTaxSciname($taxonID);
                 if (intval($_POST['service'])) {
-                    $sqlService = "INSERT INTO tbl_nom_service_names SET
+                    $sqlService = "INSERT IGNORE INTO tbl_nom_service_names SET
                                     taxonID = '$taxonID',
                                     serviceID = '" . intval($_POST['service']) . "',
                                     param1 = " . quoteString($data[$i]['serviceTaxID']) . ",

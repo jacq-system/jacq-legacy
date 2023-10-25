@@ -29,7 +29,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlo
         $id = $_POST['ID'];
     } else {
         if (checkRight('unlock_tbl_tax_epithets')) {
-            $lock = ", locked = " . (($_POST['locked']) ? "'1'" : "'0'");
+            $lock = ", locked = " . (($_POST['locked'] ?? 0) ? "'1'" : "'0'");
         } else {
             $lock = "";
         }
@@ -83,13 +83,17 @@ $sql = "SELECT epithet, epithetID, locked, external
         FROM tbl_tax_epithets
         WHERE epithetID = " . intval($id);
 $result = dbi_query($sql);
-$row = mysqli_fetch_array($result);
+if ($result->num_rows > 0) {
+    $row = mysqli_fetch_array($result);
+} else {  // nothing found, so provide empty result to prevent errors
+    $row = array('epithet' => '', 'epithetID' => '', 'locked' => 0, 'external' => 0);
+}
 
 $cf = new CSSF();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['epithetID'] . "\">\n";
 $cf->label(7, 0.5, "ID");
-$cf->text(7, 0.5, "&nbsp;" . (($row['epithetID']) ? $row['epithetID'] : "new"));
+$cf->text(7, 0.5, "&nbsp;" . (($row['epithetID']) ?: "new"));
 
 if (checkRight('unlock_tbl_tax_epithets')) {
     $cf->label(18, 0.5, "locked");

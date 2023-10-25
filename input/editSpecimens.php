@@ -297,8 +297,8 @@ if (isset($_GET['sel'])) {
     $p_CollNummer        = $_POST['CollNummer'];
     $p_identstatus       = $_POST['identstatus'];
     $p_batch             = filter_input(INPUT_POST, 'batch');
-    $p_checked           = $_POST['checked'];
-    $p_accessible        = $_POST['accessible'];
+    $p_checked           = $_POST['checked'] ?? 0;
+    $p_accessible        = $_POST['accessible'] ?? 0;
     $p_series            = $_POST['seriesIndex'];
     $p_series_number     = $_POST['series_number'];
     $p_Nummer            = $_POST['Nummer'];
@@ -454,7 +454,7 @@ if (isset($_GET['sel'])) {
                 $blockCause = 1;  // HerbNummer and source_id already in database
                 $dummyRow = mysqli_fetch_array($dummy);
                 $blockSource = $dummyRow['specimen_ID'];
-                $edit = ($_POST['edit']) ? true : false;
+                $edit = ($_POST['edit'] ?? 0) ? true : false;
                 $p_specimen_ID = $_POST['specimen_ID'];
             } else {
                 if ($updated) {
@@ -487,7 +487,10 @@ if (isset($_GET['sel'])) {
         }
     } else if (!empty($_POST['submitNewCopy'])) {
         $p_specimen_ID = "";
-        $p_digital_image = $p_digital_image_obs = "";  // don't copy digital image checkmark
+        $copyBits = dbi_query("SELECT copy_bits FROM metadb WHERE source_id_fk = {$_SESSION['sid']}")->fetch_assoc()['copy_bits'];
+        if (strpos($copyBits, "digital_image") === false) {
+            $p_digital_image = $p_digital_image_obs = "";  // don't copy digital image checkmark
+        }
         $edit = false;
     } else {
         $edit = (!empty($_POST['edit'])) ? true : false;

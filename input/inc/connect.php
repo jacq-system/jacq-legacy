@@ -11,7 +11,7 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     } else {
         header("Location: login.php");
         exit();
-    }  // TODO: remove the remaining lines up to $dbLink... when removing the mysql-part
+    }
 }
 
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
