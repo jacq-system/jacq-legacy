@@ -3,6 +3,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Jacq\DbAccess;
 
 if (in_array("-h", $argv) || in_array("--help", $argv) || count($argv) == 1) {
@@ -16,10 +17,16 @@ if ($server_id == 1) {
     die("This server (wu) cannot be scanned\n");
 }
 
-$dbLnk = DbAccess::ConnectTo('INPUT');
+try {
+    $dbLnk = DbAccess::ConnectTo('INPUT');
+} catch (Exception $e) {
+    die($e->getMessage());
+}
 $cacheCollectionRules = array();
 
 /**
+ * make a correct picture filename for a given Herbarnumber and collection
+ *
  * @param string $HerbNummerIn
  * @param int $collectionID
  * @return string
@@ -105,14 +112,18 @@ function pictureFilenameParser (string $text): array
     return $result;
 }
 
-
+/**
+ * start of main program
+ */
 $imageDef = $dbLnk->query("SELECT source_id_fk, HerbNummerNrDigits, imgserver_type, imgserver_url, `key`
                            FROM `tbl_img_definition`
                            WHERE `img_def_ID` = $server_id")
-                  ->fetch_assoc();  // TODO: do not use img_coll_short: sourceIDs 6 (w), 29 (b) and 54 (bpww) use different coll_short_prj for some collections
+                  ->fetch_assoc();
 if (empty($imageDef)) {
     die("unknown server-ID\n");
 }
+
+// get all possible first parts of picture filenames
 $rows = $dbLnk->query("SELECT coll_short_prj, picture_filename 
                        FROM tbl_management_collections 
                        WHERE source_id = {$imageDef['source_id_fk']}")
@@ -136,41 +147,43 @@ switch ($imageDef['imgserver_type']) {
     case "djatoka":
         $client = new Client(['timeout' => 2]);
 
+        // cycle through all possible first parts of picture filenames, get possible pictures from the picture-server and process them
         foreach ($searchpatterns as $searchpattern) {
-//            try {
-//                $response = $client->request('POST', $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer', [
-//                                              'json' => ['method' => 'listResources',
-//                                                         'params' => [$imageDef['key'], [$searchpattern]],
-//                                                         'id' => '1'],
-//                                              'verify' => false
-//                                            ]);
-//                $data = json_decode($response->getBody()->getContents(), true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
-//            } catch (Exception $e) {
-//                die($e->getMessage());
-//            }
-
-/* old variant
-        $cacheFilename = $counterFilename = array();
-        foreach ($data['result'] as $filename) {
-            $filename_upper = strtoupper($filename);
-            if (empty($cacheFilename[$filename_upper])) {
-                $cacheFilename[$filename_upper] = 1;
-            } else {
-                if (empty($counterFilename[$filename_upper])) {
-                    $counterFilename[$filename_upper] = 2;
-                } else {
-                    $counterFilename[$filename_upper]++;
-                }
+            try {
+                $response = $client->request('POST', $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer', [
+                                              'json' => ['method' => 'listResources',
+                                                         'params' => [$imageDef['key'], [$searchpattern]],
+                                                         'id' => '1'],
+                                              'verify' => false
+                                            ]);
+                $data = json_decode($response->getBody()->getContents(), true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
+            } catch (GuzzleException $e) {
+                die($e->getMessage());
             }
-        }
-        var_export($counterFilename);
 
-        $sql_parts = array();
-        foreach ($data['result'] as $filename) {
-            $sql_parts[] = "($server_id, \"$filename\")";
-        }
-        $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename) VALUES " . implode(',', $sql_parts));
-*/
+            /* old variant
+                    $cacheFilename = $counterFilename = array();
+                    foreach ($data['result'] as $filename) {
+                        $filename_upper = strtoupper($filename);
+                        if (empty($cacheFilename[$filename_upper])) {
+                            $cacheFilename[$filename_upper] = 1;
+                        } else {
+                            if (empty($counterFilename[$filename_upper])) {
+                                $counterFilename[$filename_upper] = 2;
+                            } else {
+                                $counterFilename[$filename_upper]++;
+                            }
+                        }
+                    }
+                    var_export($counterFilename);
+
+                    $sql_parts = array();
+                    foreach ($data['result'] as $filename) {
+                        $sql_parts[] = "($server_id, \"$filename\")";
+                    }
+                    $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename) VALUES " . implode(',', $sql_parts));
+            */
+            // if we receive any new pictures insert them into the database
             if (!empty($data['result'])) {
                 foreach ($data['result'] as $filename) {
                     $filename_clean = $dbLnk->real_escape_string($filename);
@@ -185,7 +198,7 @@ switch ($imageDef['imgserver_type']) {
             }
         }
 
-        // first: get all specimens who should have images and are not mentioned in the table djatoka_images
+        // first: get all specimens who should have images and are not mentioned in the table djatoka_images yet
         $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer, s.collectionID
                                     FROM tbl_specimens s
                                      JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
@@ -211,15 +224,15 @@ switch ($imageDef['imgserver_type']) {
                     foreach ($images as $image) {
                         // and link them to the specimen
                         echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
-//                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-//                                        source_id = {$imageDef['source_id_fk']},
-//                                        specimen_ID = {$specimen['specimen_ID']}
-//                                       WHERE id = {$image['id']}");
+                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                        source_id = {$imageDef['source_id_fk']},
+                                        specimen_ID = {$specimen['specimen_ID']}
+                                       WHERE id = {$image['id']}");
                     }
                 }
             }
         }
-        echo "--\n";
+        echo "----\n";
 
         // second: look for any picture with extensions who still have no specimen connected.
         //         These are probably additional pictures of already linked ones without extension
@@ -244,18 +257,18 @@ switch ($imageDef['imgserver_type']) {
                     $searchFor = "";                            // no extension present, so we've nothing to do
                 }
                 if ($searchFor) {  // we've found an extension, so search for the master picture, if any
-                    $knownimage = $dbLnk->query("SELECT id, filename, source_id, specimen_ID
+                    $knownImage = $dbLnk->query("SELECT id, filename, source_id, specimen_ID
                                                  FROM herbar_pictures.djatoka_images
                                                  WHERE server_id = $server_id
                                                   AND filename = '$searchFor'
                                                   AND specimen_ID IS NOT NULL")
                                         ->fetch_assoc();
-                    if (!empty($knownimage)) {
-                        echo "{$image['filename']}: {$knownimage['filename']} ({$knownimage['specimen_ID']})\n";
-//                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-//                                    source_id = {$knownimage['source_id']},
-//                                    specimen_ID = {$knownimage['specimen_ID']}
-//                                   WHERE id = {$image['id']}");
+                    if (!empty($knownImage)) {
+                        echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
+                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                    source_id = {$knownImage['source_id']},
+                                    specimen_ID = {$knownImage['specimen_ID']}
+                                   WHERE id = {$image['id']}");
                     }
                 }
             }
