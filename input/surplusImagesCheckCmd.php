@@ -11,6 +11,7 @@ if (in_array("-h", $argv) || in_array("--help", $argv) || count($argv) == 1) {
        . $argv[0] . " -h  --help    this explanation\n";
     die();
 }
+$debug = in_array("-d", $argv) || in_array("--debug", $argv);
 
 $server_id = intval($argv[1]);
 if ($server_id == 1) {
@@ -223,7 +224,9 @@ switch ($imageDef['imgserver_type']) {
                 if (!empty($images)) {
                     foreach ($images as $image) {
                         // and link them to the specimen
-                        echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
+                        if ($debug) {
+                            echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
+                        }
                         $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                         source_id = {$imageDef['source_id_fk']},
                                         specimen_ID = {$specimen['specimen_ID']}
@@ -232,7 +235,9 @@ switch ($imageDef['imgserver_type']) {
                 }
             }
         }
-        echo "----\n";
+        if ($debug) {
+            echo "----\n";
+        }
 
         // second: look for any picture with extensions who still have no specimen connected.
         //         These are probably additional pictures of already linked ones without extension
@@ -264,7 +269,9 @@ switch ($imageDef['imgserver_type']) {
                                                   AND specimen_ID IS NOT NULL")
                                         ->fetch_assoc();
                     if (!empty($knownImage)) {
-                        echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
+                        if ($debug) {
+                            echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
+                        }
                         $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                     source_id = {$knownImage['source_id']},
                                     specimen_ID = {$knownImage['specimen_ID']}
