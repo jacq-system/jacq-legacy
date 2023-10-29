@@ -77,6 +77,12 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
             $('html').removeClass('waiting');
             jaxon_showLatestUpdate(serverID);
         }
+        function listImages(serverID)
+        {
+            $('html').addClass('waiting');
+            jaxon_listSurplusImages(serverID);
+            $('html').removeClass('waiting');
+        }
     </script>
 </head>
 
@@ -85,11 +91,12 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
 <h1>show images without specimen</h1>
 <div>
     Server&nbsp;&nbsp;<span id="drp_servers"></span>
-    <button onclick="jaxon_listSurplusImages($('#drp_servers select').val())">list image files</button>
+    <button onclick="listImages($('#drp_servers select').val())">list image files</button>
     <span id="latestUpdate"></span>
 </div>
 <br>
 <div id="totalSurplusImages"></div>
 <div id="surplusImageList"></div>
+<div id="cmdOutput"></div>
 </body>
 </html>

@@ -154,8 +154,6 @@ function scanServer(int $server_id)
 {
     global $dbLnk, $verbose;
 
-    echo "$server_id start\n";
-
     $imageDef = $dbLnk->query("SELECT source_id_fk, HerbNummerNrDigits, imgserver_type, imgserver_url, `key`
                                FROM `tbl_img_definition`
                                WHERE `img_def_ID` = $server_id")
@@ -186,6 +184,8 @@ function scanServer(int $server_id)
 
     switch ($imageDef['imgserver_type']) {
         case "djatoka":
+            echo "$server_id start\n";
+
             $client = new Client(['timeout' => 2]);
 
             // cycle through all possible first parts of picture filenames, get possible pictures from the picture-server and process them
