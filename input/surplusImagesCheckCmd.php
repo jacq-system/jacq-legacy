@@ -50,6 +50,8 @@ if ($auto) {
     }
 } elseif ($server_id) {
     scanServer($server_id);
+} else {
+    echo "nothing to do\n";
 }
 
 
@@ -201,6 +203,9 @@ function scanServer(int $server_id)
                 } catch (GuzzleException $e) {
                     die($e->getMessage());
                 }
+                if ($verbose) {
+                    echo "transfer $searchpattern finished\n";
+                }
 
                 /* old variant
                         $cacheFilename = $counterFilename = array();
@@ -236,6 +241,9 @@ function scanServer(int $server_id)
                             $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename) VALUES ($server_id, '$filename_clean')");
                         }
                     }
+                }
+                if ($verbose) {
+                    echo "db insert $searchpattern finished\n";
                 }
             }
 
