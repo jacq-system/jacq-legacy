@@ -4,15 +4,15 @@ require("../inc/connect.php");
 require("../inc/log_functions.php");
 require_once('../inc/jsonRPCClient.php');
 
-$authorMayBeEmpty = (!empty($_POST['authorEmpty'])) ? true : false;
+$authorMayBeEmpty = !empty($_POST['authorEmpty']);
 
 /**
  * parses a line of a textfile and returns an array or false
  *
  * @param resource $handle
- * @param int[optional] $minNumOfParts minimum number of required columns (default: 2)
- * @param string[optional] $delimiter sets the field delimiter (default: ;)
- * @param string[optional] $enclosure sets the field enclosure character (default: ")
+ * @param int $minNumOfParts [optional] minimum number of required columns (default: 2)
+ * @param string $delimiter [optional] sets the field delimiter (default: ;)
+ * @param string $enclosure [optional] sets the field enclosure character (default: ")
  * @return array|bool array of elements or "false" if too short
  */
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
@@ -327,6 +327,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                                    AND subvarietyID IS NULL AND subvariety_authorID IS NULL
                                    AND formaID IS NULL AND forma_authorID IS NULL
                                    AND subformaID IS NULL AND subforma_authorID IS NULL";
+
             }
             if ($infraName) {
                 $sql2 .= " AND {$infraName}ID = '$subepithetID'";
@@ -337,6 +338,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                 } else {
                     $sql2 .= " AND {$infraName}_authorID IS NULL";
                 }
+            } else {
+                $subepithetID = 0;
+                $subauthorID  = 0;
             }
             $result = dbi_query($sql);
             if (mysqli_num_rows($result) > 0) {
@@ -500,7 +504,7 @@ if ($type==1 && !$blocked) {  // file uploaded
                 }
                 echo "</tr>\n";
                 if ($status[$i] == "exists" && count($exists[$i]) == 1 && intval($_POST['service'])) {
-                    $sqlService = "INSERT INTO tbl_nom_service_names SET
+                    $sqlService = "INSERT IGNORE INTO tbl_nom_service_names SET
                                     taxonID='" . $exists[$i][0] . "',
                                     serviceID='" . intval($_POST['service']) . "',
                                     param1=" . quoteString($import[$i][6]) . ",

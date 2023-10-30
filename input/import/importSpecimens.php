@@ -499,7 +499,7 @@ if ($run == 2) {  // file uploaded
                 }
             }
         }
-        error_log("check");
+//        error_log("check");
 
        /**
         * obtain suggestions for a taxon name by TaxaMatch
