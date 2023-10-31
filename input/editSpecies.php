@@ -164,50 +164,41 @@ if (isset($_GET['sel'])) {
     if (isset($_GET['new']) && $_GET['new'] == 1) $p_taxonID = "";
     $edit = (!empty($_GET['edit'])) ? true : false;
 } else {
-    $p_species            = $_POST['species'];
-    $p_speciesIndex       = (strlen(trim($_POST['species'])) > 0) ? $_POST['speciesIndex'] : 0;
-    $p_author             = $_POST['author'];
-    $p_authorIndex        = (strlen(trim($_POST['author'])) > 0) ? $_POST['authorIndex'] : 0;
-    $p_subspecies         = $_POST['subspecies'];
-    $p_subspeciesIndex    = (strlen(trim($_POST['subspecies'])) > 0) ? $_POST['subspeciesIndex'] : 0;
-    $p_subauthor          = $_POST['subauthor'];
-    $p_subauthorIndex     = (strlen(trim($_POST['subauthor'])) > 0) ? $_POST['subauthorIndex'] : 0;
-    $p_variety            = $_POST['variety'];
-    $p_varietyIndex       = (strlen(trim($_POST['variety'])) > 0) ? $_POST['varietyIndex'] : 0;
-    $p_varauthor          = $_POST['varauthor'];
-    $p_varauthorIndex     = (strlen(trim($_POST['varauthor'])) > 0) ? $_POST['varauthorIndex'] : 0;
-    $p_subvariety         = $_POST['subvariety'];
-    $p_subvarietyIndex    = (strlen(trim($_POST['subvariety'])) > 0) ? $_POST['subvarietyIndex'] : 0;
-    $p_subvarauthor       = $_POST['subvarauthor'];
-    $p_subvarauthorIndex  = (strlen(trim($_POST['subvarauthor'])) > 0) ? $_POST['subvarauthorIndex'] : 0;
-    $p_forma              = $_POST['forma'];
-    $p_formaIndex         = (strlen(trim($_POST['forma'])) > 0) ? $_POST['formaIndex'] : 0;
-    $p_forauthor          = $_POST['forauthor'];
-    $p_forauthorIndex     = (strlen(trim($_POST['forauthor'])) > 0) ? $_POST['forauthorIndex'] : 0;
-    $p_subforma           = $_POST['subforma'];
-    $p_subformaIndex      = (strlen(trim($_POST['subforma'])) > 0) ? $_POST['subformaIndex'] : 0;
-    $p_subforauthor       = $_POST['subforauthor'];
-    $p_subforauthorIndex  = (strlen(trim($_POST['subforauthor'])) > 0) ? $_POST['subforauthorIndex'] : 0;
-    $p_gen        = $_POST['gen'];
-    $p_genIndex   = (strlen(trim($_POST['gen'])) > 0) ? $_POST['genIndex'] : 0;
-    $p_syn        = $_POST['syn'];
-    $p_synIndex   = (strlen(trim($_POST['syn'])) > 0) ? $_POST['synIndex'] : 0;
-    $p_bas        = $_POST['bas'];
-    $p_basIndex   = (strlen(trim($_POST['bas'])) > 0) ? $_POST['basIndex'] : 0;
-    $p_annotation = $_POST['annotation'];
+    $p_species            = $_POST['species'] ?? "";
+    $p_speciesIndex       = (strlen(trim($_POST['species'] ?? "")) > 0) ? $_POST['speciesIndex'] : 0;
+    $p_author             = $_POST['author'] ?? "";
+    $p_authorIndex        = (strlen(trim($_POST['author'] ?? "")) > 0) ? $_POST['authorIndex'] : 0;
+    $p_subspecies         = $_POST['subspecies'] ?? "";
+    $p_subspeciesIndex    = (strlen(trim($_POST['subspecies'] ?? "")) > 0) ? $_POST['subspeciesIndex'] : 0;
+    $p_subauthor          = $_POST['subauthor'] ?? "";
+    $p_subauthorIndex     = (strlen(trim($_POST['subauthor'] ?? "")) > 0) ? $_POST['subauthorIndex'] : 0;
+    $p_variety            = $_POST['variety'] ?? "";
+    $p_varietyIndex       = (strlen(trim($_POST['variety'] ?? "")) > 0) ? $_POST['varietyIndex'] : 0;
+    $p_varauthor          = $_POST['varauthor'] ?? "";
+    $p_varauthorIndex     = (strlen(trim($_POST['varauthor'] ?? "")) > 0) ? $_POST['varauthorIndex'] : 0;
+    $p_subvariety         = $_POST['subvariety'] ?? "";
+    $p_subvarietyIndex    = (strlen(trim($_POST['subvariety'] ?? "")) > 0) ? $_POST['subvarietyIndex'] : 0;
+    $p_subvarauthor       = $_POST['subvarauthor'] ?? "";
+    $p_subvarauthorIndex  = (strlen(trim($_POST['subvarauthor'] ?? "")) > 0) ? $_POST['subvarauthorIndex'] : 0;
+    $p_forma              = $_POST['forma'] ?? "";
+    $p_formaIndex         = (strlen(trim($_POST['forma'] ?? "")) > 0) ? $_POST['formaIndex'] : 0;
+    $p_forauthor          = $_POST['forauthor'] ?? "";
+    $p_forauthorIndex     = (strlen(trim($_POST['forauthor'] ?? "")) > 0) ? $_POST['forauthorIndex'] : 0;
+    $p_subforma           = $_POST['subforma'] ?? "";
+    $p_subformaIndex      = (strlen(trim($_POST['subforma'] ?? "")) > 0) ? $_POST['subformaIndex'] : 0;
+    $p_subforauthor       = $_POST['subforauthor'] ?? "";
+    $p_subforauthorIndex  = (strlen(trim($_POST['subforauthor'] ?? "")) > 0) ? $_POST['subforauthorIndex'] : 0;
+    $p_gen        = $_POST['gen'] ?? "";
+    $p_genIndex   = (strlen(trim($_POST['gen'] ?? "")) > 0) ? $_POST['genIndex'] : 0;
+    $p_syn        = $_POST['syn'] ?? "";
+    $p_synIndex   = (strlen(trim($_POST['syn'] ?? "")) > 0) ? $_POST['synIndex'] : 0;
+    $p_bas        = $_POST['bas'] ?? "";
+    $p_basIndex   = (strlen(trim($_POST['bas'] ?? "")) > 0) ? $_POST['basIndex'] : 0;
+    $p_annotation = $_POST['annotation'] ?? "";
     $p_external   = $_POST['external'] ?? 0;
 
-    if ($_POST['rankIndex']) {
-        $p_rankIndex = $_POST['rankIndex'];
-    } else  {
-        $p_rankIndex = 1;
-    }
-
-    if ($_POST['statusIndex']) {
-        $p_statusIndex = $_POST['statusIndex'];
-    } else {
-        $p_statusIndex = 96;
-    }
+    $p_rankIndex   = (!empty($_POST['rankIndex']))   ? $_POST['rankIndex']   : 1;
+    $p_statusIndex = (!empty($_POST['statusIndex'])) ? $_POST['statusIndex'] : 96;
 
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x1) != 0)) {
         if (checkRight('use_access')) {
@@ -337,7 +328,8 @@ if (isset($_GET['sel'])) {
         $edit = false;
     } else {
         $edit = (!empty($_POST['reload']) && !empty($_POST['edit'])) ? true : false;
-        $p_taxonID = $_POST['taxonID'];
+        $p_taxonID = $_POST['taxonID'] ?? "";
+        $p_taxonID = $_POST['taxonID'] ?? "";
     }
 }
 

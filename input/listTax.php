@@ -63,13 +63,13 @@ if (isset($_POST['search'])) {
 	if(!isset($_POST['taxon']))unset($_SESSION['taxon_list']);
     $_SESSION['taxMDLD'] = $_POST['mdld'];  // BP
 	if(!empty($_SESSION['taxMDLD'])){
-		$_SESSION['noLiterature']  =(isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1')?true:false;
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1';
 
 	}
     if ($_SESSION['editFamily']) $_POST['family'] = $_SESSION['editFamily'];
-    if ($_POST['commonname']) { // commonName
+    if (!empty($_POST['commonname'])) { // commonName
 		$_SESSION['taxType']       = 5; // list ?
-		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
 		$_SESSION['taxCommonname'] = $_POST['commonname'];
 		$_SESSION['taxFamily']     = "";
         $_SESSION['taxGenus']      = "";
@@ -83,10 +83,10 @@ if (isset($_POST['search'])) {
         $_SESSION['taxExternal']   = "";
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet,common_name, author";
         $_SESSION['taxOrTyp']      = 51;
-	}else if ($_POST['collector'] || $_POST['number'] || $_POST['date']) {
+	}else if (!empty($_POST['collector']) || !empty($_POST['number']) || !empty($_POST['date'])) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 4; // list Species, other display
-		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = $_POST['species'];
@@ -97,13 +97,13 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = $_POST['date'];
         $_SESSION['taxAuthor']     = $_POST['author'];
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
+        $_SESSION['taxExternal']   = isset($_POST['external']) && $_POST['external'] == '1';
         $_SESSION['taxOrder']      = "Sammler, Sammler_2, series, leg_nr, tt.date";
         $_SESSION['taxOrTyp']      = 41;
-    } else if ($_POST['species'] || $_POST['status']){
+    } else if (!empty($_POST['species']) || !empty($_POST['status'])){
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 3; // list Species
-		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
         $_SESSION['taxFamily']     = $_POST['family'];
 		$_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = $_POST['species'];
@@ -114,14 +114,14 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = $_POST['author'];
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
+        $_SESSION['taxExternal']   = isset($_POST['external']) && $_POST['external'] == '1';
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet, author, epithet1, author1, "
                                    . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
         $_SESSION['taxOrTyp']      = 31;
-    } else if ($_POST['genus']) {
+    } else if (!empty($_POST['genus'])) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 2; // list Genus
-		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
         $_SESSION['taxFamily']     = $_POST['family'];
         $_SESSION['taxGenus']      = $_POST['genus'];
         $_SESSION['taxSpecies']    = "";
@@ -132,14 +132,14 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = "";
         $_SESSION['taxAnnotation'] = $_POST['annotation'];
-        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
+        $_SESSION['taxExternal']   = isset($_POST['external']) && $_POST['external'] == '1';
         $_SESSION['taxOrder']      = "genus, auth_g, family";
         $_SESSION['taxOrTyp']      = 21;
     } else {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 1; // list Family
-		$_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
-		$_SESSION['taxFamily']     = $_POST['family'];
+		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
+		$_SESSION['taxFamily']     = $_POST['family'] ?? "";
         $_SESSION['taxGenus']      = "";
         $_SESSION['taxSpecies']    = "";
         $_SESSION['taxStatus']     = "";
@@ -148,7 +148,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxDate']       = "";
         $_SESSION['taxAuthor']     = "";
         $_SESSION['taxAnnotation'] = "";
-        $_SESSION['taxExternal']   = (isset($_POST['external']) && $_POST['external'] == '1') ? true : false;
+        $_SESSION['taxExternal']   = isset($_POST['external']) && $_POST['external'] == '1';
         $_SESSION['taxOrder']      = "category, family";
         $_SESSION['taxOrTyp']      = 11;
     }
@@ -170,7 +170,7 @@ if (isset($_POST['search'])) {
     $_SESSION['taxOrTyp']      = 11;
 } else if (isset($_GET['lgenus'])) {
     $_SESSION['taxType']       = 2; // list Genus
-    $_SESSION['noLiterature']  = (isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1') ? true : false;
+    $_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
     $_SESSION['taxFamily']     = ($_SESSION['editFamily']) ? $_SESSION['editFamily'] : "";
     $_SESSION['taxGenus']      = $_GET['lgenus'];
     $_SESSION['taxSpecies']    = "";

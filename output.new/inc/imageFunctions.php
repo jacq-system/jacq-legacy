@@ -2,6 +2,7 @@
 // can only be used if inc/functions.php is included beforehand
 use Jacq\DbAccess;
 use Jacq\ImageQuery;
+use JsonRPC\Client;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -118,7 +119,7 @@ function getPicDetails($request, $sid = '')
         // Construct clean filename
         if ($row['imgserver_type'] == 'bgbm') {
             // Remove spaces for B HerbNumber
-            $HerbNummer = ($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQID' . $specimenID);
+            $HerbNummer = ($row['HerbNummer']) ?: ('JACQID' . $specimenID);
             $HerbNummer = str_replace(' ', '', $HerbNummer);
             $filename = sprintf($HerbNummer);
             $key = $row['key'];
@@ -145,9 +146,9 @@ function getPicDetails($request, $sid = '')
             if (substr($url, -1) != '/') {
                 $url .= '/';  // to ensure that $url ends with a slash
             }
-            $filename = sprintf($uriSubset["filename"]);
-            $originalFilename = sprintf($uriSubset["thumb"]);
-            $key = sprintf($uriSubset["html"]);
+            $filename = $uriSubset["filename"];
+            $originalFilename = $uriSubset["thumb"];
+            $key = $uriSubset["html"];
         } else {
             if ($row['collectionID'] == 90 || $row['collectionID'] == 92 || $row['collectionID'] == 123) { // w-krypt needs special treatment
                 /* TODO
@@ -160,7 +161,7 @@ function getPicDetails($request, $sid = '')
                  */
                 $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 try {  // ask the picture server for a picture with the new filename
-                    $service = new \JsonRPC\Client($url . 'jacq-servlet/ImageServer');
+                    $service = new Client($url . 'jacq-servlet/ImageServer');
                     $pics = $service->execute('listResources',
                                                 [
                                                     $row['key'],
@@ -179,7 +180,7 @@ function getPicDetails($request, $sid = '')
                 catch( Exception $e ) {
                     $pics = array();  // something has gone wrong, so no picture can be found anyway
                 }
-                if (count($pics) == 0) {  // nothing found, so use the old filename
+                if (empty($pics)) {  // nothing found, so use the old filename
                     $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 }
             } elseif (!empty($row['picture_filename'])) {   // special treatment for this collection is necessary
@@ -270,7 +271,7 @@ function getPicInfo($picdetails)
 
         // Create a service instance and send requests to jacq-servlet
         try {
-            $service = new \JsonRPC\Client($url);
+            $service = new Client($url);
             $return['pics'] = $service->execute('listResources',
                                                 [
                                                     $picdetails['key'],
