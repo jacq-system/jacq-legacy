@@ -195,6 +195,7 @@ function getPicDetails($request, $sid = '')
 //                    }
 //                    $pics = $data['result'];
 
+                // since the error-response is JSON-RPC v.1 instead ov v.2.0 we can't use this client
 //                    $service = new JsonRPC\Client($url . 'jacq-servlet/ImageServer');
 //                    $pics = $service->execute('listResources',
 //                                                [

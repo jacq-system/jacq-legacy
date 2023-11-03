@@ -16,7 +16,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
+if (!empty($_POST['submitUpdate']) && ($_SESSION['editControl'] & 0x2000) != 0) {
     $sw = true;
     $sql = "SELECT seriesID, series
             FROM tbl_specimens_series
@@ -72,11 +72,11 @@ $row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 
-echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['seriesID'] . "\">\n";
+echo "<input type=\"hidden\" name=\"ID\" value=\"" . ($row['seriesID'] ?? "") . "\">\n";
 $cf->label(6, 0.5, "ID");
-$cf->text(6, 0.5, "&nbsp;" . (($row['seriesID']) ? $row['seriesID'] : "new"));
+$cf->text(6, 0.5, "&nbsp;" . (($row['seriesID']) ?? "new"));
 $cf->label(6, 2, "series");
-$cf->inputText(6, 2, 25, "series", $row['series'], 255);
+$cf->inputText(6, 2, 25, "series", ($row['series'] ?? ""), 255);
 
 if (($_SESSION['editControl'] & 0x2000) != 0) {
     $text = ($row['seriesID']) ? " Update " : " Insert ";
