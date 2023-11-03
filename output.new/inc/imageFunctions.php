@@ -118,7 +118,7 @@ function getPicDetails($request, $sid = '')
         // Construct clean filename
         if ($row['imgserver_type'] == 'bgbm') {
             // Remove spaces for B HerbNumber
-            $HerbNummer = ($row['HerbNummer']) ? $row['HerbNummer'] : ('JACQID' . $specimenID);
+            $HerbNummer = ($row['HerbNummer']) ?: ('JACQID' . $specimenID);
             $HerbNummer = str_replace(' ', '', $HerbNummer);
             $filename = sprintf($HerbNummer);
             $key = $row['key'];
@@ -145,9 +145,9 @@ function getPicDetails($request, $sid = '')
             if (substr($url, -1) != '/') {
                 $url .= '/';  // to ensure that $url ends with a slash
             }
-            $filename = sprintf($uriSubset["filename"]);
-            $originalFilename = sprintf($uriSubset["thumb"]);
-            $key = sprintf($uriSubset["html"]);
+            $filename = $uriSubset["filename"];
+            $originalFilename = $uriSubset["thumb"];
+            $key = $uriSubset["html"];
         } else {
             if ($row['collectionID'] == 90 || $row['collectionID'] == 92 || $row['collectionID'] == 123) { // w-krypt needs special treatment
                 /* TODO
@@ -158,30 +158,67 @@ function getPicDetails($request, $sid = '')
                  * When the transition is finished, this code-part (the whole elseif-block) should be removed
                  * Johannes Schachner, 25.9.2021
                  */
-                $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
-                try {  // ask the picture server for a picture with the new filename
-                    $service = new \JsonRPC\Client($url . 'jacq-servlet/ImageServer');
-                    $pics = $service->execute('listResources',
-                                                [
-                                                    $row['key'],
-                                                    [
-                                                        $filename,
-                                                        $filename . "_%",
-                                                        $filename . "A",
-                                                        $filename . "B",
-                                                        "tab_" . $filename,
-                                                        "obs_" . $filename,
-                                                        "tab_" . $filename . "_%",
-                                                        "obs_" . $filename . "_%"
-                                                    ]
-                                                ]);
-                }
-                catch( Exception $e ) {
-                    $pics = array();  // something has gone wrong, so no picture can be found anyway
-                }
-                if (count($pics) == 0) {  // nothing found, so use the old filename
-                    $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
-                }
+                $image = $dbLnk2->query("SELECT filename 
+                                         FROM herbar_pictures.djatoka_images 
+                                         WHERE specimen_ID = '" . $dbLnk2->real_escape_string($specimenID) . "'
+                                         ORDER BY filename
+                                         LIMIT 1")
+                                ->fetch_assoc();
+                $filename = (!empty($image)) ? $image['filename'] : sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+                // since the Services of the W-Pictureserver anren't reliable, we use the database instead
+//                $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+//                $client = new GuzzleHttp\Client(['timeout' => 8]);
+//
+//                try {  // ask the picture server for a picture with the new filename
+//                    $response1 = $client->request('POST', $url . 'jacq-servlet/ImageServer', [
+//                        'json'   => ['method' => 'listResources',
+//                                     'params' => [$row['key'],
+//                                                    [ $filename,
+//                                                      $filename . "_%",
+//                                                      $filename . "A",
+//                                                      $filename . "B",
+//                                                      "tab_" . $filename,
+//                                                      "obs_" . $filename,
+//                                                      "tab_" . $filename . "_%",
+//                                                      "obs_" . $filename . "_%"
+//                                                    ]
+//                                                 ],
+//                                     'id'     => 1
+//                        ],
+//                        'verify' => false
+//                    ]);
+//                    $data = json_decode($response1->getBody()->getContents(), true);
+//                    if (!empty($data['error'])) {
+//                        throw new Exception($data['error']);
+//                    } elseif (empty($data['result'][0])) {
+//                        throw throw new Exception("FAIL: '$filename' returned empty result");
+//                    }
+//                    $pics = $data['result'];
+
+                // since the error-response is JSON-RPC v.1 instead ov v.2.0 we can't use this client
+//                    $service = new JsonRPC\Client($url . 'jacq-servlet/ImageServer');
+//                    $pics = $service->execute('listResources',
+//                                                [
+//                                                    $row['key'],
+//                                                    [
+//                                                        $filename,
+//                                                        $filename . "_%",
+//                                                        $filename . "A",
+//                                                        $filename . "B",
+//                                                        "tab_" . $filename,
+//                                                        "obs_" . $filename,
+//                                                        "tab_" . $filename . "_%",
+//                                                        "obs_" . $filename . "_%"
+//                                                    ]
+//                                                ]);
+
+//                }
+//                catch( Exception $e ) {
+//                    $pics = array();  // something has gone wrong, so no picture can be found anyway
+//                }
+//                if (empty($pics)) {  // nothing found, so use the old filename
+//                    $filename = sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
+//                }
             } elseif (!empty($row['picture_filename'])) {   // special treatment for this collection is necessary
                 $parts = parser($row['picture_filename']);
                 $filename = '';
@@ -267,24 +304,50 @@ function getPicInfo($picdetails)
     if ($picdetails['imgserver_type'] == 'djatoka') {
         // Construct URL to servlet
         $url = $picdetails['url'] . 'jacq-servlet/ImageServer';
+        $client = new GuzzleHttp\Client(['timeout' => 8]);
 
-        // Create a service instance and send requests to jacq-servlet
+        // Create a client instance and send requests to jacq-servlet
         try {
-            $service = new \JsonRPC\Client($url);
-            $return['pics'] = $service->execute('listResources',
-                                                [
-                                                    $picdetails['key'],
-                                                    [
-                                                        $picdetails['filename'],
-                                                        $picdetails['filename'] . "_%",
-                                                        $picdetails['filename'] . "A",
-                                                        $picdetails['filename'] . "B",
-                                                        "tab_" . $picdetails['specimenID'],
-                                                        "obs_" . $picdetails['specimenID'],
-                                                        "tab_" . $picdetails['specimenID'] . "_%",
-                                                        "obs_" . $picdetails['specimenID'] . "_%"
-                                                    ]
-                                                ]);
+            $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
+                'json'   => ['method' => 'listResources',
+                             'params' => [$picdetails['key'],
+                                            [ $picdetails['filename'],
+                                              $picdetails['filename'] . "_%",
+                                              $picdetails['filename'] . "A",
+                                              $picdetails['filename'] . "B",
+                                              "tab_" . $picdetails['specimenID'],
+                                              "obs_" . $picdetails['specimenID'],
+                                              "tab_" . $picdetails['specimenID'] . "_%",
+                                              "obs_" . $picdetails['specimenID'] . "_%"
+                                            ]
+                                         ],
+                             'id'     => 1
+                            ],
+                'verify' => false
+            ]);
+            $data = json_decode($response1->getBody()->getContents(), true);
+            $return['pics'] = $data['result'];
+            if (!empty($data['error'])) {
+                throw new Exception($data['error']);
+            } elseif (empty($data['result'][0])) {
+                throw throw new Exception("FAIL: '{$picdetails['filename']}' returned empty result");
+            }
+            // since the error-response is JSON-RPC v.1 instead ov v.2.0 we can't use this client
+//            $service = new JsonRPC\Client($url);
+//            $return['pics'] = $service->execute('listResources',
+//                                                [
+//                                                    $picdetails['key'],
+//                                                    [
+//                                                        $picdetails['filename'],
+//                                                        $picdetails['filename'] . "_%",
+//                                                        $picdetails['filename'] . "A",
+//                                                        $picdetails['filename'] . "B",
+//                                                        "tab_" . $picdetails['specimenID'],
+//                                                        "obs_" . $picdetails['specimenID'],
+//                                                        "tab_" . $picdetails['specimenID'] . "_%",
+//                                                        "obs_" . $picdetails['specimenID'] . "_%"
+//                                                    ]
+//                                                ]);
         }
         catch( Exception $e ) {
             $return['error'] = 'Unable to connect to ' . $url . " with Error: " . $e->getMessage();

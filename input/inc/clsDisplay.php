@@ -131,6 +131,10 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
         $dbst->execute(array(":taxonID" => $taxonID));
         $row = $dbst->fetch();
 
+        if (empty($row)) {  // unknown taxon-ID
+            return "";
+        }
+
         if (empty($row['epithet']) && empty($row['epithet1']) && empty($row['epithet2']) && empty($row['epithet3']) && empty($row['epithet4']) && empty($row['epithet5'])) {
             $ret = $row['genus'] . (($withSeperator) ? chr(194) . chr(183) : "") . " " . $row['author_g'];
         } else {

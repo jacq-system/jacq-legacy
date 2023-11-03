@@ -31,8 +31,8 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updtStandardLabel");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearStandardLabels");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkStandardLabelPdfButton");
 
-$nr = intval($_GET['nr']);
-$linkList = $_SESSION['labelLinkList'];
+$nr = intval($_GET['nr'] ?? 0);
+$linkList = $_SESSION['labelLinkList'] ?? array();
 
 $sql = "SELECT wu.specimen_ID, wu.HerbNummer, si.identification_status, wu.checked, wu.accessible,
          wu.taxonID, ss.series, wu.series_number, wu.Nummer, wu.alt_number, wu.Datum, wu.Datum2,

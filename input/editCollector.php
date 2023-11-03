@@ -93,10 +93,12 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
         echo "</body>\n</html>\n";
         die();
     }
-} else {
+} elseif (!empty($_GET['sel'])) {
     $pieces = explode("<", $_GET['sel']);
     $pieces = explode(">", $pieces[1]);
-    $id = intval($pieces[0]);
+    $id = $pieces[0];
+} else {
+    $id = 0;
 }
 
 echo "<form onSubmit='return checkCollector()' name='f' Action='" . $_SERVER['PHP_SELF'] . "' Method='POST'>\n";
@@ -108,24 +110,24 @@ $row = mysqli_fetch_array($result);
 
 $cf = new CSSF();
 
-echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['SammlerID']."\">\n";
+echo "<input type=\"hidden\" name=\"ID\" value=\"".($row['SammlerID'] ?? '')."\">\n";
 $cf->label(7,0.5,"ID");
-$cf->text(7,0.5,"&nbsp;".(($row['SammlerID'])?$row['SammlerID']:"new"));
+$cf->text(7,0.5,"&nbsp;".(($row['SammlerID']) ?? "new"));
 $cf->label(7,2,"Collector");
-$cf->inputText(7,2,15,"Sammler",$row['Sammler'],50);
+$cf->inputText(7,2,15,"Sammler", ($row['Sammler'] ?? ''),50);
 $cf->label(6.5,4.5,"HUH","javascript:showExternal(document.f.HUH_ID)");
-$cf->inputText(7,4.5,50,"HUH_ID",$row['HUH_ID'],200);
+$cf->inputText(7,4.5,50,"HUH_ID", ($row['HUH_ID'] ?? ''),200);
 $cf->label(7,6.5,"VIAF","javascript:showExternal(document.f.VIAF_ID)");
-$cf->inputText(7,6.5,50,"VIAF_ID",$row['VIAF_ID'],200);
+$cf->inputText(7,6.5,50,"VIAF_ID", ($row['VIAF_ID'] ?? ''),200);
 $cf->label(7,8.5,"WIKIDATA","javascript:showExternal(document.f.WIKIDATA_ID)");
-$cf->inputText(7,8.5,50,"WIKIDATA_ID",$row['WIKIDATA_ID'],200);
+$cf->inputText(7,8.5,50,"WIKIDATA_ID", ($row['WIKIDATA_ID'] ?? ''),200);
 $cf->label(7,10.5,"ORCID","javascript:showExternal(document.f.ORCID)");
-$cf->inputText(7,10.5,50,"ORCID",$row['ORCID'],200);
+$cf->inputText(7,10.5,50,"ORCID", ($row['ORCID'] ?? ''),200);
 $cf->label(7,12.5,"Bionomia","javascript:showExternal(document.f.Bionomia)");
-$cf->inputText(7,12.5,50,"Bionomia",$row['Bloodhound_ID'],200);
+$cf->inputText(7,12.5,50,"Bionomia", ($row['Bloodhound_ID'] ?? ''),200);
 
 if (($_SESSION['editControl'] & 0x1800)!=0) {
-  $text = ($row['SammlerID']) ? " Update " : " Insert ";
+  $text = (!empty($row['SammlerID'])) ? " Update " : " Insert ";
   $cf->buttonSubmit(2,16,"submitUpdate",$text);
   $cf->buttonJavaScript(12,16," New ","self.location.href='editCollector.php?sel=<0>'");
 }

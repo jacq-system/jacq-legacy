@@ -109,7 +109,7 @@ if (isset($_GET['new'])) {
     $p_typus = 7;
     $p_annotations = $p_specimens_types_ID = $p_typified_by = $p_typified_date = "";
     $p_taxonIndex = 0;
-} elseif (extractID($_GET['ID']) !== "NULL") {
+} elseif (extractID($_GET['ID'] ?? "") !== "NULL") {
     $sql ="SELECT specimens_types_ID, taxonID, specimenID, typusID, annotations, typified_by_Person, typified_Date
            FROM tbl_specimens_types
            WHERE specimens_types_ID = " . extractID($_GET['ID']);
