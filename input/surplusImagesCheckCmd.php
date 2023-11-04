@@ -81,7 +81,23 @@ function makePictureFilename(string $HerbNummerIn, int $collectionID): string
 
     $collectionRules = $cacheCollectionRules[$collectionID];
     $HerbNummer = str_replace('-', '', $HerbNummerIn);
-    if (!empty($collectionRules['picture_filename'])) {   // special treatment for this collection is necessary
+    if ($collectionID == 90 || $collectionID == 92 || $collectionID == 123) { // w-krypt needs special treatment
+        /* TODO
+         * specimens of w-krypt are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
+         * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
+         * in tbl_specimens are changed accordingly.
+         * So, this script should first look for pictures, named after the new system before searching for pictures, named after the old system
+         * When the transition is finished, this code-part (the whole elseif-block) should be removed
+         * Johannes Schachner, 25.9.2021
+         */
+        $image = $dbLnk->query("SELECT filename 
+                                FROM herbar_pictures.djatoka_images 
+                                WHERE filename = '" . (sprintf("w_%07.0f", $HerbNummer)) . "'
+                                 AND server_id = 2
+                                LIMIT 1")
+                        ->fetch_assoc();
+        $filename = (!empty($image)) ? $image['filename'] : sprintf("w-krypt_%07.0f", $HerbNummer);
+    } elseif (!empty($collectionRules['picture_filename'])) {   // special treatment for this collection is necessary
         $filename = '';
         foreach ($collectionRules['picture_filename_parts'] as $filename_part) {
             if ($filename_part['token']) {
@@ -255,10 +271,10 @@ function scanServer(int $server_id)
                                          AND s.digital_image = 1
                                          AND s.HerbNummer IS NOT NULL
                                          AND s.HerbNummer != '' 
-                                         AND s.specimen_ID NOT IN (SELECT di.specimen_ID 
-                                                                   FROM herbar_pictures.djatoka_images di 
-                                                                   WHERE di.server_id = $server_id
-                                                                    AND di.specimen_ID IS NOT NULL)
+                                         AND NOT EXISTS (SELECT 1
+                                                         FROM herbar_pictures.djatoka_images di 
+                                                         WHERE di.server_id = $server_id
+                                                          AND s.specimen_ID = di.specimen_ID)
                                         ORDER BY s.HerbNummer")
                                ->fetch_all(MYSQLI_ASSOC);
             if (!empty($specimens)) {
@@ -268,7 +284,7 @@ function scanServer(int $server_id)
                     $images = $dbLnk->query("SELECT id, filename
                                              FROM herbar_pictures.djatoka_images
                                              WHERE server_id = $server_id
-                                              AND filename LIKE '$filename%'
+                                              AND filename LIKE '" . addcslashes($filename, '%_') . "%'
                                               AND specimen_ID IS NULL")
                                     ->fetch_all(MYSQLI_ASSOC);
                     if (!empty($images)) {
@@ -289,8 +305,42 @@ function scanServer(int $server_id)
                 echo "----\n";
             }
 
-            // second: look for any picture with extensions who still have no specimen connected.
-            //         These are probably additional pictures of already linked ones without extension
+            // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the filename in CollNummer instead of HerbNummer
+            /* TODO
+             * specimens of w-krypt are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
+             * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
+             * in tbl_specimens are changed accordingly.
+             * When the transition is finished, this code-part (the whole if-block) should be removed
+             * Johannes Schachner, 4.11.2023
+             */
+            if ($server_id == 2) {
+                if ($verbose) {
+                    echo "----\n";
+                }
+                $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
+                                         FROM herbar_pictures.djatoka_images di, tbl_specimens s
+                                         WHERE di.filename = CONCAT('w-krypt_', SUBSTRING(s.CollNummer, 1, 4), SUBSTRING(s.CollNummer, 6))
+                                          AND di.server_id = 2
+                                          AND di.specimen_ID IS NULL
+                                          AND s.collectionID IN (90,92,123)")
+                                ->fetch_all(MYSQLI_ASSOC);
+                if (!empty($images)) {
+                    foreach ($images as $image) {
+                        if ($verbose) {
+                            echo "{$image['filename']} ({$image['specimen_ID']})\n";
+                        }
+                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                        source_id = 6,
+                                        specimen_ID = {$image['specimen_ID']}
+                                       WHERE id = {$image['id']}");
+
+                    }
+                }
+
+            }
+
+            // third: look for any picture with extensions who still have no specimen connected.
+            //        These are probably additional pictures of already linked ones without extension
             $images = $dbLnk->query("SELECT id, filename
                                      FROM herbar_pictures.djatoka_images
                                      WHERE server_id = $server_id
@@ -330,6 +380,7 @@ function scanServer(int $server_id)
                     }
                 }
             }
+
 
 
 // second attempt: very slow

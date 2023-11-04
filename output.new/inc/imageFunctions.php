@@ -161,11 +161,13 @@ function getPicDetails($request, $sid = '')
                 $image = $dbLnk2->query("SELECT filename 
                                          FROM herbar_pictures.djatoka_images 
                                          WHERE specimen_ID = '" . $dbLnk2->real_escape_string($specimenID) . "'
+                                          AND filename LIKE 'w\_%'
                                          ORDER BY filename
                                          LIMIT 1")
                                 ->fetch_assoc();
                 $filename = (!empty($image)) ? $image['filename'] : sprintf("w-krypt_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
                 // since the Services of the W-Pictureserver anren't reliable, we use the database instead
+
 //                $filename = sprintf("w_%0" . $row['HerbNummerNrDigits'] . ".0f", $HerbNummer);
 //                $client = new GuzzleHttp\Client(['timeout' => 8]);
 //
@@ -326,7 +328,9 @@ function getPicInfo($picdetails)
                 'verify' => false
             ]);
             $data = json_decode($response1->getBody()->getContents(), true);
-            $return['pics'] = $data['result'];
+            if (!empty($data['result'])) {
+                $return['pics'] = $data['result'];
+            }
             if (!empty($data['error'])) {
                 throw new Exception($data['error']);
             } elseif (empty($data['result'][0])) {
