@@ -28,6 +28,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "listSpecimens");
 
 if (!isset($_SESSION['wuCollection']))  { $_SESSION['wuCollection'] = 0; }
 if (!isset($_SESSION['sTyp']))          { $_SESSION['sTyp'] = ''; }
+if (!isset($_SESSION['sSynonyms']))     { $_SESSION['sSynonyms'] = ''; }
 if (!isset($_SESSION['sType']))         { $_SESSION['sType'] = 0; }
 if (!isset($_SESSION['sImages']))       { $_SESSION['sImages'] = ''; }
 if (!isset($_SESSION['sLinkList']))     { $_SESSION['sLinkList'] = array(); }
@@ -43,7 +44,7 @@ $_SESSION['sNr'] = $nrSel;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
 
 if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
-    $_SESSION['sType'] = 1;
+    $_SESSION['sType'] = 1;  // list specimens
 	if (isset($_GET['taxonID'])) {
 		$_SESSION['taxonID']           = intval($_GET['taxonID']);
 		$_SESSION['wuCollection']      = 0;   // = $_POST['collection'];
@@ -65,6 +66,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitus']          = '';  // = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = '';  // = $_POST['annotations'];
 		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
+        $_SESSION['sSynonyms']         = '';
 		$_SESSION['sImages']           = '';  // = $_POST['images'];
 	} else {
 		unset($_SESSION['taxonID']);
@@ -87,40 +89,41 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitus']          = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = $_POST['annotations'];
 
-		$_SESSION['sTyp']    = (($_POST['typ']=="only") ? true : false);
-		$_SESSION['sImages'] = $_POST['images'];
+		$_SESSION['sTyp']      = (($_POST['typ']=="only") ? true : false);
+        $_SESSION['sSynonyms'] = (($_POST['synonyms']=="yes") ? true : false);
+		$_SESSION['sImages']   = $_POST['images'];
 	}
 
-    $_SESSION['sOrder'] = "genus, te.epithet, ta.author, "
+    $_SESSION['sOrder'] = "genus, epithet, author, "
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
     $_SESSION['sOrTyp'] = 1;
     $_SESSION['labelOrder'] = $_SESSION['sOrder'];
 } else if (isset($_POST['selectUser'])) {
-    $_SESSION['sType'] = 2;
+    $_SESSION['sType'] = 2;  // list user activities
     $_SESSION['wuCollection'] = 0;
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
 
     $_SESSION['sUserID'] = $_POST['userID'];
     $_SESSION['sUserDate'] = $_POST['user_date'];
 } else if (isset($_POST['prepareLabels'])) {
-    $_SESSION['sType'] = 3;
+    $_SESSION['sType'] = 3;  // change label settings
     $_SESSION['wuCollection'] = 0;
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
 
     $_SESSION['sLabelDate'] = $_POST['label_date'];
 
-    $_SESSION['sOrder'] = "genus, te.epithet, ta.author, "
+    $_SESSION['sOrder'] = "genus, epithet, author, "
                         . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                         . "typus_lat";
     $_SESSION['sOrTyp'] = 1;
@@ -128,7 +131,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 } else if (isset($_GET['order'])) {
     if ($_GET['order'] == "b") {
         $_SESSION['sOrder'] = "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
-                             . "genus, te.epithet, ta.author, "
+                             . "genus, epithet, author, "
                              . "typus_lat";
         if ($_SESSION['sOrTyp'] == 2) {
             $_SESSION['sOrTyp'] = -2;
@@ -137,7 +140,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         }
     }
     else if ($_GET['order'] == "d") {
-        $_SESSION['sOrder'] = "typus_lat, genus, te.epithet, ta.author, "
+        $_SESSION['sOrder'] = "typus_lat, genus, epithet, author, "
                             . "Sammler, Sammler_2, series, Nummer, alt_number, Datum";
         if ($_SESSION['sOrTyp'] == 4) {
             $_SESSION['sOrTyp'] = -4;
@@ -154,7 +157,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         }
     }
     else {
-        $_SESSION['sOrder'] = "genus, te.epithet, ta.author, "
+        $_SESSION['sOrder'] = "genus, epithet, author, "
                             . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
                             . "typus_lat";
         if ($_SESSION['sOrTyp'] == 1) {
@@ -536,7 +539,13 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <b>All records</b>
     <input type="radio" name="typ" value="only"<?php if($_SESSION['sTyp']) echo " checked"; ?>>
     <b>Type records only</b>
-  </td><td colspan="4" align="right">
+  </td><td colspan="2" style="text-align: center">
+    <b>with Synonyms&nbsp;</b>
+    <input type="radio" name="synonyms" value="no"<?php if(!$_SESSION['sSynonyms']) echo " checked"; ?>>
+    <b>No</b>
+    <input type="radio" name="synonyms" value="yes"<?php if($_SESSION['sSynonyms']) echo " checked"; ?>>
+    <b>Yes</b>
+  </td><td colspan="2" align="right">
     <b>Images&nbsp;</b>
     <input type="radio" name="images" value="only"<?php if($_SESSION['sImages'] == 'only') echo " checked"; ?>>
     <b>Yes</b>
@@ -590,7 +599,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="f">
 <?php
 $error = false;
-if ($_SESSION['sType'] == 1) {
+if ($_SESSION['sType'] == 1) {  // list specimens
     if ($swBatch) {
         $batchValue = array();
         $batchText = array();
@@ -678,7 +687,7 @@ if ($_SESSION['sType'] == 1) {
     });
     </script>
     <?php
-} else if ($_SESSION['sType'] == 2) {
+} else if ($_SESSION['sType'] == 2) {  // list user activities
     if (intval($_SESSION['sUserID']) >= 0 || strlen(trim($_SESSION['sUserDate'])) > 0) {
         $sql = "SELECT ls.specimenID, ls.updated, ls.timestamp, hu.firstname, hu.surname
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users hu
@@ -722,7 +731,7 @@ if ($_SESSION['sType'] == 1) {
     } else {
         echo "<b>select either user or date or both!!</b>\n";
     }
-} else if ($_SESSION['sType'] == 3) {
+} else if ($_SESSION['sType'] == 3) {  // change label settings
     if (strlen(trim($_SESSION['sLabelDate'])) > 0) {
         echo "<input type=\"button\" class=\"button\" value=\" set all \" onclick=\"jaxon_setAll()\"> ".
              "<input type=\"button\" class=\"button\" value=\" clear all \" onclick=\"jaxon_clearAll()\"> ".
