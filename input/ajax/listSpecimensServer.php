@@ -100,8 +100,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
         if (trim($_SESSION['sNumber'])) {
-            if (strpos($_SESSION['sNumber'], '-') !== false) {  // search for a range of herb-numbers
-                $parts = explode('-', $_SESSION['sNumber']);
+            if (strpos($_SESSION['sNumber'], ' - ') !== false) {  // search for a range of herb-numbers
+                $parts = explode(' - ', $_SESSION['sNumber']);
                 $sql_restrict_specimen .= " AND (s.HerbNummer >= " . intval(trim($parts[0])) . " AND s.HerbNummer <= " . intval(trim($parts[1])) . ")";
             } else {
                 $sql_restrict_specimen .= " AND s.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumber'])) . "%'";
@@ -112,8 +112,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 						   c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['sCollector'])) . "%')";
         }
         if (trim($_SESSION['sNumberCollector'])) {
-            if (strpos($_SESSION['sNumberCollector'], '-') !== false) {  // search for a range of collector-numbers
-                $parts = explode('-', $_SESSION['sNumberCollector']);
+            if (strpos($_SESSION['sNumberCollector'], ' - ') !== false) {  // search for a range of collector-numbers
+                $parts = explode(' - ', $_SESSION['sNumberCollector']);
                 $sql_restrict_specimen .= " AND ((s.Nummer >= " . intval(trim($parts[0])) . " AND s.Nummer <= " . intval(trim($parts[1])) . ") OR
                                 (s.alt_number >= " . intval(trim($parts[0])) . " AND s.alt_number <= " . intval(trim($parts[1])) . ") OR
                                 (s.series_number >= " . intval(trim($parts[0])) . " AND s.series_number <= " . intval(trim($parts[1])) . ")) ";
@@ -124,8 +124,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
         if (trim($_SESSION['sNumberCollection'])) {
-            if (strpos($_SESSION['sNumberCollection'], '-') !== false) {  // search for a range of collection-numbers
-                $parts = explode('-', $_SESSION['sNumberCollection']);
+            if (strpos($_SESSION['sNumberCollection'], ' - ') !== false) {  // search for a range of collection-numbers
+                $parts = explode(' - ', $_SESSION['sNumberCollection']);
                 $sql_restrict_specimen .= " AND (s.CollNummer >= " . intval(trim($parts[0])) . " AND s.CollNummer <= " . intval(trim($parts[1])) . ")";
             } else {
                 $sql_restrict_specimen .= " AND s.CollNummer LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollection'])) . "%'";

@@ -465,7 +465,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     </td>
     <td id="drpInstitutionCollection"><?php ($_SESSION['wuCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
   <td align="right">&nbsp;<b>Herbar Nr.&nbsp;</b></td>
-    <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
+    <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
   <td align="right">&nbsp;<b>Series&nbsp;</b></td>
     <td><input type="text" name="series" value="<?php echoSpecial('sSeries', 'SESSION'); ?>"></td>
   <td></td><td></td>
@@ -480,11 +480,11 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
     <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>Collector #&nbsp;</b></td>
-    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
+    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
   <td align="right">&nbsp;<b>Date&nbsp;</b></td>
-    <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>" placeholder="single date or range (....-....)"></td>
+    <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>" placeholder="single date or range (.... - ....)"></td>
   <td align="right">&nbsp;<b>Collection #&nbsp;</b></td>
-    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>" placeholder="number or range (....-....)"></td>
+    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Continent&nbsp;</b></td>
     <td>
