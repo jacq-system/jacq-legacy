@@ -91,9 +91,9 @@ if (isset($_GET['ID'])) {
     $p_parent_2_ID = $_POST['parent_2_ID'];
 
     $row = mysqli_fetch_array(dbi_query("SELECT taxon_ID_fk FROM tbl_tax_hybrids WHERE taxon_ID_fk = '$id'"));
-    $newHybrid = ($row['taxon_ID_fk']) ? false : true;
+    $newHybrid = (!empty($row['taxon_ID_fk'])) ? false : true;
 
-    if ($_POST['submitUpdate'] && $_SESSION['editorControl']) {
+    if (!empty($_POST['submitUpdate']) && $_SESSION['editorControl']) {
         if ($newHybrid) {
             $sql = "INSERT INTO tbl_tax_hybrids SET
                      taxon_ID_fk = '$id',

@@ -272,8 +272,8 @@ if (isset($_GET['sel'])) {
     $p_HerbNummer        = $_POST['HerbNummer'];
     $p_CollNummer        = $_POST['CollNummer'];
     $p_identstatus       = $_POST['identstatus'];
-    $p_checked           = $_POST['checked'];
-    $p_accessible        = $_POST['accessible'];
+    $p_checked           = $_POST['checked'] ?? 0;
+    $p_accessible        = $_POST['accessible'] ?? 0;
     $p_series            = $_POST['series'];
     $p_series_number     = $_POST['series_number'];
     $p_Nummer            = $_POST['Nummer'];
@@ -294,8 +294,8 @@ if (isset($_GET['sel'])) {
     $p_habitat           = $_POST['habitat'];
     $p_habitus           = $_POST['habitus'];
     $p_Bemerkungen       = $_POST['Bemerkungen'];
-    $p_digital_image     = $_POST['digital_image'];
-    $p_digital_image_obs = $_POST['digital_image_obs'];
+    $p_digital_image     = $_POST['digital_image'] ?? 0;
+    $p_digital_image_obs = $_POST['digital_image_obs'] ?? 0;
     $p_garten            = $_POST['garten'];
     $p_voucher           = $_POST['voucher'];
     $p_ncbi              = $_POST['ncbi'];
