@@ -115,8 +115,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             if (strpos($_SESSION['sNumberCollector'], ' - ') !== false) {  // search for a range of collector-numbers
                 $parts = explode(' - ', $_SESSION['sNumberCollector']);
                 $sql_restrict_specimen .= " AND ((s.Nummer >= " . intval(trim($parts[0])) . " AND s.Nummer <= " . intval(trim($parts[1])) . ") OR
-                                (s.alt_number >= " . intval(trim($parts[0])) . " AND s.alt_number <= " . intval(trim($parts[1])) . ") OR
                                 (s.series_number >= " . intval(trim($parts[0])) . " AND s.series_number <= " . intval(trim($parts[1])) . ")) ";
+                                // alt_number is not possible, ' - ' is often part of the normal contents
             } else {
                 $sql_restrict_specimen .= " AND (s.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR
 							s.alt_number LIKE '%" . dbi_escape_string(trim($_SESSION['sNumberCollector'])) . "%' OR

@@ -7,14 +7,17 @@ function jacqLatLonQuadInit()
         modal: true,
         position: { my: "right bottom", at: "center", of: window },
         buttons: {
-            "Accept": setLatLonQuadSub,
             Cancel: function() {
                 dialog_latLonQu.dialog("close");
+            },
+            "Accept": function() {
+                if (confirmBoundingBox()) {
+                    setLatLonQuadSub();
+                }
             }
         },
         open: getLatLonQuadSub,
         close: function() {
-            ;
         }
     });
     $("#open_latLonQuDialog").on("click", function() {
@@ -104,8 +107,8 @@ function jacqLatLonQuadInit()
     $("#d_btn_utm_convert").on("click", function () {
         $('html').addClass('waiting');
         $.ajax({
-            // url: "https://services.jacq.org/jacq-services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
-            url: "http://localhost/develop.jacq/services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
+            url: "https://services.jacq.org/jacq-services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
+            // url: "http://localhost/develop.jacq/services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
             crossDomain: true,
             success: function (data) {
                 $('html').removeClass('waiting');
@@ -129,8 +132,8 @@ function jacqLatLonQuadInit()
     $("#d_btn_mgrs_convert").on("click", function () {
         $('html').addClass('waiting');
         $.ajax({
-            // url: "https://services.jacq.org/jacq-services/rest/geo/convert?utm=" + $("input[name='utm']").val(),
-            url: "http://localhost/develop.jacq/services/rest/geo/convert?mgrs=" + $("input[name='mgrs']").val(),
+            url: "https://services.jacq.org/jacq-services/rest/geo/convert?mgrs=" + $("input[name='mgrs']").val(),
+            // url: "http://localhost/develop.jacq/services/rest/geo/convert?mgrs=" + $("input[name='mgrs']").val(),
             crossDomain: true,
             success: function (data) {
                 $('html').removeClass('waiting');
@@ -302,22 +305,129 @@ function latLon2Quadrant(lat, lon)
     return quadrant;
 }
 
+function confirmBoundingBox()
+{
+    const nationID = $("select[name='nation'] option:selected").val();
+    const provinceID = $("select[name='province'] option:selected").val();
+    const lat_d = parseInt($("input[name='lat_dms_d']").val());
+    const lat_m = parseInt($("input[name='lat_dms_m']").val());
+    const lat_s = parseFloat($("input[name='lat_dms_s']").val().replaceAll(',', '.'));
+    const lon_d = parseInt($("input[name='lon_dms_d']").val());
+    const lon_m = parseInt($("input[name='lon_dms_m']").val());
+    const lon_s = parseFloat($("input[name='lon_dms_s']").val().replaceAll(',', '.'));
+    const lat = Math.sign(lat_d) * (Math.abs(lat_d) + Math.round((lat_m / 60.0 + lat_s / 3600.0) * 100000) / 100000);
+    const lon = Math.sign(lon_d) * (Math.abs(lon_d) + Math.round((lon_m / 60.0 + lon_s / 3600.0) * 100000) / 100000);
+    let nation = true;
+    let province = true;
+    let errortext = "Coordinates seem to be outside of ";
+    $('html').addClass('waiting');
+    $.ajax({
+        url: "https://services.jacq.org/jacq-services/rest/geo/checkBoundaries?nationID=" + nationID + "&provinceID=" + provinceID + "&lat=" + lat + "&lon=" + lon,
+        // url: "http://localhost/develop.jacq/services/rest/geo/checkBoundaries?nationID=" + nationID + "&provinceID=" + provinceID + "&lat=" + lat + "&lon=" + lon,
+        crossDomain: true,
+        async: false,
+        success: function (data) {
+            $('html').removeClass('waiting');
+            if (!data.error) {
+                if (data.nation.nrBoundaries > 0) {
+                    nation = data.nation.inside;
+                }
+                if (data.province.nrBoundaries > 0) {
+                    province = data.province.inside;
+                }
+            }
+        }
+    });
+    if (!nation || !province) {
+        if (!nation && !province) {
+            errortext += "country and province.";
+        } else if (!nation) {
+            errortext += "the country.";
+        } else {
+            errortext += "the province.";
+        }
+        return confirm(errortext);
+    } else {
+        return true;
+    }
+}
+
+function alertBoundingBox()
+{
+    const nationID = $("select[name='nation'] option:selected").val();
+    const provinceID = $("select[name='province'] option:selected").val();
+    const lat_d = Math.abs(parseInt($("input[name='lat_deg']").val())) * (($("select[name='lat']").val() == 'S') ? -1 : 1);
+    const lat_m = Math.abs(parseInt($("input[name='lat_min']").val().replaceAll(',', '.')));
+    const lat_s = Math.abs(parseFloat($("input[name='lat_sec']").val().replaceAll(',', '.')));
+    const lon_d = Math.abs(parseInt($("input[name='lon_deg']").val())) * (($("select[name='lon']").val() == 'W') ? -1 : 1);
+    const lon_m = Math.abs(parseInt($("input[name='lon_min']").val()));
+    const lon_s = Math.abs(parseFloat($("input[name='lon_sec']").val().replaceAll(',', '.')));
+    const lat = Math.sign(lat_d) * (Math.abs(lat_d) + Math.round((lat_m / 60.0 + lat_s / 3600.0) * 100000) / 100000);
+    const lon = Math.sign(lon_d) * (Math.abs(lon_d) + Math.round((lon_m / 60.0 + lon_s / 3600.0) * 100000) / 100000);
+    let nation = true;
+    let province = true;
+    let errortext = "Coordinates seem to be outside of ";
+    $('html').addClass('waiting');
+    $.ajax({
+        url: "https://services.jacq.org/jacq-services/rest/geo/checkBoundaries?nationID=" + nationID + "&provinceID=" + provinceID + "&lat=" + lat + "&lon=" + lon,
+        // url: "http://localhost/develop.jacq/services/rest/geo/checkBoundaries?nationID=" + nationID + "&provinceID=" + provinceID + "&lat=" + lat + "&lon=" + lon,
+        crossDomain: true,
+        async: false,
+        success: function (data) {
+            $('html').removeClass('waiting');
+            if (!data.error) {
+                if (data.nation.nrBoundaries > 0) {
+                    nation = data.nation.inside;
+                }
+                if (data.province.nrBoundaries > 0) {
+                    province = data.province.inside;
+                }
+            }
+        }
+    });
+    if (!nation || !province) {
+        if (!nation && !province) {
+            errortext += "country and province.";
+        } else if (!nation) {
+            errortext += "the country.";
+        } else {
+            errortext += "the province.";
+        }
+        alert(errortext);
+    }
+}
+
 function setLatLonQuadSub()
 {
     const lat_d = parseInt($("input[name='lat_dms_d']").val());
     const lon_d = parseInt($("input[name='lon_dms_d']").val());
     $("input[name='lat_deg']").val(Math.abs(lat_d));
-    $("input[name='lat_min']").val($("input[name='lat_dms_m']").val());
-    $("input[name='lat_sec']").val($("input[name='lat_dms_s']").val().replaceAll(',', '.'));
+    if ($("input[name='lat_dms_m']").val() !== 'NaN') {
+        $("input[name='lat_min']").val($("input[name='lat_dms_m']").val());
+    } else {
+        $("input[name='lat_min']").val("");
+    }
+    if ($("input[name='lat_dms_s']").val() !== 'NaN') {
+        $("input[name='lat_sec']").val($("input[name='lat_dms_s']").val().replaceAll(',', '.'));
+    } else {
+        $("input[name='lat_sec']").val("");
+    }
     $("select[name='lat']").val((lat_d >= 0) ? 'N' : 'S');
     $("input[name='lon_deg']").val(Math.abs(lon_d));
-    $("input[name='lon_min']").val($("input[name='lon_dms_m']").val());
-    $("input[name='lon_sec']").val($("input[name='lon_dms_s']").val().replaceAll(',', '.'));
+    if ($("input[name='lon_dms_m']").val() !== 'NaN') {
+        $("input[name='lon_min']").val($("input[name='lon_dms_m']").val());
+    } else {
+        $("input[name='lon_min']").val("");
+    }
+    if ($("input[name='lon_dms_s']").val() !== 'NaN') {
+        $("input[name='lon_sec']").val($("input[name='lon_dms_s']").val().replaceAll(',', '.'));
+    } else {
+        $("input[name='lon_sec']").val("");
+    }
     $("select[name='lon']").val((lon_d >= 0) ? 'E' : 'W');
     $("input[name='quadrant']").val($("input[name='quad']").val());
     $("input[name='quadrant_sub']").val($("input[name='quad_sub']").val());
     dialog_latLonQu.dialog("close");
-    return true;
 }
 
 function getLatLonQuadSub()

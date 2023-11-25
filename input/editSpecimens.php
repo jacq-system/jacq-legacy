@@ -726,6 +726,7 @@ if (isset($_GET['sel'])) {
       {
           // If all fields are set, trigger a submit
           if( checkMandatory(1) ) {
+              alertBoundingBox();
               $( '#submit_type' ).val( p_type );
               $( '#f' ).submit();
           }
