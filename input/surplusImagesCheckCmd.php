@@ -301,9 +301,6 @@ function scanServer(int $server_id)
                     }
                 }
             }
-            if ($verbose) {
-                echo "----\n";
-            }
 
             // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the filename in CollNummer instead of HerbNummer
             /* TODO
@@ -336,7 +333,9 @@ function scanServer(int $server_id)
 
                     }
                 }
-
+            }
+            if ($verbose) {
+                echo "----\n";
             }
 
             // third: look for any picture with extensions who still have no specimen connected.

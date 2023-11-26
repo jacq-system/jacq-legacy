@@ -19,6 +19,12 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearScientificNameLabels");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 
+if (!isset($_SESSION['taxStatus']))     { $_SESSION['taxStatus'] = ""; }
+if (!isset($_SESSION['taxRank']))       { $_SESSION['taxRank'] = ""; }
+if (!isset($_SESSION['taxMDLD']))       { $_SESSION['taxMDLD'] = ""; } // BP
+if (!isset($_SESSION['noLiterature']))  { $_SESSION['noLiterature'] = false; }
+if (!isset($_SESSION['taxon_list']))    { $_SESSION['taxon_list'] = ''; }
+
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
 _logger("---- listTax.php (nrSel = " . $nrSel . " ---");
@@ -28,39 +34,45 @@ $NOLITERATURE_SQL_STATEMENT="NOT EXISTS ( SELECT tax_syn_ID FROM herbarinput.tbl
 
 
 if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
-	$_SESSION['taxon_list']=$_POST['taxon'];
-	if(strpos($_POST['taxon'],',')!==false){
-		$_POST['noLiterature'] = $_POST['noLiterature'];
-		$_POST['search']=1;
-		$_POST['species']=3;
-		$_POST['mdld']='';
-		$_POST['commonname']='';
-		$_POST['collector']='';
-		$_POST['number']='';
-		$_POST['date']='';
-		$_POST['family']='';
-		$_POST['genus']='';
-		$_POST['status']='';
-		$_POST['rank']='';
-		$_POST['author']='';
-		$_POST['annotation']='';
-		$_POST['external']='';
+    $buffer = trim(preg_replace("/[^0-9,]/", "", $_POST['taxon']));   // remove all but numbers and comma
+	if (strpos($_POST['taxon'],',') !== false){
+        $parts = explode(',', $buffer);
+        $newparts = array();
+        if ($parts) {
+            foreach ($parts as $part) {
+                if (intval($part) > 0) {
+                    $newparts[] = intval($part);
+                }
+            }
+        }
+        $_SESSION['taxon_list'] = implode(',', $newparts);
 
-
-	}else{
+		$_POST['search']     = 1;
+		$_POST['species']    = 3;
+		$_POST['mdld']       = '';
+		$_POST['commonname'] = '';
+		$_POST['collector']  = '';
+		$_POST['number']     = '';
+		$_POST['date']       = '';
+		$_POST['family']     = '';
+		$_POST['genus']      = '';
+		$_POST['status']     = '';
+		$_POST['rank']       = '';
+		$_POST['author']     = '';
+		$_POST['annotation'] = '';
+		$_POST['external']   = '';
+	} else {
+        $_SESSION['taxon_list'] = intval($buffer);
 		$location="Location: editSpecies.php?sel=<" . $_POST['taxon'] . ">";
 		if (SID != "") $location .= "?" . SID;
 		header($location);
 	}
 }
 
-if (!isset($_SESSION['taxStatus'])) $_SESSION['taxStatus'] = "";
-if (!isset($_SESSION['taxRank']))   $_SESSION['taxRank'] = "";
-if (!isset($_SESSION['taxMDLD']))   $_SESSION['taxMDLD'] = ""; // BP
-if (empty($_SESSION['noLiterature']))$_SESSION['noLiterature'] = false;
-
 if (isset($_POST['search'])) {
-	if(!isset($_POST['taxon']))unset($_SESSION['taxon_list']);
+	if (empty($_POST['taxon'])) {
+        $_SESSION['taxon_list'] = '';
+    }
     $_SESSION['taxMDLD'] = $_POST['mdld'];  // BP
 	if(!empty($_SESSION['taxMDLD'])){
 		$_SESSION['noLiterature']  = isset($_POST['noLiterature'])&&$_POST['noLiterature']=='1';
@@ -1044,9 +1056,9 @@ if ($_SESSION['taxMDLD'] != "") {
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID ";
 
-		if(isset($_SESSION['taxon_list'])){
+		if (!empty($_SESSION['taxon_list'])) {
 			$sql .= " where ts.taxonID in (" . dbi_escape_string($_SESSION['taxon_list']) . ")";
-		}else{
+		} else {
 			$sql.= (($_SESSION['taxExternal']) ? "WHERE ts.external > 0 " : "WHERE ts.external = 0 ");
 			if ($_SESSION['taxStatus'] != "everything") {
 				if ($_SESSION['taxSpecies']) {

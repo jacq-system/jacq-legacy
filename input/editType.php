@@ -40,8 +40,8 @@ function makeSammler($search, $x, $y, $nr)
     }
     return $results;
 }
-?>
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+
+?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
@@ -98,7 +98,7 @@ if (isset($_GET['new'])) {
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
-} elseif (extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
     $sql ="SELECT typecollID, taxonID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
            FROM (tbl_tax_typecollections tt, tbl_collector c)

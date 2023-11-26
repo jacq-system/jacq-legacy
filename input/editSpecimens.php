@@ -726,8 +726,10 @@ if (isset($_GET['sel'])) {
       {
           // If all fields are set, trigger a submit
           if( checkMandatory(1) ) {
-              $( '#submit_type' ).val( p_type );
-              $( '#f' ).submit();
+              if (confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
+                  $('#submit_type').val(p_type);
+                  $('#f').submit();
+              }
           }
       }
 
@@ -1212,7 +1214,7 @@ $cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1]);
 $y += 2;
 $cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 //$cf->label(35, $y, "**","#\" onclick=\"jaxon_searchGeonamesService(document.f.Bezirk.value);");
-$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);
+$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);  //TODO: Bezirk seems to be unused???
 
 $y += 2;
 $cf->label(11, $y, "Altitude");

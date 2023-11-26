@@ -286,6 +286,7 @@ if ($select == 'labels') {
 //    if (isset($_SESSION['sOrder'])) {
 //        $sqlWhere .= " ORDER BY " . $_SESSION['sOrder'];
 //    }
+    $resultSpecimens = dbi_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 } elseif ($select == 'user') {
     if ($_SESSION['sUserID'] > 0) {
         if (isset($_SESSION['sUserDate'])) {
@@ -298,24 +299,13 @@ if ($select == 'labels') {
                        AND ls.userID = '" . intval($_SESSION['sUserID']) . "'
                        AND ls.timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate', '1')
                       GROUP BY ls.specimenID ";
+        $resultSpecimens = dbi_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
     } else {
         die();  //wrong call
     }
 } else {
-    $sqlFrom = " FROM tbl_specimens s ";
-    $sqlWhere = " WHERE 1 ";
-
-    if (empty($_SESSION['sSQLCondition'])) {
-        $sqlWhere .= " AND 0 = 1";
-    }
-    else {
-        $sqlWhere .= $_SESSION['sSQLCondition'];
-    }
+    $resultSpecimens = dbi_query($_SESSION['sSQLquery']);
 }
-
-//error_log("listSpecimensExport: Running query: " . $sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
-
-$resultSpecimens = dbi_query($sqlSelect . $sqlFrom . $sqlJoin . $sqlWhere);
 
 $i = 2;
 while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {

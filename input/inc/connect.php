@@ -150,7 +150,11 @@ function quoteString($text)
     global $dbLink;
 
     if (strlen($text) > 0) {
-        return "'" . $dbLink->real_escape_string($text) . "'";
+        if (trim($text) == "0000-00-00 00:00:00") {
+            return "NULL";
+        } else {
+            return "'" . $dbLink->real_escape_string($text) . "'";
+        }
     } else {
         return "NULL";
     }
