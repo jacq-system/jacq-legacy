@@ -311,25 +311,29 @@ function confirmBoundingBox(dlg)
     const provinceID = $("select[name='province'] option:selected").val();
     let lat_d, lat_m, lat_s, lon_d, lon_m, lon_s;
     if (dlg) {  // use input fields of dialog box
-        lat_d = parseInt($("input[name='lat_dms_d']").val());
-        lat_m = parseInt($("input[name='lat_dms_m']").val());
-        lat_s = parseFloat($("input[name='lat_dms_s']").val().replaceAll(',', '.'));
-        lon_d = parseInt($("input[name='lon_dms_d']").val());
-        lon_m = parseInt($("input[name='lon_dms_m']").val());
-        lon_s = parseFloat($("input[name='lon_dms_s']").val().replaceAll(',', '.'));
+        lat_d = nan2zero(parseInt($("input[name='lat_dms_d']").val()));
+        lat_m = nan2zero(parseInt($("input[name='lat_dms_m']").val()));
+        lat_s = nan2zero(parseFloat($("input[name='lat_dms_s']").val().replaceAll(',', '.')));
+        lon_d = nan2zero(parseInt($("input[name='lon_dms_d']").val()));
+        lon_m = nan2zero(parseInt($("input[name='lon_dms_m']").val()));
+        lon_s = nan2zero(parseFloat($("input[name='lon_dms_s']").val().replaceAll(',', '.')));
     } else {    // use input fields of main window
-        lat_d = Math.abs(parseInt($("input[name='lat_deg']").val())) * (($("select[name='lat']").val() == 'S') ? -1 : 1);
-        lat_m = Math.abs(parseInt($("input[name='lat_min']").val().replaceAll(',', '.')));
-        lat_s = Math.abs(parseFloat($("input[name='lat_sec']").val().replaceAll(',', '.')));
-        lon_d = Math.abs(parseInt($("input[name='lon_deg']").val())) * (($("select[name='lon']").val() == 'W') ? -1 : 1);
-        lon_m = Math.abs(parseInt($("input[name='lon_min']").val()));
-        lon_s = Math.abs(parseFloat($("input[name='lon_sec']").val().replaceAll(',', '.')));
+        lat_d = nan2zero(Math.abs(parseInt($("input[name='lat_deg']").val())) * (($("select[name='lat']").val() == 'S') ? -1 : 1));
+        lat_m = nan2zero(Math.abs(parseInt($("input[name='lat_min']").val().replaceAll(',', '.'))));
+        lat_s = nan2zero(Math.abs(parseFloat($("input[name='lat_sec']").val().replaceAll(',', '.'))));
+        lon_d = nan2zero(Math.abs(parseInt($("input[name='lon_deg']").val())) * (($("select[name='lon']").val() == 'W') ? -1 : 1));
+        lon_m = nan2zero(Math.abs(parseInt($("input[name='lon_min']").val())));
+        lon_s = nan2zero(Math.abs(parseFloat($("input[name='lon_sec']").val().replaceAll(',', '.'))));
     }
     const lat = Math.sign(lat_d) * (Math.abs(lat_d) + Math.round((lat_m / 60.0 + lat_s / 3600.0) * 100000) / 100000);
     const lon = Math.sign(lon_d) * (Math.abs(lon_d) + Math.round((lon_m / 60.0 + lon_s / 3600.0) * 100000) / 100000);
     let nation = true;
     let province = true;
     let errortext = "Coordinates seem to be outside of ";
+
+    if (lat == 0 && lon == 0) {  // all coordinates are empty, so don't check at all
+        return true;
+    }
     $('html').addClass('waiting');
     $.ajax({
         url: "https://services.jacq.org/jacq-services/rest/geo/checkBoundaries?nationID=" + nationID + "&provinceID=" + provinceID + "&lat=" + lat + "&lon=" + lon,
@@ -360,6 +364,10 @@ function confirmBoundingBox(dlg)
     } else {
         return true;
     }
+}
+
+function nan2zero (data) {
+    return (isNaN(data)) ? 0 : data;
 }
 
 function setLatLonQuadSub()
