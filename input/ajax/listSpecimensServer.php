@@ -156,7 +156,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         }
         if (trim($_SESSION['sLoc'])) {
             $sql_restrict_specimen .= " AND (   s.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%' 
-                        .                    OR s.Fundort_engl LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%')";
+                                             OR s.Fundort_engl LIKE '%" . dbi_escape_string(trim($_SESSION['sLoc'])) . "%')";
         }
         if (trim($_SESSION['sHabitat'])) {
             $sql_restrict_specimen .= " AND s.habitat LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitat'])) . "%'";
