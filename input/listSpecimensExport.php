@@ -304,7 +304,12 @@ if ($select == 'labels') {
         die();  //wrong call
     }
 } else {
-    $resultSpecimens = dbi_query($_SESSION['sSQLquery']);
+    $rows_SpecimenIDs = dbi_query($_SESSION['sSQLquery'])->fetch_all(MYSQLI_ASSOC);
+    $specimenIDs = array();
+    foreach ($rows_SpecimenIDs as $row_SpecimenID) {
+        $specimenIDs[] = $row_SpecimenID['specimen_ID'];
+    }
+    $resultSpecimens = dbi_query("$sqlSelect FROM tbl_specimens s $sqlJoin WHERE s.specimen_ID IN (" . implode(',', $specimenIDs) . ")");
 }
 
 $i = 2;
