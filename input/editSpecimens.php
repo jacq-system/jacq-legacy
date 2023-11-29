@@ -793,7 +793,7 @@ if (isset($_GET['sel'])) {
           let overwrite;
 
           if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
-              overwrite = confirm('Coordinates have already been entered');
+              overwrite = confirm('Coordinates have already been entered.\nOn confirming, they will be replaced by selected ones.');
           } else {
               overwrite = true;
           }
