@@ -145,32 +145,32 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     if (isset($_GET['new']) && $_GET['new'] == 1) $p_citationID = "";
     $edit = (!empty($_GET['edit'])) ? true : false;
 } else {
-    $p_jahr       = $_POST['jahr'];
-    $p_code       = $_POST['code'];
-    $p_titel      = $_POST['titel'];
-    $p_suptitel   = $_POST['suptitel'];
-    $p_vol        = $_POST['vol'];
-    $p_part       = $_POST['part'];
-    $p_pp         = $_POST['pp'];
-    $p_verlagsort = $_POST['verlagsort'];
-    $p_keywords   = $_POST['keywords'];
-    $p_annotation = $_POST['annotation'];
-    $p_additions  = $_POST['additions'];
-    $p_bestand    = $_POST['bestandIndex'];
-    $p_signature  = $_POST['signature'];
+    $p_jahr       = $_POST['jahr'] ?? "";
+    $p_code       = $_POST['code'] ?? "";
+    $p_titel      = $_POST['titel'] ?? "";
+    $p_suptitel   = $_POST['suptitel'] ?? "";
+    $p_vol        = $_POST['vol'] ?? "";
+    $p_part       = $_POST['part'] ?? "";
+    $p_pp         = $_POST['pp'] ?? "";
+    $p_verlagsort = $_POST['verlagsort'] ?? "";
+    $p_keywords   = $_POST['keywords'] ?? "";
+    $p_annotation = $_POST['annotation'] ?? "";
+    $p_additions  = $_POST['additions'] ?? "";
+    $p_bestand    = $_POST['bestandIndex'] ?? "";
+    $p_signature  = $_POST['signature'] ?? "";
     $p_publ       = (!empty($_POST['publ'])) ? 1 : 0;
     $p_hideScientificNameAuthors = (!empty($_POST['hideScientificNameAuthors'])) ? 1 : 0;
-    $p_category   = $_POST['categoryIndex'];
-    $p_url        = $_POST['url'];
-    $p_autor      = $_POST['autor'];
-    $p_editor     = $_POST['editor'];
-    $p_periodical = $_POST['periodical'];
-    $p_publisher  = $_POST['publisher'];
+    $p_category   = $_POST['categoryIndex'] ?? "";
+    $p_url        = $_POST['url'] ?? "";
+    $p_autor      = $_POST['autor'] ?? "";
+    $p_editor     = $_POST['editor'] ?? "";
+    $p_periodical = $_POST['periodical'] ?? "";
+    $p_publisher  = $_POST['publisher'] ?? "";
 
-    $p_autorIndex      = $_POST['autorIndex'];
-    $p_editorIndex     = $_POST['editorIndex'];
-    $p_periodicalIndex = $_POST['periodicalIndex'];
-    $p_publisherIndex  = $_POST['publisherIndex'];
+    $p_autorIndex      = $_POST['autorIndex'] ?? 0;
+    $p_editorIndex     = $_POST['editorIndex'] ?? 0;
+    $p_periodicalIndex = $_POST['periodicalIndex'] ?? 0;
+    $p_publisherIndex  = $_POST['publisherIndex'] ?? 0;
 
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
         if (intval($_POST['citationID'])) {

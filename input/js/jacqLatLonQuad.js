@@ -300,7 +300,7 @@ function latLon2Quadrant(lat, lon)
         }
 
         quadrant[0] = yq + ("00" + xq).slice(-2);
-        quadrant[1] = sub;
+        quadrant[1] = isNaN(quadrant[0]) ? '' : sub;
     }
     return quadrant;
 }
@@ -366,8 +366,13 @@ function confirmBoundingBox(dlg)
     }
 }
 
-function nan2zero (data) {
+function nan2zero(data)
+{
     return (isNaN(data)) ? 0 : data;
+}
+function nan2empty(data)
+{
+    return (isNaN(data)) ? "" : data;
 }
 
 function setLatLonQuadSub()
@@ -378,32 +383,16 @@ function setLatLonQuadSub()
     const lon_d = parseInt($("input[name='lon_dms_d']").val());
     const lon_m = $("input[name='lon_dms_m']").val();
     const lon_s = $("input[name='lon_dms_s']").val();
-    $("input[name='lat_deg']").val(Math.abs(lat_d));
-    if (lat_m !== 'NaN') {
-        $("input[name='lat_min']").val(lat_m);
-    } else {
-        $("input[name='lat_min']").val("");
-    }
-    if (lat_s !== 'NaN') {
-        $("input[name='lat_sec']").val(lat_s.replaceAll(',', '.'));
-    } else {
-        $("input[name='lat_sec']").val("");
-    }
-    $("select[name='lat']").val((lat_d >= 0) ? 'N' : 'S');
-    $("input[name='lon_deg']").val(Math.abs(lon_d));
-    if (lon_m !== 'NaN') {
-        $("input[name='lon_min']").val(lon_m);
-    } else {
-        $("input[name='lon_min']").val("");
-    }
-    if (lon_s !== 'NaN') {
-        $("input[name='lon_sec']").val(lon_s.replaceAll(',', '.'));
-    } else {
-        $("input[name='lon_sec']").val("");
-    }
-    $("select[name='lon']").val((lon_d >= 0) ? 'E' : 'W');
-    $("input[name='quadrant']").val($("input[name='quad']").val());
-    $("input[name='quadrant_sub']").val($("input[name='quad_sub']").val());
+    $("input[name='lat_deg']").val(nan2empty(Math.abs(lat_d)));
+    $("input[name='lat_min']").val(nan2empty(lat_m));
+    $("input[name='lat_sec']").val(nan2empty(lat_s).replaceAll(',', '.'));
+    $("select[name='lat']").val((nan2zero(lat_d) >= 0) ? 'N' : 'S');
+    $("input[name='lon_deg']").val(nan2empty(Math.abs(lon_d)));
+    $("input[name='lon_min']").val(nan2empty(lon_m));
+    $("input[name='lon_sec']").val(nan2empty(lon_s).replaceAll(',', '.'));
+    $("select[name='lon']").val((nan2zero(lon_d) >= 0) ? 'E' : 'W');
+    $("input[name='quadrant']").val(nan2empty($("input[name='quad']").val()));
+    $("input[name='quadrant_sub']").val(nan2empty($("input[name='quad_sub']").val()));
     dialog_latLonQu.dialog("close");
 }
 
@@ -415,18 +404,18 @@ function getLatLonQuadSub()
     const lon_d = Math.abs(parseInt($("input[name='lon_deg']").val())) * (($("select[name='lon']").val() == 'W') ? -1 : 1);
     const lon_m = Math.abs(parseInt($("input[name='lon_min']").val()));
     const lon_s = Math.abs(parseFloat($("input[name='lon_sec']").val().replaceAll(',', '.')));
-    $("input[name='lat_dms_d']").val(lat_d);
-    $("input[name='lat_dms_m']").val(lat_m);
-    $("input[name='lat_dms_s']").val(lat_s);
-    $("input[name='lon_dms_d']").val(lon_d);
-    $("input[name='lon_dms_m']").val(lon_m);
-    $("input[name='lon_dms_s']").val(lon_s);
-    $("input[name='lat_dmm_d']").val(lat_d);
-    $("input[name='lat_dmm_m']").val(lat_m + Math.round((lat_s / 60.0) * 10000) / 10000);
-    $("input[name='lon_dmm_d']").val(lon_d);
-    $("input[name='lon_dmm_m']").val(lon_m + Math.round((lon_s / 60.0) * 10000) / 10000);
-    $("input[name='lat_ddd']").val(Math.sign(lat_d) * (Math.abs(lat_d) + Math.round((lat_m / 60.0 + lat_s / 3600.0) * 100000) / 100000));
-    $("input[name='lon_ddd']").val(Math.sign(lon_d) * (Math.abs(lon_d) + Math.round((lon_m / 60.0 + lon_s / 3600.0) * 100000) / 100000));
+    $("input[name='lat_dms_d']").val(nan2empty(lat_d));
+    $("input[name='lat_dms_m']").val(nan2empty(lat_m));
+    $("input[name='lat_dms_s']").val(nan2empty(lat_s));
+    $("input[name='lon_dms_d']").val(nan2empty(lon_d));
+    $("input[name='lon_dms_m']").val(nan2empty(lon_m));
+    $("input[name='lon_dms_s']").val(nan2empty(lon_s));
+    $("input[name='lat_dmm_d']").val(nan2empty(lat_d));
+    $("input[name='lat_dmm_m']").val(nan2empty(lat_m + Math.round((lat_s / 60.0) * 10000) / 10000));
+    $("input[name='lon_dmm_d']").val(nan2empty(lon_d));
+    $("input[name='lon_dmm_m']").val(nan2empty(lon_m + Math.round((lon_s / 60.0) * 10000) / 10000));
+    $("input[name='lat_ddd']").val(nan2empty(Math.sign(lat_d) * (Math.abs(lat_d) + Math.round((lat_m / 60.0 + lat_s / 3600.0) * 100000) / 100000)));
+    $("input[name='lon_ddd']").val(nan2empty(Math.sign(lon_d) * (Math.abs(lon_d) + Math.round((lon_m / 60.0 + lon_s / 3600.0) * 100000) / 100000)));
     $("input[name='quad']").val($("input[name='quadrant']").val());
     $("input[name='quad_sub']").val($("input[name='quadrant_sub']").val());
 }

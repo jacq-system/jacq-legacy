@@ -520,7 +520,7 @@ if (isset($_GET['sel'])) {
     .lat_lon_dialog td span {
       font-size: x-large;
     }
-    #open_latLonQuDialog {
+    #open_latLonQuDialog, #del_latLon {
       padding: 0;
       margin: 2px;
     }
@@ -558,7 +558,7 @@ if (isset($_GET['sel'])) {
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
       var reload = false;
-      var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
+      var linktext = '';
       let dialog_latLonQu;
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
 
@@ -790,10 +790,15 @@ if (isset($_GET['sel'])) {
 
       function fillLocation(lon_deg, lon_min, lon_sec, lon_dir, lat_deg, lat_min, lat_sec, lat_dir, nationID)
       {
+          let overwrite;
+
           if (document.f.lon_deg.value || document.f.lon_min.value || document.f.lon_sec.value || document.f.lat_deg.value || document.f.lat_min.value || document.f.lat_sec.value)    {
-              alert('Coordinates have already been entered');
+              overwrite = confirm('Coordinates have already been entered.\nOn confirming, they will be replaced by selected ones.');
+          } else {
+              overwrite = true;
           }
-          else {
+
+          if (overwrite) {
               document.f.lon_deg.value = lon_deg;
               document.f.lon_min.value = lon_min;
               document.f.lon_sec.value = lon_sec;
@@ -928,6 +933,25 @@ if (isset($_GET['sel'])) {
               showLabel: false,
               label: "Edit Lat/Lon and Quadrant"
           });
+          $("#del_latLon").button({
+              icon: "ui-icon-trash",
+              showLabel: false,
+              label: "Delete Lat/Lon, Quadrant and Exactness"
+          }).on("click", function() {
+              $("input[name='lat_deg']").val("");
+              $("input[name='lat_min']").val("");
+              $("input[name='lat_sec']").val("");
+              $("select[name='lat']").val("N")
+              $("input[name='lon_deg']").val("");
+              $("input[name='lon_min']").val("");
+              $("input[name='lon_sec']").val("");
+              $("select[name='lon']").val("E")
+              $("input[name='quadrant']").val("");
+              $("input[name='quadrant_sub']").val("");
+              $("input[name='exactness']").val("");
+              return false;
+          });
+
       });
   </script>
 </head>
@@ -1236,16 +1260,17 @@ $cf->inputText(18.5, $y, 1.5, "lat_sec", $p_lat_sec, 5);
 $cf->text(21, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
 $cf->dropdown(22, $y, "lat", $p_lat, array("N", "S"), array("N", "S"));
 
-$cf->label(29, $y, "Lon");
-$cf->inputText(29, $y, 2, "lon_deg", $p_lon_deg, 5);
-$cf->text(32, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
-$cf->inputText(33, $y, 1.5, "lon_min", $p_lon_min, 5);
-$cf->text(35.5, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
-$cf->inputText(36.5, $y, 1.5, "lon_sec", $p_lon_sec, 5);
-$cf->text(39, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(40, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
+$cf->label(28.5, $y, "Lon");
+$cf->inputText(28.5, $y, 2, "lon_deg", $p_lon_deg, 5);
+$cf->text(31.5, $y - 0.3, "<span style='font-size: larger; '>&deg;</span>");
+$cf->inputText(32.5, $y, 1.5, "lon_min", $p_lon_min, 5);
+$cf->text(35, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
+$cf->inputText(36, $y, 1.5, "lon_sec", $p_lon_sec, 5);
+$cf->text(38.5, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
+$cf->dropdown(39.5, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
 
-echo "<div style='position:absolute; left: 46em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
+echo "<div style='position:absolute; left: 43.5em; top: {$y}em'><button id='del_latLon'></button></div>";
+echo "<div style='position:absolute; left: 46.5em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
 
 $cf->label(56, $y, "Quadrant");
 $cf->inputText(56, $y, 5, "quadrant", $p_quadrant, 10);

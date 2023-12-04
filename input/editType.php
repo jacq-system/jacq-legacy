@@ -168,6 +168,7 @@ if (isset($_GET['new'])) {
         echo "  window.opener.document.f.reload.click()\n";
         echo "  self.close()\n";
         echo "</script>\n";
+        die();
     }
 } else {
     $p_taxon            = $_POST['taxon'];
