@@ -558,7 +558,7 @@ if (isset($_GET['sel'])) {
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
       var reload = false;
-      var linktext = '';//'<ul><li><a href="http://www.heise.de/">link1</a></li><li><a href="http://www.heise.de/">link2</a></li></ul>';
+      var linktext = '';
       let dialog_latLonQu;
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
 
