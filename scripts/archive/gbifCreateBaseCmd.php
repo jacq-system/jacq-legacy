@@ -39,7 +39,6 @@ class DB extends mysqli {
 
 }
 
-$dbLink  = new DB($host, $user, $pass, $db);
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
@@ -66,6 +65,10 @@ $dbLink2->query("INSERT $dbt.tbl_specimens_types_mv
 // use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
     $dbLink2->query("TRUNCATE $dbt." . $tbl['name']);
+    $sourceCode = $dbLink2->query("SELECT source_code 
+                                   FROM meta 
+                                   WHERE source_id = {$tbl['source_id']}")
+                          ->fetch_array()['source_code'];
     if ($tbl['source_id'] == 29) {  // B needs to find duplicates on collection level
         $sql_IN = "SELECT s2.specimen_ID 
                    FROM tbl_specimens s2, tbl_management_collections mc2
@@ -281,8 +284,15 @@ foreach ($tbls as $tbl) {
          * image_url
          */
         if ($row['digital_image'] || $row['digital_image_obs']) {
-            $image_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=show";
-            $thumb_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=europeana";
+            $image_url = "https://services.jacq.org/jacq-services/rest/images/show/" . $row['specimen_ID'];
+//            $image_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=show";
+            if ($tbl['europeana_cache']) {
+                $thumb_url = "https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg";
+
+            } else {
+                $thumb_url = "https://services.jacq.org/jacq-services/rest/images/europeana/" . $row['specimen_ID'];
+//                $thumb_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=europeana";
+            }
         }
         else {
             $image_url = "";

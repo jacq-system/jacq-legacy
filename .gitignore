@@ -9,8 +9,8 @@ variables.php
 access/test.html
 annonaceae/inc/connect.php
 docs/database/models/herbarinput2021.mwb.bak
+object/europeana/
 input/install.php
 input/makeExampleCodes.txt
 output.new/robots.txt
 output.new/testJsonRPC.php
-
