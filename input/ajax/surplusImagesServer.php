@@ -90,7 +90,7 @@ function showLatestUpdate($serverID)
               ->fetch_assoc();
     if (!empty($latest['created_at'])) {
         $text = "latest new file at {$latest['created_at']} "
-              . "<button onclick='recheckServer($serverID)'>recheck server</button>";
+              . "<button onclick='recheckServer($serverID)'>recheck server (slow)</button>";
     } else {
         $text = '';
     }
