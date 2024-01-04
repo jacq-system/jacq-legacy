@@ -263,12 +263,16 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         $url = cleanURL("{$picdetails['url']}/img/{$fileurl}?name={$picdetails['requestFileName']}{$urlExt}{$q}");
     }
 
+    // ignore broken certificates
+    $context = stream_context_create(array("ssl"=>array("verify_peer"      => false,
+                                                        "verify_peer_name" => false)));
+
     // Send correct headers
     header('Content-Type: ' . $mime);
     if ($downloadPic) {
         header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
     }
-    readfile($url);
+    readfile($url, false, $context);
 }
 
 function cleanURL($url)
