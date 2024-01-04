@@ -18,17 +18,18 @@ ini_set("memory_limit", "256M");
 /**
  * process commandline arguments
  */
-$options = getopt("hva", ["help", "verbose", "all"], $restIndex);
+$opt = getopt("hva", ["help", "verbose", "all"], $restIndex);
 
-$help    = (isset($options['h']) || isset($options['help']) || $argc == 1); // bool
-$all     = (isset($options['a']) || isset($options['all']));                // bool
+$options = array(
+    'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
+    'all'     => (isset($opt['a']) || isset($opt['all'])),                // bool
 
-$verbose = (isset($options['v']) || isset($options['verbose'])) ? ((is_array($options['v'])) ? 2 : 1) : 0;  // 0, 1 or 2
-
+    'verbose' => ((isset($opt['v']) || isset($opt['verbose'])) ? ((is_array($opt['v'])) ? 2 : 1) : 0)  // 0, 1 or 2
+);
 $remainArgs = array_slice($argv, $restIndex);
 $source_id = (empty(($remainArgs))) ? 0 : intval($remainArgs[0]);
 
-if ($help || (!$source_id && !$all)) {
+if ($options['help'] || (!$source_id && !$options['all'])) {
     echo $argv[0] . " [options] [x]   fill europeana error-table [for source-ID x]\n\n"
         . "Options:\n"
         . "  -h  --help     this explanation\n"
@@ -42,7 +43,7 @@ $dbLink = new mysqli($host, $user, $pass, $db);
 
 if ($source_id) {
     fillErrorTable($source_id);
-} elseif ($all) {
+} elseif ($options['all']) {
     // use $tbls as defined in variables.php
     foreach ($tbls as $tbl) {
         if ($tbl['europeana_get']) {
@@ -53,7 +54,7 @@ if ($source_id) {
 
 function fillErrorTable(int $source_id): void
 {
-    global $verbose, $europeana_dir, $dbLink;
+    global $options, $europeana_dir, $dbLink;
 
     $sourceCode = $dbLink->query("SELECT source_code 
                                   FROM meta 
@@ -73,14 +74,14 @@ function fillErrorTable(int $source_id): void
                                  filectime   = FROM_UNIXTIME($filectime),
                                  source_id   = $source_id,
                                  source_code = '$sourceCode'");
-                if ($verbose > 1) {
+                if ($options['verbose'] > 1) {
                     echo $dbLink->error;
                     echo " $sourceCode ($source_id): $filename\n";
                 }
             }
         }
     }
-    if ($verbose) {
+    if ($options['verbose']) {
         echo "---------- $sourceCode ($source_id) finished ----------\n";
     }
 }

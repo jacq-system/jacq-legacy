@@ -18,19 +18,20 @@ ini_set("memory_limit", "256M");
 /**
  * process commandline arguments
  */
-$options = getopt("hvarn", ["help", "verbose", "all", "recheck", "new"], $restIndex);
+$opt = getopt("hvarn", ["help", "verbose", "all", "recheck", "new"], $restIndex);
 
-$help    = (isset($options['h']) || isset($options['help']) || $argc == 1); // bool
-$all     = (isset($options['a']) || isset($options['all']));                // bool
-$recheck = (isset($options['r']) || isset($options['recheck']));            // bool
-$new     = (isset($options['n']) || isset($options['new']));                // bool
+$options = array(
+    'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
+    'all'     => (isset($opt['a']) || isset($opt['all'])),                // bool
+    'recheck' => (isset($opt['r']) || isset($opt['recheck'])),            // bool
+    'new'     => (isset($opt['n']) || isset($opt['new'])),                // bool
 
-$verbose = (isset($options['v']) || isset($options['verbose'])) ? ((is_array($options['v'])) ? 2 : 1) : 0;  // 0, 1 or 2
-
+    'verbose' => ((isset($opt['v']) || isset($opt['verbose'])) ? ((is_array($opt['v'])) ? 2 : 1) : 0)  // 0, 1 or 2
+);
 $remainArgs = array_slice($argv, $restIndex);
 $source_id = (empty(($remainArgs))) ? 0 : intval($remainArgs[0]);
 
-if ($help || (!$source_id && !$all)) {
+if ($options['help'] || (!$source_id && !$options['all'])) {
     echo $argv[0] . " [options] [x]   create europeana files [for source-ID x]\n\n"
        . "Options:\n"
        . "  -h  --help     this explanation\n"
@@ -46,7 +47,7 @@ $dbLink = new mysqli($host, $user, $pass, $db);
 
 if ($source_id) {
     generateFiles($source_id);
-} elseif ($all) {
+} elseif ($options['all']) {
     // use $tbls as defined in variables.php
     foreach ($tbls as $tbl) {
         if ($tbl['europeana_get']) {
@@ -57,7 +58,7 @@ if ($source_id) {
 
 function generateFiles(int $source_id): void
 {
-    global $recheck, $verbose, $new, $europeana_dir, $dbLink;
+    global $options, $europeana_dir, $dbLink;
 
     $sourceCode = $dbLink->query("SELECT source_code 
                                   FROM meta 
@@ -72,7 +73,7 @@ function generateFiles(int $source_id): void
             WHERE mc.source_id = $source_id 
              AND (   s.digital_image > 0 
                   OR s.digital_image_obs > 0)";
-    if ($new) {
+    if ($options['new']) {
         $sql .= " AND s.aktualdatum >= DATE_SUB(NOW(), INTERVAL 15 DAY)";
     }
     $result = $dbLink->query($sql);
@@ -81,10 +82,10 @@ function generateFiles(int $source_id): void
     } else {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
-            if (!file_exists($filename) || ($recheck && filesize($filename) < 1500)) {
+            if (!file_exists($filename) || ($options['recheck'] && filesize($filename) < 1500)) {
                 for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
                     $fh = fopen($filename, 'w');
-                    $options = array(
+                    $curlOptions = array(
                         CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}",
                         CURLOPT_FILE => $fh,
                         CURLOPT_TIMEOUT => 60,
@@ -93,9 +94,9 @@ function generateFiles(int $source_id): void
                         CURLOPT_SSL_VERIFYPEER => false,
                     );
                     $curl = curl_init();
-                    curl_setopt_array($curl, $options);
+                    curl_setopt_array($curl, $curlOptions);
                     $curl_result = curl_exec($curl);
-                    if ($curl_result === false && $verbose) {
+                    if ($curl_result === false && $options['verbose']) {
                         echo "$filename has error " . curl_error($curl) . "\n";
                     }
                     curl_close($curl);
@@ -104,13 +105,13 @@ function generateFiles(int $source_id): void
                         break;
                     }
                 }
-                if ($verbose > 1) {
+                if ($options['verbose'] > 1) {
                     echo "$sourceCode ($source_id): $filename\n";
                 }
             }
         }
     }
-    if ($verbose) {
+    if ($options['verbose']) {
         echo "---------- $sourceCode ($source_id) finished ----------\n";
     }
 }
