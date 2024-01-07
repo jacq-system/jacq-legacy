@@ -3,6 +3,17 @@
 require 'inc/variables.php';
 require 'inc/StableIdentifier.php';
 
+/**
+ * included via inc/variables.php
+ *
+ * @var string $host hostname
+ * @var string $user username
+ * @var string $pass password
+ * @var string $db   source database
+ * @var string $dbt  target database
+ * @var array  $tbls which sources are to be checked
+ */
+
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
 
@@ -18,8 +29,8 @@ class DB extends mysqli {
         $this->query("SET character set utf8");
     }
 
-    public function query($query, $resultmode = MYSQLI_STORE_RESULT) {
-        $result = parent::query($query, $resultmode);
+    public function query($query, $result_mode = MYSQLI_STORE_RESULT) {
+        $result = parent::query($query, $result_mode);
         if (!$result) {
             echo $query . "\n";
             echo $this->error . "\n";
@@ -39,6 +50,7 @@ class DB extends mysqli {
 
 }
 
+$dbLink  = new DB($host, $user, $pass, $db);
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
