@@ -85,7 +85,7 @@ function generateFiles(int $source_id): void
             for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
                 $fh = fopen($filename, 'w');
                 $curlOptions = array(
-                    CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}",
+                    CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}" . "?withredirect=1",
                     CURLOPT_FILE => $fh,
                     CURLOPT_TIMEOUT => 60,
                     CURLOPT_CONNECTTIMEOUT => 10,
@@ -121,7 +121,7 @@ function generateFiles(int $source_id): void
         }
     }
     if ($options['verbose']) {
-        echo "---------- $sourceCode ($source_id) finished ----------\n";
+        echo "---------- $sourceCode ($source_id) finished (" . date(DATE_RFC822) . ") ----------\n";
     }
 }
 
@@ -132,8 +132,7 @@ SELECT ei.source_id, ei.sizegroup, count(*) AS `number of files`
 FROM (
   SELECT source_id,
   CASE
-    WHEN filesize = 0 THEN 'empty'
-    WHEN filesize BETWEEN 1 AND 1500 THEN '<1500'
+    WHEN filesize < 1500 THEN 'empty'
     ELSE 'ok'
   END AS sizegroup
   FROM gbif_pilot.europeana_images) ei
