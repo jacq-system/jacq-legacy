@@ -67,55 +67,78 @@ function generateFiles(int $source_id): void
     if (!file_exists($europeana_dir . $sourceCode)) {
         mkdir($europeana_dir . $sourceCode, 0755);
     }
-    $sql = "SELECT s.specimen_ID 
+    $sql = "SELECT s.specimen_ID, ei.filesize
             FROM tbl_specimens s
              JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+             LEFT JOIN gbif_pilot.europeana_images ei ON ei.specimen_ID = s.specimen_ID 
             WHERE mc.source_id = $source_id 
              AND (   s.digital_image > 0 
-                  OR s.digital_image_obs > 0)";
-    if ($options['new']) {
-        $sql .= " AND s.aktualdatum >= DATE_SUB(NOW(), INTERVAL 15 DAY)";
-    }
+                  OR s.digital_image_obs > 0)"
+        . (($options['new'])     ? " AND s.aktualdatum >= DATE_SUB(NOW(), INTERVAL 15 DAY)" : '')
+        . (($options['recheck']) ? " AND (ei.filesize < 1500 OR ei.filesize IS NULL)"       : " AND ei.filesize IS NULL");
     $result = $dbLink->query($sql);
     if (!$result) {
         echo $source_id . ": " . $dbLink->error . "\n";
     } else {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
-            if (!file_exists($filename) || ($options['recheck'] && filesize($filename) < 1500)) {
-                for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
-                    $fh = fopen($filename, 'w');
-                    $curlOptions = array(
-                        CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}",
-                        CURLOPT_FILE => $fh,
-                        CURLOPT_TIMEOUT => 60,
-                        CURLOPT_CONNECTTIMEOUT => 10,
-                        CURLOPT_FOLLOWLOCATION => true,
-                        CURLOPT_SSL_VERIFYPEER => false,
-                    );
-                    $curl = curl_init();
-                    curl_setopt_array($curl, $curlOptions);
-                    $curl_result = curl_exec($curl);
-                    if ($curl_result === false && $options['verbose']) {
-                        echo "$filename has error " . curl_error($curl) . "\n";
-                    }
-                    curl_close($curl);
-                    fclose($fh);
-                    if (filesize($filename) > 0) {
-                        break;
-                    }
+            for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
+                $fh = fopen($filename, 'w');
+                $curlOptions = array(
+                    CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}" . "?withredirect=1",
+                    CURLOPT_FILE => $fh,
+                    CURLOPT_TIMEOUT => 60,
+                    CURLOPT_CONNECTTIMEOUT => 10,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                );
+                $curl = curl_init();
+                curl_setopt_array($curl, $curlOptions);
+                $curl_result = curl_exec($curl);
+                if ($curl_result === false && $options['verbose']) {
+                    echo "$filename has error " . curl_error($curl) . "\n";
                 }
-                if ($options['verbose'] > 1) {
-                    echo "$sourceCode ($source_id): $filename\n";
+                curl_close($curl);
+                fclose($fh);
+                if (filesize($filename) > 0) {
+                    break;
                 }
+            }
+            $dbLink->query("INSERT INTO gbif_pilot.europeana_images SET
+                             specimen_ID = {$row['specimen_ID']},
+                             filesize    = " . filesize($filename) . ",
+                             filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                             source_id   = $source_id,
+                             source_code = '$sourceCode'
+                            ON DUPLICATE KEY UPDATE
+                             filesize    = " . filesize($filename) . ",
+                             filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                             source_id   = $source_id,
+                             source_code = '$sourceCode'");
+            if ($options['verbose'] > 1) {
+                echo "$sourceCode ($source_id): $filename\n";
             }
         }
     }
     if ($options['verbose']) {
-        echo "---------- $sourceCode ($source_id) finished ----------\n";
+        echo "---------- $sourceCode ($source_id) finished (" . date(DATE_RFC822) . ") ----------\n";
     }
 }
 
+/*
+evaluation of results:
+
+SELECT ei.source_id, ei.sizegroup, count(*) AS `number of files`
+FROM (
+  SELECT source_id,
+  CASE
+    WHEN filesize < 1500 THEN 'empty'
+    ELSE 'ok'
+  END AS sizegroup
+  FROM gbif_pilot.europeana_images) ei
+GROUP BY ei.source_id, ei.sizegroup
+ORDER BY ei.source_id, ei.sizegroup DESC
+*/
 
 // probably all europeana-images with 908 Bytes are wrong in Phaidra
 // find . -name '*.jpg' -size -2k -printf "%f\t%s\n" | sed 's/.jpg//'

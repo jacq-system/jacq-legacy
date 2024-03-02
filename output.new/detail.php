@@ -103,7 +103,7 @@ function makeTypus($ID): string
     $text = "";
     while ($row = $result->fetch_array()) {
         if ($row['synID']) {
-            $sql3 = "SELECT ts.statusID, tg.genus,
+            $sql3 = "SELECT ts.statusID, ts.taxonID, tg.genus,
                       ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                       ta4.author author4, ta5.author author5,
                       te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,

@@ -3,6 +3,17 @@
 require 'inc/variables.php';
 require 'inc/StableIdentifier.php';
 
+/**
+ * included via inc/variables.php
+ *
+ * @var string $host hostname
+ * @var string $user username
+ * @var string $pass password
+ * @var string $db   source database
+ * @var string $dbt  target database
+ * @var array  $tbls which sources are to be checked
+ */
+
 ini_set("max_execution_time", "3600");
 ini_set("memory_limit", "256M");
 
@@ -18,8 +29,8 @@ class DB extends mysqli {
         $this->query("SET character set utf8");
     }
 
-    public function query($query, $resultmode = MYSQLI_STORE_RESULT) {
-        $result = parent::query($query, $resultmode);
+    public function query($query, $result_mode = MYSQLI_STORE_RESULT) {
+        $result = parent::query($query, $result_mode);
         if (!$result) {
             echo $query . "\n";
             echo $this->error . "\n";
@@ -39,6 +50,7 @@ class DB extends mysqli {
 
 }
 
+$dbLink  = new DB($host, $user, $pass, $db);
 $dbLink1 = new DB($host, $user, $pass, $db);
 $dbLink2 = new DB($host, $user, $pass, $db);
 
@@ -117,7 +129,8 @@ foreach ($tbls as $tbl) {
              gn.nation_engl, gp.provinz,
              ss.series,
              md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
-             uim.uuid, mc.source_id, mc.collection
+             uim.uuid, mc.source_id, mc.collection,
+             ei.filesize
             FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_management_collections mc)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
              LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
@@ -138,6 +151,7 @@ foreach ($tbls as $tbl) {
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
              LEFT JOIN metadb md ON md.source_id_fk = mc.source_id
              LEFT JOIN jacq_input.srvc_uuid_minter uim ON (uim.internal_id = s.specimen_ID AND uim.uuid_minter_type_id = 3)
+             LEFT JOIN gbif_pilot.europeana_images ei ON ei.specimen_ID = s.specimen_ID 
             WHERE s.SammlerID = c.SammlerID
              AND s.taxonID = ts.taxonID
              AND s.collectionID = mc.collectionID
@@ -284,13 +298,13 @@ foreach ($tbls as $tbl) {
          * image_url
          */
         if ($row['digital_image'] || $row['digital_image_obs']) {
-            $image_url = "https://services.jacq.org/jacq-services/rest/images/show/" . $row['specimen_ID'];
+            $image_url = "https://services.jacq.org/jacq-services/rest/images/show/" . $row['specimen_ID'] . "?withredirect=1";
 //            $image_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=show";
-            if ($tbl['europeana_cache']) {
+            if ($tbl['europeana_cache']  && ($row['filesize'] ?? 0) > 1500) {  // use europeana-cache only for images without errors
                 $thumb_url = "https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg";
 
             } else {
-                $thumb_url = "https://services.jacq.org/jacq-services/rest/images/europeana/" . $row['specimen_ID'];
+                $thumb_url = "https://services.jacq.org/jacq-services/rest/images/europeana/" . $row['specimen_ID'] . "?withredirect=1";
 //                $thumb_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=europeana";
             }
         }
