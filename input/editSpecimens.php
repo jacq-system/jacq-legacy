@@ -520,7 +520,7 @@ if (isset($_GET['sel'])) {
     .lat_lon_dialog td span {
       font-size: x-large;
     }
-    #open_latLonQuDialog, #del_latLon {
+    #open_latLonQuDialog, #del_latLon, #taxon_alt_toggle {
       padding: 0;
       margin: 2px;
     }
@@ -724,6 +724,11 @@ if (isset($_GET['sel'])) {
 
       function doSubmit( p_type )
       {
+          // if we use the taxon-alt textarea, copy the content to the text input field
+          if ($('[name="taxon_alt"]').css("display") == "none") {
+              $('[name="taxon_alt"]').val($('[name="taxon_alt_ta"]').val());
+          }
+
           // If all fields are set, trigger a submit
           if( checkMandatory(1) ) {
               if (confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
@@ -952,6 +957,24 @@ if (isset($_GET['sel'])) {
               return false;
           });
 
+          $('[name="taxon_alt_ta"]').hide();
+          $("#taxon_alt_toggle").button({
+              icon: "ui-icon-arrow-2-n-s",
+              showLabel: false,
+              label: "Toggle ident. history input field"
+          }).on("click", function() {
+              if ($('[name="taxon_alt_ta"]').css("display") == "none") {
+                  $('[name="taxon_alt_ta"]').val($('[name="taxon_alt"]').val()).show();
+                  $('[name="taxon_alt"]').hide();
+                  $("#taxon_alt_toggle").button("option", "icon", "ui-icon-arrowthick-2-n-s");
+              } else {
+                  $('[name="taxon_alt"]').val($('[name="taxon_alt_ta"]').val()).show();
+                  $('[name="taxon_alt_ta"]').hide();
+                  $("#taxon_alt_toggle").button("option", "icon", "ui-icon-arrow-2-n-s");
+              }
+              return false;
+          });
+
       });
   </script>
 </head>
@@ -1139,12 +1162,14 @@ $y += 2;
 $cf->label(11, $y, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
-$cf->label(23, $y, "HerbarNr.");
+
+$cf->label(23, $y, "HerbarNr.");    // TODO: check, if HerbNummer has the correct number of digits
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
+
 $cf->labelMandatory(40, $y, 5.5, "Collection");
 $cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
-$cf->label(58, $y, "Nr.");
-$cf->inputText(58, $y, 6, "CollNummer", $p_CollNummer, 25);
+$cf->label(59, $y, "Nr.");
+$cf->inputText(59, $y, 6, "CollNummer", $p_CollNummer, 25);
 
 $y += 2;
 $cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
@@ -1173,21 +1198,23 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
     $cf->labelMandatory(11, $y, 8, "taxon");
 }
 //$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
-$cf->inputJqAutocomplete(11, $y, 53, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
+$cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 
 $y += 4;
 $cf->labelMandatory(10, $y, 8, "det / rev / conf");
-$cf->inputText(11, $y, 53, "det", $p_det, 255);
+$cf->inputText(11, $y, 54, "det", $p_det, 255);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 8, "ident. history");
-$cf->textarea(11, $y, 53, 2.4, "taxon_alt", $p_taxon_alt);
+$cf->textarea(11, $y, 54, 2.4, "taxon_alt_ta", $p_taxon_alt);
+$cf->inputText(11, $y, 54, "taxon_alt", $p_taxon_alt);
+echo "<div style='position:absolute; left: 66em; top: {$y}em'><button id='taxon_alt_toggle'></button></div>";
 
 $y += 3.5;
 $cf->label(11, $y, "typified by");
-$cf->inputText(11, $y, 53, "typified", $p_typified, 255);
+$cf->inputText(11, $y, 54, "typified", $p_typified, 255);
 
 $y += 2;
 //$cf->label(9, $y, "Series", "javascript:editSeries()");
@@ -1197,13 +1224,13 @@ $y += 2;
 $cf->label(11, $y, "Series", "javascript:editSeries()");
 $cf->inputJqAutocomplete(11, $y, 35, "series", $p_seriesName, $p_series, "index_jq_autocomplete.php?field=series", 520, 2, "", "", false, true );
 $cf->label(58.5, $y, "ser.Nr.");
-$cf->inputText(58.5, $y, 5.5, "series_number", $p_series_number, 50);
+$cf->inputText(58.5, $y, 6.5, "series_number", $p_series_number, 50);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
-$cf->inputJqAutocomplete(11, $y, 53, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
-echo "<div style='position: absolute; left: 65em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
+$cf->inputJqAutocomplete(11, $y, 54, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
+echo "<div style='position: absolute; left: 66em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;
@@ -1211,15 +1238,15 @@ $cf->labelMandatory(11, $y, 8, "Number");
 $cf->inputText(11, $y, 4, "Nummer", $p_Nummer, 10);
 $cf->label(22, $y, "alt.Nr.");
 $cf->inputText(22, $y, 18, "alt_number", $p_alt_number, 50);
-$cf->labelMandatory(47, $y, 3, "Date");
-$cf->inputText(47, $y, 6.5, "Datum", $p_Datum, 25);
-$cf->text(55.5, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
-$cf->inputText(57.5, $y, 6.5, "Datum2", $p_Datum2, 25);
+$cf->labelMandatory(48, $y, 3, "Date");
+$cf->inputText(48, $y, 6.5, "Datum", $p_Datum, 25);
+$cf->text(56.5, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
+$cf->inputText(58.5, $y, 6.5, "Datum2", $p_Datum2, 25);
 
 $y += 2;
 $cf->label(11, $y, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
 //$cf->editDropdown(9, $y, 46, "sammler2", $p_sammler2, makeSammler2($p_sammler2, 2), 270);
-$cf->inputJqAutocomplete(11, $y, 53, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
+$cf->inputJqAutocomplete(11, $y, 54, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector2()");
 
 $y += 3.25;
@@ -1246,9 +1273,11 @@ $cf->inputText(11, $y, 5, "altitude_min", $p_altitude_min, 10);
 $cf->text(17, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
 $cf->inputText(18, $y, 5, "altitude_max", $p_altitude_max, 10);
 
-$cf->label(56, $y, "exactn. (m)");
-$cf->inputText(56, $y, 8, "exactness", $p_exactness, 30);
-//$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
+$cf->label(57, $y, "Quadrant");
+$cf->inputText(57, $y, 5, "quadrant", $p_quadrant, 10);
+$cf->inputText(63, $y, 2, "quadrant_sub", $p_quadrant_sub, 10);
+//echo "<img id=\"open_latLonQuDialog\" border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
+//    . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\">\n";
 
 $y += 2;
 $cf->label(11, $y, "Lat");
@@ -1272,11 +1301,9 @@ $cf->dropdown(39.5, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
 echo "<div style='position:absolute; left: 43.5em; top: {$y}em'><button id='del_latLon'></button></div>";
 echo "<div style='position:absolute; left: 46.5em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
 
-$cf->label(56, $y, "Quadrant");
-$cf->inputText(56, $y, 5, "quadrant", $p_quadrant, 10);
-$cf->inputText(62, $y, 2, "quadrant_sub", $p_quadrant_sub, 10);
-//echo "<img id=\"open_latLonQuDialog\" border=\"0\" height=\"16\" src=\"webimages/convert.gif\" width=\"16\" "
-//    . "style=\"position:absolute; left:63.5em; top:" . ($y + .1) . "em\">\n";
+$cf->label(57, $y, "exactn. (m)");
+$cf->inputText(57, $y, 8, "exactness", $p_exactness, 30);
+//$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
 
 $y += 1.75;
 echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\"><hr></div>\n";
@@ -1284,7 +1311,7 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\">
 
 $y += 1.05;
 $cf->labelMandatory(11, $y, 8, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
-$cf->textarea(11, $y, 53, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
+$cf->textarea(11, $y, 54, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
 
@@ -1292,12 +1319,12 @@ $y += 4.4;
 $cf->label(11, $y, "habitat");
 $cf->label(11, $y + 1, "phorophyte");
 $cf->textarea(11, $y, 23.5, 2.4, "habitat", $p_habitat);
-$cf->label(40.5, $y, "habitus");
-$cf->textarea(40.5, $y, 23.5, 2.4, "habitus", $p_habitus);
+$cf->label(41, $y, "habitus");
+$cf->textarea(41, $y, 24, 2.4, "habitus", $p_habitus);
 
 $y += 3.3;
 $cf->label(11, $y, "annotations");
-$cf->textarea(11, $y, 53, 2.4, "Bemerkungen", $p_Bemerkungen);
+$cf->textarea(11, $y, 54, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
 if (($_SESSION['editControl'] & 0x2000) != 0) {
