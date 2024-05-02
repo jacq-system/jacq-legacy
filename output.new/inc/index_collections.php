@@ -80,12 +80,13 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128" target="_blank">DR // Institut für Botanik, Technische Universität Dresden</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869" target="_blank">GAT // Leibniz-Institut für Pflanzengenetik und Kulturpflanzenforschung (IPK), Gatersleben</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224" target="_blank">HAL // Martin-Luther-Universität Halle-Wittenberg</a></li>
+                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124874" target="_blank">HBG // Universität Hamburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582" target="_blank">JE // Friedrich-Schiller-Universität Jena</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126504" target="_blank">KIEL // Christian-Albrechts-Universität zu Kiel</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506" target="_blank">LZ // Universität Leipzig</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020" target="_blank">MJG // Johannes-Gutenberg-Universität Mainz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
                     </ul>
                 </div>
