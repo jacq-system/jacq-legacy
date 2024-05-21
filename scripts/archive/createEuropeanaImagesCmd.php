@@ -116,7 +116,7 @@ function generateFiles(int $source_id): void
                              source_id   = $source_id,
                              source_code = '$sourceCode'");
             if ($options['verbose'] > 1) {
-                echo "$sourceCode ($source_id): $filename\n";
+                echo "$sourceCode ($source_id): $filename" . ((filesize($filename) < 1500) ? ' empty' : '') . "\n";
             }
         }
     }
