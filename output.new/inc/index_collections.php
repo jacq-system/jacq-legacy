@@ -58,7 +58,9 @@
                 <div class="collapsible-header"><i class="fas fa-angle-down"></i>Czech Republic</div>
                 <div class="collapsible-body">
                     <ul>
+                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125293" target="_blank">BRNM // Moravian Museum; Brno</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125227" target="_blank">BRNU // Masaryk University; Brno</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125457" target="_blank">PR // National Museum; Pagrue</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124248" target="_blank">PRC // Charles University; Prague</a></li>
                     </ul>
                 </div>
@@ -67,8 +69,9 @@
                 <div class="collapsible-header"><i class="fas fa-angle-down"></i>Georgia</div>
                 <div class="collapsible-body">
                     <ul>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124020" target="_blank">BATU // Batumi Botanical Garden</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124020" target="_blank">BATU // Batumi Botanical Garden</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124619" target="_blank">TBI // Georgian Academy of Sciences</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124976" target="_blank">TGM // Georgian National Museum</a></li>
                     </ul>
                 </div>
             </li>
@@ -80,13 +83,15 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126128" target="_blank">DR // Institut für Botanik, Technische Universität Dresden</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124869" target="_blank">GAT // Leibniz-Institut für Pflanzengenetik und Kulturpflanzenforschung (IPK), Gatersleben</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125224" target="_blank">HAL // Martin-Luther-Universität Halle-Wittenberg</a></li>
+                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124874" target="_blank">HBG // Universität Hamburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124582" target="_blank">JE // Friedrich-Schiller-Universität Jena</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126504" target="_blank">KIEL // Christian-Albrechts-Universität zu Kiel</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506" target="_blank">LZ // Universität Leipzig</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020" target="_blank">MJG // Johannes-Gutenberg-Universität Mainz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
+                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126512" target="_blank">ULM // Universität Ulm</a></li>
                     </ul>
                 </div>
             </li>

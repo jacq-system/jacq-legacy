@@ -164,7 +164,7 @@ if (isset($_GET['new'])) {
     $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
     logTypecollections($id,$updated);
     if ($result) {
-        echo "<script language=\"JavaScript\">\n";
+        echo "<script>\n";
         echo "  window.opener.document.f.reload.click()\n";
         echo "  self.close()\n";
         echo "</script>\n";
