@@ -88,6 +88,7 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126504" target="_blank">KIEL // Christian-Albrechts-Universität zu Kiel</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126506" target="_blank">LZ // Universität Leipzig</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125020" target="_blank">MJG // Johannes-Gutenberg-Universität Mainz</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=171697" target="_blank">MNVD // Museum für Naturkunde und Vorgeschichte Dessau</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
@@ -108,7 +109,7 @@
                 <div class="collapsible-header"><i class="fas fa-angle-down"></i>Hungary</div>
                 <div class="collapsible-body">
                     <ul>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124790" target="_blank">BP // Hungarian Natural History Museum</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124790" target="_blank">BP // Hungarian Natural History Museum</a></li>
                     </ul>
                 </div>
             </li>
@@ -129,10 +130,12 @@
                 <div class="collapsible-body">
                     <ul>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124484" target="_blank">FT // Centro Studi Erbario Tropicale, Università degli Studi di Firenze</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126467" target="_blank"> PAV // Università di Pavia</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126467" target="_blank">PAV // Università di Pavia</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126469" target="_blank">PI // Herbarium Horti Pisani, Università di Pisa</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126455" target="_blank"> TO // Università di Torino</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=165749" target="_blank">PIAGR // Scienze Agrarie, Alimentari e Agroambientali, Università di Pisa</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124967" target="_blank">ROPV // CREA-Consiglio per la ricerca in agricoltura</a></li>                     
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126472" target="_blank">SIENA // Botanical Museum (Botanical Garden, Herbarium) SIMUS, Università di Siena</a></li>                     
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126455" target="_blank">TO // Università di Torino</a></li>
                     </ul>
                 </div>
             </li>
