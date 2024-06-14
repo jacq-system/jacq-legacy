@@ -38,8 +38,9 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059" target="_blank">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039" target="_blank">GZU // Karl Franzes University of Graz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland, Biologische Station Neusiedler See, Illmitz</a></li>
-                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W //   Natural history Museum Vienna</a></li>
-                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513" target="_blank">WU //   University of Vienna, [former] Institute for Botany</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126511" target="_blank">SZU // Paris Lodron University; Salzburg</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W // Natural history Museum Vienna</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126513" target="_blank">WU // University of Vienna, [former] Institute for Botany</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=151017" target="_blank">WUP // Department of Pharmacognosy, Universität Wien</a></li>
                     </ul>
                 </div>
