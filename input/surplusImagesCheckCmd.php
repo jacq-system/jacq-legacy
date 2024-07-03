@@ -15,7 +15,7 @@ $options = array(
     'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
     'verbose' => (isset($opt['v']) || isset($opt['verbose'])),            // bool
     'recheck' => (isset($opt['r']) || isset($opt['recheck'])),            // bool
-    'deleted' => (isset($opt['r']) || isset($opt['deleted'])),            // bool
+    'deleted' => (isset($opt['d']) || isset($opt['deleted'])),            // bool
     'auto'    => (isset($opt['a']) || isset($opt['auto']))                // bool
 );
 $remainArgs = array_slice($argv, $restIndex);
@@ -280,6 +280,7 @@ function scanServer(int $server_id)
                         $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename) VALUES " . implode(',', $sql_parts));
                 */
                 if (!empty($data['result'])) {
+                    $imagesOnServer = array();
                     foreach ($data['result'] as $filename) {
                         $filename_clean = $dbLnk->real_escape_string($filename);
                         $res = $dbLnk->query("SELECT id
@@ -291,10 +292,26 @@ function scanServer(int $server_id)
                             $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename, source_id) 
                                                  VALUES ($server_id, '$filename_clean', {$imageDef['source_id_fk']})");
                         }
+                        $imagesOnServer[] = $filename_clean;
                     }
-                }
-                if ($options['verbose']) {
-                    echo "db insert $searchpattern finished\n";
+                    if ($options['deleted']) {
+                        echo "looking for deleted image files:\n";
+                        $deletedImages = $dbLnk->query("SELECT id, filename
+                                                        FROM herbar_pictures.djatoka_images
+                                                        WHERE server_id = $server_id
+                                                         AND filename NOT IN ('" . implode("','", $imagesOnServer) . "')")
+                                               ->fetch_all(MYSQLI_ASSOC);
+                        foreach ($deletedImages as $deletedImage) {
+                            echo "{$deletedImage['filename']} with ID {$deletedImage['id']} was deleted on server\n";
+                        }
+                    }
+                    if ($options['verbose']) {
+                        echo "db insert $searchpattern finished\n";
+                    }
+                } else {
+                    if ($options['verbose']) {
+                        echo "db insert $searchpattern finished, but no data from server\n";
+                    }
                 }
             }
 
@@ -400,8 +417,8 @@ function scanServer(int $server_id)
                 }
                 // first find "w-krypt_....-......"
                 // and then "w_....-......"
-                $head = array('w-krypt_',
-                              'w_');
+                $head = array('w-krypt\_',
+                              'w\_');
                 for ($i = 0; $i < 2; $i++) {
                     $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
                                              FROM herbar_pictures.djatoka_images di, tbl_specimens s, tbl_management_collections mc
