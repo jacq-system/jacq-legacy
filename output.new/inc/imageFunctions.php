@@ -82,7 +82,13 @@ function getPicDetails($request, $sid = '')
                 $sql = "SELECT s.`specimen_ID`
                         FROM `tbl_specimens` s
                          LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-                        WHERE (s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "' )
+                        WHERE (   s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "' 
+                               OR s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "'
+                               OR (mc.source_id = 6
+                                   AND (   s.`CollNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "'
+                                        OR s.`CollNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "'
+                                   ))
+                                )
                          AND mc.`coll_short_prj` = '" . $dbLnk2->real_escape_string($coll_short_prj) . "'";
                 $result = $dbLnk2->query($sql);
                 if ($result->num_rows > 0) {
