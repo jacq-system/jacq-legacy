@@ -102,6 +102,7 @@
                 <div class="collapsible-body">
                     <ul>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=255445" target="_blank">CBH // Cephalonia Botanica, Focas Cosmetatos Foundation</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=263469" target="_blank">SPP // Society for the Protection of Prespa</a></li>
                         <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126785" target="_blank">UPA // Βοτανικό Μουσείο Τμήματος Βιολογίας, University of Patras</a></li>
                     </ul>
                 </div>
