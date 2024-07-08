@@ -274,7 +274,7 @@ function getPicDetails($request, $sid = '')
         return array(
             'url'              => $url,
             'requestFileName'  => $request,
-            'originalFilename' => $originalFilename,
+            'originalFilename' => str_replace('-', '', $originalFilename),
             'filename'         => $filename,
             'specimenID'       => $specimenID,
             'is_djatoka'       => $row['is_djatoka'],
@@ -394,6 +394,26 @@ function getPicInfo($picdetails)
             $return['error'] = 'Unable to connect to ' . $url;
         }
         */
+
+        // finally add any old filenames which are in "herbar_pictures.djatoka_images" but not already in the list
+        $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+        if (!empty($return['pics'])) {
+            $rows = $dbLnk2->query("SELECT filename 
+                                    FROM herbar_pictures.djatoka_images 
+                                    WHERE specimen_ID = '" . $picdetails['specimenID'] . "'
+                                     AND filename NOT IN ('" . implode("','", $return['pics']) . "')")
+                           ->fetch_all(MYSQLI_ASSOC);
+        } else {
+            $rows = $dbLnk2->query("SELECT filename 
+                                    FROM herbar_pictures.djatoka_images 
+                                    WHERE specimen_ID = '" . $picdetails['specimenID'] . "'")
+                           ->fetch_all(MYSQLI_ASSOC);
+        }
+        if (!empty($rows)) {
+            foreach($rows as $row) {
+                $return['pics'][] = $row['filename'];
+            }
+        }
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         // Construct URL to servlet
         $HerbNummer = str_replace('-', '', $picdetails['filename']);
