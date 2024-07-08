@@ -65,6 +65,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
         {
             let windowSpecimen;
             windowSpecimen = window.open("editSpecimens.php?sel=<0>&new=1&HerbNummer=" + HerbNummer, "Specimens", getOptions());
+            windowSpecimen.moveBy(40, 40);
             windowSpecimen.focus();
         }
         function recheckServer(serverID)
