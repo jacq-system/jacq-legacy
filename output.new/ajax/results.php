@@ -232,8 +232,8 @@ while ($row = $result->fetch_array()) {
         if ($switch) {
             echo ". ";
         }
-        if (strlen(trim($row['Fundort'])) > 50) {
-            echo substr(trim($row['Fundort']), 0, 50) . "...";
+        if (strlen(trim($row['Fundort'])) > 200) {
+            echo substr(trim($row['Fundort']), 0, 200) . "...";
         } else {
             echo trim($row['Fundort']);
         }
