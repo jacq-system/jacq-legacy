@@ -1166,7 +1166,7 @@ $cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.sub
 $cf->label(23, $y, "HerbarNr.");    // TODO: check, if HerbNummer has the correct number of digits
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
 
-$cf->labelMandatory(40, $y, 5.5, "Collection");
+$cf->labelMandatory(40.5, $y, 6, "Collection");
 $cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
 $cf->label(59, $y, "Nr.");
 $cf->inputText(59, $y, 6, "CollNummer", $p_CollNummer, 25);
@@ -1193,9 +1193,9 @@ $cf->dropdown(48, $y, "voucher", $p_voucher, $voucher[0], $voucher[1]);
 
 $y += 2;
 if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
-    $cf->labelMandatory(11, $y, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
+    $cf->labelMandatory(11, $y, 9, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
-    $cf->labelMandatory(11, $y, 8, "taxon");
+    $cf->labelMandatory(11, $y, 9, "taxon");
 }
 //$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
 $cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
@@ -1203,11 +1203,11 @@ echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 
 $y += 4;
-$cf->labelMandatory(10, $y, 8, "det / rev / conf");
+$cf->labelMandatory(11, $y, 9, "det / rev / conf");
 $cf->inputText(11, $y, 54, "det", $p_det, 255);
 
 $y += 2;
-$cf->labelMandatory(11, $y, 8, "ident. history");
+$cf->labelMandatory(11, $y, 9, "ident. history");
 $cf->textarea(11, $y, 54, 2.4, "taxon_alt_ta", $p_taxon_alt);
 $cf->inputText(11, $y, 54, "taxon_alt", $p_taxon_alt);
 echo "<div style='position:absolute; left: 66em; top: {$y}em'><button id='taxon_alt_toggle'></button></div>";
@@ -1227,18 +1227,18 @@ $cf->label(58.5, $y, "ser.Nr.");
 $cf->inputText(58.5, $y, 6.5, "series_number", $p_series_number, 50);
 
 $y += 2;
-$cf->labelMandatory(11, $y, 8, "first collector", "javascript:editCollector(document.f.sammler)");
+$cf->labelMandatory(11, $y, 9, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
 $cf->inputJqAutocomplete(11, $y, 54, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
 echo "<div style='position: absolute; left: 66em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;
-$cf->labelMandatory(11, $y, 8, "Number");
+$cf->labelMandatory(11, $y, 9, "Number");
 $cf->inputText(11, $y, 4, "Nummer", $p_Nummer, 10);
-$cf->label(22, $y, "alt.Nr.");
+$cf->labelMandatory(22, $y, 5, "alt.Nr.");
 $cf->inputText(22, $y, 18, "alt_number", $p_alt_number, 50);
-$cf->labelMandatory(48, $y, 3, "Date");
+$cf->labelMandatory(48, $y, 4, "Date");
 $cf->inputText(48, $y, 6.5, "Datum", $p_Datum, 25);
 $cf->text(56.5, $y - 0.3, "<font size=\"+1\">&ndash;</font>");
 $cf->inputText(58.5, $y, 6.5, "Datum2", $p_Datum2, 25);
@@ -1253,7 +1253,7 @@ $y += 3.25;
 echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\"><hr></div>\n";
 
 $y += 1.25;
-$cf->labelMandatory(11, $y, 8, "Country");
+$cf->label(11, $y, "Country");
 if (($_SESSION['editControl'] & 0x2000) != 0) {
     $cf->dropdown(11, $y, "nation\" onchange=\"reload=true; self.document.f.submit();", $p_nation, $nation[0], $nation[1]);
 } else {
@@ -1310,7 +1310,7 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\">
 //38.75
 
 $y += 1.05;
-$cf->labelMandatory(11, $y, 8, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
+$cf->labelMandatory(11, $y, 9, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
 $cf->textarea(11, $y, 54, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
