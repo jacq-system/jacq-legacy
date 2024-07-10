@@ -9,13 +9,14 @@ use Jacq\DbAccess;
 /**
  * process commandline arguments
  */
-$opt = getopt("hvra", ["help", "verbose", "recheck", "auto"], $restIndex);
+$opt = getopt("hvrda", ["help", "verbose", "recheck", "deleted", "auto"], $restIndex);
 
 $options = array(
     'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
-    'auto'    => (isset($opt['a']) || isset($opt['auto'])),               // bool
+    'verbose' => (isset($opt['v']) || isset($opt['verbose'])),            // bool
     'recheck' => (isset($opt['r']) || isset($opt['recheck'])),            // bool
-    'verbose' => (isset($opt['v']) || isset($opt['verbose']))            // bool
+    'deleted' => (isset($opt['d']) || isset($opt['deleted'])),            // bool
+    'auto'    => (isset($opt['a']) || isset($opt['auto']))                // bool
 );
 $remainArgs = array_slice($argv, $restIndex);
 $server_id = (empty(($remainArgs))) ? 0 : intval($remainArgs[0]);
@@ -26,6 +27,7 @@ if ($options['help'] || (!$server_id && !$options['auto'])) {
        . "  -h  --help     this explanation\n"
        . "  -v  --verbose  echo status messages\n"
        . "  -r  --recheck  recheck all linked files if herbNumber has changed\n"
+       . "  -d  --deleted  show deleted files which are still in herbar_pictures.djatoka_images\n"
        . "  -a  --auto     cycle through all servers who were already scanned at least once\n\n";
     die();
 }
@@ -277,22 +279,39 @@ function scanServer(int $server_id)
                         }
                         $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename) VALUES " . implode(',', $sql_parts));
                 */
-                // if we receive any new pictures insert them into the database
                 if (!empty($data['result'])) {
+                    $imagesOnServer = array();
                     foreach ($data['result'] as $filename) {
                         $filename_clean = $dbLnk->real_escape_string($filename);
                         $res = $dbLnk->query("SELECT id
                                               FROM herbar_pictures.djatoka_images
                                               WHERE filename = '$filename_clean'
                                                AND server_id = $server_id");
+                        // if we receive any new pictures insert them into the database
                         if ($res->num_rows == 0) {
                             $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename, source_id) 
                                                  VALUES ($server_id, '$filename_clean', {$imageDef['source_id_fk']})");
                         }
+                        $imagesOnServer[] = $filename_clean;
                     }
-                }
-                if ($options['verbose']) {
-                    echo "db insert $searchpattern finished\n";
+                    if ($options['deleted']) {
+                        echo "looking for deleted image files:\n";
+                        $deletedImages = $dbLnk->query("SELECT id, filename
+                                                        FROM herbar_pictures.djatoka_images
+                                                        WHERE server_id = $server_id
+                                                         AND filename NOT IN ('" . implode("','", $imagesOnServer) . "')")
+                                               ->fetch_all(MYSQLI_ASSOC);
+                        foreach ($deletedImages as $deletedImage) {
+                            echo "{$deletedImage['filename']} with ID {$deletedImage['id']} was deleted on server\n";
+                        }
+                    }
+                    if ($options['verbose']) {
+                        echo "db insert $searchpattern finished\n";
+                    }
+                } else {
+                    if ($options['verbose']) {
+                        echo "db insert $searchpattern finished, but no data from server\n";
+                    }
                 }
             }
 
@@ -326,7 +345,7 @@ function scanServer(int $server_id)
                     if (!empty($specimen['HerbNummer'])) {
                         $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
                         // and check if this filename still applies
-                        $images = $dbLnk->query("SELECT id
+                        $images = $dbLnk->query("SELECT id, filename
                                                  FROM herbar_pictures.djatoka_images
                                                  WHERE id = {$specimen['id']}
                                                   AND LOWER(filename) NOT LIKE LOWER('" . addcslashes($filename, '%_') . "%')")
@@ -383,9 +402,10 @@ function scanServer(int $server_id)
                 }
             }
 
-            // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the filename in CollNummer instead of HerbNummer
+            // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the herbarnumber in CollNummer instead of HerbNummer
+            //         and also for w entries which have the herbarnumber in CollNummer instead of HerbNummer
             /* TODO
-             * specimens of w-krypt are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
+             * specimens of w-krypt (and of w in general) are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
              * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
              * in tbl_specimens are changed accordingly.
              * When the transition is finished, this code-part (the whole if-block) should be removed
@@ -395,22 +415,31 @@ function scanServer(int $server_id)
                 if ($options['verbose']) {
                     echo "----\n";
                 }
-                $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
-                                         FROM herbar_pictures.djatoka_images di, tbl_specimens s
-                                         WHERE di.filename = CONCAT('w-krypt_', SUBSTRING(s.CollNummer, 1, 4), SUBSTRING(s.CollNummer, 6))
-                                          AND di.server_id = 2
-                                          AND di.specimen_ID IS NULL
-                                          AND s.collectionID IN (90,92,123)")
-                                ->fetch_all(MYSQLI_ASSOC);
-                if (!empty($images)) {
-                    foreach ($images as $image) {
-                        if ($options['verbose']) {
-                            echo "{$image['filename']} ({$image['specimen_ID']})\n";
-                        }
-                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                        specimen_ID = {$image['specimen_ID']}
-                                       WHERE id = {$image['id']}");
+                // first find "w-krypt_....-......"
+                // and then "w_....-......"
+                $head = array('w-krypt\_',
+                              'w\_');
+                for ($i = 0; $i < 2; $i++) {
+                    $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
+                                             FROM herbar_pictures.djatoka_images di, tbl_specimens s, tbl_management_collections mc
+                                             WHERE di.filename = CONCAT('$head[$i]', SUBSTRING(s.CollNummer, 1, 4), SUBSTRING(s.CollNummer, 6))
+                                              AND di.server_id = 2
+                                              AND di.specimen_ID IS NULL
+                                              AND s.CollNummer IS NOT NULL
+                                              AND s.collectionID = mc.collectionID
+                                              AND mc.source_id = 6")
+                                           // AND s.collectionID IN (90,92,123)
+                                    ->fetch_all(MYSQLI_ASSOC);
+                    if (!empty($images)) {
+                        foreach ($images as $image) {
+                            if ($options['verbose']) {
+                                echo "{$image['filename']} ({$image['specimen_ID']})\n";
+                            }
+                            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                            specimen_ID = {$image['specimen_ID']}
+                                           WHERE id = {$image['id']}");
 
+                        }
                     }
                 }
             }

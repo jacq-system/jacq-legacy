@@ -59,8 +59,7 @@ if (empty($specimen_ID)) {
                    ta4.author author4, ta5.author author5,
                    te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                    te4.epithet epithet4, te5.epithet epithet5,
-                   ts.taxonID, ts.statusID,
-                   `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
+                   ts.taxonID, ts.statusID
                   FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
                    LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                    LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
@@ -85,6 +84,9 @@ if (empty($specimen_ID)) {
     $result = $dbLnk2->query($sql);
 }
 while ($row = $result->fetch_array()) {
+    $scientificName = $dbLnk2->query("SELECT `herbar_view`.GetScientificName({$row['taxonID']}, 0) AS `scientificName`")
+                             ->fetch_assoc()['scientificName'];
+
     $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']);
     $lng = dms2sec($row['Coord_W'], $row['W_Min'], $row['W_Sec'], $row['Coord_E'], $row['E_Min'], $row['E_Sec']);
     if ($lat != 0 || $lng != 0) {
@@ -95,7 +97,7 @@ while ($row = $result->fetch_array()) {
 
         $txt = "<div style=\"font-family: Arial,sans-serif; font-weight: bold; font-size: medium;\">"
 //             . htmlentities(taxonWithHybrids($row), ENT_QUOTES | ENT_HTML401)
-             . htmlentities($row['scientificName'], ENT_QUOTES | ENT_HTML401)
+             . htmlentities($scientificName, ENT_QUOTES | ENT_HTML401)
              . "</div>"
              . "<div style=\"font-family: Arial,sans-serif; font-size: small;\">"
              . htmlentities(collection($row), ENT_QUOTES | ENT_HTML401) . " / "
