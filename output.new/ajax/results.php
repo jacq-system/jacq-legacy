@@ -81,17 +81,37 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
             . "</form>";
 ?>
 <script type="text/javascript" language="javascript">
-  function osMap(sid) {
-    if (sid > 0) {
-      MeinFenster = window.open('os_maps.php?sid=' + sid,'_blank',
-                                'width=820,height=620,top=50,left=50,resizable,scrollbars');
-      MeinFenster.focus();
-    } else {
-      MeinFenster = window.open('os_maps.php','_blank',
-                                'width=820,height=620,top=50,left=50,resizable,scrollbars');
-      MeinFenster.focus();
+    let oldButtonText;
+    function osMap(sid) {
+        if (sid > 0) {
+            MeinFenster = window.open('os_maps.php?sid=' + sid,'_blank',
+                                      'width=820,height=620,top=50,left=50,resizable,scrollbars');
+            MeinFenster.focus();
+        } else {
+            MeinFenster = window.open('os_maps.php','_blank',
+                                      'width=820,height=620,top=50,left=50,resizable,scrollbars');
+            MeinFenster.focus();
+        }
     }
-  }
+    $(document).ready(function(){
+        $(".exportKML").click(function(){
+            $(this).css("background-color", "#5D9F30");
+        });
+        $(".exportKML").focusout(function(){
+            $(this).css("background-color", "#FFFFFF");
+        });
+        $(".exportContent").click(function(){
+            oldButtonText = $(this).text();
+            $(this).css("background-color", "#5D9F30");
+            $(this).css("color", "#FFFF00");
+            $(this).html("generating ...");
+        });
+        $(".exportContent").focusout(function(){
+            $(this).css("background-color", "#FFFFFF");
+            $(this).css("color", "#7F7F7F");
+            $(this).html(oldButtonText);
+        });
+    });
 </script>
 <div class="divider"></div>
 
@@ -110,18 +130,10 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
                   </button>
                 </form>
                 &nbsp;&nbsp;
-                <form style="display:inline;" action="exportKml.php" method="post" target="_blank">
-                  <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download KML">Download KML</button>
-                </form>
-                <form style="display:inline;" action="exportCsv.php" method="post" target="_blank">
-                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download XLSX</button>
-                </form>
-                <form style="display:inline;" action="exportCsv.php?type=ods" method="post" target="_blank">
-                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download ODS</button>
-                </form>
-                <form style="display:inline;" action="exportCsv.php?type=csv" method="post" target="_blank">
-                    <button class="btn-flat waves-effect waves-light" type="submit" name="action" value="download CSV">Download CSV</button>
-                </form>
+                <a href="exportKml.php" download><button class="btn-flat waves-effect waves-light exportKML">Download KML</button></a>
+                <a href="exportCsv.php" download><button class="btn-flat waves-effect waves-light exportContent">Download XLSX</button></a>
+                <a href="exportCsv.php?type=ods" download><button class="btn-flat waves-effect waves-light exportContent">Download ODS</button></a>
+                <a href="exportCsv.php?type=csv" download><button class="btn-flat waves-effect waves-light exportContent">Download CSV</button></a>
                 <?php endif; ?>
               </td>
             </tr>
