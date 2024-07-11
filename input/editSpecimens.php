@@ -144,6 +144,17 @@ function makeSammler2($search, $nr)
     return $results;
 }
 
+function getSpecifiedHerbNummerLength(int $source_id)
+{
+    $result = dbi_query("SELECT HerbNummerNrDigits FROM tbl_img_definition WHERE source_id_fk = '$source_id'");
+    if ($result->num_rows > 0) {
+        return $result->fetch_assoc()['HerbNummerNrDigits'];
+    } else {
+        return 0;
+    }
+}
+
+
 // main program
 // As we have changed the buttons to JavaScript only, we cannot check automatically which button was pressed
 // Therefor we use a hidden field and mirror it to the buttons name for now
@@ -561,6 +572,7 @@ if (isset($_GET['sel'])) {
       var linktext = '';
       let dialog_latLonQu;
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
+      let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
 
       function makeOptions()
       {
@@ -904,10 +916,10 @@ if (isset($_GET['sel'])) {
 
           $('[name="HerbNummer"]').blur(function() {
               this.value = this.value.trim();
-              var number = this.value;
+              let number = this.value;
               // convert StableURI to collection HerbNummer
               // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
-              var r = /^\D/  // RegEx; searchstring must start with any non-digit char
+              let r = /^\D/;  // RegEx; searchstring must start with any non-digit char
               if (r.test(number)) {
                   $.ajax({
                       url: "ajax/convStabURItoHerbnummer.php",
@@ -922,6 +934,12 @@ if (isset($_GET['sel'])) {
                   // HerbNummer = this.value;
                   // var institutionNr = $('[name="institution"]').val();
                   // var institutionName = $('[name="institution"] option:selected').text();
+              } else {
+                  if (specifiedHerbNummerLength && number.length != specifiedHerbNummerLength) {
+                      if (!confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.")) {
+                          setTimeout(() => $(this).focus(), 1)
+                      }
+                  }
               }
           })
           .keydown(function(event){
