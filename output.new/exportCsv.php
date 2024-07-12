@@ -118,6 +118,8 @@ set_time_limit(0);
 //    die('Caching not available!');
 //}
 
+//$timestart = microtime(true);
+
 // Create new PhpSpreadsheet object
 $spreadsheet = new Spreadsheet();
 
@@ -194,21 +196,22 @@ $specimenIDs = array();
 while ($row = $result->fetch_array()) {
     $specimenIDs[] = intval($row['specimen_ID']);
 }
-$sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-                 s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-                 s.CollNummer, s.altitude_min, s.altitude_max,
-                 n.nation_engl, p.provinz, s.Bezirk, s.Fundort, tf.family, tsc.cat_description, si.identification_status, sv.voucher,
-                 mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
-                 s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
+$sqlSpecimen = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+                 s.CollNummer, s.altitude_min, s.altitude_max, s.Bezirk, s.Fundort, s.typified,
+                 s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation, s.habitat, s.habitus, s.garten,
                  s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                  s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                  s.quadrant, s.quadrant_sub, s.exactness,
-                 s.habitat, s.habitus, s.garten,
-                 s.observation,
+                 ss.series, 
+                 si.identification_status, 
+                 sv.voucher,
+                 mc.collection, mc.collectionID, mc.coll_short, m.source_code,
+                 n.nation_engl, p.provinz,                   
+                 c.Sammler, c2.Sammler_2, 
                  tr.rank_abbr,
+                 tg.genus, tf.family,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
-                 ts.synID, ts.taxonID, ts.statusID,
                  `herbar_view`.GetScientificName(ts.taxonID, 0) AS `scientificName`
                 FROM tbl_specimens s
                  LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seriesID
@@ -236,7 +239,6 @@ $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.seri
                  LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
                  LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
-                 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
                 WHERE specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
 $resultSpecimen = $dbLnk2->query($sqlSpecimen);
 if (!$resultSpecimen) {
@@ -245,8 +247,30 @@ if (!$resultSpecimen) {
 }
 
 $i = 2;
+//$time1sum = $time2sum = 0;
 while ($rowSpecimen = $resultSpecimen->fetch_array()) {
-    $sammler = collection($rowSpecimen);
+//    $time1 = microtime(true);
+//    $rowDetail = $dbLnk2->query("SELECT s.CollNummer, s.typified, s.garten, s.Datum2, s.det, s.taxon_alt, s.Bemerkungen, s.habitat, s.habitus,
+//                                  s.Bezirk, s.exactness, s.altitude_min, s.altitude_max, s.quadrant, s.quadrant_sub,
+//                                  si.identification_status,
+//                                  sv.voucher,
+//                                  mc.coll_short,
+//                                  m.source_code,
+//                                  tr.rank_abbr,
+//                                  tf.family,
+//                                  `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
+//                                 FROM tbl_specimens s
+//                                  LEFT JOIN tbl_specimens_identstatus     si  ON si.identstatusID = s.identstatusID
+//                                  LEFT JOIN tbl_specimens_voucher         sv  ON sv.voucherID = s.voucherID
+//                                  LEFT JOIN tbl_management_collections    mc  ON mc.collectionID = s.collectionID
+//                                  LEFT JOIN meta                          m   ON m.source_id = mc.source_id
+//                                  LEFT JOIN tbl_tax_species               ts  ON ts.taxonID = s.taxonID
+//                                  LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
+//                                  LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
+//                                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
+//                                 WHERE s.specimen_ID = {$rowSpecimen['specimen_ID']}")
+//                        ->fetch_assoc();
+//    $time1sum += microtime(true) - $time1;
 
     if ($rowSpecimen['epithet5']) {
         $infra_spec = $rowSpecimen['epithet5'];
@@ -336,6 +360,7 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $lon = "" . number_format(round($lon, 9), 9) . "° ";
     }
 
+//    $time2 = microtime(true);
     $spreadsheet->getActiveSheet()->fromArray(array(
         $rowSpecimen['specimen_ID'],
         $rowSpecimen['observation'],
@@ -358,7 +383,7 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $rowSpecimen['family'],
         $rowSpecimen['garten'],
         $rowSpecimen['voucher'],
-        $sammler,
+        collection($rowSpecimen),
         $rowSpecimen['Sammler'],
         $rowSpecimen['Nummer'],
         $rowSpecimen['Sammler_2'],
@@ -396,8 +421,12 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         StableIdentifier::make($rowSpecimen['specimen_ID'])->getStblID()
     ), null, 'A' . $i);
 
+//    $time2sum += microtime(true) - $time2;
     $i++;
 }
+//error_log($time1sum);
+//error_log($time2sum);
+//error_log(microtime(true) - $timestart);
 
 switch (filter_input(INPUT_GET, 'type')) {
     case 'csv':
