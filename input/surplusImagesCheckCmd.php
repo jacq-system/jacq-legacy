@@ -204,9 +204,10 @@ function scanServer(int $server_id)
 {
     global $dbLnk, $options;
 
-    $imageDef = $dbLnk->query("SELECT source_id_fk, HerbNummerNrDigits, imgserver_type, imgserver_url, `key`
-                               FROM `tbl_img_definition`
-                               WHERE `img_def_ID` = $server_id")
+    $imageDef = $dbLnk->query("SELECT id.source_id_fk, id.HerbNummerNrDigits, id.imgserver_type, id.imgserver_url, id.`key`, iiif.manifest_backend
+                               FROM `tbl_img_definition` id
+                                LEFT JOIN herbar_pictures.iiif_definition iiif ON iiif.source_id_fk = id.source_id_fk 
+                               WHERE id.`img_def_ID` = $server_id")
                       ->fetch_assoc();
     if (empty($imageDef)) {
         die("unknown server-ID\n");
@@ -236,12 +237,18 @@ function scanServer(int $server_id)
         case "djatoka":
             echo "$server_id start\n";
 
+            if (!empty($imageDef['manifest_backend']) && substr($imageDef['manifest_backend'],0,5) == 'POST:') {
+                $url = substr($imageDef['manifest_backend'],5);
+            } else {
+                $url = $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer';
+            }
+
             $client = new Client(['timeout' => 4]);
 
             // cycle through all possible first parts of picture filenames, get possible pictures from the picture-server and process them
             foreach ($searchpatterns as $searchpattern) {
                 try {
-                    $response = $client->request('POST', $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer', [
+                    $response = $client->request('POST', $url, [
                         'json' => [
                                 'method' => 'listResources',
                                 'params' => [$imageDef['key'], [$searchpattern]],
