@@ -233,6 +233,8 @@ function scanServer(int $server_id)
         }
     }
 
+    $status = ['transferred' => 0, 'inserted' => 0, 'recheck' => 0, 'new' => 0, 'newwkrypt' => 0, 'offimages' => 0, 'linked' => 0];
+
     switch ($imageDef['imgserver_type']) {
         case "djatoka":
             echo "$server_id start\n";
@@ -296,9 +298,12 @@ function scanServer(int $server_id)
                                                AND server_id = $server_id");
                         // if we receive any new pictures insert them into the database
                         if ($res->num_rows == 0) {
-                            $dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename, source_id) 
-                                                 VALUES ($server_id, '$filename_clean', {$imageDef['source_id_fk']})");
+                            if ($dbLnk->query("INSERT IGNORE INTO herbar_pictures.djatoka_images (server_id, filename, source_id) 
+                                                VALUES ($server_id, '$filename_clean', {$imageDef['source_id_fk']})")) {
+                                $status['inserted']++;
+                            }
                         }
+                        $status['transferred']++;
                         $imagesOnServer[] = $filename_clean;
                     }
                     if ($options['deleted']) {
@@ -359,12 +364,13 @@ function scanServer(int $server_id)
                                         ->fetch_all(MYSQLI_ASSOC);
                         if (!empty($images)) {
                             foreach ($images as $image) {
-                                if ($options['verbose']) {
-                                    echo "{$image['filename']} removed link to specimen\n";
-                                }
                                 $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                                 specimen_ID = NULL
                                                WHERE id = {$image['id']}");
+                                if ($options['verbose']) {
+                                    echo "{$image['filename']} removed link to specimen\n";
+                                }
+                                $status['recheck']++;
                             }
                         }
                     }
@@ -398,12 +404,13 @@ function scanServer(int $server_id)
                     if (!empty($images)) {
                         foreach ($images as $image) {
                             // and link them to the specimen
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
-                            }
                             $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                             specimen_ID = {$specimen['specimen_ID']}
                                            WHERE id = {$image['id']}");
+                            if ($options['verbose']) {
+                                echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
+                            }
+                            $status['new']++;
                         }
                     }
                 }
@@ -439,13 +446,13 @@ function scanServer(int $server_id)
                                     ->fetch_all(MYSQLI_ASSOC);
                     if (!empty($images)) {
                         foreach ($images as $image) {
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} ({$image['specimen_ID']})\n";
-                            }
                             $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                             specimen_ID = {$image['specimen_ID']}
                                            WHERE id = {$image['id']}");
-
+                            if ($options['verbose']) {
+                                echo "{$image['filename']} ({$image['specimen_ID']})\n";
+                            }
+                            $status['newwkrypt']++;
                         }
                     }
                 }
@@ -454,8 +461,34 @@ function scanServer(int $server_id)
                 echo "----\n";
             }
 
-            // third: look for any picture with extensions who still have no specimen connected.
-            //        These are probably additional pictures of already linked ones
+            // third: compare the extracted herbarium number from any pictures which are still not connected to a specimen_ID if any match can be found
+            //        possible cause: digital_image in tbl_specimens is 0 but should be 1
+            $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
+                                     FROM herbar_pictures.djatoka_images di
+                                      JOIN tbl_management_collections mc ON mc.source_id = di.source_id 
+                                      JOIN tbl_specimens s ON s.collectionID = mc.collectionID 
+                                     WHERE di.server_id = $server_id
+                                      AND di.specimen_ID IS NULL
+                                      AND di.extractedHerbNumber = s.HerbNummer")
+                            ->fetch_all(MYSQLI_ASSOC);
+            if (!empty($images)) {
+                foreach ($images as $image) {
+                    // and link them to the specimen
+                    $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                            specimen_ID = {$image['specimen_ID']}
+                                           WHERE id = {$image['id']}");
+                    if ($options['verbose']) {
+                        echo "{$image['filename']} ({$image['specimen_ID']})\n";
+                    }
+                    $status['offimages']++;
+                }
+            }
+            if ($options['verbose']) {
+                echo "----\n";
+            }
+
+            // fourth: look for any picture with extensions who still have no specimen connected.
+            //         These are probably additional pictures of already linked ones
             $images = $dbLnk->query("SELECT id, filename
                                      FROM herbar_pictures.djatoka_images
                                      WHERE server_id = $server_id
@@ -485,12 +518,13 @@ function scanServer(int $server_id)
                                                       AND specimen_ID IS NOT NULL")
                                             ->fetch_assoc();
                         if (!empty($knownImage)) {
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
-                            }
                             $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                             specimen_ID = {$knownImage['specimen_ID']}
                                            WHERE id = {$image['id']}");
+                            if ($options['verbose']) {
+                                echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
+                            }
+                            $status['linked']++;
                         }
                     }
                 }
@@ -574,7 +608,18 @@ function scanServer(int $server_id)
 //                }
 //            }
 //        }
-            echo "$server_id finish\n";
+            echo $status['transferred'] . " images transferred from server\n"
+               . $status['inserted'] . " new images inserted into database\n";
+            if ($options['recheck']) {
+                $status['recheck'] . " images changed due to recheck\n";
+            }
+            echo $status['new'] . " images newly connected with specimens\n";
+            if ($status['newwkrypt']) {
+                echo $status['newwkrypt'] . " new w-krypt images connected with specimens\n";
+            }
+            echo $status['offimages'] . " images linked to specimens with switched off 'digital_image'\n"
+               . $status['linked'] . " images linked to already connected images\n";
+            echo "server $server_id finished (" . date(DATE_RFC822) . ")\n";
             break;
         default:
             echo "wrong server type\n";
