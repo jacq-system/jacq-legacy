@@ -48,6 +48,7 @@ if ($options['auto']) {
     $rows = $dbLnk->query("SELECT server_id FROM herbar_pictures.djatoka_images GROUP BY server_id")->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as $row) {
         scanServer($row['server_id']);
+        echo "\n";
     }
 } elseif ($server_id) {
     scanServer($server_id);
@@ -204,7 +205,7 @@ function scanServer(int $server_id)
 {
     global $dbLnk, $options;
 
-    $imageDef = $dbLnk->query("SELECT id.source_id_fk, id.HerbNummerNrDigits, id.imgserver_type, id.imgserver_url, id.`key`, iiif.manifest_backend
+    $imageDef = $dbLnk->query("SELECT id.source_id_fk, id.img_coll_short, id.HerbNummerNrDigits, id.imgserver_type, id.imgserver_url, id.`key`, iiif.manifest_backend
                                FROM `tbl_img_definition` id
                                 LEFT JOIN herbar_pictures.iiif_definition iiif ON iiif.source_id_fk = id.source_id_fk 
                                WHERE id.`img_def_ID` = $server_id")
@@ -212,6 +213,7 @@ function scanServer(int $server_id)
     if (empty($imageDef)) {
         die("unknown server-ID\n");
     }
+    echo "server $server_id ({$imageDef['img_coll_short']}) start (" . date(DATE_RFC822) . ")\n";
 
 // get all possible first parts of picture filenames
     $rows = $dbLnk->query("SELECT coll_short_prj, picture_filename 
@@ -237,8 +239,6 @@ function scanServer(int $server_id)
 
     switch ($imageDef['imgserver_type']) {
         case "djatoka":
-            echo "$server_id start\n";
-
             if (!empty($imageDef['manifest_backend']) && substr($imageDef['manifest_backend'],0,5) == 'POST:') {
                 $url = substr($imageDef['manifest_backend'],5);
             } else {
@@ -619,10 +619,10 @@ function scanServer(int $server_id)
             }
             echo $status['offimages'] . " images linked to specimens with switched off 'digital_image'\n"
                . $status['linked'] . " images linked to already connected images\n";
-            echo "server $server_id finished (" . date(DATE_RFC822) . ")\n";
             break;
         default:
             echo "wrong server type\n";
             break;
     }
+    echo "server $server_id finished (" . date(DATE_RFC822) . ")\n";
 }
