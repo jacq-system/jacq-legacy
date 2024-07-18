@@ -65,7 +65,7 @@ function getIiifLink(int $specimenID): string
     $specimenID_filtered = intval($specimenID);
 
     $dbLink = DbAccess::ConnectTo('INPUT');
-    $image = $dbLink->query("SELECT tid.iiif_capable, tid.iiif_proxy, tid.iiif_dir, ph.specimenID AS phaidraID
+    $image = $dbLink->query("SELECT tid.iiif_capable, tid.iiif_url, ph.specimenID AS phaidraID
                              FROM tbl_specimens s
                               LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
                               LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
@@ -85,7 +85,7 @@ function getIiifLink(int $specimenID): string
         }
         curl_close($ch);
 
-        return "https://" . $image['iiif_proxy'] . $image['iiif_dir'] . "/?manifest=$manifest";
+        return $image['iiif_url'] . "?manifest=$manifest";
     } else {
         return '';
     }

@@ -99,7 +99,7 @@ function getPicDetails($request, $sid = '')
         }
     }
 
-    $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
+    $sql = "SELECT id.`imgserver_url`, id.`imgserver_type`, id.`HerbNummerNrDigits`, id.`key`,
                    mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `tbl_specimens` s
@@ -112,9 +112,7 @@ function getPicDetails($request, $sid = '')
     if ($result->num_rows > 0) {
         $row = $result->fetch_array(MYSQLI_ASSOC);
 
-        $url = ((!empty($row['imgserver_Prot'])) ? $row['imgserver_Prot'] : "http") . '://'
-             . $row['imgserver_IP']
-             . (($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '/');
+        $url = $row['imgserver_url'];
 
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
@@ -277,7 +275,6 @@ function getPicDetails($request, $sid = '')
             'originalFilename' => str_replace('-', '', $originalFilename),
             'filename'         => $filename,
             'specimenID'       => $specimenID,
-            'is_djatoka'       => $row['is_djatoka'],
             'imgserver_type'   => $row['imgserver_type'],
             'key'              => $key
         );
@@ -288,7 +285,6 @@ function getPicDetails($request, $sid = '')
             'originalFilename' => null,
             'filename'         => null,
             'specimenID'       => null,
-            'is_djatoka'       => null,
             'imgserver_type'   => null,
             'key'              => null
         );
