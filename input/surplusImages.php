@@ -52,7 +52,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
                 options += (screen.availHeight - 10);
             else
                 options += "810";
-            options += ", top=10,left=10,scrollbars=yes,resizable=yes";
+            options += ", top=50,left=50,scrollbars=yes,resizable=yes";
 
             return options;
         }

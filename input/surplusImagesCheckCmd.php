@@ -237,6 +237,7 @@ function scanServer(int $server_id)
 
     $status = ['transferred' => 0, 'inserted' => 0, 'recheck' => 0, 'new' => 0, 'newwkrypt' => 0, 'offimages' => 0, 'linked' => 0];
 
+    // transfer all image identifiers from server to database
     switch ($imageDef['imgserver_type']) {
         case "djatoka":
             if (!empty($imageDef['manifest_backend']) && substr($imageDef['manifest_backend'],0,5) == 'POST:') {
@@ -326,209 +327,215 @@ function scanServer(int $server_id)
                     }
                 }
             }
+            echo $status['transferred'] . " image identifiers transferred from server\n"
+               . $status['inserted'] . " new image identifiers inserted into database\n";
+            break;
+        default:
+            echo "wrong server type, no image identifiers transferred\n";
+            break;
+    }
+    // try to extract the HerbNumber of the filename
+    $images = $dbLnk->query("SELECT id, filename
+                                     FROM herbar_pictures.djatoka_images
+                                     WHERE server_id = $server_id
+                                      AND extractedHerbNumber IS NULL")
+                    ->fetch_all(MYSQLI_ASSOC);
+    foreach ($images as $image) {
+        $extract = extractHerbNumber($image['filename'], $imageDef['HerbNummerNrDigits'], $imageDef['source_id_fk']);
+        if (!empty($extract['herbNumber'])) {
+            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                  extractedHerbNumber = '{$extract['herbNumber']}'
+                                 WHERE id = {$image['id']}");
+        }
+    }
 
-            // try to extract the HerbNumber of the filename
+    if ($options['recheck']) {
+        // it's possible, that the herbNumber has changed since the last run. So check all filenames which are linked to a specimen if this link is still valid
+        // but leave w-krypt alone, because of the special treatment it needs
+        $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer, s.collectionID, di.id
+                                    FROM tbl_specimens s
+                                     JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                     JOIN herbar_pictures.djatoka_images di ON (di.specimen_ID = s.specimen_ID AND di.server_id = $server_id)
+                                    WHERE mc.source_id = {$imageDef['source_id_fk']}
+                                     AND s.collectionID NOT IN (90, 92, 123)
+                                    ORDER BY s.HerbNummer")
+                           ->fetch_all(MYSQLI_ASSOC);
+        foreach ($specimens as $specimen) {
+            if (!empty($specimen['HerbNummer'])) {
+                $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
+                // and check if this filename still applies
+                $images = $dbLnk->query("SELECT id, filename
+                                         FROM herbar_pictures.djatoka_images
+                                         WHERE id = {$specimen['id']}
+                                          AND LOWER(filename) NOT LIKE LOWER('" . addcslashes($filename, '%_') . "%')")
+                                ->fetch_all(MYSQLI_ASSOC);
+                if (!empty($images)) {
+                    foreach ($images as $image) {
+                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                        specimen_ID = NULL
+                                       WHERE id = {$image['id']}");
+                        if ($options['verbose']) {
+                            echo "{$image['filename']} removed link to specimen\n";
+                        }
+                        $status['recheck']++;
+                    }
+                }
+            }
+        }
+    }
+
+    // first: get all specimens who should have images and are not mentioned in the table djatoka_images yet
+    $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer, s.collectionID
+                                FROM tbl_specimens s
+                                 JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                WHERE mc.source_id = {$imageDef['source_id_fk']}
+                                 AND s.digital_image = 1
+                                 AND s.HerbNummer IS NOT NULL
+                                 AND s.HerbNummer != '' 
+                                 AND NOT EXISTS (SELECT 1
+                                                 FROM herbar_pictures.djatoka_images di 
+                                                 WHERE di.server_id = $server_id
+                                                  AND s.specimen_ID = di.specimen_ID)
+                                ORDER BY s.HerbNummer")
+                       ->fetch_all(MYSQLI_ASSOC);
+    if (!empty($specimens)) {
+        foreach ($specimens as $specimen) {
+            $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
+            // and look for any images who are not already linked to a specimen
             $images = $dbLnk->query("SELECT id, filename
-                                             FROM herbar_pictures.djatoka_images
-                                             WHERE server_id = $server_id
-                                              AND extractedHerbNumber IS NULL")
-                            ->fetch_all(MYSQLI_ASSOC);
-            foreach ($images as $image) {
-                $extract = extractHerbNumber($image['filename'], $imageDef['HerbNummerNrDigits'], $imageDef['source_id_fk']);
-                if (!empty($extract['herbNumber'])) {
-                    $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                          extractedHerbNumber = '{$extract['herbNumber']}'
-                                         WHERE id = {$image['id']}");
-                }
-            }
-
-            if ($options['recheck']) {
-                // it's possible, that the herbNumber has changed since the last run. So check all filenames which are linked to a specimen if this link is still valid
-                // but leave w-krypt alone, because of the special treatment it needs
-                $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer, s.collectionID, di.id
-                                            FROM tbl_specimens s
-                                             JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                             JOIN herbar_pictures.djatoka_images di ON (di.specimen_ID = s.specimen_ID AND di.server_id = $server_id)
-                                            WHERE mc.source_id = {$imageDef['source_id_fk']}
-                                             AND s.collectionID NOT IN (90, 92, 123)
-                                            ORDER BY s.HerbNummer")
-                                   ->fetch_all(MYSQLI_ASSOC);
-                foreach ($specimens as $specimen) {
-                    if (!empty($specimen['HerbNummer'])) {
-                        $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
-                        // and check if this filename still applies
-                        $images = $dbLnk->query("SELECT id, filename
-                                                 FROM herbar_pictures.djatoka_images
-                                                 WHERE id = {$specimen['id']}
-                                                  AND LOWER(filename) NOT LIKE LOWER('" . addcslashes($filename, '%_') . "%')")
-                                        ->fetch_all(MYSQLI_ASSOC);
-                        if (!empty($images)) {
-                            foreach ($images as $image) {
-                                $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                                specimen_ID = NULL
-                                               WHERE id = {$image['id']}");
-                                if ($options['verbose']) {
-                                    echo "{$image['filename']} removed link to specimen\n";
-                                }
-                                $status['recheck']++;
-                            }
-                        }
-                    }
-                }
-            }
-
-            // first: get all specimens who should have images and are not mentioned in the table djatoka_images yet
-            $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer, s.collectionID
-                                        FROM tbl_specimens s
-                                         JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                                        WHERE mc.source_id = {$imageDef['source_id_fk']}
-                                         AND s.digital_image = 1
-                                         AND s.HerbNummer IS NOT NULL
-                                         AND s.HerbNummer != '' 
-                                         AND NOT EXISTS (SELECT 1
-                                                         FROM herbar_pictures.djatoka_images di 
-                                                         WHERE di.server_id = $server_id
-                                                          AND s.specimen_ID = di.specimen_ID)
-                                        ORDER BY s.HerbNummer")
-                               ->fetch_all(MYSQLI_ASSOC);
-            if (!empty($specimens)) {
-                foreach ($specimens as $specimen) {
-                    $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
-                    // and look for any images who are not already linked to a specimen
-                    $images = $dbLnk->query("SELECT id, filename
-                                             FROM herbar_pictures.djatoka_images
-                                             WHERE server_id = $server_id
-                                              AND LOWER(filename) LIKE LOWER('" . addcslashes($filename, '%_') . "%')
-                                              AND specimen_ID IS NULL")
-                                    ->fetch_all(MYSQLI_ASSOC);
-                    if (!empty($images)) {
-                        foreach ($images as $image) {
-                            // and link them to the specimen
-                            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                            specimen_ID = {$specimen['specimen_ID']}
-                                           WHERE id = {$image['id']}");
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
-                            }
-                            $status['new']++;
-                        }
-                    }
-                }
-            }
-
-            // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the herbarnumber in CollNummer instead of HerbNummer
-            //         and also for w entries which have the herbarnumber in CollNummer instead of HerbNummer
-            /* TODO
-             * specimens of w-krypt (and of w in general) are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
-             * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
-             * in tbl_specimens are changed accordingly.
-             * When the transition is finished, this code-part (the whole if-block) should be removed
-             * Johannes Schachner, 4.11.2023
-             */
-            if ($server_id == 2) {
-                if ($options['verbose']) {
-                    echo "----\n";
-                }
-                // first find "w-krypt_....-......"
-                // and then "w_....-......"
-                $head = array('w-krypt\_',
-                              'w\_');
-                for ($i = 0; $i < 2; $i++) {
-                    $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
-                                             FROM herbar_pictures.djatoka_images di, tbl_specimens s, tbl_management_collections mc
-                                             WHERE di.filename = CONCAT('$head[$i]', SUBSTRING(s.CollNummer, 1, 4), SUBSTRING(s.CollNummer, 6))
-                                              AND di.server_id = 2
-                                              AND di.specimen_ID IS NULL
-                                              AND s.CollNummer IS NOT NULL
-                                              AND s.collectionID = mc.collectionID
-                                              AND mc.source_id = 6")
-                                           // AND s.collectionID IN (90,92,123)
-                                    ->fetch_all(MYSQLI_ASSOC);
-                    if (!empty($images)) {
-                        foreach ($images as $image) {
-                            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                            specimen_ID = {$image['specimen_ID']}
-                                           WHERE id = {$image['id']}");
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} ({$image['specimen_ID']})\n";
-                            }
-                            $status['newwkrypt']++;
-                        }
-                    }
-                }
-            }
-            if ($options['verbose']) {
-                echo "----\n";
-            }
-
-            // third: compare the extracted herbarium number from any pictures which are still not connected to a specimen_ID if any match can be found
-            //        possible cause: digital_image in tbl_specimens is 0 but should be 1
-            $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
-                                     FROM herbar_pictures.djatoka_images di
-                                      JOIN tbl_management_collections mc ON mc.source_id = di.source_id 
-                                      JOIN tbl_specimens s ON s.collectionID = mc.collectionID 
-                                     WHERE di.server_id = $server_id
-                                      AND di.specimen_ID IS NULL
-                                      AND di.extractedHerbNumber = s.HerbNummer")
+                                     FROM herbar_pictures.djatoka_images
+                                     WHERE server_id = $server_id
+                                      AND LOWER(filename) LIKE LOWER('" . addcslashes($filename, '%_') . "%')
+                                      AND specimen_ID IS NULL")
                             ->fetch_all(MYSQLI_ASSOC);
             if (!empty($images)) {
                 foreach ($images as $image) {
                     // and link them to the specimen
                     $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                            specimen_ID = {$image['specimen_ID']}
-                                           WHERE id = {$image['id']}");
+                                    specimen_ID = {$specimen['specimen_ID']}
+                                   WHERE id = {$image['id']}");
                     if ($options['verbose']) {
-                        echo "{$image['filename']} ({$image['specimen_ID']})\n";
+                        echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
                     }
-                    $status['offimages']++;
+                    $status['new']++;
                 }
             }
-            if ($options['verbose']) {
-                echo "----\n";
-            }
+        }
+    }
 
-            // fourth: look for any picture with extensions who still have no specimen connected.
-            //         These are probably additional pictures of already linked ones
-            $images = $dbLnk->query("SELECT id, filename
-                                     FROM herbar_pictures.djatoka_images
-                                     WHERE server_id = $server_id
-                                      AND specimen_ID IS NULL")
+    // second: if server-ID is 2 (w), for now, we have to check for w-krypt entries which have the herbarnumber in CollNummer instead of HerbNummer
+    //         and also for w entries which have the herbarnumber in CollNummer instead of HerbNummer
+    /* TODO
+     * specimens of w-krypt (and of w in general) are currently under transition from the old numbering system (w-krypt_1990-1234567) to the new
+     * numbering system (w_1234567). During this time, new HerbNumbers are given to the specimens and the entries
+     * in tbl_specimens are changed accordingly.
+     * When the transition is finished, this code-part (the whole if-block) should be removed
+     * Johannes Schachner, 4.11.2023
+     */
+    if ($server_id == 2) {
+        if ($options['verbose']) {
+            echo "----\n";
+        }
+        // first find "w-krypt_....-......"
+        // and then "w_....-......"
+        $head = array('w-krypt\_',
+                      'w\_');
+        for ($i = 0; $i < 2; $i++) {
+            $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
+                                     FROM herbar_pictures.djatoka_images di, tbl_specimens s, tbl_management_collections mc
+                                     WHERE di.filename = CONCAT('$head[$i]', SUBSTRING(s.CollNummer, 1, 4), SUBSTRING(s.CollNummer, 6))
+                                      AND di.server_id = 2
+                                      AND di.specimen_ID IS NULL
+                                      AND s.CollNummer IS NOT NULL
+                                      AND s.collectionID = mc.collectionID
+                                      AND mc.source_id = 6")
+                                   // AND s.collectionID IN (90,92,123)
                             ->fetch_all(MYSQLI_ASSOC);
             if (!empty($images)) {
                 foreach ($images as $image) {
-                    $parts = explode('_', $image['filename']);
-                    if (count($parts) > 2) {                        // like w_0001234_extension
-                        $searchFor = $parts[0] . "_" . $parts[1];   // strip the third part and search for the rest
-                    } elseif (count($parts) == 2) {
-                        // could be something like w_0001234 or like CHER0001234_extension
-                        if (is_numeric(substr($parts[0], -1)) || is_numeric(substr($parts[0], -2, 1))) {  // like CHER0001234
-                            $searchFor = $parts[0];                 // strip the second part and search for the rest
-                        } else {                                    // like w_0001234 (no number in first part)
-                            $searchFor = "";                        // no extension present, so we've nothing to do
-                        }
-                    } else {                                        // no "_", like CHER0001234
-                        $searchFor = "";                            // no extension present, so we've nothing to do
+                    $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                    specimen_ID = {$image['specimen_ID']}
+                                   WHERE id = {$image['id']}");
+                    if ($options['verbose']) {
+                        echo "{$image['filename']} ({$image['specimen_ID']})\n";
                     }
-                    if ($searchFor) {  // we've found an extension, so search for the master picture, if any
-                        $knownImage = $dbLnk->query("SELECT id, filename, source_id, specimen_ID
-                                                     FROM herbar_pictures.djatoka_images
-                                                     WHERE server_id = $server_id
-                                                      AND (   filename = '$searchFor'
-                                                           OR LOWER(filename) LIKE LOWER('" . addcslashes($searchFor, '%_') . "\_%'))
-                                                      AND specimen_ID IS NOT NULL")
-                                            ->fetch_assoc();
-                        if (!empty($knownImage)) {
-                            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
-                                            specimen_ID = {$knownImage['specimen_ID']}
-                                           WHERE id = {$image['id']}");
-                            if ($options['verbose']) {
-                                echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
-                            }
-                            $status['linked']++;
-                        }
-                    }
+                    $status['newwkrypt']++;
                 }
             }
+        }
+    }
+    if ($options['verbose']) {
+        echo "----\n";
+    }
+
+    // third: compare the extracted herbarium number from any pictures which are still not connected to a specimen_ID if any match can be found
+    //        possible cause: digital_image in tbl_specimens is 0 but should be 1
+    $images = $dbLnk->query("SELECT di.id, di.filename, s.specimen_ID  
+                             FROM herbar_pictures.djatoka_images di
+                              JOIN tbl_management_collections mc ON mc.source_id = di.source_id 
+                              JOIN tbl_specimens s ON s.collectionID = mc.collectionID 
+                             WHERE di.server_id = $server_id
+                              AND di.specimen_ID IS NULL
+                              AND di.extractedHerbNumber = s.HerbNummer")
+                    ->fetch_all(MYSQLI_ASSOC);
+    if (!empty($images)) {
+        foreach ($images as $image) {
+            // and link them to the specimen
+            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                    specimen_ID = {$image['specimen_ID']}
+                                   WHERE id = {$image['id']}");
+            if ($options['verbose']) {
+                echo "{$image['filename']} ({$image['specimen_ID']})\n";
+            }
+            $status['offimages']++;
+        }
+    }
+    if ($options['verbose']) {
+        echo "----\n";
+    }
+
+    // fourth: look for any picture with extensions who still have no specimen connected.
+    //         These are probably additional pictures of already linked ones
+    $images = $dbLnk->query("SELECT id, filename
+                             FROM herbar_pictures.djatoka_images
+                             WHERE server_id = $server_id
+                              AND specimen_ID IS NULL")
+                    ->fetch_all(MYSQLI_ASSOC);
+    if (!empty($images)) {
+        foreach ($images as $image) {
+            $parts = explode('_', $image['filename']);
+            if (count($parts) > 2) {                        // like w_0001234_extension
+                $searchFor = $parts[0] . "_" . $parts[1];   // strip the third part and search for the rest
+            } elseif (count($parts) == 2) {
+                // could be something like w_0001234 or like CHER0001234_extension
+                if (is_numeric(substr($parts[0], -1)) || is_numeric(substr($parts[0], -2, 1))) {  // like CHER0001234
+                    $searchFor = $parts[0];                 // strip the second part and search for the rest
+                } else {                                    // like w_0001234 (no number in first part)
+                    $searchFor = "";                        // no extension present, so we've nothing to do
+                }
+            } else {                                        // no "_", like CHER0001234
+                $searchFor = "";                            // no extension present, so we've nothing to do
+            }
+            if ($searchFor) {  // we've found an extension, so search for the master picture, if any
+                $knownImage = $dbLnk->query("SELECT id, filename, source_id, specimen_ID
+                                             FROM herbar_pictures.djatoka_images
+                                             WHERE server_id = $server_id
+                                              AND (   filename = '$searchFor'
+                                                   OR LOWER(filename) LIKE LOWER('" . addcslashes($searchFor, '%_') . "\_%'))
+                                              AND specimen_ID IS NOT NULL")
+                                    ->fetch_assoc();
+                if (!empty($knownImage)) {
+                    $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                                    specimen_ID = {$knownImage['specimen_ID']}
+                                   WHERE id = {$image['id']}");
+                    if ($options['verbose']) {
+                        echo "{$image['filename']} => {$knownImage['filename']} ({$knownImage['specimen_ID']})\n";
+                    }
+                    $status['linked']++;
+                }
+            }
+        }
+    }
 
 
 
@@ -608,21 +615,12 @@ function scanServer(int $server_id)
 //                }
 //            }
 //        }
-            echo $status['transferred'] . " images transferred from server\n"
-               . $status['inserted'] . " new images inserted into database\n";
-            if ($options['recheck']) {
-                $status['recheck'] . " images changed due to recheck\n";
-            }
-            echo $status['new'] . " images newly connected with specimens\n";
-            if ($status['newwkrypt']) {
-                echo $status['newwkrypt'] . " new w-krypt images connected with specimens\n";
-            }
-            echo $status['offimages'] . " images linked to specimens with switched off 'digital_image'\n"
-               . $status['linked'] . " images linked to already connected images\n";
-            break;
-        default:
-            echo "wrong server type\n";
-            break;
-    }
+
+    if ($options['recheck'])  { echo $status['recheck'] . " entries changed due to recheck\n"; }
+    echo $status['new'] . " images newly connected with specimens\n";
+    if ($status['newwkrypt']) { echo $status['newwkrypt'] . " new w-krypt images connected with specimens\n"; }
+    if ($status['offimages']) { echo $status['offimages'] . " images linked to specimens with switched off 'digital_image'\n"; }
+    echo $status['linked'] . " images linked to already connected images\n";
+
     echo "server $server_id finished (" . date(DATE_RFC822) . ")\n";
 }
