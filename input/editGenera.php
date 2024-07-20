@@ -146,6 +146,20 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                 $is_accepted = $_POST['accepted'];
                 $id = insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock);
             }
+            // update tbl_tax_sciname
+            $resSpecies = dbi_query("SELECT taxonID
+                                     FROM tbl_tax_species
+                                     WHERE speciesID IS NULL
+                                      AND subspeciesID IS NULL AND subspecies_authorID IS NULL
+                                      AND varietyID IS NULL AND variety_authorID IS NULL
+                                      AND subvarietyID IS NULL AND subvariety_authorID IS NULL
+                                      AND formaID IS NULL AND forma_authorID IS NULL
+                                      AND subformaID IS NULL AND subforma_authorID IS NULL
+                                      AND genID = '$id'");
+            if ($resSpecies && $resSpecies->num_rows > 0) {
+                $rowSpecies = $resSpecies->fetch_assoc();
+                updateTblTaxSciname($rowSpecies['taxonID']);
+            }
 
             $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category
                     FROM tbl_tax_genera tg

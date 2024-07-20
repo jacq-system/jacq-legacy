@@ -1,6 +1,6 @@
 <div class="col s12">
     <div class="divider"></div>
-    <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BP, BRNM, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HBG, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, MNVD, NBSI, OLD, PAV, PI, PIAGR, PRC, ROPV, SIENA, TBI, TGM, TGU, TMRC, TO, TUB, UBT, ULM, W, WU and WUP.</p>
+    <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BP, BRNM, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HBG, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, MNVD, NBSI, OLD, PAV, PI, PIAGR, PRC, ROPV, SIENA, SPP, SZU, TBI, TGM, TGU, TMRC, TO, TUB, UBT, ULM, W, WU and WUP.</p>
     <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
 
     <div class="divider"></div>

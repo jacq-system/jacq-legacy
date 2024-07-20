@@ -193,6 +193,25 @@ function jacqLatLonQuadInit()
        //     }
        // })
     });
+    /*
+         48 -  57 ... 0 to 9
+         96 - 105 ... 0 to 9 on NumKeypad
+
+          8 ... Backspace
+          9 ... Tab
+         46 ... Del
+         37 ... cursor left
+         38 ... cursor up
+         39 ... cursor right
+         40 ... cursor down
+        107 ... + on NumKeypad
+        109 ... - on NumKeypad
+        171 ... +
+        173 ... -
+        188 ... comma (left of right shift)
+        190 ... dot (left of right shift)
+
+     */
     $(".dialog_int").on("keydown", function (event) {
         const num = event.keyCode;
         if ((num > 95 && num < 106) || (num > 36 && num < 41) || num == 9) {
@@ -205,7 +224,7 @@ function jacqLatLonQuadInit()
     });
     $(".dialog_sint").on("keydown", function (event) {
         const num = event.keyCode;
-        if ((num > 95 && num < 106) || (num > 36 && num < 41) || num == 9 || num == 173) {
+        if ((num > 95 && num < 106) || (num > 36 && num < 41) || num == 9 || num == 173 || num == 109) {
             return;
         }
         if (event.shiftKey || event.ctrlKey || event.altKey ||
@@ -225,7 +244,7 @@ function jacqLatLonQuadInit()
     });
     $(".dialog_sfloat").on("keydown", function (event) {
         const num = event.keyCode;
-        if ((num > 95 && num < 109) || (num > 36 && num < 41) || num == 9 || num == 173) {
+        if ((num > 95 && num < 109) || (num > 36 && num < 41) || num == 9 || num == 173 || num == 109) {
             return;
         }
         if (event.shiftKey || event.ctrlKey || event.altKey ||

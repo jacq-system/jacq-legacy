@@ -82,7 +82,13 @@ function getPicDetails($request, $sid = '')
                 $sql = "SELECT s.`specimen_ID`
                         FROM `tbl_specimens` s
                          LEFT JOIN `tbl_management_collections` mc ON mc.`collectionID` = s.`collectionID`
-                        WHERE (s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "' OR s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "' )
+                        WHERE (   s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "' 
+                               OR s.`HerbNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "'
+                               OR (mc.source_id = 6
+                                   AND (   s.`CollNummer` = '" . $dbLnk2->real_escape_string($HerbNummer) . "'
+                                        OR s.`CollNummer` = '" . $dbLnk2->real_escape_string($HerbNummerAlternative) . "'
+                                   ))
+                                )
                          AND mc.`coll_short_prj` = '" . $dbLnk2->real_escape_string($coll_short_prj) . "'";
                 $result = $dbLnk2->query($sql);
                 if ($result->num_rows > 0) {
@@ -93,7 +99,7 @@ function getPicDetails($request, $sid = '')
         }
     }
 
-    $sql = "SELECT id.`imgserver_Prot`, id.`imgserver_IP`, id.`imgserver_type`, id.`img_service_directory`, id.`is_djatoka`, id.`HerbNummerNrDigits`, id.`key`,
+    $sql = "SELECT id.`imgserver_url`, id.`imgserver_type`, id.`HerbNummerNrDigits`, id.`key`,
                    mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `tbl_specimens` s
@@ -106,9 +112,7 @@ function getPicDetails($request, $sid = '')
     if ($result->num_rows > 0) {
         $row = $result->fetch_array(MYSQLI_ASSOC);
 
-        $url = ((!empty($row['imgserver_Prot'])) ? $row['imgserver_Prot'] : "http") . '://'
-             . $row['imgserver_IP']
-             . (($row['img_service_directory']) ? '/' . $row['img_service_directory'] . '/' : '/');
+        $url = $row['imgserver_url'];
 
         // Remove hyphens
         $HerbNummer = str_replace('-', '', $row['HerbNummer']);
@@ -268,10 +272,9 @@ function getPicDetails($request, $sid = '')
         return array(
             'url'              => $url,
             'requestFileName'  => $request,
-            'originalFilename' => $originalFilename,
+            'originalFilename' => str_replace('-', '', $originalFilename),
             'filename'         => $filename,
             'specimenID'       => $specimenID,
-            'is_djatoka'       => $row['is_djatoka'],
             'imgserver_type'   => $row['imgserver_type'],
             'key'              => $key
         );
@@ -282,7 +285,6 @@ function getPicDetails($request, $sid = '')
             'originalFilename' => null,
             'filename'         => null,
             'specimenID'       => null,
-            'is_djatoka'       => null,
             'imgserver_type'   => null,
             'key'              => null
         );
@@ -388,6 +390,26 @@ function getPicInfo($picdetails)
             $return['error'] = 'Unable to connect to ' . $url;
         }
         */
+
+        // finally add any old filenames which are in "herbar_pictures.djatoka_images" but not already in the list
+        $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
+        if (!empty($return['pics'])) {
+            $rows = $dbLnk2->query("SELECT filename 
+                                    FROM herbar_pictures.djatoka_images 
+                                    WHERE specimen_ID = '" . $picdetails['specimenID'] . "'
+                                     AND filename NOT IN ('" . implode("','", $return['pics']) . "')")
+                           ->fetch_all(MYSQLI_ASSOC);
+        } else {
+            $rows = $dbLnk2->query("SELECT filename 
+                                    FROM herbar_pictures.djatoka_images 
+                                    WHERE specimen_ID = '" . $picdetails['specimenID'] . "'")
+                           ->fetch_all(MYSQLI_ASSOC);
+        }
+        if (!empty($rows)) {
+            foreach($rows as $row) {
+                $return['pics'][] = $row['filename'];
+            }
+        }
     } else if ($picdetails['imgserver_type'] == 'bgbm') {
         // Construct URL to servlet
         $HerbNummer = str_replace('-', '', $picdetails['filename']);

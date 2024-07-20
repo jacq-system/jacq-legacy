@@ -43,12 +43,14 @@ function init()
 
 function listSurplusImages($server_id)
 {
+    global $_CONFIG;
+
     $server_id = intval($server_id);
 
     if (!$server_id) {  // received garbage
         return null;
     }
-    $imgServer = dbi_query("SELECT imgserver_type, imgserver_url FROM tbl_img_definition WHERE img_def_ID = '$server_id'")
+    $imgServer = dbi_query("SELECT imgserver_type, imgserver_url, iiif_capable, iiif_url FROM tbl_img_definition WHERE img_def_ID = '$server_id'")
                  ->fetch_assoc();
     $listData = array();
     $rows = dbi_query("SELECT filename 
@@ -63,7 +65,11 @@ function listSurplusImages($server_id)
                 case 'djatoka':
                     $parts = explode("_", $row['filename']);
                     $HerbNummer = $parts[1] ?? '';
-                    $url = "{$imgServer['imgserver_url']}jacq-viewer/viewer.html?rft_id={$row['filename']}&identifiers={$row['filename']}";
+                    if ($imgServer['iiif_capable']) {
+                        $url = "{$imgServer['iiif_url']}?manifest={$_CONFIG['JACQ_SERVICES']}iiif/createManifest/$server_id/{$row['filename']}";
+                    } else {
+                        $url = "{$imgServer['imgserver_url']}jacq-viewer/viewer.html?rft_id={$row['filename']}&identifiers={$row['filename']}";
+                    }
                     $listData[] = "<a href='#' onclick='openinput(\"$url\", \"$HerbNummer\"); return false;'>{$row['filename']}</a>";
                     break;
             }

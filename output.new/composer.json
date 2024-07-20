@@ -9,7 +9,8 @@
     "ext-json": "*",
     "ext-ctype": "*",
     "ext-curl": "*",
-    "srjlewis/json-rpc": "@stable"
+    "srjlewis/json-rpc": "@stable",
+    "openspout/openspout": "^4.24"
   },
   "autoload": {
     "psr-4": {

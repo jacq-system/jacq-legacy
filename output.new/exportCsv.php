@@ -4,9 +4,10 @@ require_once "inc/functions.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
+use Jacq\Settings;
 use Jacq\StableIdentifier;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Common\Entity\Style\Style;
 
 function protolog($row)
 {
@@ -106,81 +107,109 @@ function makeTypus($ID)
 }
 
 // extend memory and timeout settings
-$config = \Jacq\Settings::Load();
+$config = Settings::Load();
 $memoryLimit = $config->get('EXPORT', 'memory_limit');
 if ($memoryLimit) {
     ini_set("memory_limit", $memoryLimit);
 }
 set_time_limit(0);
 
-// SQLiteCache hält die Cell-Data nicht im Speicher
-//if (!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip)) {
-//    die('Caching not available!');
-//}
+//$timestart = microtime(true);
 
-// Create new PhpSpreadsheet object
-$spreadsheet = new Spreadsheet();
+$defaultStyle = new Style();
+$defaultStyle->setFontName('Calibri');
+$defaultStyle->setFontSize(11);
+$defaultStyle->setShouldWrapText(false);
+
+$headerStyle = new Style();
+$headerStyle->setFontBold();
+
+switch (filter_input(INPUT_GET, 'type')) {
+    case 'csv':
+        $writer = new \OpenSpout\Writer\CSV\Writer();
+        $fileName = "specimens_download.csv";
+        break;
+    case 'ods':
+        $options = new \OpenSpout\Writer\ODS\Options();
+        $options->DEFAULT_ROW_STYLE = $defaultStyle;
+        $options->setColumnWidthForRange(90, 1, 50);
+        $options->setColumnWidthForRange(252, 51, 57);
+
+        $writer = new \OpenSpout\Writer\ODS\Writer($options);
+        $fileName = "specimens_download.ods";
+        break;
+    default:
+        $options = new \OpenSpout\Writer\XLSX\Options();
+        $options->DEFAULT_ROW_STYLE = $defaultStyle;
+        $options->setColumnWidthForRange(16.2, 1, 50);
+        $options->setColumnWidthForRange(45.4, 51, 57);
+
+        $writer = new \OpenSpout\Writer\XLSX\Writer($options);
+        $fileName = "specimens_download.xlsx";
+}
+// Redirect output to a client’s web browser
+$writer->openToBrowser($fileName);
 
 // add header info
-$spreadsheet->getActiveSheet()
-        ->setCellValue('A1', 'Specimen ID')
-        ->setCellValue('B1', 'observation')
-        ->setCellValue('C1', 'dig_image')
-        ->setCellValue('D1', 'dig_img_obs')
-        ->setCellValue('E1', 'Institution_Code')
-        ->setCellValue('F1', 'Herbarium-Number/BarCode')
-        ->setCellValue('G1', 'institution_subcollection')
-        ->setCellValue('H1', 'Collection Number')
-        ->setCellValue('I1', 'Type information')
-        ->setCellValue('J1', 'Typified by')
-        ->setCellValue('K1', 'Taxon')
-        ->setCellValue('L1', 'status')
-        ->setCellValue('M1', 'Genus')
-        ->setCellValue('N1', 'Species')
-        ->setCellValue('O1', 'Author')
-        ->setCellValue('P1', 'Rank')
-        ->setCellValue('Q1', 'Infra_spec')
-        ->setCellValue('R1', 'Infra_author')
-        ->setCellValue('S1', 'Family')
-        ->setCellValue('T1', 'Garden')
-        ->setCellValue('U1', 'voucher')
-        ->setCellValue('V1', 'Collection')
-        ->setCellValue('W1', 'First_collector')
-        ->setCellValue('X1', 'First_collectors_number')
-        ->setCellValue('Y1', 'Add_collectors')
-        ->setCellValue('Z1', 'Alt_number')
-        ->setCellValue('AA1', 'Series')
-        ->setCellValue('AB1', 'Series_number')
-        ->setCellValue('AC1', 'Coll_Date')
-        ->setCellValue('AD1', 'Coll_Date_2')
-        ->setCellValue('AE1', 'Country')
-        ->setCellValue('AF1', 'Province')
-        ->setCellValue('AG1', 'geonames')
-        ->setCellValue('AH1', 'Latitude')
-        ->setCellValue('AI1', 'Latitude_DMS')
-        ->setCellValue('AJ1', 'Lat_Hemisphere')
-        ->setCellValue('AK1', 'Lat_degree')
-        ->setCellValue('AL1', 'Lat_minute')
-        ->setCellValue('AM1', 'Lat_second')
-        ->setCellValue('AN1', 'Longitude')
-        ->setCellValue('AO1', 'Longitude_DMS')
-        ->setCellValue('AP1', 'Long_Hemisphere')
-        ->setCellValue('AQ1', 'Long_degree')
-        ->setCellValue('AR1', 'Long_minute')
-        ->setCellValue('AS1', 'Long_second')
-        ->setCellValue('AT1', 'exactness')
-        ->setCellValue('AU1', 'Altitude lower')
-        ->setCellValue('AV1', 'Altitude higher')
-        ->setCellValue('AW1', 'Quadrant')
-        ->setCellValue('AX1', 'Quadrant_sub')
-        ->setCellValue('AY1', 'Location')
-        ->setCellValue('AZ1', 'det./rev./conf./assigned')
-        ->setCellValue('BA1', 'ident. history')
-        ->setCellValue('BB1', 'annotations')
-        ->setCellValue('BC1', 'habitat')
-        ->setCellValue('BD1', 'habitus')
-        ->setCellValue('BE1', 'stable identifier')
-;
+$writer->addRow(Row::fromValues([
+    'Specimen ID',
+    'observation',
+    'dig_image',
+    'dig_img_obs',
+    'Institution_Code',
+    'Herbarium-Number/BarCode',
+    'institution_subcollection',
+    'Collection Number',
+    'Type information',
+    'Typified by',
+    'Taxon',
+    'status',
+    'Genus',
+    'Species',
+    'Author',
+    'Rank',
+    'Infra_spec',
+    'Infra_author',
+    'Family',
+    'Garden',
+    'voucher',
+    'Collection',
+    'First_collector',
+    'First_collectors_number',
+    'Add_collectors',
+    'Alt_number',
+    'Series',
+    'Series_number',
+    'Coll_Date',
+    'Coll_Date_2',
+    'Country',
+    'Province',
+    'geonames',
+    'Latitude',
+    'Latitude_DMS',
+    'Lat_Hemisphere',
+    'Lat_degree',
+    'Lat_minute',
+    'Lat_second',
+    'Longitude',
+    'Longitude_DMS',
+    'Long_Hemisphere',
+    'Long_degree',
+    'Long_minute',
+    'Long_second',
+    'exactness',
+    'Altitude lower',
+    'Altitude higher',
+    'Quadrant',
+    'Quadrant_sub',
+    'Location',
+    'det./rev./conf./assigned',
+    'ident. history',
+    'annotations',
+    'habitat',
+    'habitus',
+    'stable identifier'
+], $headerStyle));
 
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author";
@@ -194,21 +223,22 @@ $specimenIDs = array();
 while ($row = $result->fetch_array()) {
     $specimenIDs[] = intval($row['specimen_ID']);
 }
-$sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-                 s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
-                 s.CollNummer, s.altitude_min, s.altitude_max,
-                 n.nation_engl, p.provinz, s.Bezirk, s.Fundort, tf.family, tsc.cat_description, si.identification_status, sv.voucher,
-                 mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
-                 s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession,
+$sqlSpecimen = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+                 s.CollNummer, s.altitude_min, s.altitude_max, s.Bezirk, s.Fundort, s.typified,
+                 s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.observation, s.habitat, s.habitus, s.garten,
                  s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                  s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                  s.quadrant, s.quadrant_sub, s.exactness,
-                 s.habitat, s.habitus, s.garten,
-                 s.observation,
+                 ss.series, 
+                 si.identification_status, 
+                 sv.voucher,
+                 mc.collection, mc.collectionID, mc.coll_short, m.source_code,
+                 n.nation_engl, p.provinz,                   
+                 c.Sammler, c2.Sammler_2, 
                  tr.rank_abbr,
+                 tg.genus, tf.family,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5,
-                 ts.synID, ts.taxonID, ts.statusID,
                  `herbar_view`.GetScientificName(ts.taxonID, 0) AS `scientificName`
                 FROM tbl_specimens s
                  LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seriesID
@@ -236,7 +266,6 @@ $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.seri
                  LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
                  LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
-                 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
                 WHERE specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
 $resultSpecimen = $dbLnk2->query($sqlSpecimen);
 if (!$resultSpecimen) {
@@ -245,8 +274,30 @@ if (!$resultSpecimen) {
 }
 
 $i = 2;
+//$time1sum = $time2sum = 0;
 while ($rowSpecimen = $resultSpecimen->fetch_array()) {
-    $sammler = collection($rowSpecimen);
+//    $time1 = microtime(true);
+//    $rowDetail = $dbLnk2->query("SELECT s.CollNummer, s.typified, s.garten, s.Datum2, s.det, s.taxon_alt, s.Bemerkungen, s.habitat, s.habitus,
+//                                  s.Bezirk, s.exactness, s.altitude_min, s.altitude_max, s.quadrant, s.quadrant_sub,
+//                                  si.identification_status,
+//                                  sv.voucher,
+//                                  mc.coll_short,
+//                                  m.source_code,
+//                                  tr.rank_abbr,
+//                                  tf.family,
+//                                  `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
+//                                 FROM tbl_specimens s
+//                                  LEFT JOIN tbl_specimens_identstatus     si  ON si.identstatusID = s.identstatusID
+//                                  LEFT JOIN tbl_specimens_voucher         sv  ON sv.voucherID = s.voucherID
+//                                  LEFT JOIN tbl_management_collections    mc  ON mc.collectionID = s.collectionID
+//                                  LEFT JOIN meta                          m   ON m.source_id = mc.source_id
+//                                  LEFT JOIN tbl_tax_species               ts  ON ts.taxonID = s.taxonID
+//                                  LEFT JOIN tbl_tax_rank                  tr  ON tr.tax_rankID = ts.tax_rankID
+//                                  LEFT JOIN tbl_tax_genera                tg  ON tg.genID = ts.genID
+//                                  LEFT JOIN tbl_tax_families              tf  ON tf.familyID = tg.familyID
+//                                 WHERE s.specimen_ID = {$rowSpecimen['specimen_ID']}")
+//                        ->fetch_assoc();
+//    $time1sum += microtime(true) - $time1;
 
     if ($rowSpecimen['epithet5']) {
         $infra_spec = $rowSpecimen['epithet5'];
@@ -336,7 +387,8 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $lon = "" . number_format(round($lon, 9), 9) . "° ";
     }
 
-    $spreadsheet->getActiveSheet()->fromArray(array(
+//    $time2 = microtime(true);
+    $writer->addRow(Row::fromValues([
         $rowSpecimen['specimen_ID'],
         $rowSpecimen['observation'],
         ($rowSpecimen['digital_image']) ? '1' : '',
@@ -358,7 +410,7 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         $rowSpecimen['family'],
         $rowSpecimen['garten'],
         $rowSpecimen['voucher'],
-        $sammler,
+        collection($rowSpecimen),
         $rowSpecimen['Sammler'],
         $rowSpecimen['Nummer'],
         $rowSpecimen['Sammler_2'],
@@ -394,33 +446,13 @@ while ($rowSpecimen = $resultSpecimen->fetch_array()) {
         ((substr($rowSpecimen['habitat'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitat'],          // to prevent a starting "=" (would be interpreted as a formula)
         ((substr($rowSpecimen['habitus'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitus'],          // to prevent a starting "=" (would be interpreted as a formula)
         StableIdentifier::make($rowSpecimen['specimen_ID'])->getStblID()
-    ), null, 'A' . $i);
+    ]));
 
+//    $time2sum += microtime(true) - $time2;
     $i++;
 }
+//error_log($time1sum);
+//error_log($time2sum);
+//error_log(microtime(true) - $timestart);
 
-switch (filter_input(INPUT_GET, 'type')) {
-    case 'csv':
-        // Redirect output to a client’s web browser (CSV)
-        header("Content-type: text/csv; charset=utf-8");
-        header("Content-Disposition: attachment; filename=specimens_download.csv");
-        header('Cache-Control: max-age=0');
-        $writer = IOFactory::createWriter($spreadsheet, 'Csv');
-        $writer->save('php://output');
-        break;
-    case 'ods':
-        // Redirect output to a client’s web browser (OpenDocument)
-        header('Content-Type: application/vnd.oasis.opendocument.spreadsheet');
-        header('Content-Disposition: attachment;filename="specimens_download.ods"');
-        header('Cache-Control: max-age=0');
-        $writer = IOFactory::createWriter($spreadsheet, 'Ods');
-        $writer->save('php://output');
-        break;
-    default:
-        // Redirect output to a client’s web browser (Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="specimens_download.xlsx"');
-        header('Cache-Control: max-age=0');
-        $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $writer->save('php://output');
-}
+$writer->close();

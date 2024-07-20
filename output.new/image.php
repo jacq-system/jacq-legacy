@@ -157,9 +157,16 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
             }
         }
 
+        $picinfo = getPicInfo($picdetails);
+        if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+            $filename = $picinfo['pics'][0];
+        } else {
+            $filename = $picdetails['originalFilename'];
+        }
+
         // Construct URL to djatoka-resolver
         $url = cleanURL($picdetails['url']
-             .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$picdetails['originalFilename']}"
+             .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$filename}"
              .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$mime}&svc.scale={$scale}");
 
     } else if ($picdetails['imgserver_type'] == 'phaidra') {  // special treatment for PHAIDRA (WU only), for europeana only

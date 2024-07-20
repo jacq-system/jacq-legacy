@@ -51,7 +51,7 @@ class jacqServletJsonRPCClient extends jsonRPCClient {
 
         // Fetch required properties
         $this->key = $row['key'];
-        $this->url = $row['imgserver_Prot'] . '://' . $row['imgserver_IP'] . $row['img_service_directory'] . '/jacq-servlet/ImageServer';
+        $this->url = $row['imgserver_url'] . 'jacq-servlet/ImageServer';
 
         // Finally call parent constructor
         parent::__construct($this->url, false);
