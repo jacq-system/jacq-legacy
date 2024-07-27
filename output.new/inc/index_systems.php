@@ -8,7 +8,7 @@
                 <ul>
                     <li><b><a href="https://www.ipni.org/a/12576-1" target="_blank">IPNI author JACQ.</a></b></li>
                     <li><a href="http://viaf.org/viaf/59120694" target="_blank">VIAF Author</a> / <a href="https://www.wikidata.org/wiki/Q84497" target="_blank">WIKIDATA Person</a> / <a href="http://d-nb.info/gnd/118556452" target="_blank">GND - Deutsche National Bibliothek Normdatensatz</a> / <a href="https://kiki.huh.harvard.edu/databases/botanist_search.php?mode=details&id=4626" target="_blank">HUH Botanist</a></li>
-                    <li><b><a href="https://bloodhound-tracker.net/Q84497" target="_blank">Blood Hound Tracker profile</a></b></li>
+                    <li><b><a href="https://bionomia.net/Q84497" target="_blank">BioNomia profile</a></b></li>
                     <li><a href="http://www.biographien.ac.at/oebl/oebl_J/Jacquin_Nicolaus-Joseph_1727_1817.xml?frames=yes" target="_blank">Österreichisches Biographisches Lexikon (german)</a> / <a href="https://geschichte.univie.ac.at/en/persons/nikolaus-joseph-freiherr-von-jacquin-dr-med" target="_blank">Biography due to his role as rector of the University of Vienna (german)</a></li>
                 </ul>
             </div>
@@ -59,6 +59,7 @@
             <div class="collapsible-header"><i class="fas fa-angle-down"></i>Authors, Botanists, Collectors</div>
             <div class="collapsible-body">
                 <ul>
+                    <li><b><a href="https://bionomia.net/ " target="_blank">Bionomia</a></b></li>
                     <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>
                     <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank">Index to Botanists</a> @ <a href="https://huh.harvard.edu/" target="_blank">Harvard University Herbaria</a>; U.S.A.</li>
                     <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></li>
