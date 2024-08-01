@@ -44,44 +44,50 @@ function contains ($points, $point, $limit = 6)
 
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $points = null;
+$sql = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
+               s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+               s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+               tg.genus,
+               c.Sammler, c2.Sammler_2,
+               ss.series,
+               mc.collection,
+               tst.typusID,
+               ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+               ta4.author author4, ta5.author author5,
+               te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+               te4.epithet epithet4, te5.epithet epithet5,
+               ts.taxonID, ts.statusID
+              FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
+               LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
+               LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
+               LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
+               LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
+               LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
+               LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
+               LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
+               LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
+               LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
+               LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
+               LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+               LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+               LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+               LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+               LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+               LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+              WHERE ts.taxonID = s.taxonID
+               AND tg.genID = ts.genID
+               AND mc.collectionID = s.collectionID ";
+
 if (empty($specimen_ID)) {
-    $result = $dbLnk2->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author");
+    $rows = $dbLnk2->query($_SESSION['s_query'] . "ORDER BY genus, epithet, author")
+                   ->fetch_all(MYSQLI_ASSOC);
+    $specimenIDs = array();
+    foreach ($rows as $row) {
+        $specimenIDs[] = intval($row['specimen_ID']);
+    }
+    $result = $dbLnk2->query($sql . " AND specimen_ID IN (" . implode(', ', $specimenIDs) . ")");
 } else {
-    $sql = "SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-                   s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-                   tg.genus,
-                   c.Sammler, c2.Sammler_2,
-                   ss.series,
-                   mc.collection,
-                   tst.typusID,
-                   ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                   ta4.author author4, ta5.author author5,
-                   te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                   te4.epithet epithet4, te5.epithet epithet5,
-                   ts.taxonID, ts.statusID
-                  FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc)
-                   LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
-                   LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
-                   LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
-                   LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-                   LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                   LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                   LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                   LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                   LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                   LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                   LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                   LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                   LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                   LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                   LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                   LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                  WHERE ts.taxonID = s.taxonID
-                   AND tg.genID = ts.genID
-                   AND mc.collectionID = s.collectionID
-                   AND s.specimen_ID = '$specimen_ID'";
-    $result = $dbLnk2->query($sql);
+    $result = $dbLnk2->query($sql . " AND s.specimen_ID = '$specimen_ID'");
 }
 while ($row = $result->fetch_array()) {
     $scientificName = $dbLnk2->query("SELECT `herbar_view`.GetScientificName({$row['taxonID']}, 0) AS `scientificName`")
