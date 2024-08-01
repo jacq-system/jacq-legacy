@@ -1177,11 +1177,11 @@ if ($p_specimen_ID && !$edit) {
 
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
-$cf->label(11, $y, "Institution");
+$cf->labelMandatory(11, $y, 9, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
 
-$cf->label(23, $y, "HerbarNr.");    // TODO: check, if HerbNummer has the correct number of digits
+$cf->labelMandatory(23, $y, 6, "HerbarNr.");
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
 
 $cf->labelMandatory(40.5, $y, 6, "Collection");
