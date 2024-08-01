@@ -8,18 +8,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
 if (!empty($_POST['submit'])) {
-    $sql_names = "s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
-                  c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
-                  s.Nummer, s.alt_number, s.Datum, mc.collection, mc.coll_short_prj, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, s.HerbNummer,
-                  ph.specimenID AS phaidraID,
-                  n.nation_engl, n.iso_alpha_2_code, p.provinz, s.Fundort, s.collectionID, MIN(tst.typusID) AS typusID, t.typus,
-                  s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-                  s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
-                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                  ta4.author author4, ta5.author author5,
-                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                  te4.epithet epithet4, te5.epithet epithet5,
-                  ts.taxonID, ts.statusID ";
+    $sql_names = "s.specimen_ID, tg.genus, te.epithet, ta.author, c.Sammler, c2.Sammler_2, ss.series, s.Nummer, s.HerbNummer ";
     $sql_tables = "FROM (tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc, tbl_img_definition tid, meta m)
                     LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
                     LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
