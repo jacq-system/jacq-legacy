@@ -56,7 +56,8 @@ function listSurplusImages($server_id)
     $rows = dbi_query("SELECT filename 
                        FROM herbar_pictures.djatoka_images 
                        WHERE djatoka_images.server_id = $server_id 
-                        AND specimen_ID IS NULL 
+                        AND specimen_ID IS NULL
+                        AND hide = 0
                        ORDER BY filename")
             ->fetch_all(MYSQLI_ASSOC);
     if (!empty($rows)) {

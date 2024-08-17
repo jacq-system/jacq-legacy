@@ -64,7 +64,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkServer");
         function openSecondWindow(HerbNummer)
         {
             let windowSpecimen;
-            windowSpecimen = window.open("editSpecimens.php?sel=<0>&new=1&HerbNummer=" + HerbNummer, "Specimens", getOptions());
+            windowSpecimen = window.open("editSpecimens.php?sel=<0>&new=1&digitalImage=1&HerbNummer=" + HerbNummer, "Specimens", getOptions());
             windowSpecimen.moveBy(40, 40);
             windowSpecimen.focus();
         }

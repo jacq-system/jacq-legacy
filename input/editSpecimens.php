@@ -281,7 +281,7 @@ if (isset($_GET['sel'])) {
         $p_lon_deg = $p_lon_min = $p_lon_sec = ""; $p_lon = "E";
         $p_quadrant = $p_quadrant_sub = $p_exactness = $p_altitude_min = $p_altitude_max = "";
         $p_Fundort = $p_Fundort_engl = $p_habitat = $p_habitus = $p_Bemerkungen = "";
-        $p_digital_image = $p_digital_image_obs = $p_garten = $p_voucher = $p_ncbi = "";
+        $p_digital_image_obs = $p_garten = $p_voucher = $p_ncbi = "";
         $p_typus = $p_nation = $p_province = "";
         $p_sammler = $p_sammler2 = "";
         $p_taxonIndex = $p_sammlerIndex = $p_sammler2Index = 0;
@@ -294,6 +294,7 @@ if (isset($_GET['sel'])) {
             $p_collection = "";
         }
         $p_HerbNummer = $_GET['HerbNummer'] ?? "";
+        $p_digital_image = $_GET['digitalImage'] ?? "";
     }
     $edit = !empty($_GET['edit']);
     if ($swBatch) {
@@ -573,6 +574,7 @@ if (isset($_GET['sel'])) {
       let dialog_latLonQu;
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
       let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
+      let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer)) ? "'$p_HerbNummer'" : 0; ?>;
 
       function makeOptions()
       {
@@ -935,6 +937,11 @@ if (isset($_GET['sel'])) {
                   // var institutionNr = $('[name="institution"]').val();
                   // var institutionName = $('[name="institution"] option:selected').text();
               } else {
+                  if (oldHerbNumber > 0 && oldHerbNumber != number) {
+                      if (!confirm("HerbarNr. differs from stored one.\nPlease confirm the difference.")) {
+                          setTimeout(() => $(this).focus(), 1)
+                      }
+                  }
                   if (specifiedHerbNummerLength && number.length != specifiedHerbNummerLength) {
                       if (!confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.")) {
                           setTimeout(() => $(this).focus(), 1)
@@ -1144,7 +1151,7 @@ if ($swBatch) {
     $cf->checkbox(22.5, $y, "batch\" onchange=\"updateBatch('$p_specimen_ID',0);", $p_batch);
 }
 
-// if speimen-ID is valid and there are any pictures, check if they are on an iiif-server
+// if specimen-ID is valid and there are any pictures, check if they are on an iiif-server
 $target = (($p_digital_image || $p_digital_image_obs) && $p_specimen_ID) ? getIiifLink($p_specimen_ID) : '';
 if ($p_digital_image && $p_specimen_ID) {
     if ($target) {
