@@ -99,7 +99,7 @@ function getPicDetails($request, $sid = '')
         }
     }
 
-    $sql = "SELECT id.`imgserver_url`, id.`imgserver_type`, id.`HerbNummerNrDigits`, id.`key`,
+    $sql = "SELECT id.`imgserver_url`, id.`imgserver_type`, id.`HerbNummerNrDigits`, id.`key`, id.`iiif_capable`,
                    mc.`coll_short_prj`, mc.`source_id`, mc.`collectionID`, mc.`picture_filename`,
                    s.`HerbNummer`, s.`Bemerkungen`
             FROM `tbl_specimens` s
@@ -275,7 +275,7 @@ function getPicDetails($request, $sid = '')
             'originalFilename' => str_replace('-', '', $originalFilename),
             'filename'         => $filename,
             'specimenID'       => $specimenID,
-            'imgserver_type'   => $row['imgserver_type'],
+            'imgserver_type'   => (($row['iiif_capable']) ? 'iiif' : $row['imgserver_type']),
             'key'              => $key
         );
     } else {
