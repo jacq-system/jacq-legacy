@@ -81,7 +81,9 @@ if (!empty($picdetails['url'])) {
 
 function doRedirectShowPic($picdetails)
 {
-    if ($picdetails['imgserver_type'] == 'djatoka') {
+    if ($picdetails['imgserver_type'] == 'iiif') {
+        $url = "https://services.jacq.org/jacq-services/rest/images/show/{$picdetails['specimenID']}?withredirect=1";
+    } elseif ($picdetails['imgserver_type'] == 'djatoka') {
         // Get additional identifiers (if available)
         $picinfo = getPicInfo($picdetails);
         $identifiers = implode(',', $picinfo['pics']);
@@ -97,10 +99,10 @@ function doRedirectShowPic($picdetails)
             // the picture-server didn't respond or the returned list is empty, so we guess a name...
             $url = $picdetails['url'] . '/jacq-viewer/viewer.html?rft_id=' . $picdetails['originalFilename'] . '&identifiers=' . $picdetails['originalFilename'];
         }
-    } else if ($picdetails['imgserver_type'] == 'bgbm') {
+    } elseif ($picdetails['imgserver_type'] == 'bgbm') {
         // Construct URL to viewer
         $url = $picdetails['url'] . '/jacq_image.cfm?Barcode=' . $picdetails['originalFilename'];
-    } else if ($picdetails['imgserver_type'] == 'baku') {  // depricated
+    } elseif ($picdetails['imgserver_type'] == 'baku') {  // depricated
         // Get additional identifiers (if available)
         //$picinfo = getPicInfo($picdetails);
         //$identifiers = implode($picinfo['pics'], ',');
@@ -128,8 +130,16 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
     $fileExt = 'jpg';
     $downloadPic = true;
 
+    if ($picdetails['imgserver_type'] == 'iiif') {
+        if ($thumb == 1) {
+            $url = "https://services.jacq.org/jacq-services/rest/images/thumb/{$picdetails['specimenID']}?withredirect=1";
+        } elseif ($thumb == 3) {
+            $url = "https://services.jacq.org/jacq-services/rest/images/europeana/{$picdetails['specimenID']}?withredirect=1";
+        } else {
+            $url = "https://services.jacq.org/jacq-services/rest/images/download/{$picdetails['specimenID']}?withredirect=1";
+        }
     // Check if we are using djatoka
-    if ($picdetails['imgserver_type'] == 'djatoka') {
+    } elseif ($picdetails['imgserver_type'] == 'djatoka') {
         // Check requested format
         switch ($format) {
             case 'jpeg2000':
@@ -169,7 +179,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
              .          "adore-djatoka/resolver?url_ver=Z39.88-2004&rft_id={$filename}"
              .          "&svc_id=info:lanl-repo/svc/getRegion&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000&svc.format={$mime}&svc.scale={$scale}");
 
-    } else if ($picdetails['imgserver_type'] == 'phaidra') {  // special treatment for PHAIDRA (WU only), for europeana only
+    } elseif ($picdetails['imgserver_type'] == 'phaidra') {  // special treatment for PHAIDRA (WU only), for europeana only
         $ch = curl_init("https://app05a.phaidra.org/manifests/WU" . substr($picdetails['requestFileName'], 3));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $curl_response = curl_exec($ch);
@@ -198,7 +208,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         } else {
             $url = "";
         }
-    } else if ($picdetails['imgserver_type'] == 'bgbm') {
+    } elseif ($picdetails['imgserver_type'] == 'bgbm') {
         //... Check if we are using djatoka = 2 (Berlin image server)
         // Check requested format
         switch ($format) {
@@ -221,7 +231,7 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         //$url = $picdetails['url'].'images'.$response_decoded['value'];
         $url = cleanURL('https://image.bgbm.org/images/herbarium/' . $response_decoded['value']);
 
-    } else if ($picdetails['imgserver_type'] == 'baku') {           // depricated
+    } elseif ($picdetails['imgserver_type'] == 'baku') {           // depricated
     //... Check if we are using djatoka = 3 (Baku image server)
         // Check requested format
         switch ($format) {
