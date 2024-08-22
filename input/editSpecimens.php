@@ -574,7 +574,7 @@ if (isset($_GET['sel'])) {
       let dialog_latLonQu;
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
       let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
-      let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer)) ? "'$p_HerbNummer'" : 0; ?>;
+      let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
 
       function makeOptions()
       {
