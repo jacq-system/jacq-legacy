@@ -5,6 +5,7 @@ $user = "";                 // username
 $pass = "";                 // password
 $db   = "herbarinput";      // source database
 $dbt  = "gbif_pilot";       // target database
+$dbc  = "gbif_cache";       // cache database
 
 $europeana_dir = "";        // directory of europeana images
 
