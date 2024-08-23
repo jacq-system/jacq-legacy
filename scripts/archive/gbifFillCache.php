@@ -71,40 +71,43 @@ if (empty($source)) {
     die("Could not find source-ID $source_id\n");
 }
 
-$url = "https://api.gbif.org/v1/occurrence/search"
-     . "?basisOfRecord=PRESERVED_SPECIMEN"
-     . "&limit=10"
-     . "&mediaType=StillImage"
-     . "&datasetKey=" . $source['datasetKey'];
-$curl = curl_init($url);
-curl_setopt_array($curl, array(
-    CURLOPT_TIMEOUT        => 60,
-    CURLOPT_CONNECTTIMEOUT => 10,
-    CURLOPT_FOLLOWLOCATION => true,
-    CURLOPT_RETURNTRANSFER => 1,
-));
-$curl_result = curl_exec($curl);
-if (!curl_errno($curl)) {
-    $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-} else {
-    die("Connection failed: " . curl_error($curl));
-}
-
+// delete all entries, as we always fetch the complete dataset from gbif
 $dbLink->query("DELETE FROM specimens WHERE source_id = $source_id");
-$response = json_decode($curl_result, true);
-foreach ($response['results'] as $result) {
-    if (empty($result['modified'])) {
-        $dbLink->query("INSERT INTO specimens SET
-                         specimen_ID = {$result['key']},
-                         source_id = $source_id,
-                         aktualdatum = '" . changeTimeZone($result['lastInterpreted'], 'UTC', 'Europe/Vienna') . "',
-                         json = '" . $dbLink->real_escape_string(json_encode($result)) . "'");
+
+$offset = 0;
+$limit = 100;
+do {
+    $url = "https://api.gbif.org/v1/occurrence/search"
+        . "?basisOfRecord=PRESERVED_SPECIMEN"
+        . "&limit=$limit"
+        . "&offset=$offset"
+        . "&mediaType=StillImage"
+        . "&datasetKey=" . $source['datasetKey'];
+    $curl = curl_init($url);
+    curl_setopt_array($curl, array(
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_RETURNTRANSFER => 1,
+    ));
+    $curl_result = curl_exec($curl);
+    if (!curl_errno($curl)) {
+        $statusCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
     } else {
-        $dbLink->query("INSERT INTO specimens SET
-                         specimen_ID = {$result['key']},
-                         source_id = $source_id,
-                         aktualdatum = '" . changeTimeZone($result['modified'], 'UTC', 'Europe/Vienna') . "',
-                         json = '" . $dbLink->real_escape_string(json_encode($result)) . "'");
+        die("Connection failed: " . curl_error($curl));
     }
-}
+
+    $response = json_decode($curl_result, true);
+    foreach ($response['results'] as $result) {
+        if (empty($result['modified'])) {
+            $result['modified'] = $result['lastInterpreted'];
+        }
+        $dbLink->query("INSERT INTO specimens SET
+                     specimen_ID = {$result['key']},
+                     source_id = $source_id,
+                     aktualdatum = '" . changeTimeZone($result['modified'], 'UTC', 'Europe/Vienna') . "',
+                     json = '" . $dbLink->real_escape_string(json_encode($result)) . "'");
+    }
+    $offset += $limit;
+} while (!$response['endOfRecords'] && $offset < 2000);
