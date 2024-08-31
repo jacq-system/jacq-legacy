@@ -56,18 +56,20 @@
             </div>
         </li>
         <li>
-            <div class="collapsible-header"><i class="fas fa-angle-down"></i>Authors, Botanists, Collectors</div>
+            <div class="collapsible-header"><i class="fas fa-angle-down"></i>Authors, Botanists, Collectors, Scientists</div>
             <div class="collapsible-body">
                 <ul>
                     <li><b><a href="https://bionomia.net/ " target="_blank">Bionomia</a></b></li>
                     <li><a href="https://viaf.org/ " target="_blank">Virtual Authority File - VIAF</a></li>
                     <li><a href="https://kiki.huh.harvard.edu/databases/botanist_index.html" target="_blank">Index to Botanists</a> @ <a href="https://huh.harvard.edu/" target="_blank">Harvard University Herbaria</a>; U.S.A.</li>
                     <li>Taxonomic Literature ed. 2 - <a href="https://www.sil.si.edu/DigitalCollections/tl-2/search.cfm" target="_blank">online</a></li>
+                    <li>Taxonomic Literature ed. 2 online resource <a href="https://tl2.io/Front+matter/Introduction" target="_blank">TL-2 vault by Anton Savchenko</a><a href="https://orcid.org/0000-0001-6377-6349" target =_blank><img src="https://orcid.org/assets/vectors/orcid.logo.icon.svg" width="20" alt="ORCID"></a></li>
                     <li>
                         <a href="https://www.iaptglobal.org/regnum-vegetabile" target="_blank">Regnum Vegetabile</a> @ <a href="https://www.iaptglobal.org/" target="_blank">International Association of Plant Taxonomists</a>
                         <br>Stafleu & Cowan 1976 ff. - vols. 94, 98, 105, 110, 112, 115, 116;
                         <br>Stafleu & Mennega 1992 ff. RV vols. 125, 130, 132, 134, 135, 137
                     </li>
+                    <li><a href="https://orcid.org/ " target="_blank"><b>ORCID</b></a></li>
                 </ul>
             </div>
         </li>
