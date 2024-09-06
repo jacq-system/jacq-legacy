@@ -43,11 +43,12 @@ if (isset($_GET['page'])) {
     $page = 1;
 }
 
+$sql = (empty($_SESSION['s_nrRows'])) ? $_SESSION['s_query_nrRows'] : $_SESSION['s_query'];
 // set order of query
 if ($_SESSION['order'] == 2) {
-    $sql = $_SESSION['s_query'] . "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer"; }
+    $sql .= "ORDER BY Sammler, Sammler_2, series, Nummer, HerbNummer"; }
 else {
-    $sql = $_SESSION['s_query'] . "ORDER BY genus, epithet, author, HerbNummer";
+    $sql .= "ORDER BY genus, epithet, author, HerbNummer";
 }
 
 /**
@@ -56,13 +57,18 @@ else {
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $sql .= " LIMIT " . ($_SESSION['ITEMS_PER_PAGE'] * ($page - 1)) . ", " . $_SESSION['ITEMS_PER_PAGE'];
 $result = $dbLnk2->query($sql);                     // get the result of the query for further processing
-$res_count = $dbLnk2->query("select found_rows()"); // and the complete number of found rows
-if ($res_count) {
-	$res_count_row = $res_count->fetch_row();
-	$nrRows = intval($res_count_row[0]);
-} else {
-    $nrRows = 0;
+if (empty($_SESSION['s_nrRows'])) {
+    if ($result->num_rows < $_SESSION['ITEMS_PER_PAGE']) {
+        $_SESSION['s_nrRows'] = $result->num_rows;
+    } else {
+        $res_count = $dbLnk2->query("select found_rows()"); // get the complete number of found rows
+        if ($res_count) {
+            $res_count_row = $res_count->fetch_row();
+            $_SESSION['s_nrRows'] = intval($res_count_row[0]);
+        }
+    }
 }
+$nrRows = $_SESSION['s_nrRows'];
 
 $a = paginate_three($page, ceil($nrRows / $_SESSION['ITEMS_PER_PAGE']), 2);
 $b = "";
@@ -159,12 +165,13 @@ $navigation = "<form name='page' method='get' align='center' class='col s12'>\n"
               <th class="result">Lat/Lon</th>
             </tr>
 <?php
+if ($nrRows) {
 // process results and show table
-$specimenIDs = array();
-while ($row = $result->fetch_array()) {
-    $specimenIDs[] = intval($row['specimen_ID']);
-}
-$sqlSpecimen = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
+    $specimenIDs = array();
+    while ($row = $result->fetch_array()) {
+        $specimenIDs[] = intval($row['specimen_ID']);
+    }
+    $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.digital_image_obs, s.observation,
                  c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
                  s.Nummer, s.alt_number, s.Datum, mc.collection, mc.coll_short_prj, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, s.HerbNummer,
                  ph.specimenID AS phaidraID,
@@ -204,135 +211,135 @@ $sqlSpecimen = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.digital_image
                  LEFT JOIN tbl_tax_epithets te5             ON te5.epithetID = ts.subformaID
                  LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
                 WHERE specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
-$resultSpecimen = $dbLnk2->query($sqlSpecimen);
+    $resultSpecimen = $dbLnk2->query($sqlSpecimen);
 
-while ($specimen = $resultSpecimen->fetch_assoc()) {
-    echo "<tr>\n";
+    while ($specimen = $resultSpecimen->fetch_assoc()) {
+        echo "<tr>\n";
 
-    $link = true;
-    if ($specimen['observation']) {
-        if ($specimen['digital_image_obs']) {
-            $image = "obs.png";
-        } else {
-            $image = "obs_bw.png";
-            $link = false;
-        }
-    } else {
-        if ($specimen['digital_image'] || $specimen['digital_image_obs']) {
-            if ($specimen['digital_image_obs'] && $specimen['digital_image']) {
-                $image = "spec_obs.png";
-            } elseif ($specimen['digital_image_obs'] && !$specimen['digital_image']) {
+        $link = true;
+        if ($specimen['observation']) {
+            if ($specimen['digital_image_obs']) {
                 $image = "obs.png";
             } else {
-                $image = "camera.png";
+                $image = "obs_bw.png";
+                $link = false;
             }
         } else {
-            $image = "";
-            $link = false;
-        }
-    }
-    if (strlen($image) > 0) {
-        echo "<td class=\"result\">";
-        if ($link) {
-            if ($specimen['iiif_capable'] || $specimen['phaidraID']) {
-                $config = Settings::Load();
-                $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $specimen['specimen_ID']);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                $curl_response = curl_exec($ch);
-                if ($curl_response !== false) {
-                    $curl_result = json_decode($curl_response, true);
-                    $manifest = $curl_result['uri'];
+            if ($specimen['digital_image'] || $specimen['digital_image_obs']) {
+                if ($specimen['digital_image_obs'] && $specimen['digital_image']) {
+                    $image = "spec_obs.png";
+                } elseif ($specimen['digital_image_obs'] && !$specimen['digital_image']) {
+                    $image = "obs.png";
                 } else {
-                    $manifest = "";
+                    $image = "camera.png";
                 }
-                curl_close($ch);
-            	echo "<a href='" . $specimen['iiif_url'] . "?manifest=$manifest' target='imgBrowser'>"
-                   . "<img border='2' height='15' src='images/$image' width='15'>"
-                   . "</a>&nbsp;"
-                   . "<a href='" . $specimen['iiif_url'] . "?manifest=$manifest' target='_blank'>"
-                   . "<img border='2' height='15' src='images/logo-iiif.png' width='15'>"
-                   . "</a>";
             } else {
-				echo "<a href='image.php?filename={$specimen['specimen_ID']}&method=show' target='imgBrowser'>"
-                   . "<img border='2' height='15' src='images/$image' width='15'></a>";
+                $image = "";
+                $link = false;
             }
+        }
+        if (strlen($image) > 0) {
+            echo "<td class=\"result\">";
+            if ($link) {
+                if ($specimen['iiif_capable'] || $specimen['phaidraID']) {
+                    $config = Settings::Load();
+                    $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/" . $specimen['specimen_ID']);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    $curl_response = curl_exec($ch);
+                    if ($curl_response !== false) {
+                        $curl_result = json_decode($curl_response, true);
+                        $manifest = $curl_result['uri'];
+                    } else {
+                        $manifest = "";
+                    }
+                    curl_close($ch);
+                    echo "<a href='" . $specimen['iiif_url'] . "?manifest=$manifest' target='imgBrowser'>"
+                        . "<img border='2' height='15' src='images/$image' width='15'>"
+                        . "</a>&nbsp;"
+                        . "<a href='" . $specimen['iiif_url'] . "?manifest=$manifest' target='_blank'>"
+                        . "<img border='2' height='15' src='images/logo-iiif.png' width='15'>"
+                        . "</a>";
+                } else {
+                    echo "<a href='image.php?filename={$specimen['specimen_ID']}&method=show' target='imgBrowser'>"
+                        . "<img border='2' height='15' src='images/$image' width='15'></a>";
+                }
+            } else {
+                echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
+            }
+            echo "</td>\n";
         } else {
-            echo "<img height=\"15\" src=\"images/$image\" width=\"15\">";
+            echo "<td class=\"result\"></td>\n";
         }
-        echo "</td>\n";
-    } else {
-        echo "<td class=\"result\"></td>\n";
-    }
-    echo "<td class='result' valign='top'>"
-        . "<a href='detail.php?ID=" . $specimen['specimen_ID'] . "' target='_blank'>" . $specimen['scientificName'] . "</a>". getTaxonAuth($specimen['taxid'] ?? 0)
-        ."</td>"
-        . "<td class=\"result\" valign=\"top\">"
-        . rdfcollection($specimen)
-        . "</td>"
-        . "<td class=\"result\" valign=\"top\">"
-        . htmlspecialchars($specimen['Datum'])
-        . "</td>";
+        echo "<td class='result' valign='top'>"
+            . "<a href='detail.php?ID=" . $specimen['specimen_ID'] . "' target='_blank'>" . $specimen['scientificName'] . "</a>" . getTaxonAuth($specimen['taxid'] ?? 0)
+            . "</td>"
+            . "<td class=\"result\" valign=\"top\">"
+            . rdfcollection($specimen)
+            . "</td>"
+            . "<td class=\"result\" valign=\"top\">"
+            . htmlspecialchars($specimen['Datum'])
+            . "</td>";
 
-    echo "<td class=\"result\" valign=\"top\">";
-    $switch = false;
-    if ($specimen['nation_engl']) {
-        echo "<img src='images/flags/" . strtolower($specimen['iso_alpha_2_code']) . ".png'> " . $specimen['nation_engl'];
-        $switch = true;
-    }
-    if ($specimen['provinz']) {
-        if ($switch) {
-            echo ". ";
+        echo "<td class=\"result\" valign=\"top\">";
+        $switch = false;
+        if ($specimen['nation_engl']) {
+            echo "<img src='images/flags/" . strtolower($specimen['iso_alpha_2_code']) . ".png'> " . $specimen['nation_engl'];
+            $switch = true;
         }
-        echo $specimen['provinz'];
-        $switch = true;
-    }
-    if (trim($specimen['Fundort'])) {
-        if ($switch) {
-            echo ". ";
+        if ($specimen['provinz']) {
+            if ($switch) {
+                echo ". ";
+            }
+            echo $specimen['provinz'];
+            $switch = true;
         }
-        if (strlen(trim($specimen['Fundort'])) > 200) {
-            echo substr(trim($specimen['Fundort']), 0, 200) . "...";
+        if (trim($specimen['Fundort'])) {
+            if ($switch) {
+                echo ". ";
+            }
+            if (strlen(trim($specimen['Fundort'])) > 200) {
+                echo substr(trim($specimen['Fundort']), 0, 200) . "...";
+            } else {
+                echo trim($specimen['Fundort']);
+            }
+            $switch = true;
+        }
+        echo "</td>";
+
+        echo "<td class=\"result\" valign=\"top\">"
+            . (($specimen['typusID']) ? "<font color=\"red\"><b>" . $specimen['typus'] . "</b></font>" : "") . "</td>\n";
+
+        // do special threatment for source 29 (B)
+        if ($specimen['source_id'] == '29') {
+            echo "<td class='result' valign='top' title='" . htmlspecialchars($specimen['collection']) . "'>" . htmlspecialchars($specimen['HerbNummer']) . "</td>";
         } else {
-            echo trim($specimen['Fundort']);
+            echo "<td class='result' valign='top' title='" . htmlspecialchars($specimen['collection']) . "'>"
+                . htmlspecialchars(mb_strtoupper($specimen['coll_short_prj'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
+            //. htmlspecialchars(collectionItem($specimen['collection'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
         }
-        $switch = true;
-    }
-    echo "</td>";
 
-    echo "<td class=\"result\" valign=\"top\">"
-        . (($specimen['typusID']) ? "<font color=\"red\"><b>" . $specimen['typus'] . "</b></font>" : "") . "</td>\n";
-
-    // do special threatment for source 29 (B)
-    if ($specimen['source_id'] == '29') {
-        echo "<td class='result' valign='top' title='" . htmlspecialchars($specimen['collection']) . "'>" . htmlspecialchars($specimen['HerbNummer']) . "</td>";
-    } else {
-        echo "<td class='result' valign='top' title='" . htmlspecialchars($specimen['collection']) . "'>"
-           . htmlspecialchars(mb_strtoupper($specimen['coll_short_prj'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
-           //. htmlspecialchars(collectionItem($specimen['collection'])) . " " . htmlspecialchars($specimen['HerbNummer']) . "</td>";
-    }
-
-    if ($specimen['Coord_S'] > 0 || $specimen['S_Min'] > 0 || $specimen['S_Sec'] > 0) {
-        $lat = -($specimen['Coord_S'] + $specimen['S_Min'] / 60 + $specimen['S_Sec'] / 3600);
-    } else if ($specimen['Coord_N'] > 0 || $specimen['N_Min'] > 0 || $specimen['N_Sec'] > 0) {
-        $lat = $specimen['Coord_N'] + $specimen['N_Min'] / 60 + $specimen['N_Sec'] / 3600;
-    } else {
-        $lat = 0;
-    }
-    if ($specimen['Coord_W'] > 0 || $specimen['W_Min'] > 0 || $specimen['W_Sec'] > 0) {
-        $lon = -($specimen['Coord_W'] + $specimen['W_Min'] / 60 + $specimen['W_Sec'] / 3600);
-    } else if ($specimen['Coord_E'] > 0 || $specimen['E_Min'] > 0 || $specimen['E_Sec'] > 0) {
-        $lon = $specimen['Coord_E'] + $specimen['E_Min'] / 60 + $specimen['E_Sec'] / 3600;
-    } else {
-        $lon = 0;
-    }
-    if ($lat != 0 || $lon != 0) {
-        echo "<td class='result' style='text-align: center' title='" . round($lat, 5) . "&deg; / " . round($lon,5) . "&deg;'>"
+        if ($specimen['Coord_S'] > 0 || $specimen['S_Min'] > 0 || $specimen['S_Sec'] > 0) {
+            $lat = -($specimen['Coord_S'] + $specimen['S_Min'] / 60 + $specimen['S_Sec'] / 3600);
+        } else if ($specimen['Coord_N'] > 0 || $specimen['N_Min'] > 0 || $specimen['N_Sec'] > 0) {
+            $lat = $specimen['Coord_N'] + $specimen['N_Min'] / 60 + $specimen['N_Sec'] / 3600;
+        } else {
+            $lat = 0;
+        }
+        if ($specimen['Coord_W'] > 0 || $specimen['W_Min'] > 0 || $specimen['W_Sec'] > 0) {
+            $lon = -($specimen['Coord_W'] + $specimen['W_Min'] / 60 + $specimen['W_Sec'] / 3600);
+        } else if ($specimen['Coord_E'] > 0 || $specimen['E_Min'] > 0 || $specimen['E_Sec'] > 0) {
+            $lon = $specimen['Coord_E'] + $specimen['E_Min'] / 60 + $specimen['E_Sec'] / 3600;
+        } else {
+            $lon = 0;
+        }
+        if ($lat != 0 || $lon != 0) {
+            echo "<td class='result' style='text-align: center' title='" . round($lat, 5) . "&deg; / " . round($lon, 5) . "&deg;'>"
 //            . "<a href='https://opentopomap.org/#marker=12/$lat/$lon' target='_blank'>"
-           . "<a href='#' onClick='osMap(" . $specimen['specimen_ID'] . "); return false;'>"
-           . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
-    } else {
-        echo "<td class='result'></td>\n";
-    }
+                . "<a href='#' onClick='osMap(" . $specimen['specimen_ID'] . "); return false;'>"
+                . "<img border='0' height='15' src='assets/images/OpenStreetMap.png' width='15'></a></td>";
+        } else {
+            echo "<td class='result'></td>\n";
+        }
 
 //    if ($specimen['ncbi_accession']) {
 //        echo "<td class='result' style='text-align: center' title='" . $specimen['ncbi_accession'] . "'>"
@@ -342,7 +349,8 @@ while ($specimen = $resultSpecimen->fetch_assoc()) {
 //        echo "<td class='result'></td>\n";
 //    }
 
-    echo "</tr>\n";
+        echo "</tr>\n";
+    }
 }
 ?>
           </table>
