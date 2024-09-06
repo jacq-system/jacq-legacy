@@ -134,8 +134,11 @@ function makePictureFilename(string $HerbNummerIn, int $collectionID): string
             }
         }
     } else {    // standard filename, would be "<coll_short_prj>_<HerbNummer:reformat>"
-        preg_match("/(?P<number>\d+)(?P<trailing>\D*.*)/", $HerbNummer, $parts);
-        $filename = sprintf("%s_%0" . $collectionRules['HerbNummerNrDigits'] . ".0f", $collectionRules['coll_short_prj'], $parts['number']) . $parts['trailing'];
+        if (preg_match("/(?P<number>\d+)(?P<trailing>\D*.*)/", $HerbNummer, $parts)) {
+            $filename = sprintf("%s_%0" . $collectionRules['HerbNummerNrDigits'] . ".0f", $collectionRules['coll_short_prj'], $parts['number']) . $parts['trailing'];
+        } else {
+            $filename = '';
+        }
     }
 
     return $filename;
@@ -363,21 +366,23 @@ function scanServer(int $server_id)
         foreach ($specimens as $specimen) {
             if (!empty($specimen['HerbNummer'])) {
                 $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
-                // and check if this filename still applies
-                $images = $dbLnk->query("SELECT id, filename
-                                         FROM herbar_pictures.djatoka_images
-                                         WHERE id = {$specimen['id']}
-                                          AND LOWER(filename) NOT LIKE LOWER('" . addcslashes($filename, '%_') . "%')")
-                                ->fetch_all(MYSQLI_ASSOC);
-                if (!empty($images)) {
-                    foreach ($images as $image) {
-                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+                if ($filename) {
+                    // and check if this filename still applies
+                    $images = $dbLnk->query("SELECT id, filename
+                                             FROM herbar_pictures.djatoka_images
+                                             WHERE id = {$specimen['id']}
+                                              AND LOWER(filename) NOT LIKE LOWER('" . addcslashes($filename, '%_') . "%')")
+                                    ->fetch_all(MYSQLI_ASSOC);
+                    if (!empty($images)) {
+                        foreach ($images as $image) {
+                            $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                         specimen_ID = NULL
                                        WHERE id = {$image['id']}");
-                        if ($options['verbose']) {
-                            echo "{$image['filename']} removed link to specimen\n";
+                            if ($options['verbose']) {
+                                echo "{$image['filename']} removed link to specimen\n";
+                            }
+                            $status['recheck']++;
                         }
-                        $status['recheck']++;
                     }
                 }
             }
@@ -401,23 +406,25 @@ function scanServer(int $server_id)
     if (!empty($specimens)) {
         foreach ($specimens as $specimen) {
             $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
-            // and look for any images who are not already linked to a specimen
-            $images = $dbLnk->query("SELECT id, filename
-                                     FROM herbar_pictures.djatoka_images
-                                     WHERE server_id = $server_id
-                                      AND LOWER(filename) LIKE LOWER('" . addcslashes($filename, '%_') . "%')
-                                      AND specimen_ID IS NULL")
-                            ->fetch_all(MYSQLI_ASSOC);
-            if (!empty($images)) {
-                foreach ($images as $image) {
-                    // and link them to the specimen
-                    $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
+            if ($filename) {
+                // and look for any images who are not already linked to a specimen
+                $images = $dbLnk->query("SELECT id, filename
+                                         FROM herbar_pictures.djatoka_images
+                                         WHERE server_id = $server_id
+                                          AND LOWER(filename) LIKE LOWER('" . addcslashes($filename, '%_') . "%')
+                                          AND specimen_ID IS NULL")
+                                ->fetch_all(MYSQLI_ASSOC);
+                if (!empty($images)) {
+                    foreach ($images as $image) {
+                        // and link them to the specimen
+                        $dbLnk->query("UPDATE herbar_pictures.djatoka_images SET
                                     specimen_ID = {$specimen['specimen_ID']}
                                    WHERE id = {$image['id']}");
-                    if ($options['verbose']) {
-                        echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
+                        if ($options['verbose']) {
+                            echo "{$image['filename']} ({$specimen['specimen_ID']})\n";
+                        }
+                        $status['new']++;
                     }
-                    $status['new']++;
                 }
             }
         }
