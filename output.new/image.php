@@ -282,13 +282,14 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
 
     // ignore broken certificates
     $context = stream_context_create(array("ssl"=>array("verify_peer"      => false,
-                                                        "verify_peer_name" => false)));
-
+                                                        "verify_peer_name" => false),
+                                           "http"=>array('timeout' => 60)));
     // Send correct headers
     header('Content-Type: ' . $mime);
     if ($downloadPic) {
         header('Content-Disposition: attachment; filename="' . $picdetails['requestFileName'] . '.' . $fileExt . '"');
     }
+    ob_end_clean();
     readfile($url, false, $context);
 }
 
