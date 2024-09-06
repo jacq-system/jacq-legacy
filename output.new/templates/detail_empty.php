@@ -48,7 +48,7 @@
 </div>
 
 <div id="details" class="container">
-  <mark>This specimen does not exist.</mark>
+  <img src="images/not_found.png" alt="image not found">
 </div>
 
 <div id="footer-wrapper">

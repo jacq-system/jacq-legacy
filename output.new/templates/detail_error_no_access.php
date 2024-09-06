@@ -48,7 +48,7 @@
 </div>
 
 <div id="details" class="container">
-  <mark>This specimen is not accessible.</mark>
+  <img src="images/access_denied.jpg" alt="access denied">
 </div>
 
 <div id="footer-wrapper">
