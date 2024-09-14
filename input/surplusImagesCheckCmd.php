@@ -249,7 +249,7 @@ function scanServer(int $server_id)
                 $url = $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer';
             }
 
-            $client = new Client(['timeout' => 4]);
+            $client = new Client(['timeout' => 8]);
 
             // cycle through all possible first parts of picture filenames, get possible pictures from the picture-server and process them
             foreach ($searchpatterns as $searchpattern) {
@@ -264,7 +264,7 @@ function scanServer(int $server_id)
                     ]);
                     $data = json_decode($response->getBody()->getContents(), true, 512, JSON_INVALID_UTF8_SUBSTITUTE);
                 } catch (GuzzleException $e) {
-                    die($e->getMessage());
+                    echo($e->getMessage() . "\n");
                 }
                 if ($options['verbose']) {
                     echo "transfer $searchpattern finished\n";
