@@ -37,6 +37,7 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041" target="_blank">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059" target="_blank">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039" target="_blank">GZU // Karl Franzes University of Graz</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125113" target="_blank">KL // Kärnten Museum</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland, Biologische Station Neusiedler See, Illmitz</a></li>
                         <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126511" target="_blank">SZU // Paris Lodron University; Salzburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W // Natural history Museum Vienna</a></li>
