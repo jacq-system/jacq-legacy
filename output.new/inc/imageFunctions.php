@@ -426,6 +426,8 @@ function getPicInfo($picdetails)
             $return['pics'] = $response_decoded['result'];
             fclose($fp);
         }
+    } else if ($picdetails['imgserver_type'] == 'iiif') {   // should never be reached...
+        // so, do nothing, just return
     } else if ($picdetails['imgserver_type'] == 'baku') {   // depricated
         $return['pics'] = $picdetails['filename'];
     } else {  // old legacy, depricated
