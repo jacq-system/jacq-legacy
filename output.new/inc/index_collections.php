@@ -37,6 +37,7 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124041" target="_blank">ADMONT // Benediktinerstift Admont, Naturhistorisches Museum</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126059" target="_blank">GJO // Center of Natural History, Botany, Universalmuseum Joanneum, Graz</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125039" target="_blank">GZU // Karl Franzes University of Graz</a></li>
+                        <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125113" target="_blank">KL // Kärnten Museum</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124050" target="_blank">NBSI // Biologisches Forschungsinstitut für Burgenland, Biologische Station Neusiedler See, Illmitz</a></li>
                         <li>! NEW ! <a href="https://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126511" target="_blank">SZU // Paris Lodron University; Salzburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125500" target="_blank">W // Natural history Museum Vienna</a></li>
@@ -52,6 +53,7 @@
                         <li><a href="http://www.botanik.univie.ac.at/hbv/" target="_blank">HBV - Hortus Botanicus Vindobonensis</a></li>
                         <li><a href="http://www.bundesgaerten.at/" target="_blank">Bundesgärten Schönbrunn</a></li>
                         <li><a href="https://www.uni-salzburg.at/index.php?id=210019&no_cache=1&L=0" target="_blank">Botanischer Garten der Universität Salzburg</a></li>
+                        <li><a href="https://diegartentulln.at/" target="_blank">Die Garten Tulln</a></li>
                     </ul>
                 </div>
             </li>
@@ -93,7 +95,7 @@
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126507" target="_blank">OLD // Carl von Ossietzky Universität Oldenburg</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=124452" target="_blank">TUB // Eberhard Karls Universität Tübingen</a></li>
                         <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=125591" target="_blank">UBT // Universität Bayreuth</a></li>
-                        <li>! NEW ! <a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126512" target="_blank">ULM // Universität Ulm</a></li>
+                        <li><a href="http://sweetgum.nybg.org/science/ih/herbarium-details/?irn=126512" target="_blank">ULM // Universität Ulm</a></li>
                     </ul>
                 </div>
             </li>

@@ -169,6 +169,14 @@ function makeTypus($ID): string
  **********************************/
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
+// check, if specimen is accessible
+$access = $dbLnk2->query("SELECT `accessible` FROM tbl_specimens WHERE specimen_ID = '$ID'")->fetch_assoc();
+if (!empty($access) && $access['accessible'] == 0) {
+    include 'templates/detail_error_no_access.php';
+    die();
+}
+
+
 $specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number,
                              s.Nummer, s.alt_number, s.Datum, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen, s.typified, s.typusID,
                              s.digital_image, s.digital_image_obs, s.HerbNummer, s.CollNummer, s.ncbi_accession, s.observation,
@@ -211,26 +219,29 @@ $specimen = $dbLnk2->query("SELECT s.specimen_ID, tg.genus, c.Sammler, c.Sammler
                    ->fetch_array();
 
 if (empty($specimen)) {
-    $specimen = array(
-        'specimen_ID'    => 0,
-        'source_id'      => 0,
-        'HerbNummer'     => '',
-        'source_code'    => '',
-        'collection'     => '',
-        'CollNummer'     => '',
-        'statusID'       => 0,
-        'taxid'          => 0,
-        'ncbi_accession' => '',
-        'genus'          => '',
-        'epithet'        => '',
-        'family'         => '',
-        'det'            => '',
-        'taxon_alt'      => '',
-        'Datum'          => '',
-        'Fundort'        => '',
-        'habitat'        => '',
-        'habitus'        => ''
-    );
+    include 'templates/detail_empty.php';
+    die();
+
+//    $specimen = array(
+//        'specimen_ID'    => 0,
+//        'source_id'      => 0,
+//        'HerbNummer'     => '',
+//        'source_code'    => '',
+//        'collection'     => '',
+//        'CollNummer'     => '',
+//        'statusID'       => 0,
+//        'taxid'          => 0,
+//        'ncbi_accession' => '',
+//        'genus'          => '',
+//        'epithet'        => '',
+//        'family'         => '',
+//        'det'            => '',
+//        'taxon_alt'      => '',
+//        'Datum'          => '',
+//        'Fundort'        => '',
+//        'habitat'        => '',
+//        'habitus'        => ''
+//    );
 }
 
 $output['ID'] = $ID;

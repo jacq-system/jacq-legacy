@@ -1,6 +1,6 @@
 <div class="col s12">
     <div class="divider"></div>
-    <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BP, BRNM, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAL, HBG, HERZ, JE, KIEL, KFTA, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MJG, MNVD, NBSI, OLD, PAV, PI, PIAGR, PRC, ROPV, SIENA, SPP, SZU, TBI, TGM, TGU, TMRC, TO, TUB, UBT, ULM, W, WU and WUP.</p>
+    <p>JACQ is the jointly administered herbarium management system and specimen database of the following herbaria: ADMONT, B, BAK, BATU, BEOU, BOZ, BP, BRNM, BRNU, CBH, CHER, DR, ERE, FT, GAT, GJO, GZU, HAJB, HAL, HBG, HERZ, JE, KFTA, KIEL, KL, KUFS, LAGU, LECB, LW, LWKS, LWS, LZ, MHES, MJG, MNVD, NBSI, NS, NSK, OLD, PAV, PI, PIAGR, PR, PRC, ROPV, SARAT, SIENA, SPP, SZU, TBI, TGM, TGU, TMRC, TO, TUB, UBT, ULM, UPA, W, WU and WUP.</p>
     <p>Listed Acronyms follow the <a href="http://sweetgum.nybg.org/science/ih/" target="_blank">Index Herbariorum Abbreviations</a>. For requests and comments on specimens like identifications, typification, and comments please contact the corresponding Director/Curator listed in the Index Herbariorum.</p>
 
     <div class="divider"></div>
@@ -74,10 +74,12 @@
 
                 <h6><strong>║→ Aggregators ←║</strong></h6>
                 <ul>
+                    <li>Australia & New Zealand / <a href="https://avh.chah.org.au/" target="_blank">AVH The Australasian Virtual Herbarium</a></li>
                     <li>Brasil / <a href="http://inct.splink.org.br/" target="_blank">INCT - Herbário Virtual da Flora e dos Fungos - CRIA</a></li>
                     <li>Brasil / <a href="http://reflora.jbrj.gov.br/reflora/herbarioVirtual/ConsultaPublicoHVUC/ConsultaPublicoHVUC.do" target="_blank">REFLORA - JBRJ</a></li>
                     <li>PR China / <a href="http://www.cvh.ac.cn/en" target="_blank">Chinese Virtual Herbarium of China</a></li>
                     <li>Germany / <a href="http://vh.gbif.de/vh/static/en_startpage.html" target="_blank">Virtual Herbarium Germany</a></li>
+                    <li>India / <a href="https://ivh.bsi.gov.in/" target="_blank">Indian Virtual Herbarium</a></li>
                     <li>Sweden / <a href="http://herbarium.emg.umu.se/" target="_blank">Sweden's Virtual Herbarium</a></li>
                     <li>USA / <a href="https://portal.idigbio.org/" target="_blank">Integrated Digitized Biocollections (iDigBio)</a></li>
                 </ul>
