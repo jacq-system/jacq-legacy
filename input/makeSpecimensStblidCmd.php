@@ -129,7 +129,8 @@ while ($row_specimen = $result_specimen->fetch_array()) {
                     dbi_query("INSERT INTO tbl_specimens_stblid SET 
                                 specimen_ID = '{$row_specimen['specimen_ID']}',
                                 visible     = 0,
-                                error       = 'stblId $stblid already exists ({$row_stblId['specimen_ID']})'"
+                                error       = 'stblId $stblid already exists ({$row_stblId['specimen_ID']})',
+                                blockedBy   = {$row_stblId['specimen_ID']}"
                              );
                 }
             }
