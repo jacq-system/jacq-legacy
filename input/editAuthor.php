@@ -51,6 +51,21 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
                         WHERE authorID = " . intval($_POST['ID']);
                 $result = dbi_query($sql);
                 logAuthors($id, 1);
+                // update tbl_tax_sciname
+                $resSpecies = dbi_query("SELECT taxonID
+                                         FROM tbl_tax_species
+                                         WHERE authorID = $id
+                                          OR subspecies_authorID = $id
+                                          OR variety_authorID = $id
+                                          OR subvariety_authorID = $id
+                                          OR forma_authorID = $id
+                                          OR subforma_authorID = $id");
+                if ($resSpecies && $resSpecies->num_rows > 0) {
+                    $rowsSpecies = $resSpecies->fetch_all(MYSQLI_ASSOC);
+                    foreach ($rowsSpecies as $rowSpecies) {
+                        updateTblTaxSciname($rowSpecies['taxonID']);
+                    }
+                }
             }
         } else {
             $sql = "INSERT INTO tbl_tax_authors SET
