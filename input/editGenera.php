@@ -126,39 +126,35 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                 $id = intval($_POST['genID']);
                 if (strlen(trim($_POST['genus']))>0 && intval($familyID)) {
                     $sql = "UPDATE tbl_tax_genera SET
-                             genus = ".quoteString($_POST['genus']).",
-                             authorID = ".makeInt($authorID).",
-                             DallaTorreIDs = ".quoteString($dtid).",
-                             DallaTorreZusatzIDs = ".quoteString($dtzid).",
-                             hybrid = ".(($_POST['hybrid'] ?? 0) ? "'X'" : "NULL").",
-                             accepted = ".(($_POST['accepted'] ?? 0) ? "'1'" : "'0'").",
-                             familyID = ".makeInt($familyID).",
-                             fk_taxonID = ".makeInt($taxonID).",
-                             remarks = ".quoteString($remarks)."
+                             genus = "               . quoteString($_POST['genus']).",
+                             authorID = "            . makeInt($authorID).",
+                             DallaTorreIDs = "       . quoteString($dtid).",
+                             DallaTorreZusatzIDs = " . quoteString($dtzid).",
+                             hybrid = "              . (($_POST['hybrid'] ?? 0) ? "'X'" : "NULL").",
+                             accepted = "            . (($_POST['accepted'] ?? 0) ? "'1'" : "'0'").",
+                             familyID = "            . makeInt($familyID).",
+                             fk_taxonID = "          . makeInt($taxonID).",
+                             remarks = "             . quoteString($remarks)."
                              $lock
-                            WHERE genID = '".intval($_POST['genID'])."'";
+                            WHERE genID = '$id'";
                     $result = dbi_query($sql);
                     logGenera($id,1);
+                    // update tbl_tax_sciname
+                    $resSpecies = dbi_query("SELECT taxonID
+                                             FROM tbl_tax_species
+                                             WHERE genID = '$id'");
+                    if ($resSpecies && $resSpecies->num_rows > 0) {
+                        $rowsSpecies = $resSpecies->fetch_all(MYSQLI_ASSOC);
+                        foreach ($rowsSpecies as $rowSpecies) {
+                            updateTblTaxSciname($rowSpecies['taxonID']);
+                        }
+                    }
                 }
             } else {
                 $genus_name = $_POST['genus'];
                 $is_hybrid = $_POST['hybrid'];
                 $is_accepted = $_POST['accepted'];
                 $id = insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock);
-            }
-            // update tbl_tax_sciname
-            $resSpecies = dbi_query("SELECT taxonID
-                                     FROM tbl_tax_species
-                                     WHERE speciesID IS NULL
-                                      AND subspeciesID IS NULL AND subspecies_authorID IS NULL
-                                      AND varietyID IS NULL AND variety_authorID IS NULL
-                                      AND subvarietyID IS NULL AND subvariety_authorID IS NULL
-                                      AND formaID IS NULL AND forma_authorID IS NULL
-                                      AND subformaID IS NULL AND subforma_authorID IS NULL
-                                      AND genID = '$id'");
-            if ($resSpecies && $resSpecies->num_rows > 0) {
-                $rowSpecies = $resSpecies->fetch_assoc();
-                updateTblTaxSciname($rowSpecies['taxonID']);
             }
 
             $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category

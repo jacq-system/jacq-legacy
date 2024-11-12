@@ -17,7 +17,7 @@ if (!checkRight('admin')) {
 <h2>Programmlauf von</h2>
 <h1>makeSpecimensStblidCmd.php</h1>
 <?php
-$output = shell_exec('./makeSpecimensStblidCmd.php');
+$output = shell_exec('./scripts/makeSpecimensStblidCmd.php');
 if ($output) {
     echo "<pre>" . var_export($output, true) . "</pre>";
 }

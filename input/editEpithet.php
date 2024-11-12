@@ -39,6 +39,22 @@ if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlo
                      external = " . ((!empty($_POST['external'])) ? 1 : 0) . "
                      $lock
                     WHERE epithetID = " . intval($_POST['ID']);
+            // update tbl_tax_sciname
+            $eid = intval($_POST['ID']);
+            $resSpecies = dbi_query("SELECT taxonID
+                                     FROM tbl_tax_species
+                                     WHERE speciesID = $eid
+                                      OR subspeciesID = $eid
+                                      OR varietyID = $eid
+                                      OR subvarietyID = $eid
+                                      OR formaID = $eid
+                                      OR subformaID = $eid");
+            if ($resSpecies && $resSpecies->num_rows > 0) {
+                $rowsSpecies = $resSpecies->fetch_all(MYSQLI_ASSOC);
+                foreach ($rowsSpecies as $rowSpecies) {
+                    updateTblTaxSciname($rowSpecies['taxonID']);
+                }
+            }
         } else {
             $sql = "INSERT INTO tbl_tax_epithets SET
                      epithet = '" . dbi_escape_string($_POST['epithet']) . "'

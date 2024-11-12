@@ -113,7 +113,7 @@ function checkServer($serverID)
 {
     $response = new Response();
 
-    exec("../surplusImagesCheckCmd.php -v " . intval($serverID), $output);
+    exec("../scripts/surplusImagesCheckCmd.php -v " . intval($serverID), $output);
 
     $response->assign("cmdOutput", "innerHTML", implode("<br>", $output));
     $response->call("endRecheckServer($serverID)");
