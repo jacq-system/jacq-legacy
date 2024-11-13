@@ -1,7 +1,7 @@
 #!/usr/bin/php -qC
 <?php
-require_once '../inc/variables.php';
-require_once '../inc/uuidMinterFunctions.php';
+require_once __DIR__ . '/../inc/variables.php';
+require_once __DIR__ . '/../inc/uuidMinterFunctions.php';
 
 /** @var mysqli $dbLink */
 $dbLink = new mysqli($_CONFIG['DATABASE']['JACQ']['host'],

@@ -1,6 +1,7 @@
 #!/usr/bin/php -qC
 <?php
-require_once '../inc/variables.php';
+require_once __DIR__ . '/../inc/variables.php';
+require_once __DIR__ . '/../inc/stableIdentifierFunctions.php';
 
 ini_set("max_execution_time","3600");
 
@@ -50,8 +51,6 @@ function dbi_query($sql, $debug=false)
     return $res;
 }
 
-
-require_once '../inc/stableIdentifierFunctions.php';
 
 /**
  * check, if a source-ID is given to completely recheck for missing stable-IDs
