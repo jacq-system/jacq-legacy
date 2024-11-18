@@ -175,7 +175,7 @@ if ($nrRows) {
                  c.Sammler, c.SammlerID, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID,c.ORCID, c2.Sammler_2, ss.series, s.series_number, s.taxonID taxid,
                  s.Nummer, s.alt_number, s.Datum, mc.collection, mc.coll_short_prj, mc.source_id, tid.imgserver_IP, tid.iiif_capable, tid.iiif_url, s.HerbNummer,
                  ph.specimenID AS phaidraID,
-                 n.nation_engl, n.iso_alpha_2_code, p.provinz, s.Fundort, s.collectionID, tst.typusID, t.typus,
+                 n.nation_engl, n.iso_alpha_2_code, p.provinz, s.Fundort, s.collectionID, t.typus,
                  s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                  s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
@@ -189,7 +189,6 @@ if ($nrRows) {
                  JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                  JOIN tbl_img_definition tid        ON tid.source_id_fk = mc.source_id
                  JOIN meta m                        ON mc.source_ID = m.source_ID 
-                 LEFT JOIN tbl_specimens_types tst          ON tst.specimenID = s.specimen_ID
                  LEFT JOIN tbl_specimens_series ss          ON ss.seriesID = s.seriesID
                  LEFT JOIN tbl_typi t                       ON t.typusID = s.typusID
                  LEFT JOIN tbl_geo_province p               ON p.provinceID = s.provinceID
@@ -210,10 +209,15 @@ if ($nrRows) {
                  LEFT JOIN tbl_tax_epithets te4             ON te4.epithetID = ts.formaID
                  LEFT JOIN tbl_tax_epithets te5             ON te5.epithetID = ts.subformaID
                  LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
-                WHERE specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
+                WHERE s.specimen_ID IN (" . implode(', ', $specimenIDs) . ")";
     $resultSpecimen = $dbLnk2->query($sqlSpecimen);
 
     while ($specimen = $resultSpecimen->fetch_assoc()) {
+        $rowsTypi = $dbLnk2->query("SELECT tst.typusID, t.typus 
+                                    FROM tbl_specimens_types tst 
+                                     LEFT JOIN tbl_typi t ON t.typusID = tst.typusID
+                                    WHERE tst.specimenID = {$specimen['specimen_ID']}")
+                           ->fetch_all(MYSQLI_ASSOC);
         echo "<tr>\n";
 
         $link = true;
@@ -306,8 +310,20 @@ if ($nrRows) {
         }
         echo "</td>";
 
-        echo "<td class=\"result\" valign=\"top\">"
-            . (($specimen['typusID']) ? "<font color=\"red\"><b>" . $specimen['typus'] . "</b></font>" : "") . "</td>\n";
+        echo "<td class=\"result\" valign=\"top\">";
+        if (count($rowsTypi) == 1) {
+            echo "<font color=\"red\"><b>" . $specimen['typus'] . "</b></font>";
+        } elseif (count($rowsTypi) > 1) {
+            $first = true;
+            foreach ($rowsTypi as $rowTypi) {
+                if (!$first) {
+                    echo "<br>\n";
+                }
+                echo "<font color=\"red\"><b>" . $rowTypi['typus'] . "</b></font>";
+                $first = false;
+            }
+        }
+        echo "</td>\n";
 
         // do special threatment for source 29 (B)
         if ($specimen['source_id'] == '29') {
