@@ -1,6 +1,6 @@
 #!/usr/bin/php -qC
 <?php
-require_once '../inc/variables.php';
+require_once __DIR__ . '/../inc/variables.php';
 
 ini_set("max_execution_time","3600");
 
