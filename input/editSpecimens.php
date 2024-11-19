@@ -1102,6 +1102,18 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
+$result = dbi_query("SELECT stableIdentifier, error FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC LIMIT 1");
+if ($result && mysqli_num_rows($result) > 0) {
+    $row = mysqli_fetch_array($result);
+    if ($row['stableIdentifier']) {
+        $stblID = $row['stableIdentifier'];
+    } else {
+        $stblID = "error: " . $row['error'];
+    }
+} else {
+    $stblID = "";
+}
+
 if ($nr) {
     echo "<div style=\"position: absolute; left: 16em; top: 0.4em;\">";
     if ($nr > 1) {
@@ -1180,6 +1192,14 @@ $cf->checkbox(60.5, $y, "accessible", $p_accessible);
 if ($p_specimen_ID && !$edit) {
     $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
                         . "<img src='webimages/JACQ_LOGO.png'></a>");
+}
+
+if ($stblID) {
+    if (substr($stblID, 0, 6) == 'error:') {
+        $cf->text(67, $y + 0.3, substr($stblID, 7));
+    } else {
+        $cf->text(67, $y + 0.3, "<a href='$stblID' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>$stblID</a>");
+    }
 }
 
 $y += 2;
