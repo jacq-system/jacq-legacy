@@ -1102,16 +1102,15 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
-$result = dbi_query("SELECT stableIdentifier, error FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC LIMIT 1");
+$stblID = array();
+$result = dbi_query("SELECT stableIdentifier, visible, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
 if ($result && mysqli_num_rows($result) > 0) {
-    $row = mysqli_fetch_array($result);
-    if ($row['stableIdentifier']) {
-        $stblID = $row['stableIdentifier'];
-    } else {
-        $stblID = "error: " . $row['error'];
+    while ($row = mysqli_fetch_array($result)) {
+        $stblID[] = array('stblID'    => $row['stableIdentifier'],
+                          'visible'   => $row['visible'],
+                          'error'     => $row['error'],
+                          'blockedBy' => $row['blockedBy']);
     }
-} else {
-    $stblID = "";
 }
 
 if ($nr) {
@@ -1194,11 +1193,16 @@ if ($p_specimen_ID && !$edit) {
                         . "<img src='webimages/JACQ_LOGO.png'></a>");
 }
 
-if ($stblID) {
-    if (substr($stblID, 0, 6) == 'error:') {
-        $cf->text(67, $y + 0.3, substr($stblID, 7));
+if (!empty($stblID)) {
+    if (count($stblID) > 1) {
+        $cf->text(67, $y + 0.3, "multiple entries");
     } else {
-        $cf->text(67, $y + 0.3, "<a href='$stblID' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>$stblID</a>");
+        if (empty($stblID[0]['error'])) {
+            $cf->text(67, $y + 0.3, "<a href='{$stblID[0]['stblID']}' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>"
+                        . $stblID[0]['stblID'] . "</a>");
+        } else {
+            $cf->text(67, $y + 0.3, "<a href='editSpecimens.php?sel=" . htmlentities("<" . $stblID[0]['blockedBy'] . ">") . "'>{$stblID[0]['error']}</a>");
+        }
     }
 }
 
