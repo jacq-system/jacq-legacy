@@ -12,6 +12,14 @@ $specimenID = filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_STRING);
 $method     = filter_input(INPUT_GET, 'method', FILTER_SANITIZE_STRING);
 $format     = filter_input(INPUT_GET, 'format', FILTER_SANITIZE_STRING);
 
+if ($_SERVER['REMOTE_ADDR'] == '94.177.9.139' && !empty($specimenID) && $method == 'download' && strrpos($filename, '_') == strpos($filename, '_')) {
+    // kulturpool is calling...
+    // Redirect to new location
+    http_response_code(303);
+    header("location: https://services.jacq.org/jacq-services/rest/images/europeana/$specimenID?withredirect=1");
+    die();
+}
+
 $picdetails = getPicDetails($filename, $specimenID);
 
 error_reporting(E_ALL);
