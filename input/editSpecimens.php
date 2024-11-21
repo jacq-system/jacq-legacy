@@ -536,6 +536,15 @@ if (isset($_GET['sel'])) {
       padding: 0;
       margin: 2px;
     }
+    #stblIDbox table tr th {
+        border-bottom: 1px solid black;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    #stblIDbox table tr td {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
     #log { position:absolute; bottom:1em; right:1em }
 	.ui-autocomplete {
         font-size: 0.9em;  /* smaller size */
@@ -888,6 +897,12 @@ if (isset($_GET['sel'])) {
           });
       }
 
+      function open_stblIDbox()
+      {
+          $("#stblIDbox").dialog("option", "title", "show multiple stable identifiers");
+          $("#stblIDbox").dialog("open");
+      }
+
       jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
       $.extend({ alert: function (message, title) {
               $("<div></div>").dialog( {
@@ -911,6 +926,12 @@ if (isset($_GET['sel'])) {
               width: 750,
               height: 600
           } );
+          $("#stblIDbox").dialog({
+              autoOpen: false,
+              height: 'auto',
+              width: 'auto',
+              modal: true,
+          });
           $('#sammlerIndex').change(function() {
               jaxon_displayCollectorLinks($(this).val());
           } );
@@ -1102,6 +1123,18 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
+$stblID = array();
+$result = dbi_query("SELECT stableIdentifier, visible, timestamp, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
+        $stblID[] = array('stblID'    => $row['stableIdentifier'],
+                          'visible'   => $row['visible'],
+                          'timestamp' => $row['timestamp'],
+                          'error'     => $row['error'],
+                          'blockedBy' => $row['blockedBy']);
+    }
+}
+
 if ($nr) {
     echo "<div style=\"position: absolute; left: 16em; top: 0.4em;\">";
     if ($nr > 1) {
@@ -1180,6 +1213,19 @@ $cf->checkbox(60.5, $y, "accessible", $p_accessible);
 if ($p_specimen_ID && !$edit) {
     $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
                         . "<img src='webimages/JACQ_LOGO.png'></a>");
+}
+
+if (!empty($stblID)) {
+    if (count($stblID) > 1) {
+        $cf->text(67, $y + 0.3, "<a href='#' onclick='open_stblIDbox();'>multiple entries</a>");
+    } else {
+        if (empty($stblID[0]['error'])) {
+            $cf->text(67, $y + 0.3, "<a href='{$stblID[0]['stblID']}' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>"
+                        . $stblID[0]['stblID'] . "</a>");
+        } else {
+            $cf->text(67, $y + 0.3, "<a href='editSpecimens.php?sel=" . htmlentities("<" . $stblID[0]['blockedBy'] . ">") . "'>{$stblID[0]['error']}</a>");
+        }
+    }
 }
 
 $y += 2;
@@ -1451,6 +1497,27 @@ if ($updateBlocked) {
             </tr>
         </table>
     </form>
+</div>
+<div style="display:none" id="stblIDbox">
+    <?php
+    if (!empty($stblID) && count($stblID) > 1) {
+        echo "<table><tr><th>stblID</th><th>timestamp</th><th>visible</th></tr>";
+        foreach ($stblID as $item) {
+            echo "<tr>";
+            if (empty($item['error'])) {
+                echo "<td><a href='{$item['stblID']}' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>"  . $item['stblID'] . "</a></td>"
+                   . "<td>{$item['timestamp']}</td>"
+                   . "<td style='text-align: center'>" . (($item['visible']) ? "true" : "false") . "</td>";
+            } else {
+                echo "<td><a href='editSpecimens.php?sel=" . htmlentities("<" . $item['blockedBy'] . ">") . "'>error: {$item['error']}</a></td>"
+                   . "<td>{$item['timestamp']}</td>"
+                   . "<td style='text-align: center'>-</td>";
+            }
+            echo "</tr>";
+        }
+        echo "</table>";
+    }
+    ?>
 </div>
 
 </body>
