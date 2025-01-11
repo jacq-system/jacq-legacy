@@ -26,23 +26,24 @@ try {
 
 // if script was called from the outside with some search parameters already in place, put the in variables
 // else leave these variables empty
-$family      = (isset($_GET['family']))      ? filter_input(INPUT_GET, 'family',      FILTER_SANITIZE_STRING) : '';
-$taxon       = (isset($_GET['taxon']))       ? filter_input(INPUT_GET, 'taxon',       FILTER_SANITIZE_STRING) : '';
-$HerbNummer  = (isset($_GET['HerbNummer']))  ? filter_input(INPUT_GET, 'HerbNummer',  FILTER_SANITIZE_STRING) : '';
-$Sammler     = (isset($_GET['Sammler']))     ? filter_input(INPUT_GET, 'Sammler',     FILTER_SANITIZE_STRING) : '';
-$SammlerNr   = (isset($_GET['SammlerNr']))   ? filter_input(INPUT_GET, 'SammlerNr',   FILTER_SANITIZE_STRING) : '';
-$geo_general = (isset($_GET['geo_general'])) ? filter_input(INPUT_GET, 'geo_general', FILTER_SANITIZE_STRING) : '';
-$geo_region  = (isset($_GET['geo_region']))  ? filter_input(INPUT_GET, 'geo_region',  FILTER_SANITIZE_STRING) : '';
-$nation_engl = (isset($_GET['nation_engl'])) ? filter_input(INPUT_GET, 'nation_engl', FILTER_SANITIZE_STRING) : '';
-$source_name = (isset($_GET['source_name'])) ? filter_input(INPUT_GET, 'source_name', FILTER_SANITIZE_STRING) : '';
-$collection  = (isset($_GET['collection']))  ? filter_input(INPUT_GET, 'collection',  FILTER_SANITIZE_STRING) : '';
+$family      = strip_tags($_GET['family'] ?? '');
+$taxon       = strip_tags($_GET['taxon'] ?? '');
+$HerbNummer  = strip_tags($_GET['HerbNummer'] ?? '');
+$Sammler     = strip_tags($_GET['Sammler'] ?? '');
+$SammlerNr   = strip_tags($_GET['SammlerNr'] ?? '');
+$geo_general = strip_tags($_GET['geo_general'] ?? '');
+$geo_region  = strip_tags($_GET['geo_region'] ?? '');
+$nation_engl = strip_tags($_GET['nation_engl'] ?? '');
+$source_name = strip_tags($_GET['source_name'] ?? '');
+$source_code = strip_tags($_GET['source_code'] ?? '');
+$collection  = strip_tags($_GET['collection'] ?? '');
 
 header("Cache-Control: no-store, no-cache, must-revalidate");
 header("Pragma: no-cache");
 header("Cache-Control: post-check=0, pre-check=0", false);
 
 ?><!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>JACQ - Virtual Herbaria</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
