@@ -37,7 +37,7 @@ public function get($resource, $arguments, $optArguments = array())
 {
     $service_url = $this->service
                  . trim($resource, '/') . ((trim($resource, '/')) ? '/' : '')
-                 . implode('/', $arguments)
+                 . urlencode(implode('/', $arguments))
                  . (($optArguments) ? '?' . http_build_query($optArguments) : '');
     $curl = curl_init($service_url);
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
