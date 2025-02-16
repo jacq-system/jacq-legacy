@@ -40,7 +40,7 @@ $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 $constraint = ' AND source_id_fk != 1 AND iiif_capable != 1';   // wu need special treatment, iiif-servers are not checked
 if (!empty($_GET['source'])) {
     if (is_numeric($_GET['source'])) {
-        $constraint = " AND source_ID_fk = " . intval($_GET['source']);
+        $constraint .= " AND source_ID_fk = " . intval($_GET['source']);
     } else {
         $stmt = $dbLnk2->prepare("SELECT source_id
                                   FROM meta
@@ -59,119 +59,123 @@ $rows = $dbLnk2->query("SELECT source_id_fk, img_coll_short
                          $constraint
                         ORDER BY img_coll_short")
                ->fetch_all(MYSQLI_ASSOC);
-foreach ($rows as $row) {
+if (count($rows) > 0) {
+    foreach ($rows as $row) {
 
-    $ok = true;
-    $errorRPC = $warningRPC = $errorImage = "";
+        $ok = true;
+        $errorRPC = $warningRPC = $errorImage = "";
 
-    $result = $dbLnk2->query("SELECT s.specimen_ID
-                              FROM tbl_specimens s, tbl_management_collections mc
-                              WHERE s.collectionID = mc.collectionID
-                               AND s.accessible = 1
-                               AND s.digital_image = 1
-                               AND mc.source_id = " . $row['source_id_fk'] . "
-                              ORDER BY s.specimen_ID
-                              LIMIT 1");
-    if ($result->num_rows > 0) {
-        $specimenID = $result->fetch_assoc()['specimen_ID'];
-        $picdetails = getPicDetails($specimenID);
-        $filename   = $picdetails['originalFilename'];
+        $result = $dbLnk2->query("SELECT s.specimen_ID
+                                  FROM tbl_specimens s, tbl_management_collections mc
+                                  WHERE s.collectionID = mc.collectionID
+                                   AND s.accessible = 1
+                                   AND s.digital_image = 1
+                                   AND mc.source_id = " . $row['source_id_fk'] . "
+                                  ORDER BY s.specimen_ID
+                                  LIMIT 1");
+        if ($result->num_rows > 0) {
+            $specimenID = $result->fetch_assoc()['specimen_ID'];
+            $picdetails = getPicDetails($specimenID);
+            $filename = $picdetails['originalFilename'];
+            error_log(var_export($picdetails, true));
 
-        try{
-            $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
-                'json'   => ['method' => 'listResources',
-                             'params' => [$picdetails['key'],
-                                            [ $picdetails['filename'],
-                                              $picdetails['filename'] . "_%",
-                                              $picdetails['filename'] . "A",
-                                              $picdetails['filename'] . "B",
-                                              "tab_" . $picdetails['specimenID'],
-                                              "obs_" . $picdetails['specimenID'],
-                                              "tab_" . $picdetails['specimenID'] . "_%",
-                                              "obs_" . $picdetails['specimenID'] . "_%"
-                                            ]
-                                         ],
-                             'id'     => 1
-                            ],
-                'verify' => false
-            ]);
-            $data = json_decode($response1->getBody()->getContents(), true);
-            if (!empty($data['error'])) {
-                $ok = false;
-                $errorRPC = $data['error'];
-            } elseif (empty($data['result'][0])) {
-                $ok = false;
-                $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
-            } elseif ($data['result'][0] != $picdetails['filename']) {
-                $ok = false;
-                if (substr(mb_strtolower($data['result'][0]), 0, mb_strlen($picdetails['filename'])) != mb_strtolower($picdetails['filename'])) {
-                    $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
-                } else {
-                    $warningRPC = "WARNING: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+            try {
+                $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
+                    'json' => ['method' => 'listResources',
+                        'params' => [$picdetails['key'],
+                            [$picdetails['filename'],
+                                $picdetails['filename'] . "_%",
+                                $picdetails['filename'] . "A",
+                                $picdetails['filename'] . "B",
+                                "tab_" . $picdetails['specimenID'],
+                                "obs_" . $picdetails['specimenID'],
+                                "tab_" . $picdetails['specimenID'] . "_%",
+                                "obs_" . $picdetails['specimenID'] . "_%"
+                            ]
+                        ],
+                        'id' => 1
+                    ],
+                    'verify' => false
+                ]);
+                $data = json_decode($response1->getBody()->getContents(), true);
+                if (!empty($data['error'])) {
+                    $ok = false;
+                    $errorRPC = $data['error'];
+                } elseif (empty($data['result'][0])) {
+                    $ok = false;
+                    $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned empty result";
+                } elseif ($data['result'][0] != $picdetails['filename']) {
+                    $ok = false;
+                    if (substr(mb_strtolower($data['result'][0]), 0, mb_strlen($picdetails['filename'])) != mb_strtolower($picdetails['filename'])) {
+                        $errorRPC = "FAIL: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                    } else {
+                        $warningRPC = "WARNING: called '" . $picdetails['filename'] . "', returned '" . $data['result'][0] . "'";
+                    }
+                    $filename = $data['result'][0];
                 }
-                $filename = $data['result'][0];
+            } catch (Exception $e) {
+                $ok = false;
+                $errorRPC = $e->getMessage();
             }
-        }
-        catch( Exception $e ) {
-            $ok = false;
-            $errorRPC = $e->getMessage();
-        }
 
-        try {
-            // Construct URL to djatoka-resolver
-            $url = preg_replace('/([^:])\/\//', '$1/', $picdetails['url'] . "adore-djatoka/resolver"
-                                                     . "?url_ver=Z39.88-2004"
-                                                     . "&rft_id=$filename"
-                                                     . "&svc_id=info:lanl-repo/svc/getRegion"
-                                                     . "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"
-                                                     . "&svc.format=image/jpeg"
-                                                     . "&svc.scale=0.1");
-            $response2 = $client->request('GET', $url, [
-                'verify'      => false,
-                'http_errors' => false
-            ]);
+            try {
+                // Construct URL to djatoka-resolver
+                $url = preg_replace('/([^:])\/\//', '$1/', $picdetails['url'] . "adore-djatoka/resolver"
+                     . "?url_ver=Z39.88-2004"
+                     . "&rft_id=$filename"
+                     . "&svc_id=info:lanl-repo/svc/getRegion"
+                     . "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"
+                     . "&svc.format=image/jpeg"
+                     . "&svc.scale=0.1");
+                $response2 = $client->request('GET', $url, [
+                    'verify' => false,
+                    'http_errors' => false
+                ]);
 //            $data = json_decode($response2->getBody()->getContents(), true);
-            $statusCode = $response2->getStatusCode();
-            if ($statusCode != 200) {
-                $ok = false;
-                if ($statusCode == 404) {
-                    $errorImage = "FAIL: <404> Image not found";
-                } elseif ($statusCode == 500) {
-                    $errorImage = "FAIL: <500> Server Error";
-                } else {
-                    $errorImage = "FAIL: Status Code <$statusCode>";
+                $statusCode = $response2->getStatusCode();
+                if ($statusCode != 200) {
+                    $ok = false;
+                    if ($statusCode == 404) {
+                        $errorImage = "FAIL: <404> Image not found";
+                    } elseif ($statusCode == 500) {
+                        $errorImage = "FAIL: <500> Server Error";
+                    } else {
+                        $errorImage = "FAIL: Status Code <$statusCode>";
+                    }
                 }
+            } catch (Exception $e) {
+                $ok = false;
+                $errorImage = htmlentities($e->getMessage());
             }
-        }
-        catch( Exception $e ) {
-            $ok = false;
-            $errorImage = htmlentities($e->getMessage());
-        }
-        if ($ok) {
-            $checks['ok'][] = ['source_id'  => $row['source_id_fk'],
-                               'source'     => $row['img_coll_short'],
-                               'specimenID' => $specimenID
-                              ];
-        } elseif ($warningRPC) {
-            $checks['warn'][] = ['source_id'  => $row['source_id_fk'],
-                                 'source'     => $row['img_coll_short'],
-                                 'specimenID' => $specimenID,
-                                 'warningRPC' => $warningRPC,
-                                 'errorImage' => $errorImage
-                                ];
+            if ($ok) {
+                $checks['ok'][] = ['source_id' => $row['source_id_fk'],
+                    'source' => $row['img_coll_short'],
+                    'specimenID' => $specimenID
+                ];
+            } elseif ($warningRPC) {
+                $checks['warn'][] = ['source_id' => $row['source_id_fk'],
+                    'source' => $row['img_coll_short'],
+                    'specimenID' => $specimenID,
+                    'warningRPC' => $warningRPC,
+                    'errorImage' => $errorImage
+                ];
+            } else {
+                $checks['fail'][] = ['source_id' => $row['source_id_fk'],
+                    'source' => $row['img_coll_short'],
+                    'specimenID' => $specimenID,
+                    'errorRPC' => $errorRPC,
+                    'errorImage' => $errorImage
+                ];
+            }
         } else {
-            $checks['fail'][] = ['source_id'  => $row['source_id_fk'],
-                                 'source'     => $row['img_coll_short'],
-                                 'specimenID' => $specimenID,
-                                 'errorRPC'   => $errorRPC,
-                                 'errorImage' => $errorImage
+            $checks['noPicture'][] = ['source_id' => $row['source_id_fk'],
+                'source' => $row['img_coll_short']
             ];
         }
-    } else {
-        $checks['noPicture'][] = ['source_id' => $row['source_id_fk'],
-                                  'source'    => $row['img_coll_short']
-                                 ];
     }
+    $error = "";
+} else {
+    $error = "No eligible server available.";
 }
 ?>
 <?php if (!empty($checks['fail'])): ?>
@@ -247,5 +251,10 @@ foreach ($rows as $row) {
   </table>
 <?php endif; ?>
 <p>To scan just a single source, add either the parameter "?source=&lt;id&gt;" or "?source=&lt;source&gt;" to the URL.</p>
+<?php
+if ($error) {
+    echo $error;
+}
+?>
 </body>
 </html>
