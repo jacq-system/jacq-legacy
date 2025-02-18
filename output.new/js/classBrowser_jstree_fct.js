@@ -57,7 +57,7 @@ function init_jstree ()
                 if (classificationProgressbarCurr < classificationProgressbarMax) {
                     $("#progressbar").progressbar("option", "value", classificationProgressbarCurr / classificationProgressbarMax * 100);
                 } else {
-                    $("#progressbar").progressbar("destroy");
+                    $("#progressbar").hide();
                 }
             }
         });

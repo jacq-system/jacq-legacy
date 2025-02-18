@@ -81,7 +81,7 @@ $(function() {
                             classificationProgressbarCurr = 0;
                             $("#progressbar").progressbar({
                                 value: 0
-                            });
+                            }).show();
                             $('#jstree_classificationBrowser').jstree('true').close_all(clickTarget);
                             $('#jstree_classificationBrowser').jstree('true').open_all(clickTarget, 1);
                         }
@@ -262,7 +262,8 @@ $(function() {
 
             if( filter_id > 0 && reference_type != "" && reference_id > 0 ) {
                 $('#jstree_classificationBrowser').jstree('destroy');
-                $('#jstree_classificationBrowser').html('');
+                $('#jstree_classificationBrowser').html('<b style="font-size: large">loading...</b>');
+                $('html').addClass('waiting');
 
                 $.ajax({
                     url: 'classificationBrowser_ptlp.php?type=jstree',
@@ -273,6 +274,7 @@ $(function() {
                     },
                     dataType: "json",
                     success: function(data) {
+                        $('html').removeClass('waiting');
                         // remember initital data
                         initital_data = data;
 
