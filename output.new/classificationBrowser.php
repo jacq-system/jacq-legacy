@@ -67,7 +67,7 @@ $config = \Jacq\Settings::Load();
 
     <script type="text/javascript">
         var classBrowser = '<?php echo filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING); ?>?id=1';
-        var download_url = 'classificationBrowser_download.php?type=csv';
+        var download_url = 'classificationBrowser_download.php';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
         var insertSeries = <?php echo $insertSeries; ?>;
         var editSeries = <?php echo $editSeries; ?>;

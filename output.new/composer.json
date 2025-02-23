@@ -9,6 +9,7 @@
     "ext-json": "*",
     "ext-ctype": "*",
     "ext-curl": "*",
+    "ext-mbstring": "*",
     "srjlewis/json-rpc": "@stable",
     "openspout/openspout": "^4.24"
   },

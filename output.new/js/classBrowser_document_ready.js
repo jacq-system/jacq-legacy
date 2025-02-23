@@ -14,10 +14,6 @@ $(function() {
         .change(function() {
             if ($('#classificationBrowser_referenceType').val()) {
                 $.ajax( {
-//                    url: "classificationBrowser_ptlp.php?type=referenceType",
-//                    data: {
-//                        referenceType: $('#classificationBrowser_referenceType').val()
-//                    },
                     url: JACQServices + "classification/references/" + $('#classificationBrowser_referenceType').val(),
                     dataType: "json"
                 } ).done( function(data) {
@@ -57,11 +53,6 @@ $(function() {
                 var referenceId = $(this).attr('data-reference-id');
                 var clickTarget = jQuery(this);
                 $.ajax({
-//                    url: "classificationBrowser_ptlp.php?type=open_all",
-//                    data: {
-//                        referenceID: referenceId,
-//                        taxonID: taxonID
-//                    },
                     url: JACQServices + "classification/numberOfChildrenWithChildrenCitation/" + referenceId + "?taxonID=" + taxonID,
                     dataType: "json",
                     success: function(data) {
@@ -153,8 +144,12 @@ $(function() {
                         }
 
                         // add download link
-                        $('#infoBox').html($('#infoBox').html() + '<br /><b>actions</b><br />');
-                        $('#infoBox').html($('#infoBox').html() + '<span style="cursor: pointer;" onclick="download(\'citation\', ' + referenceId + ',' + taxonID + '); return false;"><img src="images/disk.png"></span>');
+                        $('#infoBox').html($('#infoBox').html()
+                            + '<br /><b>actions</b><br />'
+                            + '<span style="cursor: pointer; margin-right: 1ex;" onclick="download(\'citation\', ' + referenceId + ', ' + taxonID + ', \'csv\'); return false;">'
+                            + '<img title="download CSV" src="images/disk.png"></span>'
+                            + '<span style="cursor: pointer;" onclick="download(\'citation\', ' + referenceId + ',' + taxonID + ', \'xlsx\'); return false;">'
+                            + '<img title="download XLSX" src="images/disk_green.png"></span>');
 
                         // finally show the info box
                         $('#infoBox').show();
@@ -163,10 +158,6 @@ $(function() {
             } else {
                 // query the JSON-services for detail information
                 $.ajax({
-//                    url: "classificationBrowser_ptlp.php?type=infoBox_statistics",
-//                    data: {
-//                        referenceID: referenceId
-//                    },
                     url: JACQServices + "classification/periodicalStatistics/" + referenceId,
                     dataType: "json",
                     success: function(data) {
@@ -196,8 +187,12 @@ $(function() {
                         $('#infoBox').html(iBoxData + "</table>");
 
                         // add download link
-                        $('#infoBox').html($('#infoBox').html() + '</td></tr></table><b>actions</b><br />');
-                        $('#infoBox').html($('#infoBox').html() + '<span style="cursor: pointer;" onclick="download(\'citation\', ' + referenceId + ',' + taxonID + '); return false;"><img src="images/disk.png"></span>');
+                        $('#infoBox').html($('#infoBox').html()
+                            + '</td></tr></table><b>actions</b><br />'
+                            + '<span style="cursor: pointer; margin-right: 1ex;" onclick="download(\'citation\', ' + referenceId + ',' + taxonID + ', \'csv\'); return false;">'
+                            + '<img title="download CSV" src="images/disk.png"></span>'
+                            + '<span style="cursor: pointer;" onclick="download(\'citation\', ' + referenceId + ',' + taxonID + ', \'xlsx\'); return false;">'
+                            + '<img title="download XLSX" src="images/disk_green.png"></span>');
 
                         // finally show the info box
                         $('#infoBox').show();
