@@ -18,7 +18,7 @@ $authorMayBeEmpty = !empty($_POST['authorEmpty']);
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
-    if (count($parts) >= $minNumOfParts) {
+    if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {
         return false;
@@ -485,8 +485,8 @@ if ($type==1 && !$blocked) {  // file uploaded
                 } else {
                   echo "<td>" . htmlspecialchars($import[$i][5]) . "</td>";
                 }
-                echo "<td>" . $import[$i][6] . "</td>";
-                echo "<td>" . $import[$i][7] . "</td>";
+                echo "<td>" . ($import[$i][6] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][7] ?? '') . "</td>";
                 if ($status[$i] == "exists" || $status[$i] == "collision") {
                     echo "<td" . (($status[$i] == "collision" || count($exists[$i]) > 1) ? " style=\"background-color:red\"" : "") . ">";
                     $first = true;
@@ -539,8 +539,8 @@ if ($type==1 && !$blocked) {  // file uploaded
                    . "<input type=\"hidden\" name=\"authorText_$ctr\" value=\"" . htmlspecialchars($import[$i][2]) . "\">"
                    . "<input type=\"hidden\" name=\"subspeciesText_$ctr\" value=\"" . htmlspecialchars($import[$i][4]) . "\">"
                    . "<input type=\"hidden\" name=\"subauthorText_$ctr\" value=\"" . htmlspecialchars($import[$i][5]) . "\">"
-                   . "<input type=\"hidden\" name=\"serviceTaxID_$ctr\" value=\"" . htmlspecialchars($import[$i][6]) . "\">"
-                   . "<input type=\"hidden\" name=\"serviceVersion_$ctr\" value=\"" . htmlspecialchars($import[$i][7]) . "\">\n";
+                   . "<input type=\"hidden\" name=\"serviceTaxID_$ctr\" value=\"" . htmlspecialchars($import[$i][6] ?? '') . "\">"
+                   . "<input type=\"hidden\" name=\"serviceVersion_$ctr\" value=\"" . htmlspecialchars($import[$i][7] ?? '') . "\">\n";
                 $ctr++;
             }
         }

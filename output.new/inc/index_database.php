@@ -46,7 +46,7 @@
         <select id="ajax_source_name" name="source_name">
             <option value="" selected>all herbaria</option>
             <?php
-            $result = $dbLnk2->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname,`source_name`
+            $result = $dbLnk2->query("SELECT CONCAT(`source_code`,' - ',`source_name`) herbname, `source_code`, `source_name`
                                                 FROM `meta`
                                                 WHERE `source_id`
                                                 IN (
@@ -61,7 +61,7 @@
                                                 ORDER BY herbname");
             while ($row = $result->fetch_array()) {
                 echo "<option value=\"{$row['source_name']}\"";
-                if ($source_name == $row['source_name']) {
+                if ($source_name == $row['source_name'] || $source_code == $row['source_code']) {
                     echo " selected";
                 }
                 echo ">{$row['herbname']}</option>\n";

@@ -566,7 +566,7 @@ if ($run == 2) {  // file uploaded
             } else {
                 $collectorsOK = true;
                 $data[$i]['SammlerID'] = $collectorID;
-                $data[$i]['Sammler_2ID'] = 0;
+                $data[$i]['Sammler_2ID'] = "";
             }
         }
         if (!$collectorsOK) {

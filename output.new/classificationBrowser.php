@@ -50,10 +50,10 @@ $config = \Jacq\Settings::Load();
     <link rel="stylesheet" type="text/css" href="css/cb/form.css" />
 
     <!-- jQuery -->
-    <script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+    <script type="text/javascript" src="js/jquery-3.7.1.min.js"></script>
     <!-- jQuery-ui -->
-    <link rel="stylesheet" href="css/cb/jquery-ui-1.9.2.css" type="text/css" />
-    <script type="text/javascript" src="js/jquery-ui-1.9.2.min.js"></script>
+    <link rel="stylesheet" href="css/cb/jquery-ui.1.14.1.min.css" type="text/css" />
+    <script type="text/javascript" src="js/jquery-ui.1.14.1.min.js"></script>
     <!-- jsTree -->
     <script type="text/javascript" src="js/jquery.jstree/jquery.jstree.js"></script>
     <link rel="stylesheet" href="js/jquery.jstree/themes/default/style.css" />
@@ -67,7 +67,7 @@ $config = \Jacq\Settings::Load();
 
     <script type="text/javascript">
         var classBrowser = '<?php echo filter_input(INPUT_SERVER, 'SCRIPT_NAME', FILTER_SANITIZE_STRING); ?>?id=1';
-        var download_url = 'classificationBrowser_download.php?type=csv';
+        var download_url = 'classificationBrowser_download.php';
         var initital_data = <?php echo ($data) ? $data : 'null'; ?>;
         var insertSeries = <?php echo $insertSeries; ?>;
         var editSeries = <?php echo $editSeries; ?>;
@@ -88,6 +88,8 @@ $config = \Jacq\Settings::Load();
         <div id="content">
             <div align="left">
                 <form action='#' onsubmit="return false;" style="<?php if ($referenceType == 'citation' && $referenceId > 0) { echo "display: none;"; }?>">
+                    <div id="progressbar" style="width:50%; height:10px; position:fixed; top:60px;"></div>
+                    <div style="height:10px;"></div>
                     <select id="classificationBrowser_referenceType">
                         <option value="">select reference type</option>
                         <!--<option value="person">person</option>-->
@@ -117,7 +119,6 @@ $config = \Jacq\Settings::Load();
                     <span style="margin-left: 30px;">
                         <label><input type="checkbox" id="open_all"> expand Subhierarchies</label>
                     </span>
-                    <div id="progressbar" style="width:50%; height:10px; position:fixed; top:60px;"></div>
                     <br />
                 </form>
                 <div id="jstree_classificationBrowser" style="padding-top: 10px; padding-bottom: 10px;"></div>

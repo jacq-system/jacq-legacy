@@ -1,6 +1,6 @@
 <?php
 
-use Jacq\RestClient;
+use GuzzleHttp\Client;
 use Jacq\Settings;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -9,14 +9,24 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $config = Settings::Load();
 
+// extend memory and timeout settings
+$memoryLimit = $config->get('EXPORT', 'memory_limit');
+if ($memoryLimit) {
+    ini_set("memory_limit", $memoryLimit);
+}
+set_time_limit(0);
+
 //http://localhost/develop.jacq/legacy/output.new/classificationBrowser_download.php?referenceType=citation&referenceId=31070&scientificNameId=363825
 
-$rest = new RestClient($config->get('JACQ_SERVICES'));
+$client = new Client(['base_uri' => $config->get('JACQ_SERVICES')]);
 
-$data = $rest->jsonGet('classification/download', array(filter_input(INPUT_GET, 'referenceType', FILTER_SANITIZE_STRING),
-                                                        intval(filter_input(INPUT_GET, 'referenceId', FILTER_SANITIZE_NUMBER_INT))),
-                                                  array('scientificNameId' => intval(filter_input(INPUT_GET, 'scientificNameId', FILTER_SANITIZE_NUMBER_INT)),
-                                                        'hideScientificNameAuthors' => filter_input(INPUT_GET, 'hideScientificNameAuthors', FILTER_SANITIZE_STRING)));
+$response = $client->request('GET',
+                             "classification/download/" . urlencode($_GET['referenceType']) . "/" . intval($_GET['referenceId']),
+                             ['query' => ["scientificNameId"          => intval($_GET['scientificNameId']),
+                                          "hideScientificNameAuthors" => urlencode($_GET['hideScientificNameAuthors'])]])
+            ->getBody()
+            ->getContents();
+$data = json_decode($response, true);
 
 // SQLiteCache hält die Cell-Data nicht im Speicher
 //if (!PHPExcel_Settings::setCacheStorageMethod(PHPExcel_CachedObjectStorageFactory::cache_in_memory_gzip)) {
@@ -28,11 +38,11 @@ $spreadsheet = new Spreadsheet();
 
 foreach ($data['header'] as $column => $cell) {
     // column starts with 1 (='A') instead of 0, row with 1
-    $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow($column + 1, 1, $cell);
+    $spreadsheet->getActiveSheet()->setCellValue([$column + 1, 1], $cell);
 }
 foreach ($data['body'] as $row => $line) {
     foreach ($line as $column => $cell) {
-        $spreadsheet->getActiveSheet()->setCellValueByColumnAndRow($column + 1, $row + 2, $cell);
+        $spreadsheet->getActiveSheet()->setCellValue([$column + 1, $row + 2], $cell);
     }
 }
 

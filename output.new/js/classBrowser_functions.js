@@ -68,9 +68,10 @@ function arrow_down (p_i)
     liElement.data(referenceData.referenceType, addedReferences);
 }
 
-function download (referenceType, referenceId, scientificNameId)
+function download (referenceType, referenceId, scientificNameId, downloadType)
 {
-    var url = download_url + '&referenceType=' + referenceType
+    var url = download_url + '?type=' + downloadType
+                           + '&referenceType=' + referenceType
                            + '&referenceId=' + referenceId
                            + '&scientificNameId=' + scientificNameId
                            + '&hideScientificNameAuthors=' + $('#hide-scientific-name-authors').val();
