@@ -18,8 +18,7 @@ set_time_limit(0);
 
 //http://localhost/develop.jacq/legacy/output.new/classificationBrowser_download.php?referenceType=citation&referenceId=31070&scientificNameId=363825
 
-$client = new Client(['base_uri' => $config->get('JACQ_SERVICES'),
-                      'timeout' => 8]);
+$client = new Client(['base_uri' => $config->get('JACQ_SERVICES')]);
 
 $response = $client->request('GET',
                              "classification/download/" . urlencode($_GET['referenceType']) . "/" . intval($_GET['referenceId']),

@@ -8,8 +8,7 @@ use Jacq\Settings;
 require_once __DIR__ . '/vendor/autoload.php';
 
 $config = Settings::Load();
-$client = new Client(['base_uri' => $config->get('JACQ_SERVICES'),
-                      'timeout' => 8]);
+$client = new Client(['base_uri' => $config->get('JACQ_SERVICES')]);
 
 header('Content-Type: application/json');
 
