@@ -723,6 +723,9 @@ if (isset($_GET['sel'])) {
           if (document.f.Nummer.value.length==0 && document.f.alt_number.value.length==0) {
               missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
           }
+          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) != document.f.Nummer.value) {
+              missing++; text += "Number must be an integer value. Move to alt.Nr.";
+          }
           if (document.f.Datum.value.length==0) {
               missing++; text += "Date\n";
           }
@@ -1304,14 +1307,16 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 
 $stblID = array();
-$result = dbi_query("SELECT stableIdentifier, visible, timestamp, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
-if ($result && mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_array($result)) {
-        $stblID[] = array('stblID'    => $row['stableIdentifier'],
-                          'visible'   => $row['visible'],
-                          'timestamp' => $row['timestamp'],
-                          'error'     => $row['error'],
-                          'blockedBy' => $row['blockedBy']);
+if (!empty($p_specimen_ID)) {
+    $result = dbi_query("SELECT stableIdentifier, visible, timestamp, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
+            $stblID[] = array('stblID'    => $row['stableIdentifier'],
+                              'visible'   => $row['visible'],
+                              'timestamp' => $row['timestamp'],
+                              'error'     => $row['error'],
+                              'blockedBy' => $row['blockedBy']);
+        }
     }
 }
 
