@@ -43,6 +43,35 @@ $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
 
+if (isset($_POST['resetFilters'])) {
+    unset($_SESSION['taxonID']);
+    $_SESSION['wuCollection']      = 0;
+    $_SESSION['sNumber']           = '';
+    $_SESSION['sSeries']           = '';
+    $_SESSION['sFamily']           = '';
+    $_SESSION['sTaxon']            = '';
+    $_SESSION['sTaxonAlt']         = '';
+    $_SESSION['sCollector']        = '';
+    $_SESSION['sNumberCollector']  = '';
+    $_SESSION['sNumberCollection'] = '';
+    $_SESSION['sDate']             = '';
+    $_SESSION['sGeoGeneral']       = '';
+    $_SESSION['sGeoRegion']        = '';
+    $_SESSION['sCountry']          = '';
+    $_SESSION['sProvince']         = '';
+    $_SESSION['sLoc']              = '';
+    $_SESSION['sHabitat']          = '';
+    $_SESSION['sHabitus']          = '';
+    $_SESSION['sBemerkungen']      = '';
+    $_SESSION['sTyp']              = '';
+    $_SESSION['sSynonyms']         = '';
+    $_SESSION['sImages']           = '';
+    $_SESSION['sOrder']            = "genus, epithet, author, Sammler, Sammler_2, series, Nummer, alt_number, Datum, typus_lat";
+    $_SESSION['sOrTyp']            = 1;
+    $_SESSION['labelOrder']        = $_SESSION['sOrder'];
+    $_SESSION['sType']             = 1;
+}
+
 if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 1;  // list specimens
 	if (isset($_GET['taxonID'])) {
@@ -558,6 +587,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </tr><tr>
   <td colspan="3">
       <input class="button" type="submit" name="search" value=" search ">
+      <input class="button" type="submit" name="resetFilters" value=" reset ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=csv';return false;" name="downloadCSV" value=" download CSV ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=xslx';return false;" name="downloadXLSX" value=" download XLSX ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=ods';return false;" name="downloadODS" value=" download ODS ">

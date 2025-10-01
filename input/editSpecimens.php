@@ -903,6 +903,178 @@ if (isset($_GET['sel'])) {
           $("#stblIDbox").dialog("open");
       }
 
+      var linkEditUnsaved = { tracking: false, initial: '' };
+
+      function linkEditUpdateDirtyState(form) {
+          if (!form || !form.length) {
+              return;
+          }
+          form.data('dirty', form.serialize() !== linkEditUnsaved.initial);
+      }
+
+      function setupLinkEditForm() {
+          const form = $('#f_iBox');
+          if (!form.length) {
+              return;
+          }
+
+          form.off('.linkEdit');
+
+          const tableBody = form.find('#linkRows');
+          const templateRow = tableBody.find('tr[data-template="1"]').first();
+          const addButton = form.find('#addLinkRow');
+          let nextIndex = parseInt($('#linkRowNextIndex').val(), 10);
+          if (isNaN(nextIndex) || nextIndex < 1) {
+              nextIndex = 1;
+          }
+          $('#linkRowNextIndex').val(nextIndex);
+
+          if (!templateRow.length) {
+              linkEditUnsaved.initial = form.serialize();
+              linkEditUnsaved.tracking = true;
+              form.data('dirty', false);
+              return;
+          }
+
+          const templateQualifierDefault = templateRow.find('select[name^="linkQualifier_"]').val() || '';
+          const templateSourceDefault = templateRow.find('select[name^="linkInstitution_"]').val() || '';
+
+          templateRow.addClass('link-row-template');
+          templateRow.find('.link-delete-btn').hide();
+          resetLinkRowState(templateRow);
+
+          form.on('change.linkEdit input.linkEdit', 'input, select, textarea', function() {
+              linkEditUpdateDirtyState(form);
+          });
+
+          form.on('click.linkEdit', '.link-delete-btn', function() {
+              const row = $(this).closest('tr');
+              const rowId = String(row.attr('data-row-id') || '');
+              const hidden = form.find('#linkDelete_' + rowId);
+
+              if (row.is('[data-template="1"]')) {
+                  resetLinkRowState(row);
+                  linkEditUpdateDirtyState(form);
+                  return;
+              }
+
+              if (!hidden.length || rowId.indexOf('new') === 0) {
+                  row.remove();
+                  linkEditUpdateDirtyState(form);
+                  return;
+              }
+
+              const marked = hidden.val() === '1';
+              if (marked) {
+                  hidden.val('0');
+                  row.removeClass('link-delete-marked');
+                  row.css({'text-decoration': '', 'opacity': ''});
+              } else {
+                  hidden.val('1');
+                  row.addClass('link-delete-marked');
+                  row.css({'text-decoration': 'line-through', 'opacity': '0.6'});
+              }
+              linkEditUpdateDirtyState(form);
+          });
+
+          if (addButton.length) {
+              addButton.off('.linkEdit').on('click.linkEdit', function() {
+                  const newId = 'new' + nextIndex++;
+                  const newRow = templateRow.clone();
+                  newRow.removeAttr('data-template').removeClass('link-row-template');
+                  newRow.find('.link-delete-btn').show();
+                  updateRowIdentifiers(newRow, newId);
+                  resetLinkRowState(newRow);
+
+                  templateRow.before(newRow);
+
+                  newRow.find('input[type="text"]').first().focus();
+
+                  $('#linkRowNextIndex').val(nextIndex);
+                  linkEditUpdateDirtyState(form);
+              });
+          }
+
+          form.find('input[id^="linkDelete_"]').each(function() {
+              if ($(this).val() === '1') {
+                  const row = $(this).closest('tr');
+                  row.addClass('link-delete-marked');
+                  row.css({'text-decoration': 'line-through', 'opacity': '0.6'});
+              }
+          });
+
+          linkEditUnsaved.initial = form.serialize();
+          linkEditUnsaved.tracking = true;
+          form.data('dirty', false);
+
+          function updateRowIdentifiers(row, suffix) {
+              row.attr('data-row-id', suffix);
+              row.data('row-id', suffix);
+
+              row.find('[id]').each(function() {
+                  const current = $(this).attr('id');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('id', updated);
+                  }
+              });
+
+              row.find('[name]').each(function() {
+                  const current = $(this).attr('name');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('name', updated);
+                  }
+              });
+
+              row.find('[for]').each(function() {
+                  const current = $(this).attr('for');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('for', updated);
+                  }
+              });
+
+              row.find('.link-delete-btn').attr('data-target', suffix);
+          }
+
+          function replaceSuffix(value, suffix) {
+              if (!value) {
+                  return value;
+              }
+              return value.replace(/(link(?:Qualifier|Institution|Specimen|Delete)_)[\w-]+/, '$1' + suffix);
+          }
+
+          function resetLinkRowState(row) {
+              row.removeClass('link-delete-marked');
+              row.css({'text-decoration': '', 'opacity': ''});
+              row.find('select[name^="linkQualifier_"]').val(templateQualifierDefault);
+              row.find('select[name^="linkInstitution_"]').val(templateSourceDefault);
+              row.find('input[type="text"]').val('');
+              row.find('input[type="hidden"]').val('0');
+          }
+      }
+
+      function iBoxMarkClean() {
+          const form = $('#f_iBox');
+          if (form.length) {
+              form.off('.linkEdit');
+              form.find('#addLinkRow').off('.linkEdit');
+              linkEditUnsaved.initial = form.serialize();
+              form.data('dirty', false);
+          }
+          linkEditUnsaved.tracking = false;
+      }
+
+      function hasUnsavedLinkChanges() {
+          const form = $('#f_iBox');
+          if (!form.length || !linkEditUnsaved.tracking) {
+              return false;
+          }
+          linkEditUpdateDirtyState(form);
+          return !!form.data('dirty');
+      }
+
       jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
       $.extend({ alert: function (message, title) {
               $("<div></div>").dialog( {
@@ -924,7 +1096,15 @@ if (isset($_GET['sel'])) {
               modal: true,
               bgiframe: true,
               width: 750,
-              height: 600
+              height: 600,
+              beforeClose: function() {
+                  if (hasUnsavedLinkChanges()) {
+                      if (!confirm('Are you sure you want to leave?\nDataset will not be updated!')) {
+                          return false;
+                      }
+                  }
+                  iBoxMarkClean();
+              }
           } );
           $("#stblIDbox").dialog({
               autoOpen: false,
