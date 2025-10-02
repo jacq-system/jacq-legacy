@@ -65,7 +65,7 @@ function updateScientificNameLabel($id, $ctr)
         }
     } else {
         $dbLink->query("INSERT INTO `tbl_labels_scientificName` SET
-                         `uuid`    = '" . mint(1, $id) . "',
+                         `uuid`    = '" . getUUIDfromTaxonID($id) . "',
                          `taxonID` = $id,
                          `userID`  = '" . $_SESSION['uid'] . "',
                          `nr`      = $ctr");
@@ -123,7 +123,7 @@ function setAll()
                 $dbLink->query("UPDATE `tbl_labels_scientificName` SET `nr` = 1 WHERE $constraint");
             } else {
                 $dbLink->query("INSERT INTO `tbl_labels_scientificName` SET
-                                 `uuid`    = '" . mint(1, $id) . "',
+                                 `uuid`    = '" . getUUIDfromTaxonID($id) . "',
                                  `taxonID` = $id,
                                  `userID`  = '" . $_SESSION['uid'] . "',
                                  `nr`      = 1");

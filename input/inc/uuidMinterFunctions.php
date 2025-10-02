@@ -1,4 +1,8 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Settings;
+
 /**
  * Return a single entry of a single result row
  *
@@ -70,4 +74,28 @@ function mint($type, $internal_id)
     }
 
     return $uuidMinter->uuid;
+}
+
+/**
+ * Asks the JACQ-service for the UUID of a given taxon
+ *
+ * @param int $taxonID ID of Taxon to get the UUID for
+ * @return string fetched uuid
+ */
+function getUUIDfromTaxonID(int $taxonID)
+{
+    $config = Settings::Load();
+    $ch = curl_init($config->get('JACQ_SERVICES') . "JACQscinames/uuid/$taxonID");
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    $curl_response = curl_exec($ch);
+    if ($curl_response !== false) {
+        $curl_result = json_decode($curl_response, true);
+        $uuid = $curl_result['uuid'];
+    } else {
+        $uuid = "";
+    }
+    curl_close($ch);
+
+    return $uuid;
 }
