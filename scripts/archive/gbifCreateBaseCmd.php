@@ -32,7 +32,7 @@ $remainArgs = array_slice($argv, $restIndex);
 $source_id = (empty(($remainArgs))) ? 0 : intval($remainArgs[0]);
 
 if ($options['help'] || (!$source_id && !$options['all'])) {
-    echo $argv[0] . " [options] [x]   create europeana files [for source-ID x]\n\n"
+    echo $argv[0] . " [options] [x]   create gbif-Tables [for source-ID x]\n\n"
         . "Options:\n"
         . "  -h  --help     this explanation\n"
         . "  -v  --verbose  echo status messages\n"
@@ -401,3 +401,15 @@ foreach ($tbls as $tbl) {
     }
 }
 //                 recordURI = "  . ($row['uuid'] ? $dbLink2->quoteString("http://resolv.jacq.org/" . $row['uuid']) : $dbLink2->quoteString($recordURI)) . ",
+
+// recreate tbl_prj_gbif_pilot_total with data of all gbif-pilot-tables
+$dbLink2->query("TRUNCATE $dbt.tbl_prj_gbif_pilot_total");
+// use $tbls as defined in variables.php
+foreach ($tbls as $tbl) {
+    $dbLink2->query("INSERT INTO $dbt.tbl_prj_gbif_pilot_total 
+                      SELECT UnitIDNumeric, UnitID, recordURI, {$tbl['source_id']}, '{$tbl['name']}'
+                      FROM $dbt.{$tbl['name']}");
+}
+if ($options['verbose']) {
+    echo "---------- tbl_prj_gbif_pilot_total finished (" . date(DATE_RFC822) . ") ----------\n";
+}
