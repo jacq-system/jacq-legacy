@@ -303,57 +303,57 @@ if (isset($_GET['sel'])) {
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
     }
 } else {
-    $p_collection        = $_POST['collection'];
-    $p_institution       = $_POST['institution'];
-    $p_HerbNummer        = $_POST['HerbNummer'];
-    $p_CollNummer        = $_POST['CollNummer'];
-    $p_identstatus       = $_POST['identstatus'];
+    $p_collection        = $_POST['collection'] ?? "";
+    $p_institution       = $_POST['institution'] ?? "";
+    $p_HerbNummer        = $_POST['HerbNummer'] ?? "";
+    $p_CollNummer        = $_POST['CollNummer'] ?? "";
+    $p_identstatus       = $_POST['identstatus'] ?? "";
     $p_batch             = filter_input(INPUT_POST, 'batch');
     $p_checked           = $_POST['checked'] ?? 0;
     $p_accessible        = $_POST['accessible'] ?? 0;
-    $p_series            = $_POST['seriesIndex'];
-    $p_series_number     = $_POST['series_number'];
-    $p_Nummer            = $_POST['Nummer'];
-    $p_alt_number        = $_POST['alt_number'];
-    $p_Datum             = $_POST['Datum'];
-    $p_Datum2            = $_POST['Datum2'];
-    $p_det               = $_POST['det'];
-    $p_typified          = $_POST['typified'];
-    $p_taxon_alt         = $_POST['taxon_alt'];
-    $p_Bezirk            = $_POST['Bezirk'];
-    $p_quadrant          = $_POST['quadrant'];
-    $p_quadrant_sub      = $_POST['quadrant_sub'];
-    $p_exactness         = $_POST['exactness'];
-    $p_altitude_min      = $_POST['altitude_min'];
-    $p_altitude_max      = $_POST['altitude_max'];
-    $p_Fundort           = ($_POST['toggleLanguage']) ? $_POST['Fundort2'] : $_POST['Fundort1'];
-    $p_Fundort_engl      = ($_POST['toggleLanguage']) ? $_POST['Fundort1'] : $_POST['Fundort2'];
-    $p_habitat           = $_POST['habitat'];
-    $p_habitus           = $_POST['habitus'];
-    $p_Bemerkungen       = $_POST['Bemerkungen'];
+    $p_series            = $_POST['seriesIndex'] ?? "";
+    $p_series_number     = $_POST['series_number'] ?? "";
+    $p_Nummer            = $_POST['Nummer'] ?? "";
+    $p_alt_number        = $_POST['alt_number'] ?? "";
+    $p_Datum             = $_POST['Datum'] ?? "";
+    $p_Datum2            = $_POST['Datum2'] ?? "";
+    $p_det               = $_POST['det'] ?? "";
+    $p_typified          = $_POST['typified'] ?? "";
+    $p_taxon_alt         = $_POST['taxon_alt'] ?? "";
+    $p_Bezirk            = $_POST['Bezirk'] ?? "";
+    $p_quadrant          = $_POST['quadrant'] ?? "";
+    $p_quadrant_sub      = $_POST['quadrant_sub'] ?? "";
+    $p_exactness         = $_POST['exactness'] ?? "";
+    $p_altitude_min      = $_POST['altitude_min'] ?? "";
+    $p_altitude_max      = $_POST['altitude_max'] ?? "";
+    $p_Fundort           = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort2'] : $_POST['Fundort1'];
+    $p_Fundort_engl      = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort1'] : $_POST['Fundort2'];
+    $p_habitat           = $_POST['habitat'] ?? "";
+    $p_habitus           = $_POST['habitus'] ?? "";
+    $p_Bemerkungen       = $_POST['Bemerkungen'] ?? "";
     $p_digital_image     = filter_input(INPUT_POST, 'digital_image');
     $p_digital_image_obs = filter_input(INPUT_POST, 'digital_image_obs');
-    $p_garten            = $_POST['garten'];
-    $p_voucher           = $_POST['voucher'];
-    $p_ncbi              = $_POST['ncbi'];
-    $p_taxon             = $_POST['taxon'];
-    $p_taxonIndex        = (strlen(trim($_POST['taxon']))>0) ? $_POST['taxonIndex'] : 0;
-    $p_external          = $_POST['external'];
-    $p_typus             = $_POST['typus'];
-    $p_nation            = $_POST['nation'];
-    $p_province          = $_POST['province'];
-    $p_sammler           = $_POST['sammler'];
-    $p_sammlerIndex      = (strlen(trim($_POST['sammler']))>0) ? $_POST['sammlerIndex'] : 0;
-    $p_sammler2          = $_POST['sammler2'];
-    $p_sammler2Index     = (strlen(trim($_POST['sammler2']))>0) ? $_POST['sammler2Index'] : 0;
-    $p_lat               = $_POST['lat'];
-    $p_lat_deg           = $_POST['lat_deg'];
-    $p_lat_min           = $_POST['lat_min'];
-    $p_lat_sec           = $_POST['lat_sec'];
-    $p_lon               = $_POST['lon'];
-    $p_lon_deg           = $_POST['lon_deg'];
-    $p_lon_min           = $_POST['lon_min'];
-    $p_lon_sec           = $_POST['lon_sec'];
+    $p_garten            = $_POST['garten'] ?? "";
+    $p_voucher           = $_POST['voucher'] ?? "";
+    $p_ncbi              = $_POST['ncbi'] ?? "";
+    $p_taxon             = $_POST['taxon'] ?? "";
+    $p_taxonIndex        = (strlen(trim($_POST['taxon'] ?? "")) > 0) ? $_POST['taxonIndex'] : 0;
+    $p_external          = $_POST['external'] ?? "";
+    $p_typus             = $_POST['typus'] ?? "";
+    $p_nation            = $_POST['nation'] ?? "";
+    $p_province          = $_POST['province'] ?? "";
+    $p_sammler           = $_POST['sammler'] ?? "";
+    $p_sammlerIndex      = (strlen(trim($_POST['sammler'] ?? "")) > 0) ? $_POST['sammlerIndex'] : 0;
+    $p_sammler2          = $_POST['sammler2'] ?? "";
+    $p_sammler2Index     = (strlen(trim($_POST['sammler2'] ?? "")) > 0) ? $_POST['sammler2Index'] : 0;
+    $p_lat               = $_POST['lat'] ?? "";
+    $p_lat_deg           = $_POST['lat_deg'] ?? "";
+    $p_lat_min           = $_POST['lat_min'] ?? "";
+    $p_lat_sec           = $_POST['lat_sec'] ?? "";
+    $p_lon               = $_POST['lon'] ?? "";
+    $p_lon_deg           = $_POST['lon_deg'] ?? "";
+    $p_lon_min           = $_POST['lon_min'] ?? "";
+    $p_lon_sec           = $_POST['lon_sec'] ?? "";
 
     $d_Coord_N = $d_N_Min = $d_N_Sec = $d_Coord_S = $d_S_Min = $d_S_Sec = "";
     if ($p_lat == "S") {
@@ -731,6 +731,12 @@ if (isset($_GET['sel'])) {
           }
           if (document.f.Fundort1.value.length==0) {
               missing++; text += "Locality\n";
+          }
+          if (document.f.lat_sec.value.indexOf(",")>0) {
+              missing++; text += "use a dot as a comma in Latitude\n";
+          }
+          if (document.f.lon_sec.value.indexOf(",")>0) {
+              missing++; text += "use a dot as a comma in Longitude\n";
           }
 
           if (missing>0) {

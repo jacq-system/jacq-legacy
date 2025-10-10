@@ -132,7 +132,7 @@ if (isset($_GET['new'])) {
                 acc_taxon_ID = " . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'" ) . ",
                 preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                 annotations = " . quoteString($annotations) . ",
-                ref_date = '" . dateconvert($_POST['ref_date'],true) . "',
+                ref_date = " . ((!empty($_POST['ref_date'])) ? "'" . dateconvert($_POST['ref_date'],true) . "'" : "NULL") . ",
                 source_specimenID = '" . intval($_POST['source_specimenIndex']) . "',
                 userID = '" . intval($_SESSION['uid']) . "'";
     if ($_POST['source'] == 'literature') {
