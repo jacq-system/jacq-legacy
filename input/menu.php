@@ -159,10 +159,24 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
       <tr align="left"><td>
         <input class="button" type="button" value="change password" onclick="changePassword()">
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
-<?php if (checkRight('admin')): ?>
+<?php
+$showMakeStblId = checkRight('admin');
+$showMetadataButton = checkRight('admin');
+if ($showMakeStblId || $showMetadataButton):
+?>
       <tr align="left"><td>
+<?php if ($showMakeStblId): ?>
         <input class="button" type="button" value="make StblID" onClick="openWindow('makeSpecimensStblid.php','StblID')">
-      </td><td style="width:20px">&nbsp;</td><td></td></tr>
+<?php else: ?>
+        &nbsp;
+<?php endif; ?>
+      </td><td style="width:20px">&nbsp;</td><td>
+<?php if ($showMetadataButton): ?>
+        <input class="button" type="button" value="Metadata" onClick="openWindow('editMetadata.php','Metadata')">
+<?php else: ?>
+        &nbsp;
+<?php endif; ?>
+      </td></tr>
 <?php endif; ?>
     </table>
   </form>
