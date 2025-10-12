@@ -347,13 +347,13 @@ if (isset($_GET['sel'])) {
     $p_sammler2          = $_POST['sammler2'] ?? "";
     $p_sammler2Index     = (strlen(trim($_POST['sammler2'] ?? "")) > 0) ? $_POST['sammler2Index'] : 0;
     $p_lat               = $_POST['lat'] ?? "";
-    $p_lat_deg           = $_POST['lat_deg'] ?? "";
-    $p_lat_min           = $_POST['lat_min'] ?? "";
-    $p_lat_sec           = $_POST['lat_sec'] ?? "";
+    $p_lat_deg           = (($_POST['lat_deg'] ?? "") != "") ? intval($_POST['lat_deg']) : "";           // integers only
+    $p_lat_min           = (($_POST['lat_min'] ?? "") != "") ? intval($_POST['lat_min']) : "";           // integers only
+    $p_lat_sec           = (($_POST['lat_sec'] ?? "") != "") ? strtr($_POST['lat_sec'], ",", ".") : "";  // convert comma to dot as decimal separator
     $p_lon               = $_POST['lon'] ?? "";
-    $p_lon_deg           = $_POST['lon_deg'] ?? "";
-    $p_lon_min           = $_POST['lon_min'] ?? "";
-    $p_lon_sec           = $_POST['lon_sec'] ?? "";
+    $p_lon_deg           = (($_POST['lon_deg'] ?? "") != "") ? intval($_POST['lon_deg']) : "";           // integers only
+    $p_lon_min           = (($_POST['lon_min'] ?? "") != "") ? intval($_POST['lon_min']) : "";           // integers only
+    $p_lon_sec           = (($_POST['lon_sec'] ?? "") != "") ? strtr($_POST['lon_sec'], ",", ".") : "";  // convert comma to dot as decimal separator
 
     $d_Coord_N = $d_N_Min = $d_N_Sec = $d_Coord_S = $d_S_Min = $d_S_Sec = "";
     if ($p_lat == "S") {
@@ -731,12 +731,6 @@ if (isset($_GET['sel'])) {
           }
           if (document.f.Fundort1.value.length==0) {
               missing++; text += "Locality\n";
-          }
-          if (document.f.lat_sec.value.indexOf(",")>0) {
-              missing++; text += "use a dot as a comma in Latitude\n";
-          }
-          if (document.f.lon_sec.value.indexOf(",")>0) {
-              missing++; text += "use a dot as a comma in Longitude\n";
           }
 
           if (missing>0) {
