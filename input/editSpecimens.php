@@ -324,8 +324,8 @@ if (isset($_GET['sel'])) {
     $p_quadrant          = $_POST['quadrant'] ?? "";
     $p_quadrant_sub      = $_POST['quadrant_sub'] ?? "";
     $p_exactness         = $_POST['exactness'] ?? "";
-    $p_altitude_min      = $_POST['altitude_min'] ?? "";
-    $p_altitude_max      = $_POST['altitude_max'] ?? "";
+    $p_altitude_min      = (!empty($_POST['altitude_min'])) ? intval($_POST['altitude_min']) : "";           // integers only
+    $p_altitude_max      = (!empty($_POST['altitude_max'])) ? intval($_POST['altitude_max']) : "";           // integers only
     $p_Fundort           = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort2'] : $_POST['Fundort1'];
     $p_Fundort_engl      = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort1'] : $_POST['Fundort2'];
     $p_habitat           = $_POST['habitat'] ?? "";
