@@ -25,9 +25,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $itemsPerPage = ( $itemsPerPage > 0 ) ? $itemsPerPage : (($_SESSION['sItemsPerPage'] > 0) ? $_SESSION['sItemsPerPage'] : 10);
     $_SESSION['sItemsPerPage'] = $itemsPerPage;
 
+    $page = intval($page);
+    $_SESSION['sCurrentSpecimenPage'] = $page;
+
     $response = new Response();
 
-    $start = intval($page) * $itemsPerPage;
+    $start = $page * $itemsPerPage;
     $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
     $nrSel = (isset($_SESSION['sNr'])) ? intval($_SESSION['sNr']) : 0;
 
@@ -299,6 +302,13 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         $fr_row = mysqli_fetch_array($fr_result);
         $found_rows = $fr_row['found_rows'];
 
+        if ($found_rows > 0 && $start >= $found_rows) {
+            $page = max((int)ceil($found_rows / $itemsPerPage) - 1, 0);
+            $_SESSION['sCurrentSpecimenPage'] = $page;
+            $start = $page * $itemsPerPage;
+            $result = dbi_query($_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+        }
+
         if (mysqli_num_rows($result) > 0) {
             echo "<table class=\"out\" cellspacing=\"0\">\n"
                . "<tr class=\"out\">"
@@ -409,13 +419,16 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
     $output = ob_get_clean();
 
+    $response->assign('specimen_total_count', 'innerHTML', 'Total: ' . number_format((int)$found_rows));
+
     if ($bInitialize) {
         $response->script("
-            $('.specimen_pagination').pagination( " . $found_rows . ", {
+            initialListPage = $page;\n            currentListPage = $page;\n            currentItemsPerPage = $itemsPerPage;\n            $('#items_per_page').val('$itemsPerPage');\n            $('.specimen_pagination').pagination( " . $found_rows . ", {
                 items_per_page: $itemsPerPage,
                 num_edge_entries: 1,
+                current_page: $page,
                 callback: function(page, container) {
-                    jaxon_listSpecimens( page, 0, $itemsPerPage );
+                    initialListPage = page;\n                    currentListPage = page;\n                    jaxon_listSpecimens( page, 0, $itemsPerPage );
 
                     return false;
                 }
@@ -424,6 +437,10 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     }
 
     $response->assign('specimen_entries', 'innerHTML', $output);
+
+    if (!$bInitialize) {
+        $response->script("if (typeof currentListPage !== 'undefined') { currentListPage = $page; currentItemsPerPage = $itemsPerPage; $('#items_per_page').val('$itemsPerPage'); }");
+    }
 
     return $response;
 }

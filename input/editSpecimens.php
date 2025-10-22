@@ -881,7 +881,7 @@ if (isset($_GET['sel'])) {
               if (pid) {
                   self.location.href = 'listTypeSpecimens.php?ID=' + pid + '&nr=' + sel;
               } else {
-                  self.location.href = 'listSpecimens.php?nr=' + sel;
+                  self.location.href = 'listSpecimens.php?page=' + currentListPage + '&nr=' + sel;
               }
           }
       }
@@ -906,6 +906,7 @@ if (isset($_GET['sel'])) {
           $("#stblIDbox").dialog("open");
       }
 
+      var currentListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;
       var linkEditUnsaved = { tracking: false, initial: '' };
 
       function linkEditUpdateDirtyState(form) {
