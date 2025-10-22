@@ -719,7 +719,13 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             </div>
         </div>
         <div id='specimen_entries' style='padding-top: 15px; padding-bottom: 15px;'><div style="text-align: center;"><img src="webimages/loader.gif"></div></div>
-        <div class='specimen_pagination'></div>
+        <div class="specimen_pagination_row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em; justify-content: space-between; margin-top: 0.5em;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em;">
+                <div class='specimen_pagination'></div>
+                <div id='specimen_total_count_bottom' style="font-weight: bold;"></div>
+            </div>
+            <div></div>
+        </div>
     </div>
     <script type="text/javascript">
         var initialListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;

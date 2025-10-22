@@ -419,7 +419,9 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
     $output = ob_get_clean();
 
-    $response->assign('specimen_total_count', 'innerHTML', 'Total: ' . number_format((int)$found_rows));
+    $totalText = 'Total: ' . number_format((int)$found_rows);
+    $response->assign('specimen_total_count', 'innerHTML', $totalText);
+    $response->assign('specimen_total_count_bottom', 'innerHTML', $totalText);
 
     if ($bInitialize) {
         $response->script("
@@ -437,6 +439,10 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     }
 
     $response->assign('specimen_entries', 'innerHTML', $output);
+
+    if (!empty($_SESSION['sNr'])) {
+        $response->script("setTimeout(function(){ var row = document.querySelector('#specimen_entries .outMark'); if(row){ row.scrollIntoView({block:'center', behavior:'auto'}); } }, 50);");
+    }
 
     if (!$bInitialize) {
         $response->script("if (typeof currentListPage !== 'undefined') { currentListPage = $page; currentItemsPerPage = $itemsPerPage; $('#items_per_page').val('$itemsPerPage'); }");
