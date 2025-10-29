@@ -132,7 +132,7 @@ if (isset($_GET['new'])) {
                 acc_taxon_ID = " . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'" ) . ",
                 preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                 annotations = " . quoteString($annotations) . ",
-                ref_date = " . ((!empty($_POST['ref_date'])) ? "'" . dateconvert($_POST['ref_date'],true) . "'" : "NULL") . ",
+                ref_date = " . quoteString($_POST['ref_date']) . ",
                 source_specimenID = '" . intval($_POST['source_specimenIndex']) . "',
                 userID = '" . intval($_SESSION['uid']) . "'";
     if ($_POST['source'] == 'literature') {
@@ -177,7 +177,7 @@ if (isset($_GET['new'])) {
     $p_taxon           = $_POST['taxon'];
     $p_taxonAcc        = $_POST['taxonAcc'];
     $p_taxonAccIndex   = $_POST['taxonAccIndex'];
-    $p_preferred       = $_POST['preferred'];
+    $p_preferred       = $_POST['preferred'] ?? 0;
     $p_annotations     = $_POST['annotations'];
     $p_user            = $_POST['user'];
     $p_timestamp       = $_POST['timestamp'];
@@ -299,38 +299,38 @@ $cf = new CSSF();
 $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"tax_syn_ID\" value=\"$p_tax_syn_ID\">\n";
-$cf->label(7, 0.5, "ID");
-$cf->text(7, 0.5, "&nbsp;" . (($p_tax_syn_ID) ? $p_tax_syn_ID : "new"));
+$cf->label(11, 0.5, "ID");
+$cf->text(11, 0.5, "&nbsp;" . (($p_tax_syn_ID) ? $p_tax_syn_ID : "new"));
 
 echo "<input type=\"hidden\" name=\"timestamp\" value=\"$p_timestamp\">\n";
 echo "<input type=\"hidden\" name=\"user\" value=\"$p_user\">\n";
-$cf->label(20, 0.5, "last update:");
-$cf->text(20, 0.5, "&nbsp;" . $p_timestamp . "&nbsp;by&nbsp;" . $p_user);
+$cf->label(24, 0.5, "last update:");
+$cf->text(24, 0.5, "&nbsp;" . $p_timestamp . "&nbsp;by&nbsp;" . $p_user);
 
-$cf->label(7, 2, "citation");
-$cf->text(7, 2, "&nbsp;" . $p_taxon);
+$cf->label(11, 2, "citation");
+$cf->text(11, 2, "&nbsp;" . $p_taxon);
 echo "<input type=\"hidden\" name=\"taxon\" value=\"$p_taxon\">\n";
 
-$cf->label(7, 4, "acc. taxon", "editSpecies.php?sel=<$p_taxonAccIndex>\" target=\"Species");
-$cf->inputJqAutocomplete(7, 4, 28, "taxonAcc", $p_taxonAcc, $p_taxonAccIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
-$cf->label(12, 6, "preferred taxonomy");
-$cf->checkbox(12, 6, "preferred", $p_preferred);
+$cf->label(11, 4, "acc. taxon", "editSpecies.php?sel=<$p_taxonAccIndex>\" target=\"Species");
+$cf->inputJqAutocomplete(11, 4, 28, "taxonAcc", $p_taxonAcc, $p_taxonAccIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
+$cf->label(16, 6, "preferred taxonomy");
+$cf->checkbox(16, 6, "preferred", $p_preferred);
 
-$cf->label(7, 9.5, "source");
+$cf->label(11, 9.5, "source");
 
-$cf->dropdown(7, 9.5, "source\" onchange=\"setSource()", $p_source, array("literature", "person", "service"), array("literature", "person", "service"));
-$cf->inputJqAutocomplete(7, 12, 28, "sourceLit", $p_sourceLit, $p_sourceLitIndex, "index_jq_autocomplete.php?field=citation", 100, 2);
-$cf->inputJqAutocomplete(7, 12, 28, "sourcePers", $p_sourcePers, $p_sourcePersIndex, "index_jq_autocomplete.php?field=person", 100, 2);
-$cf->dropdown(7, 12, "sourceService", $p_sourceService, $service[0], $service[1]);
+$cf->dropdown(11, 9.5, "source\" onchange=\"setSource()", $p_source, array("literature", "person", "service"), array("literature", "person", "service"));
+$cf->inputJqAutocomplete(11, 12, 28, "sourceLit", $p_sourceLit, $p_sourceLitIndex, "index_jq_autocomplete.php?field=citation", 100, 2);
+$cf->inputJqAutocomplete(11, 12, 28, "sourcePers", $p_sourcePers, $p_sourcePersIndex, "index_jq_autocomplete.php?field=person", 100, 2);
+$cf->dropdown(11, 12, "sourceService", $p_sourceService, $service[0], $service[1]);
 
-$cf->label(7, 16, "Ref Date");
-$cf->inputText(7, 16, 8,  "ref_date\" onBlur=\"checkdate()\"", $p_ref_date,10);
+$cf->label(11, 16, "Ref Date");
+$cf->inputText(11, 16, 8,  "ref_date\" onBlur=\"checkdate()\"", $p_ref_date,10);
 
-$cf->label(7, 19, "annotations");
-$cf->textarea(7, 19, 28, 4, "annotations", $p_annotations);
+$cf->label(11, 19, "annotations");
+$cf->textarea(11, 19, 28, 4, "annotations", $p_annotations);
 
-$cf->label(7, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIndex>\" target=\"Species");
-$cf->inputJqAutocomplete(7, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
+$cf->label(11, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIndex>\" target=\"Species");
+$cf->inputJqAutocomplete(11, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
 
 
 if (($_SESSION['editControl'] & 0x20) != 0) {

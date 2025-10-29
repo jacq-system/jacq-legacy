@@ -93,23 +93,23 @@ function getIiifLink(int $specimenID): string
 
 function taxon($row, $withDT = false, $withID = true)
 {
-    $text = $row['genus'];
-    if ($row['epithet']) {
+    $text = $row['genus'] ?? "";
+    if (!empty($row['epithet'])) {
         $text .= " ".$row['epithet'].chr(194).chr(183)." ".$row['author'];
     } else {
         $text .= chr(194).chr(183);
     }
-    if ($row['epithet1']) { $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1']; }
-    if ($row['epithet2']) { $text .= " var. "     . $row['epithet2'] . " " . $row['author2']; }
-    if ($row['epithet3']) { $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3']; }
-    if ($row['epithet4']) { $text .= " forma "    . $row['epithet4'] . " " . $row['author4']; }
-    if ($row['epithet5']) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
+    if (!empty($row['epithet1'])) { $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1']; }
+    if (!empty($row['epithet2'])) { $text .= " var. "     . $row['epithet2'] . " " . $row['author2']; }
+    if (!empty($row['epithet3'])) { $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3']; }
+    if (!empty($row['epithet4'])) { $text .= " forma "    . $row['epithet4'] . " " . $row['author4']; }
+    if (!empty($row['epithet5'])) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
 
-    if ($withDT) {
+    if ($withDT && !empty($row['DallaTorreIDs']) && !empty($row['DallaTorreZusatzIDs'])) {
         $text .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
     }
 
-    if ($withID) {
+    if ($withID && !empty($row['taxonID'])) {
         $text .= " <" . $row['taxonID'] . ">";
     }
 
