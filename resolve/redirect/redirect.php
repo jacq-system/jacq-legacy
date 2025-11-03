@@ -13,16 +13,16 @@ $dbLink->set_charset('utf8');
 
 $uuid = $dbLink->real_escape_string(filter_input(INPUT_GET, 'uuid', FILTER_SANITIZE_STRING));
 /** @var mysqli_result $result */
-$result = $dbLink->query("SELECT `uuid_minter_type_id`, `internal_id` FROM `srvc_uuid_minter` WHERE `uuid` = '$uuid'");
+$result = $dbLink->query("SELECT `uuid_minter_type`, `internal_id` FROM `uuid_replica` WHERE `uuid` = '$uuid'");
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    if ($row['uuid_minter_type_id'] == 1) {
+    if ($row['uuid_minter_type'] == 'scientific_name') {
         header("Location: https://www.jacq.org/showScientificName?ID=" . $row['internal_id']);
         exit();
-    } elseif ($row['uuid_minter_type_id'] == 2) {
+    } elseif ($row['uuid_minter_type'] == 'citation') {
         header("Location: https://legacy-living.jacq.org/index.php?r=dataBrowser/classificationBrowser&referenceType=citation&referenceId=" . $row['internal_id']);
         exit();
-    } elseif ($row['uuid_minter_type_id'] == 3) {
+    } elseif ($row['uuid_minter_type'] == 'specimen') {
         header("Location: https://www.jacq.org/detail.php?ID=" . $row['internal_id']);
         exit();
     }

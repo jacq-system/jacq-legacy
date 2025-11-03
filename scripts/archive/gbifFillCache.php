@@ -110,4 +110,4 @@ do {
                      json = '" . $dbLink->real_escape_string(json_encode($result)) . "'");
     }
     $offset += $limit;
-} while (!$response['endOfRecords'] && $offset < 2000);
+} while (!$response['endOfRecords'] && $offset < 10000);

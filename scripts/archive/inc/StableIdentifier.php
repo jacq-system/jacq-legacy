@@ -58,6 +58,7 @@ function getStableIdentifier($specimenID)
                               FROM tbl_specimens_stblid
                               WHERE specimen_ID = '" . intval($specimenID) . "'
                                AND stableIdentifier IS NOT NULL
+                               AND visible = 1
                               ORDER BY timestamp DESC
                               LIMIT 1");
     if ($result && $result->num_rows > 0) {

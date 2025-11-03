@@ -151,9 +151,9 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                     }
                 }
             } else {
-                $genus_name = $_POST['genus'];
-                $is_hybrid = $_POST['hybrid'];
-                $is_accepted = $_POST['accepted'];
+                $genus_name = $_POST['genus'] ?? '';
+                $is_hybrid = $_POST['hybrid'] ?? 0;
+                $is_accepted = $_POST['accepted'] ?? 0;
                 $id = insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock);
             }
 
@@ -276,20 +276,20 @@ if ($get_new) {
         $p_authorIndex = $p_familyIndex = $p_taxonIndex = $p_genID = 0;
     }
 } else {
-    $p_genus       = $_POST['genus'];
-    $p_DTID        = $_POST['DTID'];
-    $p_DTZID       = $_POST['DTZID'];
-    $p_hybrid      = isset($_POST['hybrid']) ? $_POST['hybrid'] : '';
-    $p_accepted    = isset($_POST['accepted']) ? $_POST['accepted'] : '';
-    $p_taxon       = $_POST['taxon'];
-    $p_taxonIndex  = (strlen(trim($_POST['taxon']))>0) ? $_POST['taxonIndex'] : 0;
-    $p_remarks     = $_POST['remarks'];
-    $p_locked      = $_POST['locked'];
-    $p_author      = $_POST['author'];
-    $p_authorIndex = (strlen(trim($_POST['author']))>0) ? $_POST['authorIndex'] : 0;
-    $p_family      = $_POST['family'];
-    $p_familyIndex = (strlen(trim($_POST['family']))>0) ? $_POST['familyIndex'] : 0;
-    $p_genID       = $_POST['genID'];
+    $p_genus       = $_POST['genus'] ?? '';
+    $p_DTID        = $_POST['DTID'] ?? '';
+    $p_DTZID       = $_POST['DTZID'] ?? '';
+    $p_hybrid      = $_POST['hybrid'] ?? '';
+    $p_accepted    = $_POST['accepted'] ?? '';
+    $p_taxon       = $_POST['taxon'] ?? '';
+    $p_taxonIndex  = (strlen(trim($_POST['taxon'] ?? '')) > 0) ? intval($_POST['taxonIndex']) : 0;
+    $p_remarks     = $_POST['remarks'] ?? '';
+    $p_locked      = $_POST['locked'] ?? '';
+    $p_author      = $_POST['author'] ?? '';
+    $p_authorIndex = (strlen(trim($_POST['author'] ?? '')) > 0) ? intval($_POST['authorIndex']) : 0;
+    $p_family      = $_POST['family'] ?? '';
+    $p_familyIndex = (strlen(trim($_POST['family'] ?? '')) > 0) ? intval($_POST['familyIndex']) : 0;
+    $p_genID       = $_POST['genID'] ?? '';
 }
 ?>
 

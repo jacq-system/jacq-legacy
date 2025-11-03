@@ -48,6 +48,22 @@ function makeInstitutionDropdown($institutions, $selected, $id)
     return $dropdown;
 }
 
+function makeQualifierDropdown($qualifiers, $selected, $id)
+{
+    $dropdown = "<select class='cssf' name='linkQualifier_$id' id='linkQualifier_$id'>\n";
+    $dropdown .= "<option value=''>" . htmlspecialchars('') . "</option>\n";
+    foreach ($qualifiers as $qualifier) {
+        $dropdown .= "<option value='" . $qualifier[0] . "'";
+        if ($selected == $qualifier[0]) {
+            $dropdown .= " selected";
+        }
+        $dropdown .= ">" . htmlspecialchars($qualifier[1]) . "</option>\n";
+    }
+    $dropdown .= "</select>\n";
+
+    return $dropdown;
+}
+
 function jsonGetGeoNames($searchtext)
 {
     global $_OPTIONS;
@@ -265,28 +281,58 @@ function editLink($specimenID)
 
     $specimenID = intval($specimenID);
 
-    unset($institution);
+    $institution = array();
     $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
-        $institution[] = array($row['source_id'],
-                               substr($row['source_code'], 0, 3));
+        $institution[] = array($row['source_id'], $row['source_code']);
+    }
+
+    $defaultSourceID = 0;
+    $sql = "SELECT mc.source_id
+            FROM tbl_specimens s
+             LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+            WHERE s.specimen_ID = '$specimenID'";
+    $result = dbi_query($sql);
+    if ($result && mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_array($result);
+        if (!empty($row['source_id'])) {
+            $defaultSourceID = intval($row['source_id']);
+        }
+    }
+
+    $qualifiers = array();
+    $sql = "SELECT link_qualifierID, SpecimenQualifier_engl
+            FROM tbl_specimens_links_qualifiers
+            ORDER BY SpecimenQualifier_engl";
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
+        $qualifiers[] = array($row['link_qualifierID'], $row['SpecimenQualifier_engl']);
     }
 
     if ($specimenID) {
+        $maxSourceLength = 0;
+        foreach ($institution as $inst) {
+            $label = $inst[1];
+            $maxSourceLength = max($maxSourceLength, strlen($label));
+        }
+        $sourceWidthEm = max(12, $maxSourceLength * 0.8 + 5);
+
         $ret = "<form id='f_iBox'>\n"
              . "<input type='hidden' name='linkSpecimenID' id='linkSpecimenID' value='$specimenID'>\n"
-             . "<table>\n";
+             . "<div id='linkErrors' class='error'></div>\n"
+             . "<table style='width:100%; table-layout:auto;'>\n"
+             . "<tbody id='linkRows'>\n";
         if (($_SESSION['editControl'] & 0x2000) != 0) {
-            $ret .= "<tr><td colspan='3'>"
+            $ret .= "<tr><td colspan='4'>"
                   . "<input type='submit' class='cssfbutton' value='update' onClick=\"jaxon_updateLink(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
         }
-        $sql = "( SELECT specimens_linkID, specimen1_ID AS specimenID
+        $sql = "( SELECT specimens_linkID, specimen1_ID AS specimenID, link_qualifierID
                   FROM tbl_specimens_links
                   WHERE specimen2_ID = '$specimenID' )
                 UNION
-                ( SELECT specimens_linkID, specimen2_ID AS specimenID
+                ( SELECT specimens_linkID, specimen2_ID AS specimenID, link_qualifierID
                   FROM tbl_specimens_links
                   WHERE specimen1_ID = '$specimenID' )
                 ORDER BY specimenID";
@@ -298,25 +344,44 @@ function editLink($specimenID)
                     WHERE s.collectionID = mc.collectionID
                      AND s.specimen_ID = '" . $row['specimenID'] . "'";
             $row2 = mysqli_fetch_array(dbi_query($sql));
-            $ret .= "<tr><td align='center'>"
+            $ret .= "<tr class='link-row' data-row-id='$id'><td align='center' style='width:25%;'>"
+                  . makeQualifierDropdown($qualifiers, $row['link_qualifierID'], $id)
+                  . "</td><td align='center' style='width:" . $sourceWidthEm . "em; white-space:nowrap;'>"
                   . makeInstitutionDropdown($institution, $row2['source_id'], $id)
-                  . "</td><td>"
-                  . "<input class='cssftext' style='width: 20em;' type='text' name='linkSpecimen_$id' id='linkSpecimen_$id' value='" . htmlspecialchars($row2['HerbNummer']) . "'>"
+                  . "</td><td style='width:25%; white-space:nowrap;'>"
+                  . "<input class='cssftext' style='width: 12em;' type='text' name='linkSpecimen_$id' id='linkSpecimen_$id' value='" . htmlspecialchars($row2['HerbNummer']) . "'>"
                   . "</td><td align='center'>";
             if (($_SESSION['editControl'] & 0x2000) != 0) {
-                $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteLink('" . $row['specimens_linkID'] . "', '$specimenID');\">";
+                $ret .= "<input type='hidden' name='linkDelete_$id' id='linkDelete_$id' value='0'>"
+                      . "<span class='link-delete-btn' data-target='$id' title='Mark for deletion' style='cursor:pointer; display:inline-block;'><img src='webimages/remove.png' alt='delete'></span>";
             }
             $ret .= "</td></tr>\n";
         }
-        $ret .= "<tr><td align='center'>"
-              . makeInstitutionDropdown($institution, 0, 0)
-              . "</td><td>"
-              . "<input class='cssftext' style='width: 20em;' type='text' name='linkSpecimen_0' id='linkSpecimen_0' value=''>"
-              . "</td><td></td></tr>\n"
-              . "</table>\n"
+        $templateId = "new0";
+        $ret .= "<tr class='link-row new-link-row' data-row-id='$templateId' data-template='1'><td align='center' style='width:25%;'>"
+              . makeQualifierDropdown($qualifiers, '', $templateId)
+              . "</td><td align='center' style='width:" . $sourceWidthEm . "em; white-space:nowrap;'>"
+              . makeInstitutionDropdown($institution, $defaultSourceID, $templateId)
+              . "</td><td style='width:25%; white-space:nowrap;'>"
+              . "<input class='cssftext' style='width: 12em;' type='text' name='linkSpecimen_$templateId' id='linkSpecimen_$templateId' value=''>"
+              . "</td><td align='center'>";
+        if (($_SESSION['editControl'] & 0x2000) != 0) {
+            $ret .= "<input type='hidden' name='linkDelete_$templateId' id='linkDelete_$templateId' value='0'>"
+                  . "<span class='link-delete-btn' data-target='$templateId' title='Zeile löschen' style='cursor:pointer; display:inline-block;'><img src='webimages/remove.png' alt='delete'></span>";
+        }
+        $ret .= "</td></tr>\n";
+        $ret .= "</tbody></table>\n";
+        if (($_SESSION['editControl'] & 0x2000) != 0) {
+            $ret .= "<div class='link-row-actions' style='margin-top:0.5em;'>"
+                  . "<button type='button' id='addLinkRow' class='cssfbutton' style='width:2em;' title='Weitere Verknüpfung hinzufügen'>+</button>"
+                  . "</div>\n";
+        }
+        $ret .= "<input type='hidden' id='linkRowNextIndex' value='1'>\n"
               . "</form>\n";
 
         $response->assign('iBox_content', 'innerHTML', $ret);
+        $response->assign('linkErrors', 'innerHTML', '');
+        $response->script('setupLinkEditForm();');
         $response->script('$("#iBox_content").dialog("option", "title", "edit links");');
         $response->script('$("#iBox_content").dialog("open");');
     }
@@ -329,37 +394,92 @@ function updateLink($formData)
 
     $specimenID = intval($formData['linkSpecimenID']);
 
+    $errors = array();
+
     if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
+        $sourceCodes = array();
+        $srcResult = dbi_query("SELECT source_id, source_code FROM herbarinput.meta");
+        while ($srcRow = mysqli_fetch_array($srcResult)) {
+            $sourceCodes[$srcRow['source_id']] = $srcRow['source_code'];
+        }
+
         foreach ($formData as $key => $val) {
-            if (substr($key, 0, 13) == 'linkSpecimen_' && trim($val)) {
-                $linkID = intval(substr($key, 13));
+            if (substr($key, 0, 13) == 'linkSpecimen_') {
+                $suffix = substr($key, 13);
+                $specimenValue = trim($val);
+
+                $qualifierKey = 'linkQualifier_' . $suffix;
+                $deleteKey = 'linkDelete_' . $suffix;
+                $institutionKey = 'linkInstitution_' . $suffix;
+
+                $qualifierID = null;
+                if (array_key_exists($qualifierKey, $formData) && strlen(trim($formData[$qualifierKey])) > 0) {
+                    $qualifierID = intval($formData[$qualifierKey]);
+                }
+
+                $sourceID = isset($formData[$institutionKey]) ? intval($formData[$institutionKey]) : 0;
+                $deleteRequested = !empty($formData[$deleteKey]);
+
+                $isExisting = ctype_digit(ltrim($suffix, '-')) && $suffix !== '';
+                $existingID = $isExisting ? intval($suffix) : null;
+
+                if ($isExisting && $deleteRequested) {
+                    dbi_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $existingID . "'");
+                    continue;
+                }
+
+                if ($specimenValue === '') {
+                    // Nothing to do for empty fields (unless marked for delete handled above)
+                    continue;
+                }
+
+                if ($sourceID === 0) {
+                    $herbNumberEsc = htmlspecialchars($specimenValue, ENT_QUOTES);
+                    $errors[] = "Please select a source for herbarium number '" . $herbNumberEsc . "'";
+                    continue;
+                }
+
                 $sql = "SELECT s.specimen_ID
                         FROM tbl_specimens s, tbl_management_collections mc
                         WHERE s.collectionID = mc.collectionID
-                         AND s.HerbNummer = " . quoteString($formData['linkSpecimen_' . $linkID]) . "
-                         AND mc.source_id = '" . intval($formData['linkInstitution_' . $linkID]) . "'";
+                         AND s.HerbNummer = " . quoteString($specimenValue) . "
+                         AND mc.source_id = '" . $sourceID . "'";
                 $result = dbi_query($sql);
                 if (mysqli_num_rows($result) > 0) {
                     $row = mysqli_fetch_array($result);
                     $targetID = $row['specimen_ID'];
                     if ($specimenID != $targetID) {
                         $sqldata = "specimen1_ID = '" . $specimenID . "',
-                                    specimen2_ID = '" . $targetID . "'";
-                        if ($linkID > 0) {
+                                    specimen2_ID = '" . $targetID . "',
+                                    link_qualifierID = " . (($qualifierID !== null) ? "'" . $qualifierID . "'" : "NULL");
+                        if ($isExisting) {
                             $sql = "UPDATE tbl_specimens_links SET
                                     $sqldata
-                                    WHERE specimens_linkID = '" . $linkID . "'";
+                                    WHERE specimens_linkID = '" . $existingID . "'";
                         } else {
                             $sql = "INSERT INTO tbl_specimens_links SET
                                     $sqldata";
                         }
                         dbi_query($sql);
                     }
+                } else {
+                    $sourceLabel = isset($sourceCodes[$sourceID]) ? $sourceCodes[$sourceID] : $sourceID;
+                    $herbNumberEsc = htmlspecialchars($specimenValue, ENT_QUOTES);
+                    $sourceLabelEsc = htmlspecialchars((string)$sourceLabel, ENT_QUOTES);
+                    $errors[] = "Herbarium number '" . $herbNumberEsc
+                                . "' not found for source '" . $sourceLabelEsc . "'";
                 }
             }
         }
     }
 
+    if (!empty($errors)) {
+        $response->assign('linkErrors', 'innerHTML', "<ul><li>" . implode("</li><li>", $errors) . "</li></ul>");
+        return $response;
+    }
+
+    $response->assign('linkErrors', 'innerHTML', '');
+    $response->script('iBoxMarkClean();');
     makeLinktext($specimenID);
 
     //Hide the iBox module on return

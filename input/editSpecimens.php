@@ -303,57 +303,57 @@ if (isset($_GET['sel'])) {
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
     }
 } else {
-    $p_collection        = $_POST['collection'];
-    $p_institution       = $_POST['institution'];
-    $p_HerbNummer        = $_POST['HerbNummer'];
-    $p_CollNummer        = $_POST['CollNummer'];
-    $p_identstatus       = $_POST['identstatus'];
+    $p_collection        = $_POST['collection'] ?? "";
+    $p_institution       = $_POST['institution'] ?? "";
+    $p_HerbNummer        = $_POST['HerbNummer'] ?? "";
+    $p_CollNummer        = $_POST['CollNummer'] ?? "";
+    $p_identstatus       = $_POST['identstatus'] ?? "";
     $p_batch             = filter_input(INPUT_POST, 'batch');
     $p_checked           = $_POST['checked'] ?? 0;
     $p_accessible        = $_POST['accessible'] ?? 0;
-    $p_series            = $_POST['seriesIndex'];
-    $p_series_number     = $_POST['series_number'];
-    $p_Nummer            = $_POST['Nummer'];
-    $p_alt_number        = $_POST['alt_number'];
-    $p_Datum             = $_POST['Datum'];
-    $p_Datum2            = $_POST['Datum2'];
-    $p_det               = $_POST['det'];
-    $p_typified          = $_POST['typified'];
-    $p_taxon_alt         = $_POST['taxon_alt'];
-    $p_Bezirk            = $_POST['Bezirk'];
-    $p_quadrant          = $_POST['quadrant'];
-    $p_quadrant_sub      = $_POST['quadrant_sub'];
-    $p_exactness         = $_POST['exactness'];
-    $p_altitude_min      = $_POST['altitude_min'];
-    $p_altitude_max      = $_POST['altitude_max'];
-    $p_Fundort           = ($_POST['toggleLanguage']) ? $_POST['Fundort2'] : $_POST['Fundort1'];
-    $p_Fundort_engl      = ($_POST['toggleLanguage']) ? $_POST['Fundort1'] : $_POST['Fundort2'];
-    $p_habitat           = $_POST['habitat'];
-    $p_habitus           = $_POST['habitus'];
-    $p_Bemerkungen       = $_POST['Bemerkungen'];
+    $p_series            = $_POST['seriesIndex'] ?? "";
+    $p_series_number     = $_POST['series_number'] ?? "";
+    $p_Nummer            = $_POST['Nummer'] ?? "";
+    $p_alt_number        = $_POST['alt_number'] ?? "";
+    $p_Datum             = $_POST['Datum'] ?? "";
+    $p_Datum2            = $_POST['Datum2'] ?? "";
+    $p_det               = $_POST['det'] ?? "";
+    $p_typified          = $_POST['typified'] ?? "";
+    $p_taxon_alt         = $_POST['taxon_alt'] ?? "";
+    $p_Bezirk            = $_POST['Bezirk'] ?? "";
+    $p_quadrant          = $_POST['quadrant'] ?? "";
+    $p_quadrant_sub      = $_POST['quadrant_sub'] ?? "";
+    $p_exactness         = $_POST['exactness'] ?? "";
+    $p_altitude_min      = (!empty($_POST['altitude_min'])) ? intval($_POST['altitude_min']) : "";           // integers only
+    $p_altitude_max      = (!empty($_POST['altitude_max'])) ? intval($_POST['altitude_max']) : "";           // integers only
+    $p_Fundort           = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort2'] : $_POST['Fundort1'];
+    $p_Fundort_engl      = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort1'] : $_POST['Fundort2'];
+    $p_habitat           = $_POST['habitat'] ?? "";
+    $p_habitus           = $_POST['habitus'] ?? "";
+    $p_Bemerkungen       = $_POST['Bemerkungen'] ?? "";
     $p_digital_image     = filter_input(INPUT_POST, 'digital_image');
     $p_digital_image_obs = filter_input(INPUT_POST, 'digital_image_obs');
-    $p_garten            = $_POST['garten'];
-    $p_voucher           = $_POST['voucher'];
-    $p_ncbi              = $_POST['ncbi'];
-    $p_taxon             = $_POST['taxon'];
-    $p_taxonIndex        = (strlen(trim($_POST['taxon']))>0) ? $_POST['taxonIndex'] : 0;
-    $p_external          = $_POST['external'];
-    $p_typus             = $_POST['typus'];
-    $p_nation            = $_POST['nation'];
-    $p_province          = $_POST['province'];
-    $p_sammler           = $_POST['sammler'];
-    $p_sammlerIndex      = (strlen(trim($_POST['sammler']))>0) ? $_POST['sammlerIndex'] : 0;
-    $p_sammler2          = $_POST['sammler2'];
-    $p_sammler2Index     = (strlen(trim($_POST['sammler2']))>0) ? $_POST['sammler2Index'] : 0;
-    $p_lat               = $_POST['lat'];
-    $p_lat_deg           = $_POST['lat_deg'];
-    $p_lat_min           = $_POST['lat_min'];
-    $p_lat_sec           = $_POST['lat_sec'];
-    $p_lon               = $_POST['lon'];
-    $p_lon_deg           = $_POST['lon_deg'];
-    $p_lon_min           = $_POST['lon_min'];
-    $p_lon_sec           = $_POST['lon_sec'];
+    $p_garten            = $_POST['garten'] ?? "";
+    $p_voucher           = $_POST['voucher'] ?? "";
+    $p_ncbi              = $_POST['ncbi'] ?? "";
+    $p_taxon             = $_POST['taxon'] ?? "";
+    $p_taxonIndex        = (strlen(trim($_POST['taxon'] ?? "")) > 0) ? $_POST['taxonIndex'] : 0;
+    $p_external          = $_POST['external'] ?? "";
+    $p_typus             = $_POST['typus'] ?? "";
+    $p_nation            = $_POST['nation'] ?? "";
+    $p_province          = $_POST['province'] ?? "";
+    $p_sammler           = $_POST['sammler'] ?? "";
+    $p_sammlerIndex      = (strlen(trim($_POST['sammler'] ?? "")) > 0) ? $_POST['sammlerIndex'] : 0;
+    $p_sammler2          = $_POST['sammler2'] ?? "";
+    $p_sammler2Index     = (strlen(trim($_POST['sammler2'] ?? "")) > 0) ? $_POST['sammler2Index'] : 0;
+    $p_lat               = $_POST['lat'] ?? "";
+    $p_lat_deg           = (($_POST['lat_deg'] ?? "") != "") ? intval($_POST['lat_deg']) : "";           // integers only
+    $p_lat_min           = (($_POST['lat_min'] ?? "") != "") ? intval($_POST['lat_min']) : "";           // integers only
+    $p_lat_sec           = (($_POST['lat_sec'] ?? "") != "") ? strtr($_POST['lat_sec'], ",", ".") : "";  // convert comma to dot as decimal separator
+    $p_lon               = $_POST['lon'] ?? "";
+    $p_lon_deg           = (($_POST['lon_deg'] ?? "") != "") ? intval($_POST['lon_deg']) : "";           // integers only
+    $p_lon_min           = (($_POST['lon_min'] ?? "") != "") ? intval($_POST['lon_min']) : "";           // integers only
+    $p_lon_sec           = (($_POST['lon_sec'] ?? "") != "") ? strtr($_POST['lon_sec'], ",", ".") : "";  // convert comma to dot as decimal separator
 
     $d_Coord_N = $d_N_Min = $d_N_Sec = $d_Coord_S = $d_S_Min = $d_S_Sec = "";
     if ($p_lat == "S") {
@@ -723,6 +723,9 @@ if (isset($_GET['sel'])) {
           if (document.f.Nummer.value.length==0 && document.f.alt_number.value.length==0) {
               missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
           }
+          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) != document.f.Nummer.value) {
+              missing++; text += "Number must be an integer value. Move to alt.Nr.";
+          }
           if (document.f.Datum.value.length==0) {
               missing++; text += "Date\n";
           }
@@ -878,7 +881,7 @@ if (isset($_GET['sel'])) {
               if (pid) {
                   self.location.href = 'listTypeSpecimens.php?ID=' + pid + '&nr=' + sel;
               } else {
-                  self.location.href = 'listSpecimens.php?nr=' + sel;
+                  self.location.href = 'listSpecimens.php?page=' + currentListPage + '&nr=' + sel;
               }
           }
       }
@@ -903,6 +906,179 @@ if (isset($_GET['sel'])) {
           $("#stblIDbox").dialog("open");
       }
 
+      var currentListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;
+      var linkEditUnsaved = { tracking: false, initial: '' };
+
+      function linkEditUpdateDirtyState(form) {
+          if (!form || !form.length) {
+              return;
+          }
+          form.data('dirty', form.serialize() !== linkEditUnsaved.initial);
+      }
+
+      function setupLinkEditForm() {
+          const form = $('#f_iBox');
+          if (!form.length) {
+              return;
+          }
+
+          form.off('.linkEdit');
+
+          const tableBody = form.find('#linkRows');
+          const templateRow = tableBody.find('tr[data-template="1"]').first();
+          const addButton = form.find('#addLinkRow');
+          let nextIndex = parseInt($('#linkRowNextIndex').val(), 10);
+          if (isNaN(nextIndex) || nextIndex < 1) {
+              nextIndex = 1;
+          }
+          $('#linkRowNextIndex').val(nextIndex);
+
+          if (!templateRow.length) {
+              linkEditUnsaved.initial = form.serialize();
+              linkEditUnsaved.tracking = true;
+              form.data('dirty', false);
+              return;
+          }
+
+          const templateQualifierDefault = templateRow.find('select[name^="linkQualifier_"]').val() || '';
+          const templateSourceDefault = templateRow.find('select[name^="linkInstitution_"]').val() || '';
+
+          templateRow.addClass('link-row-template');
+          templateRow.find('.link-delete-btn').hide();
+          resetLinkRowState(templateRow);
+
+          form.on('change.linkEdit input.linkEdit', 'input, select, textarea', function() {
+              linkEditUpdateDirtyState(form);
+          });
+
+          form.on('click.linkEdit', '.link-delete-btn', function() {
+              const row = $(this).closest('tr');
+              const rowId = String(row.attr('data-row-id') || '');
+              const hidden = form.find('#linkDelete_' + rowId);
+
+              if (row.is('[data-template="1"]')) {
+                  resetLinkRowState(row);
+                  linkEditUpdateDirtyState(form);
+                  return;
+              }
+
+              if (!hidden.length || rowId.indexOf('new') === 0) {
+                  row.remove();
+                  linkEditUpdateDirtyState(form);
+                  return;
+              }
+
+              const marked = hidden.val() === '1';
+              if (marked) {
+                  hidden.val('0');
+                  row.removeClass('link-delete-marked');
+                  row.css({'text-decoration': '', 'opacity': ''});
+              } else {
+                  hidden.val('1');
+                  row.addClass('link-delete-marked');
+                  row.css({'text-decoration': 'line-through', 'opacity': '0.6'});
+              }
+              linkEditUpdateDirtyState(form);
+          });
+
+          if (addButton.length) {
+              addButton.off('.linkEdit').on('click.linkEdit', function() {
+                  const newId = 'new' + nextIndex++;
+                  const newRow = templateRow.clone();
+                  newRow.removeAttr('data-template').removeClass('link-row-template');
+                  newRow.find('.link-delete-btn').show();
+                  updateRowIdentifiers(newRow, newId);
+                  resetLinkRowState(newRow);
+
+                  templateRow.before(newRow);
+
+                  newRow.find('input[type="text"]').first().focus();
+
+                  $('#linkRowNextIndex').val(nextIndex);
+                  linkEditUpdateDirtyState(form);
+              });
+          }
+
+          form.find('input[id^="linkDelete_"]').each(function() {
+              if ($(this).val() === '1') {
+                  const row = $(this).closest('tr');
+                  row.addClass('link-delete-marked');
+                  row.css({'text-decoration': 'line-through', 'opacity': '0.6'});
+              }
+          });
+
+          linkEditUnsaved.initial = form.serialize();
+          linkEditUnsaved.tracking = true;
+          form.data('dirty', false);
+
+          function updateRowIdentifiers(row, suffix) {
+              row.attr('data-row-id', suffix);
+              row.data('row-id', suffix);
+
+              row.find('[id]').each(function() {
+                  const current = $(this).attr('id');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('id', updated);
+                  }
+              });
+
+              row.find('[name]').each(function() {
+                  const current = $(this).attr('name');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('name', updated);
+                  }
+              });
+
+              row.find('[for]').each(function() {
+                  const current = $(this).attr('for');
+                  const updated = replaceSuffix(current, suffix);
+                  if (updated !== current) {
+                      $(this).attr('for', updated);
+                  }
+              });
+
+              row.find('.link-delete-btn').attr('data-target', suffix);
+          }
+
+          function replaceSuffix(value, suffix) {
+              if (!value) {
+                  return value;
+              }
+              return value.replace(/(link(?:Qualifier|Institution|Specimen|Delete)_)[\w-]+/, '$1' + suffix);
+          }
+
+          function resetLinkRowState(row) {
+              row.removeClass('link-delete-marked');
+              row.css({'text-decoration': '', 'opacity': ''});
+              row.find('select[name^="linkQualifier_"]').val(templateQualifierDefault);
+              row.find('select[name^="linkInstitution_"]').val(templateSourceDefault);
+              row.find('input[type="text"]').val('');
+              row.find('input[type="hidden"]').val('0');
+          }
+      }
+
+      function iBoxMarkClean() {
+          const form = $('#f_iBox');
+          if (form.length) {
+              form.off('.linkEdit');
+              form.find('#addLinkRow').off('.linkEdit');
+              linkEditUnsaved.initial = form.serialize();
+              form.data('dirty', false);
+          }
+          linkEditUnsaved.tracking = false;
+      }
+
+      function hasUnsavedLinkChanges() {
+          const form = $('#f_iBox');
+          if (!form.length || !linkEditUnsaved.tracking) {
+              return false;
+          }
+          linkEditUpdateDirtyState(form);
+          return !!form.data('dirty');
+      }
+
       jaxon_makeLinktext('<?php echo $p_specimen_ID; ?>');
       $.extend({ alert: function (message, title) {
               $("<div></div>").dialog( {
@@ -924,7 +1100,15 @@ if (isset($_GET['sel'])) {
               modal: true,
               bgiframe: true,
               width: 750,
-              height: 600
+              height: 600,
+              beforeClose: function() {
+                  if (hasUnsavedLinkChanges()) {
+                      if (!confirm('Are you sure you want to leave?\nDataset will not be updated!')) {
+                          return false;
+                      }
+                  }
+                  iBoxMarkClean();
+              }
           } );
           $("#stblIDbox").dialog({
               autoOpen: false,
@@ -1124,14 +1308,16 @@ if ($result && mysqli_num_rows($result) > 0) {
 }
 
 $stblID = array();
-$result = dbi_query("SELECT stableIdentifier, visible, timestamp, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
-if ($result && mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_array($result)) {
-        $stblID[] = array('stblID'    => $row['stableIdentifier'],
-                          'visible'   => $row['visible'],
-                          'timestamp' => $row['timestamp'],
-                          'error'     => $row['error'],
-                          'blockedBy' => $row['blockedBy']);
+if (!empty($p_specimen_ID)) {
+    $result = dbi_query("SELECT stableIdentifier, visible, timestamp, error, blockedBy FROM tbl_specimens_stblid WHERE specimen_ID = $p_specimen_ID ORDER BY timestamp DESC");
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
+            $stblID[] = array('stblID'    => $row['stableIdentifier'],
+                              'visible'   => $row['visible'],
+                              'timestamp' => $row['timestamp'],
+                              'error'     => $row['error'],
+                              'blockedBy' => $row['blockedBy']);
+        }
     }
 }
 

@@ -228,11 +228,11 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $result = dbi_query($sql);
         $p_citationID = (intval($_POST['citationID'])) ? intval($_POST['citationID']) : dbi_insert_id();
         logLit($p_citationID, $updated);
-        if ($_POST['submitUpdateNew']) {
+        if (!empty($_POST['submitUpdateNew'])) {
             $location = "Location: editLit.php?sel=<0>&new=1";
             if (SID) $location .= "&" . SID;
             header($location);
-        } elseif ($_POST['submitUpdateCopy']) {
+        } elseif (!empty($_POST['submitUpdateCopy'])) {
             $location = "Location: editLit.php?sel=<" . $p_citationID . ">&new=1";
             if (SID) $location .= "&" . SID;
             header($location);
@@ -242,8 +242,8 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $p_citationID = "";
         $edit = false;
     } else {
-        $edit = ($_POST['reload'] && !empty($_POST['edit'])) ? true : false;
-        $p_citationID = $_POST['citationID'];
+        $edit = (!empty($_POST['reload']) && !empty($_POST['edit'])) ? true : false;
+        $p_citationID = $_POST['citationID'] ?? "";
     }
 }
 

@@ -120,6 +120,7 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
         if ($_POST['username'] && $_POST['password']) {
             $data = getUnamePw(filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING), filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING));
             $parts = explode('%%', $data);
+            mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown if the connection could not be established
             $dbLink = mysqli_connect($_CONFIG['DATABASE']['INPUT']['host'], $parts[0], $parts[1], $_CONFIG['DATABASE']['INPUT']['name']);
             if ($dbLink) {
                 $dbLink->set_charset('utf8');

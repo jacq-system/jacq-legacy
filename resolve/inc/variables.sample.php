@@ -4,7 +4,7 @@ $_CONFIG['DATABASE'] = array(
     // JACQ-INPUT database
     'JACQ' => array(
         'host' => 'localhost',
-        'name' => 'jacq_input',
+        'name' => 'herbarinput',
         'readonly' => array(
             'user' => '',
             'pass' => ''

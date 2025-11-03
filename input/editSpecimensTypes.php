@@ -167,13 +167,17 @@ if (isset($_GET['new'])) {
                 $updated = 0;
             }
             $result = dbi_query($sql);
-            $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
-            logSpecimensTypes($id, $updated);
             if ($result) {
+                $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
+                logSpecimensTypes($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"
                    . "</script>\n";
+            } else {
+                echo "<script language=\"JavaScript\">\n"
+                        . "  alert(\"" . $dbLink->error . "\");\n"
+                        . "</script>\n";
             }
         }
         else {

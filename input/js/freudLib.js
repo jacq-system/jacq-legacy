@@ -1,13 +1,13 @@
 
 
 function showImage(sel) {
-	target = config['HERBARIMAGEURL']+'/image.php?filename='+sel+"&method=show";
+	target = config['HERBARIMAGEURL']+'image?filename='+sel+"&method=show";
 	MeinFenster = window.open(target,"imgBrowser");
 	MeinFenster.focus();
 }
 
 function showImageObs(sel) {
-	target = config['HERBARIMAGEURL']+'/image.php?filename='+sel+"&method=show&obs=1";
+	target = config['HERBARIMAGEURL']+'image?filename='+sel+"&method=show&obs=1";
 	MeinFenster = window.open(target,"imgBrowser");
 	MeinFenster.focus();
 }

@@ -43,8 +43,45 @@ $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
 
+if (isset($_GET['page'])) {
+    $_SESSION['sCurrentSpecimenPage'] = max(0, intval($_GET['page']));
+} elseif (!isset($_SESSION['sCurrentSpecimenPage'])) {
+    $_SESSION['sCurrentSpecimenPage'] = 0;
+}
+
+if (isset($_POST['resetFilters'])) {
+    unset($_SESSION['taxonID']);
+    $_SESSION['wuCollection']      = 0;
+    $_SESSION['sNumber']           = '';
+    $_SESSION['sSeries']           = '';
+    $_SESSION['sFamily']           = '';
+    $_SESSION['sTaxon']            = '';
+    $_SESSION['sTaxonAlt']         = '';
+    $_SESSION['sCollector']        = '';
+    $_SESSION['sNumberCollector']  = '';
+    $_SESSION['sNumberCollection'] = '';
+    $_SESSION['sDate']             = '';
+    $_SESSION['sGeoGeneral']       = '';
+    $_SESSION['sGeoRegion']        = '';
+    $_SESSION['sCountry']          = '';
+    $_SESSION['sProvince']         = '';
+    $_SESSION['sLoc']              = '';
+    $_SESSION['sHabitat']          = '';
+    $_SESSION['sHabitus']          = '';
+    $_SESSION['sBemerkungen']      = '';
+    $_SESSION['sTyp']              = '';
+    $_SESSION['sSynonyms']         = '';
+    $_SESSION['sImages']           = '';
+    $_SESSION['sOrder']            = "genus, epithet, author, Sammler, Sammler_2, series, Nummer, alt_number, Datum, typus_lat";
+    $_SESSION['sOrTyp']            = 1;
+    $_SESSION['labelOrder']        = $_SESSION['sOrder'];
+    $_SESSION['sType']             = 1;
+    $_SESSION['sCurrentSpecimenPage'] = 0;
+}
+
 if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sType'] = 1;  // list specimens
+    $_SESSION['sCurrentSpecimenPage'] = 0;
 	if (isset($_GET['taxonID'])) {
 		$_SESSION['taxonID']           = intval($_GET['taxonID']);
 		$_SESSION['wuCollection']      = 0;   // = $_POST['collection'];
@@ -170,6 +207,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sOrder'] = implode(" DESC, ", explode(", ", $_SESSION['sOrder'])) . " DESC";
     }
     $_SESSION['labelOrder'] = $_SESSION['sOrder'];
+    $_SESSION['sCurrentSpecimenPage'] = 0;
 }
 
 function makeDropdownInstitution()
@@ -558,6 +596,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
 </tr><tr>
   <td colspan="3">
       <input class="button" type="submit" name="search" value=" search ">
+      <input class="button" type="submit" name="resetFilters" value=" reset ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=csv';return false;" name="downloadCSV" value=" download CSV ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=xslx';return false;" name="downloadXLSX" value=" download XLSX ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=ods';return false;" name="downloadODS" value=" download ODS ">
@@ -664,27 +703,58 @@ if ($_SESSION['sType'] == 1) {  // list specimens
     }
     ?>
     <div style="width: 100%;">
-        <div style="float: right;">
-            <select id="items_per_page" onchange="listSpecimens();">
-                <option value="10" <?php echo ($_SESSION['sItemsPerPage'] == 10) ? 'selected' : ''; ?>>10</option>
-                <option value="30" <?php echo ($_SESSION['sItemsPerPage'] == 30) ? 'selected' : ''; ?>>30</option>
-                <option value="50" <?php echo ($_SESSION['sItemsPerPage'] == 50) ? 'selected' : ''; ?>>50</option>
-                <option value="100" <?php echo ($_SESSION['sItemsPerPage'] == 100) ? 'selected' : ''; ?>>100</option>
-            </select>
+        <div class="specimen_pagination_row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em; justify-content: space-between; margin-bottom: 0.5em;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em;">
+                <div class='specimen_pagination'></div>
+                <div id='specimen_total_count' style="font-weight: bold;"></div>
+            </div>
+            <div>
+                <label for="items_per_page" style="margin-right: 0.5em;">Items per page:</label>
+                <select id="items_per_page" onchange="changeItemsPerPage();">
+                    <option value="10" <?php echo ($_SESSION['sItemsPerPage'] == 10) ? 'selected' : ''; ?>>10</option>
+                    <option value="30" <?php echo ($_SESSION['sItemsPerPage'] == 30) ? 'selected' : ''; ?>>30</option>
+                    <option value="50" <?php echo ($_SESSION['sItemsPerPage'] == 50) ? 'selected' : ''; ?>>50</option>
+                    <option value="100" <?php echo ($_SESSION['sItemsPerPage'] == 100) ? 'selected' : ''; ?>>100</option>
+                </select>
+            </div>
         </div>
-        <div class='specimen_pagination'></div>
         <div id='specimen_entries' style='padding-top: 15px; padding-bottom: 15px;'><div style="text-align: center;"><img src="webimages/loader.gif"></div></div>
-        <div class='specimen_pagination'></div>
+        <div class="specimen_pagination_row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em; justify-content: space-between; margin-top: 0.5em;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 1em;">
+                <div class='specimen_pagination'></div>
+                <div id='specimen_total_count_bottom' style="font-weight: bold;"></div>
+            </div>
+            <div></div>
+        </div>
     </div>
     <script type="text/javascript">
-        function listSpecimens() {
-            jaxon_listSpecimens( 0, true, $('#items_per_page').val() );
+        var initialListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;
+        var currentListPage = initialListPage;
+
+        var currentItemsPerPage = parseInt($('#items_per_page').val(), 10) || 10;
+
+        function listSpecimens(page) {
+            if (typeof page === 'undefined' || page === null) {
+                page = initialListPage;
+            }
+            initialListPage = page;
+            currentListPage = page;
+            currentItemsPerPage = parseInt($('#items_per_page').val(), 10) || currentItemsPerPage;
+            jaxon_listSpecimens(page, true, $('#items_per_page').val());
         }
 
-    // init pagination
-    $(function() {
-        listSpecimens();
-    });
+        function changeItemsPerPage() {
+            var newItemsPerPage = parseInt($('#items_per_page').val(), 10) || 10;
+            var firstIndex = currentListPage * currentItemsPerPage;
+            var newPage = Math.floor(firstIndex / newItemsPerPage);
+            currentItemsPerPage = newItemsPerPage;
+            listSpecimens(newPage);
+        }
+
+        // init pagination
+        $(function() {
+            listSpecimens(initialListPage);
+        });
     </script>
     <?php
 } else if ($_SESSION['sType'] == 2) {  // list user activities

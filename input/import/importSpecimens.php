@@ -704,21 +704,21 @@ if ($run == 2) {  // file uploaded
          * fill geografical coordinates
          */
         if (isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25]) && isset($import[$i][26])) {
-            $data[$i]['Coord_N'] = ($import[$i][23]=='N') ? $import[$i][24] : "";
-            $data[$i]['N_Min']   = ($import[$i][23]=='N') ? $import[$i][25] : "";
+            $data[$i]['Coord_N'] = ($import[$i][23]=='N') ? (($import[$i][24] != "") ? intval($import[$i][24]) : "") : "";  // integers only
+            $data[$i]['N_Min']   = ($import[$i][23]=='N') ? (($import[$i][25] != "") ? intval($import[$i][25]) : "") : "";  // integers only
             $data[$i]['N_Sec']   = ($import[$i][23]=='N') ? strtr($import[$i][26], ",", ".") : "";
-            $data[$i]['Coord_S'] = ($import[$i][23]=='S') ? $import[$i][24] : "";
-            $data[$i]['S_Min']   = ($import[$i][23]=='S') ? $import[$i][25] : "";
+            $data[$i]['Coord_S'] = ($import[$i][23]=='S') ? (($import[$i][24] != "") ? intval($import[$i][24]) : "") : "";  // integers only
+            $data[$i]['S_Min']   = ($import[$i][23]=='S') ? (($import[$i][25] != "") ? intval($import[$i][25]) : "") : "";  // integers only
             $data[$i]['S_Sec']   = ($import[$i][23]=='S') ? strtr($import[$i][26], ",", ".") : "";
         } else {
             $data[$i]['Coord_N'] = $data[$i]['N_Min'] = $data[$i]['N_Sec'] = $data[$i]['Coord_S'] = $data[$i]['S_Min'] = $data[$i]['S_Sec'] = '';
         }
         if (isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29]) && isset($import[$i][30])) {
-            $data[$i]['Coord_W'] = ($import[$i][27]=='W') ? $import[$i][28] : "";
-            $data[$i]['W_Min']   = ($import[$i][27]=='W') ? $import[$i][29] : "";
+            $data[$i]['Coord_W'] = ($import[$i][27]=='W') ? (($import[$i][28] != "") ? intval($import[$i][28]) : "") : "";  // integers only
+            $data[$i]['W_Min']   = ($import[$i][27]=='W') ? (($import[$i][29] != "") ? intval($import[$i][29]) : "") : "";  // integers only
             $data[$i]['W_Sec']   = ($import[$i][27]=='W') ? strtr($import[$i][30], ",", ".") : "";
-            $data[$i]['Coord_E'] = ($import[$i][27]=='E') ? $import[$i][28] : "";
-            $data[$i]['E_Min']   = ($import[$i][27]=='E') ? $import[$i][29] : "";
+            $data[$i]['Coord_E'] = ($import[$i][27]=='E') ? (($import[$i][28] != "") ? intval($import[$i][28]) : "") : "";  // integers only
+            $data[$i]['E_Min']   = ($import[$i][27]=='E') ? (($import[$i][29] != "") ? intval($import[$i][29]) : "") : "";  // integers only
             $data[$i]['E_Sec']   = ($import[$i][27]=='E') ? strtr($import[$i][30], ",", ".") : "";
         } else {
             $data[$i]['Coord_W'] = $data[$i]['W_Min'] = $data[$i]['W_Sec'] = $data[$i]['Coord_E'] = $data[$i]['E_Min'] = $data[$i]['E_Sec'] = '';
@@ -733,8 +733,8 @@ if ($run == 2) {  // file uploaded
         /**
          * fill altitude
          */
-        $data[$i]['altitude_min'] = (!empty($import[$i][34])) ? $import[$i][34] : '';
-        $data[$i]['altitude_max'] = (!empty($import[$i][35])) ? $import[$i][35] : '';
+        $data[$i]['altitude_min'] = (!empty($import[$i][34])) ? intval($import[$i][34]) : '';   // integers only
+        $data[$i]['altitude_max'] = (!empty($import[$i][35])) ? intval($import[$i][35]) : '';   // integers only
 
         /**
          * fill switch: digital image

@@ -119,8 +119,14 @@ function makePictureFilename(string $HerbNummerIn, int $collectionID): string
                             $trailing = "";
                         } else {
                             preg_match("/(?P<number>\d+)(?P<trailing>\D*.*)/", $HerbNummer, $parts);
-                            $number   = $parts['number'];   // use the complete HerbNummer
-                            $trailing = $parts['trailing'];
+                            if (!isset($parts['number']) || !isset($parts['trailing'])) {
+                                echo "$HerbNummer from Collection $collectionID has a problem\n";
+                                $number   = 0;
+                                $trailing = "";
+                            } else {
+                                $number = $parts['number'];   // use the complete HerbNummer
+                                $trailing = $parts['trailing'];
+                            }
                         }
                         if (in_array("reformat", $tokenParts)) {            // correct the number of digits with leading zeros
                             $filename .= sprintf("%0" . $collectionRules['HerbNummerNrDigits'] . ".0f", $number) . $trailing;
