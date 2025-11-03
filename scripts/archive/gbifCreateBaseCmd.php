@@ -161,7 +161,8 @@ foreach ($tbls as $tbl) {
                  s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                  s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                  s.digital_image, s.observation, s.digital_image_obs, s.HerbNummer,
-                 c.Sammler, c2.Sammler_2,
+                 c.Sammler, c.HUH_ID, c.VIAF_ID, c.WIKIDATA_ID, c.ORCID, c.Bloodhound_ID, 
+                 c2.Sammler_2,
                  ts.taxonID, ts.statusID, tg.genus,
                  ta.author author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -224,6 +225,23 @@ foreach ($tbls as $tbl) {
             } else {
                 $AuthorTeam = $row['author'];
                 $SecondEpithet = "";
+            }
+
+            /**
+             * NomService_*
+             */
+            $nomServiceUrls = array(1 => "", 3 => "", 19 => "", 21 => "", 57 => "");
+            $nomServiceRows = $dbLink->query("SELECT nsn.serviceID, nsn.param1, ns.url_head, ns.url_middle, ns.url_trail
+                                              FROM tbl_nom_service_names nsn 
+                                               LEFT JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
+                                              WHERE nsn.taxonID = " . $row['taxonID'] . "
+                                               AND nsn.serviceID IN (1, 3, 19, 21, 57)")
+                                      ->fetch_all(MYSQLI_ASSOC);
+            foreach ($nomServiceRows as $nomServiceRow) {
+                $nomServiceUrls[$nomServiceRow['serviceID']] = $nomServiceRow['url_head']
+                                                             . $nomServiceRow['param1']
+                                                             . $nomServiceRow['url_middle']
+                                                             . $nomServiceRow['url_trail'];
             }
 
             /**
@@ -369,6 +387,11 @@ foreach ($tbls as $tbl) {
                  AuthorTeam               = " . $dbLink2->quoteString($AuthorTeam) . ",
                  SecondEpithet            = " . $dbLink2->quoteString($SecondEpithet) . ",
                  HybridFlag               = " . (($row['statusID'] == 1) ? "1" : "NULL") . ",
+                 NomService_IPNI          = " . $dbLink2->quoteString($nomServiceUrls[1]) . ",
+                 NomService_IF            = " . $dbLink2->quoteString($nomServiceUrls[3]) . ",
+                 NomService_Algaebase     = " . $dbLink2->quoteString($nomServiceUrls[19]) . ",
+                 NomService_reflora       = " . $dbLink2->quoteString($nomServiceUrls[21]) . ",
+                 NomService_wfo           = " . $dbLink2->quoteString($nomServiceUrls[57]) . ",
                  ISODateTimeBegin         = " . $dbLink2->quoteString((trim($row['Datum']) == "s.d.") ? "" : $row['Datum']) . ",
                  NamedAreaName            = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? mb_substr($row['provinz'], 0, 2) : $row['provinz']) . ",
                  NamedAreaClass           = " . (($row['nation_engl'] == "Austria") ? "'Bundesland'" : "NULL") . ",
@@ -377,6 +400,11 @@ foreach ($tbls as $tbl) {
                  SpatialDatum             = " . $dbLink2->quoteString($SpatialDatum) . ",
                  CollectorsFieldNumber    = " . $dbLink2->quoteString(trim($row['Nummer'] . ' ' . $row['alt_number'])) . ",
                  GatheringAgentsText      = " . $dbLink2->quoteString($GatheringAgentsText) . ",
+                 PrimaryCollector_HUH_ID        = " . ((substr($row['HUH_ID'], 0, 4) == 'http') ? $dbLink2->quoteString($row['HUH_ID']) : "NULL") . ",
+                 PrimaryCollector_VIAF_ID       = " . ((substr($row['VIAF_ID'], 0, 4) == 'http') ? $dbLink2->quoteString($row['VIAF_ID']) : "NULL") . ",
+                 PrimaryCollector_WIKIDATA_ID   = " . ((substr($row['WIKIDATA_ID'], 0, 4) == 'http') ? $dbLink2->quoteString($row['WIKIDATA_ID']) : "NULL") . ",
+                 PrimaryCollector_ORCID         = " . ((substr($row['ORCID'], 0, 4) == 'http') ? $dbLink2->quoteString($row['ORCID']) : "NULL") . ",
+                 PrimaryCollector_Bloodhound_ID = " . ((substr($row['Bloodhound_ID'], 0, 4) == 'http') ? $dbLink2->quoteString($row['Bloodhound_ID']) : "NULL") . ",
                  CollectorTeam            = '" . $dbLink2->real_escape_string($CollectorTeam) . "',
                  IdentificationDate       = " . $dbLink2->quoteString($IdentificationDate) . ",
                  image_url                = " . $dbLink2->quoteString($image_url) . ",
@@ -413,3 +441,19 @@ foreach ($tbls as $tbl) {
 if ($options['verbose']) {
     echo "---------- tbl_prj_gbif_pilot_total finished (" . date(DATE_RFC822) . ") ----------\n";
 }
+
+/*
+ALTER TABLE `tbl_prj_gbif_pilot_wu`
+ADD `PrimaryCollector_HUH_ID` VARCHAR(255) NULL AFTER `PrimaryCollector`,
+ADD `PrimaryCollector_VIAF_ID` VARCHAR(255) NULL AFTER `PrimaryCollector_HUH_ID`,
+ADD `PrimaryCollector_WIKIDATA_ID` VARCHAR(255) NULL AFTER `PrimaryCollector_VIAF_ID`,
+ADD `PrimaryCollector_ORCID` VARCHAR(255) NULL AFTER `PrimaryCollector_WIKIDATA_ID`,
+ADD `PrimaryCollector_Bloodhound_ID` VARCHAR(255) NULL AFTER `PrimaryCollector_ORCID`;
+
+ALTER TABLE `tbl_prj_gbif_pilot_wu`
+ADD `NomService_IPNI` VARCHAR(255) NULL AFTER `HigherTaxon`,
+ADD `NomService_IF` VARCHAR(255) NULL AFTER `NomService_IPNI`,
+ADD `NomService_Algaebase` VARCHAR(255) NULL AFTER `NomService_IF`,
+ADD `NomService_reflora` VARCHAR(255) NULL AFTER `NomService_Algaebase`,
+ADD `NomService_wfo` VARCHAR(255) NULL AFTER `NomService_reflora`;
+*/
