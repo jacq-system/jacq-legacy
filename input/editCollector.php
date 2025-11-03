@@ -96,7 +96,7 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
 } elseif (!empty($_GET['sel'])) {
     $pieces = explode("<", $_GET['sel']);
     $pieces = explode(">", $pieces[1]);
-    $id = $pieces[0];
+    $id = intval($pieces[0]);
 } else {
     $id = 0;
 }
