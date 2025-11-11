@@ -49,10 +49,13 @@ if (isset($_GET['page'])) {
     $_SESSION['sCurrentSpecimenPage'] = 0;
 }
 
+if (!isset($_SESSION['sNumberList'])) { $_SESSION['sNumberList'] = ''; }
+
 if (isset($_POST['resetFilters'])) {
     unset($_SESSION['taxonID']);
     $_SESSION['wuCollection']      = 0;
     $_SESSION['sNumber']           = '';
+    $_SESSION['sNumberList']       = '';
     $_SESSION['sSeries']           = '';
     $_SESSION['sFamily']           = '';
     $_SESSION['sTaxon']            = '';
@@ -86,6 +89,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['taxonID']           = intval($_GET['taxonID']);
 		$_SESSION['wuCollection']      = 0;   // = $_POST['collection'];
 		$_SESSION['sNumber']           = '';  // = $_POST['number'];
+        $_SESSION['sNumberList']       = '';  // = $_POST['number_list'];
 		$_SESSION['sSeries']           = '';  // = $_POST['series'];
 		$_SESSION['sFamily']           = '';  // = $_POST['family'];
 		$_SESSION['sTaxon']            = '';  // = $_POST['taxon'];
@@ -109,6 +113,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		unset($_SESSION['taxonID']);
 		$_SESSION['wuCollection']      = $_POST['collection'];
 		$_SESSION['sNumber']           = $_POST['number'];
+	$_SESSION['sNumberList']       = isset($_POST['number_list']) ? trim($_POST['number_list']) : '';
 		$_SESSION['sSeries']           = $_POST['series'];
 		$_SESSION['sFamily']           = $_POST['family'];
 		$_SESSION['sTaxon']            = $_POST['taxon'];
@@ -139,7 +144,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 } else if (isset($_POST['selectUser'])) {
     $_SESSION['sType'] = 2;  // list user activities
     $_SESSION['wuCollection'] = 0;
-    $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
+    $_SESSION['sNumber'] = $_SESSION['sNumberList'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
@@ -386,6 +391,8 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <script src="js/freudLib.js" type="text/javascript"></script>
   <script src="js/parameters.php" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-1.4.2.min.js" type="text/javascript"></script>
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.8.24/themes/ui-lightness/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.8.24/jquery-ui.min.js"></script>
   <script src="js/lib/jQuery/jquery.pagination.js" type="text/javascript"></script>
   <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/pagination.css">
   <style>
@@ -454,6 +461,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         $('[name="number"]').blur(function() {
             this.value = this.value.trim();
             var number = this.value;
+            if (number.length > 0) {
+                $('#number_list').val('');
+                updateMultiHerbUI();
+            }
             // convert StableURI to collection HerbNummer
             // var r = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/ // Regex Pattern
             var r = /^\D/  // RegEx; searchstring must start with any non-digit char
@@ -484,10 +495,55 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
                 }).blur()
                 return false;
             }
-        })
+        });
+        updateMultiHerbUI();
+
+        var multiHerbDialog = $('#multiHerbDialog').dialog({
+            autoOpen: false,
+            modal: true,
+            width: 420,
+            buttons: {
+                'Apply': function() {
+                    var values = $('#multiHerbTextarea').val().split(/\r?\n/).map(function(v){ return v.trim(); }).filter(function(v){ return v.length > 0; });
+                    $('#number_list').val(values.join("\n"));
+                    if (values.length > 0) {
+                        $('[name="number"]').val('');
+                    }
+                    updateMultiHerbUI();
+                    $(this).dialog('close');
+                },
+                'Clear': function() {
+                    $('#multiHerbTextarea').val('');
+                    $('#number_list').val('');
+                    updateMultiHerbUI();
+                },
+                'Cancel': function() {
+                    $(this).dialog('close');
+                }
+            },
+            open: function() {
+                $('#multiHerbTextarea').val($('#number_list').val());
+                setTimeout(function(){ $('#multiHerbTextarea').focus(); }, 50);
+            }
+        });
+
+        $('#multiHerbLink').click(function(e) {
+            e.preventDefault();
+            multiHerbDialog.dialog('open');
+        });
     });
 
-    jaxon_checkTypeLabelMapPdfButton();
+function updateMultiHerbUI() {
+        var value = $('#number_list').val().trim();
+        if (value.length > 0) {
+            var count = value.split(/\r?\n/).map(function(v){ return v.trim(); }).filter(function(v){ return v.length > 0; }).length;
+            $('#multiHerbCount').text('(' + count + ' selected)');
+        } else {
+            $('#multiHerbCount').text('');
+        }
+    }
+
+jaxon_checkTypeLabelMapPdfButton();
     jaxon_checkTypeLabelSpecPdfButton();
     jaxon_checkStandardLabelPdfButton();
     jaxon_checkBarcodeLabelPdfButton();
@@ -502,8 +558,14 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <td align="right">&nbsp;<b><a href="#" id="lblInstitutionCollection" onclick="toggleInstitutionCollection();"><?php echo ($_SESSION['wuCollection'] > 0) ? 'Collection&nbsp;' : 'Institution&nbsp;'; ?></a></b>
     </td>
     <td id="drpInstitutionCollection"><?php ($_SESSION['wuCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
-  <td align="right">&nbsp;<b>Herbar Nr.&nbsp;</b></td>
-    <td><input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
+  <td align="right">&nbsp;<b>Herbar Nr.&nbsp;</b>
+    <a href="#" id="multiHerbLink" style="font-size: 90%;">(multiple)</a>
+    <span id="multiHerbCount" style="font-size: 90%; color: #555;"></span>
+  </td>
+    <td>
+      <input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (.... - ....)">
+      <input type="hidden" name="number_list" id="number_list" value="<?php echoSpecial('sNumberList', 'SESSION'); ?>">
+    </td>
   <td align="right">&nbsp;<b>Series&nbsp;</b></td>
     <td><input type="text" name="series" value="<?php echoSpecial('sSeries', 'SESSION'); ?>"></td>
   <td></td><td></td>
@@ -611,6 +673,10 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   </td>
 </tr>
 </table>
+<div id="multiHerbDialog" title="Multiple Herbarium Numbers" style="display:none;">
+  <p>Enter one Herbarium number per line.</p>
+  <textarea id="multiHerbTextarea" style="width:100%; height:200px;"></textarea>
+</div>
 </form>
 
 <p>

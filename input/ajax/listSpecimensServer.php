@@ -36,7 +36,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
     $sql_names =  " s.specimen_ID, tg.genus, s.digital_image,
                     c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-                    s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
+                    s.Nummer, s.alt_number,
+                    IF(s.Datum2 IS NULL OR s.Datum2 = '' OR s.Datum2 = s.Datum, s.Datum,
+                       CONCAT(s.Datum, ' - ', s.Datum2)) AS Datum,
+                    s.Datum AS DatumStart,
+                    s.Datum2 AS DatumEnd,
+                    s.HerbNummer,
                     n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.source_id, mc.coll_short, t.typus_lat,
                     s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                     s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
@@ -100,6 +105,20 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
             else {
                 $sql_restrict_specimen .= " AND mc.source_id=" . quoteString(abs(trim($_SESSION['wuCollection'])));
+            }
+        }
+        if (trim($_SESSION['sNumberList'])) {
+            $numberList = preg_split('/[\r\n]+/', $_SESSION['sNumberList']);
+            $numberList = array_filter(array_map('trim', $numberList));
+            if (!empty($numberList)) {
+                $numberList = array_unique($numberList);
+                $escapedList = array();
+                foreach ($numberList as $herbNumber) {
+                    $escapedList[] = quoteString($herbNumber);
+                }
+                if (!empty($escapedList)) {
+                    $sql_restrict_specimen .= " AND s.HerbNummer IN (" . implode(',', $escapedList) . ")";
+                }
             }
         }
         if (trim($_SESSION['sNumber'])) {
