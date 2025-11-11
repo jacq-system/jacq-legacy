@@ -55,10 +55,31 @@ function metadataFetchRecord($metadataId)
     $sql = "SELECT * FROM metadata WHERE MetadataID = '$id'";
     $result = dbi_query($sql);
     if ($result && mysqli_num_rows($result) > 0) {
-        return mysqli_fetch_assoc($result);
+        $row = mysqli_fetch_assoc($result);
+        if ($row !== null) {
+            $row['__is_new'] = false;
+        }
+        return $row;
     }
 
     return null;
+}
+
+/**
+ * Check whether a metadata record already exists.
+ *
+ * @param int $metadataId
+ * @return bool
+ */
+function metadataRecordExists($metadataId)
+{
+    $metadataId = intval($metadataId);
+    if ($metadataId <= 0) {
+        return false;
+    }
+
+    $result = dbi_query("SELECT 1 FROM metadata WHERE MetadataID = '$metadataId' LIMIT 1");
+    return ($result && mysqli_num_rows($result) > 0);
 }
 
 /**
@@ -180,12 +201,20 @@ function metadataRenderFields($record, $mode)
 {
     $columns = metadataGetColumns();
     $readonly = ($mode === 'left');
+    $labelExtra = array(
+        'DatasetTitle' => 'GBIF dataset title',
+        'DatasetDetails' => 'GBIF dataset description',
+        'LicenseText' => 'GBIF License',
+    );
 
     $html = "<table class='metadata-field-table'>\n";
     foreach ($columns as $column) {
         $name = $column['COLUMN_NAME'];
         $value = ($record !== null && array_key_exists($name, $record)) ? $record[$name] : null;
         $label = htmlspecialchars($name);
+        if (isset($labelExtra[$name])) {
+            $label .= " (" . htmlspecialchars($labelExtra[$name]) . ")";
+        }
         $fieldKey = htmlspecialchars($name, ENT_QUOTES);
 
         $rowAttr = " class='metadata-field-row' data-field='$fieldKey'";
@@ -283,10 +312,12 @@ function metadataRenderPane($pane, $record)
 {
     $id = ($record && isset($record['MetadataID'])) ? intval($record['MetadataID']) : null;
     $navigator = metadataRenderNavigator($pane, $id);
+    $isNew = (is_array($record) && !empty($record['__is_new']));
 
     if ($pane === 'right') {
         $content = "<form id='metadataEditForm' onsubmit='return metadataSubmit();'>"
                  . "<input type='hidden' name='MetadataID' id='metadata_edit_id' value='" . (($id !== null) ? $id : '') . "'>"
+                 . "<input type='hidden' id='metadata_is_new' value='" . ($isNew ? '1' : '0') . "'>"
                  . $navigator
                  . metadataRenderFields($record, 'right')
                  . "<div class='metadata-actions'>"
@@ -332,6 +363,8 @@ function metadataBuildEmptyRecord($metadataId)
             }
         }
     }
+
+    $record['__is_new'] = true;
 
     return $record;
 }
@@ -499,6 +532,9 @@ function metadataSyncLeftToRight($leftId, $currentRightId = null)
 
     if ($currentRightId !== null) {
         $record['MetadataID'] = $currentRightId;
+        $record['__is_new'] = !metadataRecordExists($currentRightId);
+    } else {
+        $record['__is_new'] = false;
     }
 
     $response->assign('metadataRightPane', 'innerHTML', metadataRenderPane('right', $record));
@@ -617,8 +653,7 @@ function metadataSave($formData)
         $updates[] = "`$name` = $valueSql";
     }
 
-    $existsResult = dbi_query("SELECT 1 FROM metadata WHERE MetadataID = '" . $metadataId . "' LIMIT 1");
-    $recordExists = ($existsResult && mysqli_num_rows($existsResult) > 0);
+    $recordExists = metadataRecordExists($metadataId);
 
     if ($recordExists) {
         if (empty($updates)) {

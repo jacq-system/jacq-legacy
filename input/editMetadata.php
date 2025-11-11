@@ -81,8 +81,36 @@ if (!$userHasAccess) {
             border-bottom: 1px solid #e0e0e0;
             padding-bottom: 0.4em;
             display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            flex-wrap: wrap;
+            gap: 0.5em;
+        }
+        .metadata-pane-title-text {
+            display: flex;
+            flex: 1;
+            min-width: 0;
+            flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
+            gap: 0.5em;
+        }
+        .metadata-pane-title-label {
+            font-weight: bold;
+        }
+        .metadata-pane-title-value {
+            font-weight: normal;
+            color: #333;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        .metadata-pane-title-value::before {
+            content: " – ";
+        }
+        .metadata-pane-title-empty {
+            display: none;
+        }
+        .metadata-biocase-button {
+            margin-left: auto;
         }
         .metadata-nav {
             display: flex;
@@ -222,6 +250,141 @@ if (!$userHasAccess) {
             crossorigin="anonymous"></script>
     <script>
         var metadataDirty = false;
+        var metadataRightIsNew = false;
+        var metadataBioCaseQueryTemplate =
+            "<?xml version='1.0' encoding='UTF-8'?>\n" +
+            "<request xmlns='http://www.biocase.org/schemas/protocol/1.3'>\n" +
+            "  <header><type>search</type></header>\n" +
+            "  <search>\n" +
+            "    <requestFormat>http://www.tdwg.org/schemas/abcd/2.06</requestFormat>\n" +
+            "    <responseFormat start='0' limit='10'>http://www.tdwg.org/schemas/abcd/2.06</responseFormat>\n" +
+            "      <filter>\n" +
+            "<like path='/DataSets/DataSet/Units/Unit/Identifications/Identification/Result/TaxonIdentified/ScientificName/FullScientificNameString'>A*</like>\n" +
+            "      </filter>\n" +
+            "      <count>false</count>\n" +
+            "  </search>\n" +
+            "</request>";
+
+        function metadataSetTitleText(element, text) {
+            if (!element) {
+                return;
+            }
+            var value = (text || '').trim();
+            if (value) {
+                element.textContent = value;
+                element.classList.remove('metadata-pane-title-empty');
+            } else {
+                element.textContent = '';
+                element.classList.add('metadata-pane-title-empty');
+            }
+        }
+
+        function metadataExtractFieldValue(pane, fieldName, options) {
+            options = options || {};
+            var containerId = pane === 'left' ? 'metadataLeftPane' : 'metadataRightPane';
+            var container = document.getElementById(containerId);
+            if (!container) {
+                return '';
+            }
+            var row = container.querySelector('.metadata-field-row[data-field="' + fieldName + '"]');
+            if (!row) {
+                return '';
+            }
+            if (pane === 'right') {
+                var input = row.querySelector('input, textarea, select');
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        return input.checked ? (input.value || '1') : '';
+                    }
+                    var rawValue = input.value || '';
+                    return options.preserveWhitespace ? rawValue : rawValue.trim();
+                }
+            }
+            var cell = row.querySelector('td');
+            if (!cell) {
+                return '';
+            }
+            if (cell.getAttribute('data-null') === '1') {
+                return '';
+            }
+            var textValue = cell.textContent || '';
+            return options.preserveWhitespace ? textValue : textValue.trim();
+        }
+
+        function metadataExtractDatasetTitle(pane) {
+            return metadataExtractFieldValue(pane, 'DatasetTitle');
+        }
+
+        function metadataUpdateLeftHeader() {
+            metadataSetTitleText(document.getElementById('metadataLeftTitle'), metadataExtractDatasetTitle('left'));
+        }
+
+        function metadataUpdateRightHeader() {
+            var titleElement = document.getElementById('metadataRightTitle');
+            if (!titleElement) {
+                return;
+            }
+            if (metadataRightIsNew) {
+                metadataSetTitleText(titleElement, 'New Metadata');
+                return;
+            }
+            metadataSetTitleText(titleElement, metadataExtractDatasetTitle('right'));
+        }
+
+        function metadataRefreshRightRecordState() {
+            var hidden = document.getElementById('metadata_is_new');
+            metadataRightIsNew = !!(hidden && hidden.value === '1');
+        }
+
+        function metadataNormalizeSourceId(raw) {
+            return (raw || '').trim().toLowerCase();
+        }
+
+        function metadataUpdateBioCaseButtonState() {
+            var button = document.getElementById('metadataBioCaseButton');
+            if (!button) {
+                return;
+            }
+            var sourceId = metadataNormalizeSourceId(metadataExtractFieldValue('right', 'SourceInstitutionID'));
+            var hasSource = !!sourceId;
+            button.disabled = !hasSource;
+            if (hasSource) {
+                button.title = 'BioCASe Query for ' + sourceId;
+            } else {
+                button.title = 'SourceInstitutionID required';
+            }
+        }
+
+        function metadataGetBioCaseQuery() {
+            var custom = metadataExtractFieldValue('right', 'BioCaseQuery', { preserveWhitespace: true });
+            if (custom) {
+                return custom;
+            }
+            return metadataBioCaseQueryTemplate;
+        }
+
+        function metadataOpenBioCase() {
+            var sourceId = metadataNormalizeSourceId(metadataExtractFieldValue('right', 'SourceInstitutionID'));
+            if (!sourceId) {
+                var messages = document.getElementById('metadataMessages');
+                if (messages) {
+                    messages.innerHTML = "<div class='metadata-message warning'>SourceInstitutionID fehlt.</div>";
+                }
+                metadataUpdateBioCaseButtonState();
+                return false;
+            }
+            var action = "https://access.jacq.org/biocase/pywrapper.cgi?dsa=gbif_" + encodeURIComponent(sourceId);
+            var query = metadataGetBioCaseQuery();
+            var form = document.getElementById('metadataBioCaseForm');
+            var textarea = document.getElementById('metadataBioCaseQueryField');
+            if (!form || !textarea) {
+                return false;
+            }
+            form.setAttribute('action', action);
+            textarea.value = query;
+            form.submit();
+            return false;
+        }
 
         function metadataMarkDirty() {
             metadataDirty = true;
@@ -244,8 +407,17 @@ if (!$userHasAccess) {
                 if (el.dataset.dirtyBound === '1') {
                     return;
                 }
-                el.addEventListener('change', metadataMarkDirty);
-                el.addEventListener('input', metadataMarkDirty);
+                var handleChange = function () {
+                    metadataMarkDirty();
+                    if (!metadataRightIsNew && el.name === 'DatasetTitle') {
+                        metadataUpdateRightHeader();
+                    }
+                    if (el.name === 'SourceInstitutionID') {
+                        metadataUpdateBioCaseButtonState();
+                    }
+                };
+                el.addEventListener('change', handleChange);
+                el.addEventListener('input', handleChange);
                 el.dataset.dirtyBound = '1';
             });
         }
@@ -258,16 +430,20 @@ if (!$userHasAccess) {
         }
 
         function metadataAfterLeftRender() {
+            metadataUpdateLeftHeader();
             scheduleMetadataAlign();
         }
 
         function metadataAfterRightRender(state) {
             metadataBindEditEvents();
+            metadataRefreshRightRecordState();
             if (state === 'dirty') {
                 metadataMarkDirty();
             } else {
                 metadataMarkClean();
             }
+            metadataUpdateRightHeader();
+            metadataUpdateBioCaseButtonState();
             scheduleMetadataAlign();
         }
 
@@ -369,6 +545,12 @@ if (!$userHasAccess) {
                 rightElement.value = isNull ? '' : value;
             }
             metadataMarkDirty();
+            if (!metadataRightIsNew && field === 'DatasetTitle') {
+                metadataUpdateRightHeader();
+            }
+            if (field === 'SourceInstitutionID') {
+                metadataUpdateBioCaseButtonState();
+            }
             scheduleMetadataAlign();
         }
 
@@ -430,13 +612,27 @@ if (!$userHasAccess) {
 <div id="metadataMessages"></div>
 <div id="metadataEditor">
     <div class="metadata-pane">
-        <h2>Reference (read only)</h2>
+        <h2>
+            <div class="metadata-pane-title-text">
+                <span class="metadata-pane-title-label">Reference (read only)</span>
+                <span id="metadataLeftTitle" class="metadata-pane-title-value metadata-pane-title-empty"></span>
+            </div>
+        </h2>
         <div id="metadataLeftPane"></div>
     </div>
     <div class="metadata-pane">
-        <h2>Edit</h2>
+        <h2>
+            <div class="metadata-pane-title-text">
+                <span class="metadata-pane-title-label">Edit</span>
+                <span id="metadataRightTitle" class="metadata-pane-title-value metadata-pane-title-empty"></span>
+            </div>
+            <button type="button" class="cssfbutton metadata-biocase-button" id="metadataBioCaseButton" onclick="return metadataOpenBioCase();" disabled>&lt;BioCASe&gt;</button>
+        </h2>
         <div id="metadataRightPane"></div>
     </div>
 </div>
+<form id="metadataBioCaseForm" action="" method="post" target="_blank" style="display:none;">
+    <textarea name="query" id="metadataBioCaseQueryField"></textarea>
+</form>
 </body>
 </html>
