@@ -236,6 +236,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     }
 
     $found_rows = 0;
+    $executedQuery = '';
     if (strlen($sql_restrict_specimen . $sql_restrict_species) == 0) {
         echo "<b>empty search criteria are not allowed</b>\n";
     }
@@ -316,7 +317,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
 
-        $result = dbi_query($_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+        $executedQuery = $_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage";
+        $result = dbi_query($executedQuery);
         $fr_result = dbi_query("SELECT FOUND_ROWS() AS `found_rows`");
         $fr_row = mysqli_fetch_array($fr_result);
         $found_rows = $fr_row['found_rows'];
@@ -325,7 +327,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $page = max((int)ceil($found_rows / $itemsPerPage) - 1, 0);
             $_SESSION['sCurrentSpecimenPage'] = $page;
             $start = $page * $itemsPerPage;
-            $result = dbi_query($_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+            $executedQuery = $_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage";
+            $result = dbi_query($executedQuery);
         }
 
         if (mysqli_num_rows($result) > 0) {

@@ -884,7 +884,11 @@ if ($_SESSION['sType'] == 1) {  // list specimens
                  ta4.author author4, ta5.author author5,
                  te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                  te4.epithet epithet4, te5.epithet epithet5,
-                 c.Sammler, c2.Sammler_2, ss.series, s.series_number, s.Nummer, s.alt_number, s.Datum,
+                 c.Sammler, c2.Sammler_2, ss.series, s.series_number, s.Nummer, s.alt_number,
+                 IF(s.Datum2 IS NULL OR s.Datum2 = '' OR s.Datum2 = s.Datum, s.Datum,
+                    CONCAT(s.Datum, ' - ', s.Datum2)) AS Datum,
+                 s.Datum AS DatumStart,
+                 s.Datum2 AS DatumEnd,
                  s.HerbNummer, mc.collection, mc.coll_short
                 FROM (herbarinput_log.log_specimens ls, tbl_tax_species ts, tbl_tax_genera tg, tbl_management_collections mc, tbl_specimens s)
                  LEFT JOIN tbl_labels l ON (ls.specimenID = l.specimen_ID AND ls.userID = l.userID)
