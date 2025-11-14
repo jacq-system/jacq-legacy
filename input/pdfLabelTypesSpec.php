@@ -142,8 +142,8 @@ function makeText($id, $sub)
              te4.epithet epithet4, te5.epithet epithet5,
              ts.synID, ts.taxonID,
              tst.typified_Date, tst.typified_by_Person,
-             mc.coll_short_prj,
-             s.HerbNummer, s.series_number, s.Nummer, s.alt_number, s.Datum, s.taxonID AS taxonIDspecimens
+            mc.coll_short_prj,
+            s.HerbNummer, s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2, s.taxonID AS taxonIDspecimens
             FROM (tbl_specimens_types tst, tbl_typi tt, tbl_tax_species ts, tbl_specimens s, tbl_management_collections mc)
              LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
              LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
@@ -249,7 +249,10 @@ function makeText($id, $sub)
             if ($row2['series']) $text['collector'] .= " " . $row2['series'];
             if ($row['Nummer']) $text['collector'] .= " " . $row['Nummer'];
             if ($row['alt_number']) $text['collector'] .= " " . $row['alt_number'];
-            if (strstr($row['alt_number'],"s.n.")) $text['collector'] .= " [" . $row['Datum'] . "]";
+            $collectorDate = formatLabelDateRange($row['Datum'], $row['Datum2']);
+            if (strstr($row['alt_number'], "s.n.") && $collectorDate) {
+                $text['collector'] .= " [" . $collectorDate . "]";
+            }
         }
         $text['locked'] = false;
     } else {
@@ -286,26 +289,25 @@ class LABEL extends TCPDF
         parent::__construct($orient);
     }
 
-    function SetFont($family, $style='', $size=0)
+    public function SetFont($family, $style='', $size=0, $fontfile='', $subset='default', $out=true)
     {
-       if (!$this->abort) parent::SetFont($family, $style, $size);
+        if (!$this->abort) parent::SetFont($family, $style, $size, $fontfile, $subset, $out);
     }
 
-    function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=0, $link='')
+    public function Cell($w, $h=0, $txt='', $border=0, $ln=0, $align='', $fill=false, $link='', $stretch=0, $ignore_min_height=false, $calign='T', $valign='M')
     {
-        if (!$this->abort) parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link);
+        if (!$this->abort) parent::Cell($w, $h, $txt, $border, $ln, $align, $fill, $link, $stretch, $ignore_min_height, $calign, $valign);
     }
 
     // BP, 08/2010: changes for TCPDF PHP 5: the parameters of MultiCell have changed...
-    function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=0, $ln=1)
+    public function MultiCell($w, $h, $txt, $border=0, $align='J', $fill=false, $ln=1, $x='', $y='', $reseth=true, $stretch=0, $ishtml=false, $autopadding=true, $maxh=0, $valign='T', $fitcell=false)
     {
-        //if (!$this->abort) parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln);
-        /*if (!$this->abort)*/ parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln,'','',true,0,false,false);
+        if (!$this->abort) parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln, $x, $y, $reseth, $stretch, $ishtml, $autopadding, $maxh, $valign, $fitcell);
     }
 
-    function writeHTML($html, $ln=true, $fill=0)
+    public function writeHTML($html, $ln=true, $fill=false, $reseth=false, $cell=false, $align='')
     {
-        if (!$this->abort) parent::writeHTML($html, $ln, $fill);
+        if (!$this->abort) parent::writeHTML($html, $ln, $fill, $reseth, $cell, $align);
     }
 
     function SetColumn($col)
