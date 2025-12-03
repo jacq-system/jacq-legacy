@@ -36,7 +36,12 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
     $sql_names =  " s.specimen_ID, tg.genus, s.digital_image,
                     c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-                    s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
+                    s.Nummer, s.alt_number,
+                    IF(s.Datum2 IS NULL OR s.Datum2 = '' OR s.Datum2 = s.Datum, s.Datum,
+                       CONCAT(s.Datum, ' - ', s.Datum2)) AS Datum,
+                    s.Datum AS DatumStart,
+                    s.Datum2 AS DatumEnd,
+                    s.HerbNummer,
                     n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.source_id, mc.coll_short, t.typus_lat,
                     s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                     s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,
@@ -100,6 +105,20 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
             else {
                 $sql_restrict_specimen .= " AND mc.source_id=" . quoteString(abs(trim($_SESSION['wuCollection'])));
+            }
+        }
+        if (trim($_SESSION['sNumberList'])) {
+            $numberList = preg_split('/[\r\n]+/', $_SESSION['sNumberList']);
+            $numberList = array_filter(array_map('trim', $numberList));
+            if (!empty($numberList)) {
+                $numberList = array_unique($numberList);
+                $escapedList = array();
+                foreach ($numberList as $herbNumber) {
+                    $escapedList[] = quoteString($herbNumber);
+                }
+                if (!empty($escapedList)) {
+                    $sql_restrict_specimen .= " AND s.HerbNummer IN (" . implode(',', $escapedList) . ")";
+                }
             }
         }
         if (trim($_SESSION['sNumber'])) {
@@ -217,6 +236,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     }
 
     $found_rows = 0;
+    $executedQuery = '';
     if (strlen($sql_restrict_specimen . $sql_restrict_species) == 0) {
         echo "<b>empty search criteria are not allowed</b>\n";
     }
@@ -297,7 +317,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             }
         }
 
-        $result = dbi_query($_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+        $executedQuery = $_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage";
+        $result = dbi_query($executedQuery);
         $fr_result = dbi_query("SELECT FOUND_ROWS() AS `found_rows`");
         $fr_row = mysqli_fetch_array($fr_result);
         $found_rows = $fr_row['found_rows'];
@@ -306,7 +327,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $page = max((int)ceil($found_rows / $itemsPerPage) - 1, 0);
             $_SESSION['sCurrentSpecimenPage'] = $page;
             $start = $page * $itemsPerPage;
-            $result = dbi_query($_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage");
+            $executedQuery = $_SESSION['sSQLquery'] . " ORDER BY " . $_SESSION['sOrder'] . " LIMIT $start, $itemsPerPage";
+            $result = dbi_query($executedQuery);
         }
 
         if (mysqli_num_rows($result) > 0) {

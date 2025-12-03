@@ -25,6 +25,18 @@ function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $al
         return utf8_decode($text);
 }
 
+function formatLabelDateRange($dateStart, $dateEnd)
+{
+    $dateStart = trim((string)$dateStart);
+    $dateEnd = trim((string)$dateEnd);
+
+    if ($dateStart && $dateEnd && $dateStart !== $dateEnd) {
+        return $dateStart . " - " . $dateEnd;
+    }
+
+    return $dateStart ?: $dateEnd;
+}
+
 function smallCaps ($text)
 {
     if (defined('TCPDF')) {

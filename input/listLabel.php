@@ -154,7 +154,17 @@ function collectorItem($row)
         if ($row['series']) $text .= " " . $row['series'];
         if ($row['Nummer']) $text .= " " . $row['Nummer'];
         if ($row['alt_number']) $text .= " " . $row['alt_number'];
-        if (strstr($row['alt_number'],"s.n.")) $text .= " [" . $row['Datum'] . "]";
+        if (strstr($row['alt_number'], "s.n.")) {
+            $dateStart = trim($row['Datum'] ?? '');
+            $dateEnd = trim($row['Datum2'] ?? '');
+            if ($dateStart || $dateEnd) {
+                $dateText = $dateStart;
+                if ($dateEnd && $dateEnd !== $dateStart) {
+                    $dateText .= ($dateText ? " - " : "") . $dateEnd;
+                }
+                $text .= " [" . $dateText . "]";
+            }
+        }
     }
 
     return $text;
@@ -407,7 +417,7 @@ function collectionItem($coll)
 if ($_SESSION['labelType'] == 1) {
     $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.typusID, l.label,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-             s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
+             s.Nummer, s.alt_number, s.Datum, s.Datum2, s.HerbNummer,
              n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
              s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
              s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec, s.ncbi_accession,

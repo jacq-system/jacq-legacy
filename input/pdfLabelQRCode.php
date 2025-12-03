@@ -116,7 +116,7 @@ class LABEL extends TCPDF
      * @param int $QRsize size of QRCode (default 12)
      * @param int $QRborder border around QRCode (default 2)
      */
-    public function setQRLabelSettings($rowsPerPage = 18, $colsPerPage = 3, $colwidth = 60, $QRsize = 12, $QRborder = 2)
+    public function setQRLabelSettings($rowsPerPage = 16, $colsPerPage = 3, $colwidth = 60, $QRsize = 12, $QRborder = 2)
     {
         $this->rowsPerPage   = $rowsPerPage;
         $this->colsPerPage   = $colsPerPage;
@@ -194,7 +194,7 @@ class LABEL extends TCPDF
     public function AddPage($orientation = '', $format = '', $keepmargins = false, $tocpage = false)
     {
         parent::AddPage($orientation, $format, $keepmargins, $tocpage);
-        $this->ymax = $this->getPageHeight() - $this->QRsize - 2 * $this->QRborder;
+        $this->ymax = $this->getPageHeight() - $this->QRsize - $this->QRsize - $this->QRsize - 2 * $this->QRborder;
         $this->SetCol(0);   //start at first column
     }
 

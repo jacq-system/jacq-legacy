@@ -255,7 +255,7 @@ function scanServer(int $server_id)
                 $url = $imageDef['imgserver_url'] . 'jacq-servlet/ImageServer';
             }
 
-            $client = new Client(['timeout' => 8]);
+            $client = new Client(['timeout' => 30]);
 
             // cycle through all possible first parts of picture filenames, get possible pictures from the picture-server and process them
             foreach ($searchpatterns as $searchpattern) {

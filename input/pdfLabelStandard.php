@@ -110,8 +110,8 @@ function makeText($id)  {
 
   if (trim($row['Datum'])) {
     $mon = array("Jan.", "Feb.", "Mar.", "Apr.", "May ", "Jun.", "Jul.", "Aug.", "Sep.", "Oct.", "Nov.", "Dec.");
-    $pieces1 = explode("-",$row['Datum']);
-    $pieces2 = explode("-",$row['Datum2']);
+    $pieces1 = array_pad(explode("-", (string)$row['Datum']), 3, '');
+    $pieces2 = array_pad(explode("-", (string)$row['Datum2']), 3, '');
     if (trim($row['Datum2'])) {
       if (trim($pieces1[0])==trim($pieces2[0])) {
         if (trim($pieces1[1]) && trim($pieces2[1]) && trim($pieces1[1])==trim($pieces2[1])) {
@@ -263,9 +263,8 @@ class LABEL extends TCPDF {
     $this->SetLeftMargin($this->offX+$this->offset+$margin);
   }
   // BP 08/2010: changes for TCPDF PHP 5: the parameters of MultiCell have changed...
-  function MultiCell($w, $h, $txt, $border=0, $align='L', $fill=false, $ln=1) {
-      // $autopadding needs to be false (default=true if $isHtml is false)
-      /*if (!$this->abort)*/ parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln,'','',true,0,false,false);
+  function MultiCell($w, $h, $txt, $border = 0, $align = 'L', $fill = false, $ln = 1, $x = '', $y = '', $reseth = true, $stretch = 0, $ishtml = false, $autopadding = false, $maxh = 0, $valign = 'T', $fitcell = false) {
+      parent::MultiCell($w, $h, $txt, $border, $align, $fill, $ln, $x, $y, $reseth, $stretch, $ishtml, $autopadding, $maxh, $valign, $fitcell);
   }
   // BP: END
 }
