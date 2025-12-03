@@ -37,7 +37,7 @@ $checks = array('ok' => array(), 'fail' => array(), 'noPicture' => array());
 $client = new Client(['timeout' => 8]);
 $dbLnk2 = DbAccess::ConnectTo('OUTPUT');
 
-$constraint = ' AND source_id_fk != 1 AND iiif_capable != 1';   // wu need special treatment, iiif-servers are not checked
+$constraint = ' AND source_id_fk != 1';   // wu needs special treatment
 if (!empty($_GET['source'])) {
     if (is_numeric($_GET['source'])) {
         $constraint .= " AND source_ID_fk = " . intval($_GET['source']);
@@ -53,7 +53,7 @@ if (!empty($_GET['source'])) {
         }
     }
 }
-$rows = $dbLnk2->query("SELECT source_id_fk, img_coll_short
+$rows = $dbLnk2->query("SELECT source_id_fk, img_coll_short, iiif_capable
                         FROM tbl_img_definition
                         WHERE imgserver_type = 'djatoka'
                          $constraint
@@ -63,10 +63,11 @@ if (count($rows) > 0) {
     foreach ($rows as $row) {
 
         $ok = true;
-        $errorRPC = $warningRPC = $errorImage = "";
+        $errorRPC = $warningRPC = $errorImage = $warningImage = "";
 
-        $result = $dbLnk2->query("SELECT s.specimen_ID
+        $result = $dbLnk2->query("SELECT s.specimen_ID, id.extension, id.manifest_backend
                                   FROM tbl_specimens s, tbl_management_collections mc
+                                  LEFT JOIN herbar_pictures.iiif_definition id ON id.source_id_fk = mc.source_id
                                   WHERE s.collectionID = mc.collectionID
                                    AND s.accessible = 1
                                    AND s.digital_image = 1
@@ -74,13 +75,18 @@ if (count($rows) > 0) {
                                   ORDER BY s.specimen_ID
                                   LIMIT 1");
         if ($result->num_rows > 0) {
-            $specimenID = $result->fetch_assoc()['specimen_ID'];
+            $specimen = $result->fetch_assoc();
+            $specimenID = $specimen['specimen_ID'];
             $picdetails = getPicDetails($specimenID);
             $filename = $picdetails['originalFilename'];
-            error_log(var_export($picdetails, true));
 
+            if ($row['iiif_capable'] && $specimen['extension'] == 'djatoka') {
+                $url = substr($specimen['manifest_backend'], 5);
+            } else {
+                $url = $picdetails['url'] . 'jacq-servlet/ImageServer';
+            }
             try {
-                $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
+                $response1 = $client->request('POST', $url, [
                     'json' => ['method' => 'listResources',
                         'params' => [$picdetails['key'],
                             [$picdetails['filename'],
@@ -93,7 +99,7 @@ if (count($rows) > 0) {
                                 "obs_" . $picdetails['specimenID'] . "_%"
                             ]
                         ],
-                        'id' => 1
+                        'id' => '1'
                     ],
                     'verify' => false
                 ]);
@@ -118,20 +124,23 @@ if (count($rows) > 0) {
                 $errorRPC = $e->getMessage();
             }
 
-            try {
+            if ($row['iiif_capable'] == 0) {
                 // Construct URL to djatoka-resolver
                 $url = preg_replace('/([^:])\/\//', '$1/', $picdetails['url'] . "adore-djatoka/resolver"
-                     . "?url_ver=Z39.88-2004"
-                     . "&rft_id=$filename"
-                     . "&svc_id=info:lanl-repo/svc/getRegion"
-                     . "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"
-                     . "&svc.format=image/jpeg"
-                     . "&svc.scale=0.1");
+                        . "?url_ver=Z39.88-2004"
+                        . "&rft_id=$filename"
+                        . "&svc_id=info:lanl-repo/svc/getRegion"
+                        . "&svc_val_fmt=info:ofi/fmt:kev:mtx:jpeg2000"
+                        . "&svc.format=image/jpeg"
+                        . "&svc.scale=0.1");
+            } else {
+                $url = "https://api.jacq.org/v1/images/download/$specimenID?withredirect=1";
+            }
+            try {
                 $response2 = $client->request('GET', $url, [
-                    'verify' => false,
-                    'http_errors' => false
+                        'verify' => false,
+                        'http_errors' => false
                 ]);
-//            $data = json_decode($response2->getBody()->getContents(), true);
                 $statusCode = $response2->getStatusCode();
                 if ($statusCode != 200) {
                     $ok = false;
@@ -148,28 +157,38 @@ if (count($rows) > 0) {
                 $errorImage = htmlentities($e->getMessage());
             }
             if ($ok) {
-                $checks['ok'][] = ['source_id' => $row['source_id_fk'],
-                    'source' => $row['img_coll_short'],
-                    'specimenID' => $specimenID
-                ];
-            } elseif ($warningRPC) {
-                $checks['warn'][] = ['source_id' => $row['source_id_fk'],
-                    'source' => $row['img_coll_short'],
+                $checks['ok'][] = [
+                    'source_id'  => $row['source_id_fk'],
+                    'source'     => $row['img_coll_short'],
                     'specimenID' => $specimenID,
+                    'imagelink'  => $url,
+                    'iiif'       => $row['iiif_capable']
+                ];
+            } elseif (($warningRPC && !$errorImage) || ($warningImage && !$errorRPC)) {
+                $checks['warn'][] = [
+                    'source_id'  => $row['source_id_fk'],
+                    'source'     => $row['img_coll_short'],
+                    'specimenID' => $specimenID,
+                    'imagelink'  => $url,
+                    'iiif'       => $row['iiif_capable'],
                     'warningRPC' => $warningRPC,
-                    'errorImage' => $errorImage
+                    'errorImage' => $warningImage
                 ];
             } else {
-                $checks['fail'][] = ['source_id' => $row['source_id_fk'],
-                    'source' => $row['img_coll_short'],
+                $checks['fail'][] = [
+                    'source_id'  => $row['source_id_fk'],
+                    'source'     => $row['img_coll_short'],
                     'specimenID' => $specimenID,
-                    'errorRPC' => $errorRPC,
-                    'errorImage' => $errorImage
+                    'imagelink'  => $url,
+                    'iiif'       => $row['iiif_capable'],
+                    'errorRPC'   => $errorRPC ?: $warningRPC,
+                    'errorImage' => $errorImage ?: $warningImage
                 ];
             }
         } else {
-            $checks['noPicture'][] = ['source_id' => $row['source_id_fk'],
-                'source' => $row['img_coll_short']
+            $checks['noPicture'][] = [
+                'source_id' => $row['source_id_fk'],
+                'source'    => $row['img_coll_short']
             ];
         }
     }
@@ -184,7 +203,7 @@ if (count($rows) > 0) {
     <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
 <?php
     foreach ($checks['fail'] as $row) {
-        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>";
+        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td><a href='{$row['imagelink']}' target='_blank'>{$row['specimenID']}</a></td>";
         if (!empty($row['errorRPC'])) {
             echo "<td class='fail'>" . $row['errorRPC'] . "</td>";
         } else {
@@ -193,7 +212,7 @@ if (count($rows) > 0) {
         if (!empty($row['errorImage'])) {
             echo "<td class='fail'>" . $row['errorImage'] . "</td>";
         } else {
-            echo "<td class='ok'>OK</td>";
+            echo "<td class='ok'>OK" . (($row['iiif']) ? " (IIIF)" : '') . "</td>";
         }
         echo "<tr>\n";
     }
@@ -207,7 +226,7 @@ if (count($rows) > 0) {
           <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
           <?php
           foreach ($checks['warn'] as $row) {
-              echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>";
+              echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td><a href='{$row['imagelink']}' target='_blank'>{$row['specimenID']}</a></td>";
               if (!empty($row['warningRPC'])) {
                   echo "<td class='fail'>" . $row['warningRPC'] . "</td>";
               } else {
@@ -216,7 +235,7 @@ if (count($rows) > 0) {
               if (!empty($row['errorImage'])) {
                   echo "<td class='fail'>" . $row['errorImage'] . "</td>";
               } else {
-                  echo "<td class='ok'>OK</td>";
+                  echo "<td class='ok'>OK" . (($row['iiif']) ? " (IIIF)" : '') . "</td>";
               }
               echo "<tr>\n";
           }
@@ -230,9 +249,9 @@ if (count($rows) > 0) {
     <tr><th>source (id)</th><th>specimen-id</th><th>RPC</th><th>image</th></tr>
 <?php
     foreach ($checks['ok'] as $row) {
-        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td>" . $row['specimenID'] . "</td>"
+        echo "<tr><td>" . $row['source'] . " (" . $row['source_id'] . ")</td><td><a href='{$row['imagelink']}' target='_blank'>{$row['specimenID']}</a></td>"
            . "<td class='ok'>OK</td>"
-           . "<td class='ok'>OK</td>"
+           . "<td class='ok'>OK" . (($row['iiif']) ? " (IIIF)" : '') . "</td>"
            . "<tr>\n";
     }
 ?>
