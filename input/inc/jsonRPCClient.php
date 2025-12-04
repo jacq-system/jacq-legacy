@@ -69,7 +69,7 @@ class jsonRPCClient {
 		// debug state
 		empty($debug) ? $this->debug = false : $this->debug = true;
 		// message id
-		$this->id = 1;
+		$this->id = '1';
 	}
 
 	/**

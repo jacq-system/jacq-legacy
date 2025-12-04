@@ -51,7 +51,13 @@ class jacqServletJsonRPCClient extends jsonRPCClient {
 
         // Fetch required properties
         $this->key = $row['key'];
-        $this->url = $row['imgserver_url'] . 'jacq-servlet/ImageServer';
+        if ($row['iiif_capable']) {
+            // get url from herbar_pictures.iiif_definition instead of tbl_img_definition
+            $this->url = substr($this->db_input->query("SELECT manifest_backend FROM herbar_pictures.iiif_definition WHERE source_id_fk = {$row['source_id_fk']}")
+                                               ->fetch()['manifest_backend'], 5);
+        } else {
+            $this->url = $row['imgserver_url'] . 'jacq-servlet/ImageServer';
+        }
 
         // Finally call parent constructor
         parent::__construct($this->url, false);
