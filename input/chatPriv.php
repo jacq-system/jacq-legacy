@@ -67,7 +67,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "chatIsClosed");
 </head>
 
 <body onLoad="timer()" onUnload="stopEverything()">
-<div id=container style="border:1px solid #7a7a7a;width:500">
+<div id=container style="border:1px solid #7a7a7a;width:500px">
   <div id="chatinputdiv" id="chatinputdiv" style="width: 100%" >
     <form id="chatform" name="chatform" style="display:inline;">
       <table cellpadding=2 cellspacing=0 border=0 width="98%">

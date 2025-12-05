@@ -877,7 +877,7 @@ if ($run == 2) {  // file uploaded
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:yellow\">";
                     if ($block == 1) {
-                        echo "<input type='hidden' name='similarTaxa_${ctr}_orig' value='" . htmlspecialchars($import[$i][4]) . "' />";
+                        echo "<input type='hidden' name='similarTaxa_{$ctr}_orig' value='" . htmlspecialchars($import[$i][4]) . "' />";
                         echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"0\" checked>no import<br>";
                         foreach ($taxamatch[$i] as $val) {
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"" . htmlspecialchars($val['taxonID']) . "\">"

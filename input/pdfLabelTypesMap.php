@@ -63,7 +63,7 @@ function makeText($id, $sub)  {
   if (mysqli_num_rows($result)>0) {
     $row = mysqli_fetch_array($result);
 
-    $text['typus_lat'] = utf8_decode($row['typus_lat']);
+    $text['typus_lat'] = mb_convert_encoding($row['typus_lat'], 'ISO-8859-1', 'UTF-8');
     $text['taxon'] = taxonWithHybrids($row, true);
     $text['DT'] = $row['DallaTorreIDs'].$row['DallaTorreZusatzIDs'];
     $text['coll_short'] = strtoupper($row['coll_short_prj']);
