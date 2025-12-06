@@ -1,21 +1,11 @@
 <?php
 //ini_set('memory_limit', '32M');
 ini_set("max_execution_time","3600");
-$check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
-if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
-  session_cache_limiter('none');
-}
 
 session_start();
 require("inc/connect.php");
 
-define('TCPDF','1');
-if (isset($_OPTIONS['tcpdf'])) {
-    require_once('inc/tcpdf_' . strtr($_OPTIONS['tcpdf'], '.', '_') . '/tcpdf.php');
-} else {
-    require_once('inc/tcpdf_6_3_2/tcpdf.php');
-}
-
+require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * make the text elements to show on the scientific name label of a given taxon

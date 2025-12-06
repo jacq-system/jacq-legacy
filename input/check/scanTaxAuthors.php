@@ -26,7 +26,7 @@ function parseAuthors ($text)
     $parts = preg_split('/) |, | & | ex | in /', trim($text));  // split() is depricated as of PHP 5.3.0
 
     $authors = array();
-    $skip == false;
+    $skip = false;
     foreach ($parts as $k => $part) {
         if ($skip) {
             $skip = false;

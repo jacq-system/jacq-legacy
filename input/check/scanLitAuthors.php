@@ -17,7 +17,7 @@ function parseAuthors ($text)
     $parts = explode(', ', $text);
 
     $authors = array();
-    $skip == false;
+    $skip = false;
     foreach ($parts as $k => $part) {
         if ($skip) {
             $skip = false;

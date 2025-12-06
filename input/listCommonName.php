@@ -31,7 +31,8 @@ $id = intval($_GET['ID']);
 
 <body>
 
-<?php/*
+<?php
+/*
 $sql = "SELECT taxonID, tg.genus, ".
         "ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ".
         "ta4.author author4, ta5.author author5, ".

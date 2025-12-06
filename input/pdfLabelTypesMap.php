@@ -1,30 +1,11 @@
 <?php
 //ini_set('memory_limit', '32M');
-$check = $_SERVER['HTTP_USER_AGENT'];
-if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
-  session_cache_limiter('none');
-}
 
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
 
-define('TCPDF','1');
-if (isset($_OPTIONS['tcpdf'])) {
-    require_once('inc/tcpdf_' . strtr($_OPTIONS['tcpdf'], '.', '_') . '/tcpdf.php');
-} else {
-    require_once('inc/tcpdf_6_3_2/tcpdf.php');
-}
-// BP, 08/2010
-//if ($_OPTIONS['tcpdf_5_8']) {
-//    require_once('inc/tcpdf_5_8_001/config/lang/eng.php');
-//    require_once('inc/tcpdf_5_8_001/tcpdf.php');
-//    //error_log("TCPDF 5.8",0);
-//} else {
-//    require_once('inc/tcpdf/config/lang/eng.php');
-//    require_once('inc/tcpdf/tcpdf.php');
-//    //error_log("TCPDF 4.5",0);
-//}
+require_once __DIR__ . '/vendor/autoload.php';
 
 function makeText($id, $sub)  {
 
@@ -63,7 +44,7 @@ function makeText($id, $sub)  {
   if (mysqli_num_rows($result)>0) {
     $row = mysqli_fetch_array($result);
 
-    $text['typus_lat'] = utf8_decode($row['typus_lat']);
+    $text['typus_lat'] = mb_convert_encoding($row['typus_lat'], 'ISO-8859-1', 'UTF-8');
     $text['taxon'] = taxonWithHybrids($row, true);
     $text['DT'] = $row['DallaTorreIDs'].$row['DallaTorreZusatzIDs'];
     $text['coll_short'] = strtoupper($row['coll_short_prj']);

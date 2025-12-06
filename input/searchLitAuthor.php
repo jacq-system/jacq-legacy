@@ -8,7 +8,7 @@ require("inc/cssf.php");
 <html>
 <head>
   <title>herbardb - search Lit Author</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-81">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
   <script language="JavaScript">
     function sendAuthor(sel) {

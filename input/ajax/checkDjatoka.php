@@ -220,7 +220,7 @@ ORDER BY source_name
             $de = date('d.m.Y H:i', $threadInfo['endtime']);
             $type = ( $threadInfo['type'] == 1 ) ? 'Import' : 'Export';
 
-            $result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}', {$threadInfo['type']})\">[${type}] [{$threadid}] {$d} - {$de}</a><br>";
+            $result.="<a href=\"javascript:loadImportLog('{$threadid}','{$d}', {$threadInfo['type']})\">[{$type}] [{$threadid}] {$d} - {$de}</a><br>";
             if ($x >= $end)
                 break;
         }
@@ -396,7 +396,7 @@ EOF;
         // filter with prefix (e.g. wu_) at institution
         $dbsth = $dbPictures->query("SELECT count(*) FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id");
         $c[1] = $dbsth->fetchColumn();
-        $dbsth = $dbPictures->query("SELECT `filename`, `inconsistency`, `faulty` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id ORDER BY `filename` ${limit}");
+        $dbsth = $dbPictures->query("SELECT `filename`, `inconsistency`, `faulty` FROM `djatoka_files` WHERE `specimen_ID` IS NULL AND `scan_id` = $scan_id ORDER BY `filename` {$limit}");
         foreach ($dbsth as $row) {
             $val = htmlspecialchars($row['filename']);
             $inc = '';

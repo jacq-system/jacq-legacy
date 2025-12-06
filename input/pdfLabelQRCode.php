@@ -1,23 +1,13 @@
 <?php
 //ini_set('memory_limit', '256M');
 ini_set("max_execution_time","3600");
-$check = filter_input(INPUT_SERVER, 'HTTP_USER_AGENT');
-if (strpos($check, "MSIE") && strrpos($check,")") == strlen($check) - 1) {
-  session_cache_limiter('none');
-}
 
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
 require_once 'inc/stableIdentifierFunctions.php';
 
-define('TCPDF','1');
-if (isset($_OPTIONS['tcpdf'])) {
-    require_once('inc/tcpdf_' . strtr($_OPTIONS['tcpdf'], '.', '_') . '/tcpdf.php');
-} else {
-    require_once('inc/tcpdf_6_3_2/tcpdf.php');
-}
-
+require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * if a HerbNumber starts with the source-code of the institution, leave it there, otherwise add it
@@ -74,7 +64,7 @@ function makePreText($sourceID, $collectionID, $number)
     $text['Herbarium'] = $row_source['QR_code_header'];
 
     $row_coll = dbi_query("SELECT collection FROM herbarinput.tbl_management_collections WHERE collectionID = '$collectionID'")->fetch_assoc();
-    $text['Collection'] = ($row_coll['collection']) ? 'Herbarium ' . $row_coll['collection'] : "";
+    $text['Collection'] = (!empty($row_coll['collection'])) ? 'Herbarium ' . $row_coll['collection'] : "";
 
     $text['UnitID'] = makeUnitID($number, $row_source['SourceInstitutionID']);
     $text['StblID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);

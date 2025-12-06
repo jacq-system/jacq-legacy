@@ -381,14 +381,14 @@ VALUES
 								$successx[]=array($x,$taxonID,$acctaxonID);
 								continue;
 							}else{
-								$notdone[]=array($x,$taxonID,$acctaxonID,$dblink->error);
+								$notdone[]=array($x,$taxonID,$acctaxonID,$dbLink->error);
 							}
 						}else{
 							$existed=(isset($row2['c']) && $row2['c']>0);
 							$notdone[]=array($x,$taxonID,$acctaxonID,$existed?1:'unknown');
 						}
 					}else{
-						$notdone[]=array($x,$taxonID,$acctaxonID,$dblink->error);
+						$notdone[]=array($x,$taxonID,$acctaxonID,$dbLink->error);
 					}
 				}
 			}

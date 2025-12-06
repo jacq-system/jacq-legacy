@@ -222,14 +222,14 @@ VALUES
 						$successx[]=array($x,$id1,$id2);
 						continue;
 					}else{
-						$notdone[]=array($x,$id1,$id2,$dblink->error);
+						$notdone[]=array($x,$id1,$id2,$dbLink->error);
 					}
 				}else{
 					$existed=(isset($row2['c']) && $row2['c']>0);
 					$notdone[]=array($x,$id1,$id2,$existed?1:'unknown');
 				}
 			}else{
-				$notdone[]=array($x,$id1,$id2,$dblink->error);
+				$notdone[]=array($x,$id1,$id2,$dbLink->error);
 			}
 		}
 

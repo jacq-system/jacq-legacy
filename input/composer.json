@@ -1,12 +1,14 @@
 {
   "require": {
-    "php": ">=7.4",
+    "php": ">=8.3",
     "jaxon-php/jaxon-core": "~3.2",
     "phpoffice/phpspreadsheet": "^1.20",
     "guzzlehttp/guzzle": "^7.0",
+    "tecnickcom/tcpdf": "^6.4.4",
     "ext-mysqli": "*",
     "ext-curl": "*",
-    "ext-json": "*"
+    "ext-json": "*",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "psr-4": {
