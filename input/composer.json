@@ -4,6 +4,7 @@
     "jaxon-php/jaxon-core": "~3.2",
     "phpoffice/phpspreadsheet": "^1.20",
     "guzzlehttp/guzzle": "^7.0",
+    "tecnickcom/tcpdf": "^6.4.4",
     "ext-mysqli": "*",
     "ext-curl": "*",
     "ext-json": "*",

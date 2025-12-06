@@ -1,27 +1,4 @@
 <?php
-function collection ($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt_number, $Datum)
-{
-    $text = $Sammler;
-    if (strstr($Sammler_2, "&") || strstr($Sammler_2, "et al.")) {
-        $text .= " et al.";
-    } elseif ($Sammler_2) {
-        $text .= " & " . $Sammler_2;
-    }
-    if ($series_number) {
-        if ($Nummer) $text .= " " . $Nummer;
-        if ($alt_number && trim($alt_number) != "s.n.") $text .= " " . $alt_number;
-        if ($series) $text .= " " . $series;
-        $text .= " " . $series_number;
-    } else {
-        if ($series) $text .= " " . $series;
-        if ($Nummer) $text .= " " . $Nummer;
-        if ($alt_number) $text .= " " . $alt_number;
-        if (strstr($alt_number, "s.n.")) $text .= " [" . $Datum . "]";
-    }
-
-    return defined('TCPDF') ? $text : mb_convert_encoding($text, 'ISO-8859-1', 'UTF-8');
-}
-
 function formatLabelDateRange($dateStart, $dateEnd)
 {
     $dateStart = trim((string)$dateStart);
@@ -36,83 +13,39 @@ function formatLabelDateRange($dateStart, $dateEnd)
 
 function smallCaps ($text)
 {
-    if (defined('TCPDF')) {
-        $ucase = mb_strtoupper($text, 'UTF-8');
-        $sc = false;
-        $outtext = "";
-        for ($i = 0; $i < mb_strlen($text, 'UTF-8'); $i++) {
-            $ch_text  = mb_substr($text,$i, 1, 'UTF-8');
-            $ch_ucase = mb_substr($ucase,$i, 1, 'UTF-8');
-            if ($ch_text != $ch_ucase && !$sc) {
-                $outtext .= "<small>";
-                $sc = true;
-            } elseif ($ch_text == $ch_ucase && $sc) {
-                $outtext .= "</small>";
-                $sc = false;
-            }
-            $outtext .= $ch_ucase;
+    $ucase = mb_strtoupper($text, 'UTF-8');
+    $sc = false;
+    $outtext = "";
+    for ($i = 0; $i < mb_strlen($text, 'UTF-8'); $i++) {
+        $ch_text  = mb_substr($text,$i, 1, 'UTF-8');
+        $ch_ucase = mb_substr($ucase,$i, 1, 'UTF-8');
+        if ($ch_text != $ch_ucase && !$sc) {
+            $outtext .= "<small>";
+            $sc = true;
+        } elseif ($ch_text == $ch_ucase && $sc) {
+            $outtext .= "</small>";
+            $sc = false;
         }
-        if ($sc) $outtext .= "</small>";
+        $outtext .= $ch_ucase;
+    }
+    if ($sc) $outtext .= "</small>";
 
-        return $outtext;
-    } else {
-        //setlocale(LC_CTYPE, 'de_DE');
-        //$dummy = strtoupper(utf8_decode($text));
-        return "<sm>" . mb_convert_encoding($text, 'ISO-8859-1', 'UTF-8') . "</sm>";
-    }
-  /*
-  $ret = "";
-  $tagB = "<sm>";
-  $tagE = "</sm>";
-  $firstpassed = $tagWritten = false;
-  for ($i=0;$i<strlen($dummy);$i++) {
-    $letter = substr($dummy,$i,1);
-    if (ctype_alpha($letter)) {
-      if (!$firstpassed) {
-        $firstpassed = true;
-      }
-      elseif (!$tagWritten) {
-        $ret .= $tagB;
-        $tagWritten = true;
-      }
-    }
-    elseif (ctype_space($letter)) {
-      if ($tagWritten) $ret .= $tagE;
-      $firstpassed = $tagWritten = false;
-    }
-    $ret .= $letter;
-  }
-  if ($tagWritten) $ret .= $tagE;
-  return $ret; */
+    return $outtext;
 }
 
 function taxon ($row, $withNl = false)
 {
-    if (defined('TCPDF')) {
-        $sep = ($withNl) ? "<br>" : " ";
+    $sep = ($withNl) ? "<br>" : " ";
 
-        $text = "<i>" . $row['genus'] . "</i>";
-        if ($row['epithet'])  $text .=              " <i>"   . $row['epithet']  . "</i> " . smallCaps($row['author']);
-        if ($row['epithet1']) $text .= $sep . "subsp. <i>"   . $row['epithet1'] . "</i> " . smallCaps($row['author1']);
-        if ($row['epithet2']) $text .= $sep . "var. <i>"     . $row['epithet2'] . "</i> " . smallCaps($row['author2']);
-        if ($row['epithet3']) $text .= $sep . "subvar. <i>"  . $row['epithet3'] . "</i> " . smallCaps($row['author3']);
-        if ($row['epithet4']) $text .= $sep . "forma <i>"    . $row['epithet4'] . "</i> " . smallCaps($row['author4']);
-        if ($row['epithet5']) $text .= $sep . "subforma <i>" . $row['epithet5'] . "</i> " . smallCaps($row['author5']);
+    $text = "<i>" . $row['genus'] . "</i>";
+    if ($row['epithet'])  $text .=              " <i>"   . $row['epithet']  . "</i> " . smallCaps($row['author']);
+    if ($row['epithet1']) $text .= $sep . "subsp. <i>"   . $row['epithet1'] . "</i> " . smallCaps($row['author1']);
+    if ($row['epithet2']) $text .= $sep . "var. <i>"     . $row['epithet2'] . "</i> " . smallCaps($row['author2']);
+    if ($row['epithet3']) $text .= $sep . "subvar. <i>"  . $row['epithet3'] . "</i> " . smallCaps($row['author3']);
+    if ($row['epithet4']) $text .= $sep . "forma <i>"    . $row['epithet4'] . "</i> " . smallCaps($row['author4']);
+    if ($row['epithet5']) $text .= $sep . "subforma <i>" . $row['epithet5'] . "</i> " . smallCaps($row['author5']);
 
-        return "$text";
-    } else {
-        $sep = ($withNl) ? "</p>\n<p>" : " ";
-
-        $text = "<ii>" . mb_convert_encoding($row['genus'], 'ISO-8859-1', 'UTF-8') . "</ii>";
-        if ($row['epithet'])  $text .=              " <ii>"   . mb_convert_encoding($row['epithet'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author']);
-        if ($row['epithet1']) $text .= $sep . "subsp. <ii>"   . mb_convert_encoding($row['epithet1'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author1']);
-        if ($row['epithet2']) $text .= $sep . "var. <ii>"     . mb_convert_encoding($row['epithet2'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author2']);
-        if ($row['epithet3']) $text .= $sep . "subvar. <ii>"  . mb_convert_encoding($row['epithet3'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author3']);
-        if ($row['epithet4']) $text .= $sep . "forma <ii>"    . mb_convert_encoding($row['epithet4'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author4']);
-        if ($row['epithet5']) $text .= $sep . "subforma <ii>" . mb_convert_encoding($row['epithet5'], 'ISO-8859-1', 'UTF-8') . "</ii> " . smallCaps($row['author5']);
-
-        return "<p>" . $text . "</p>";
-    }
+    return "$text";
 }
 
 function taxonWithHybrids ($row, $withNl = false)
@@ -182,9 +115,5 @@ function protolog($row)
     if ($row['figures']) $text .= "; " . $row['figures'];
     $text .= " (" . substr($row['jahr'], 0, 4) . ")";
 
-    if (defined('TCPDF')) {
-        return $text;
-    } else {
-        return mb_convert_encoding($text, 'ISO-8859-1', 'UTF-8');
-    }
+    return $text;
 }
