@@ -14,6 +14,8 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
     }
 }
 
+mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown
+
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
                      $_SESSION['username'],
                      $_SESSION['password'],
@@ -382,6 +384,18 @@ function formatPreUnitID($sourceID, $number)
     $unitID .= sprintf("%0{$digits}d", $number);
 
     return $unitID;
+}
+
+/**
+ * @param string $property
+ * @return string
+ */
+function getCssProperty(string $property)
+{
+    if ($property == "body.background-color") {
+        return "#008000";
+    }
+    return "";
 }
 
 /**
