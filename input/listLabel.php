@@ -244,6 +244,11 @@ function collectionItem($coll)
       jaxon_updtStandardLabel(id, data);
     }
 
+    function osMap(sid) {
+        OSMwindow = window.open('osm_leaflet.php?sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
+        OSMwindow.focus();
+    }
+
     function check_all() {
       for (var i=0, n=document.f.elements.length; i<n; i++) {
         if (document.f.elements[i].name.substring(0,11)=='batch_spec_') {
@@ -571,9 +576,12 @@ if ($_SESSION['labelType'] == 1) {
             }
             if ($lat != 0 && $lon != 0) {
                 $textLatLon = "<td class=\"out\" style=\"text-align: center\" title=\"" . round($lat, 2) . "&deg; / " . round($lon, 2)."&deg;\">"
-                            .  "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
-                            .   "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"webimages/mapquest.png\" width=\"15\">"
-                            .  "</a>"
+//                            .  "<a href=\"http://www.mapquest.com/maps/map.adp?latlongtype=decimal&longitude=$lon&latitude=$lat&zoom=3\" "
+//                            .   "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"webimages/mapquest.png\" width=\"15\">"
+//                            .  "</a>"
+                            . "<a href='#' onClick='osMap(" . $row['specimen_ID'] . "); return false;'>"
+                            . "<img border='0' height='15' width='15' src='webimages/OpenStreetMap.png'"
+                            . "</a>"
                             . "</td>";
             } else {
                 $textLatLon = "<td class=\"out\"></td>";
