@@ -3,9 +3,9 @@
 namespace Jacq;
 
 use Exception;
-use mysqli;
+use PDO;
 
-class DbAccess extends mysqli
+class PdoAccess extends PDO
 {
 /********************\
 |                    |
@@ -27,19 +27,19 @@ private static array $instances = array();
 \********************/
 
 /**
- * instantiates the class DbAccess for a given database
+ * instantiates the class PdoAccess for a given database
  *
  * @param string $db connect to that DB
- * @return DbAccess new instance of that class
+ * @return PdoAccess new instance of that class
  * @throws Exception
  */
-public static function ConnectTo(string $db): DbAccess
+public static function ConnectTo(string $db): PdoAccess
 {
     $config = Settings::Load();
 
     if ($config->getDbAccess($db)) {
         if (!isset(self::$instances[$db])) {
-            self::$instances[$db] = new DbAccess($db);
+            self::$instances[$db] = new PdoAccess($db);
         }
         return self::$instances[$db];
     } else {
@@ -67,11 +67,8 @@ protected function __construct($db)
     $config = Settings::Load();
     $dbAccess = $config->getDbAccess($db);
 
-    parent::__construct($dbAccess['host'],
-        $dbAccess['user'],
-        $dbAccess['pass'],
-        $dbAccess['db']);
-    $this->set_charset('utf8');
+    parent::__construct("mysql:host={$dbAccess['host']};dbname={$dbAccess['db']};charset=utf8", $dbAccess['user'], $dbAccess['pass']);
+    $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 }
 
 /********************\
