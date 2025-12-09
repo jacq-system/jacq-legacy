@@ -451,6 +451,17 @@ foreach ($tbls as $tbl) {
             }
         }
         $result->free();
+        $rows = $dbLink1->query("SELECT gp.UnitIDNumeric
+                                 FROM $dbt.{$tbl['name']} gp
+                                  LEFT JOIN tbl_specimens s ON s.specimen_ID = gp.UnitIDNumeric
+                                 WHERE s.specimen_ID IS NULL")
+                        ->fetch_all(MYSQLI_ASSOC);
+        foreach ($rows as $row) {
+            $dbLink2->query("DELETE FROM $dbt.{$tbl['name']} WHERE UnitIDNumeric = {$row['UnitIDNumeric']}");
+            if ($options['verbose']) {
+                echo "$sourceCode ({$tbl['source_id']}) deleted {$row['UnitIDNumeric']}\n";
+            }
+        }
         if ($options['verbose']) {
             echo "---------- $sourceCode ({$tbl['source_id']}) finished (" . date(DATE_RFC822) . ") ----------\n";
         }
