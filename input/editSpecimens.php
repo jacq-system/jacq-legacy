@@ -561,6 +561,15 @@ if (isset($_GET['sel'])) {
 	* html .ui-autocomplete {
 		height: 200px;
 	}
+    #displayCollectorLinks img {
+        vertical-align: top;
+    }
+    .textarea-raise {
+        position: relative !important;
+        z-index: 99999 !important;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+        background: #fff;
+    }
   </style>
   <?php echo $jaxon->getScript(true, true); ?>
   <script type="text/javascript" src="js/lib/overlib/overlib.js"></script>
@@ -1205,6 +1214,26 @@ if (isset($_GET['sel'])) {
               return false;
           });
 
+          const raiseSelectors = [
+              '#Fundort1',
+              'textarea[name="habitat"]',
+              'textarea[name="habitus"]',
+              'textarea[name="Bemerkungen"]',
+              'textarea[name="taxon_alt_ta"]',
+              'input[name="taxon_alt"]'
+          ];
+          raiseSelectors.forEach(function(sel) {
+              const $el = $(sel);
+              $el.on('focus mousedown', function() {
+                  $(this).addClass('textarea-raise');
+                  $(this).css('overflow', 'visible');
+              });
+              $el.on('blur', function() {
+                  $(this).removeClass('textarea-raise');
+                  $(this).css('overflow', '');
+              });
+          });
+
       });
   </script>
 </head>
@@ -1426,13 +1455,22 @@ $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
 $cf->labelMandatory(40.5, $y, 6, "Collection");
 $cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
 $cf->label(59, $y, "Nr.");
-$cf->inputText(59, $y, 6, "CollNummer", $p_CollNummer, 25);
+$cf->inputText(59, $y, 5.7, "CollNummer", $p_CollNummer, 25);
 
 $y += 2;
 $cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
 $cf->label(44, $y, "T", "javascript:editSpecimensTypes('$p_specimen_ID')");
 $cf->label(47, $y, "type");
-$cf->dropdown(47, $y, "typus", $p_typus, $typus[0], $typus[1]);
+$typusOptions = '';
+for ($i = 0; $i < count($typus[0]); $i++) {
+    $value = htmlspecialchars($typus[0][$i], ENT_QUOTES, 'UTF-8');
+    $label = htmlspecialchars($typus[1][$i], ENT_QUOTES, 'UTF-8');
+    $selected = ($typus[0][$i] == $p_typus) ? ' selected' : '';
+    $typusOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
+}
+echo "<div style='position:absolute; left: 44em; top: {$y}em; width: 21.5em; text-align: right; white-space: nowrap;'>";
+echo "  <select name=\"typus\" id=\"typus\" style=\"width: 100%; max-width: 21.5em;\">{$typusOptions}</select>";
+echo "</div>\n";
 
 $y += 2;
 $cf->label(11, $y,"Status");
@@ -1445,8 +1483,17 @@ echo "<img border=\"1\" height=\"16\" src=\"webimages/ncbi.gif\" width=\"14\" ".
      "style=\"position:absolute; left:38em; top:" . ($y + 0.2) . "em\"";
 if ($p_ncbi) echo " title=\"$p_ncbi\"";
 echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
-$cf->label(48, $y, "voucher","javascript:editVoucher()");
-$cf->dropdown(48, $y, "voucher", $p_voucher, $voucher[0], $voucher[1]);
+$cf->label(44, $y, "voucher","javascript:editVoucher()");
+$voucherOptions = '';
+for ($i = 0; $i < count($voucher[0]); $i++) {
+    $value = htmlspecialchars($voucher[0][$i], ENT_QUOTES, 'UTF-8');
+    $label = htmlspecialchars($voucher[1][$i], ENT_QUOTES, 'UTF-8');
+    $selected = ($voucher[0][$i] == $p_voucher) ? ' selected' : '';
+    $voucherOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
+}
+echo "<div style='position:absolute; left: 44em; top: {$y}em; width: 21.5em; text-align: right; white-space: nowrap;'>";
+echo "  <select name=\"voucher\" id=\"voucher\" style=\"width: 100%; max-width: 21.5em;\">$voucherOptions</select>";
+echo "</div>\n";
 
 $y += 2;
 if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
@@ -1467,7 +1514,7 @@ $y += 2;
 $cf->labelMandatory(11, $y, 9, "ident. history");
 $cf->textarea(11, $y, 54, 2.4, "taxon_alt_ta", $p_taxon_alt);
 $cf->inputText(11, $y, 54, "taxon_alt", $p_taxon_alt);
-echo "<div style='position:absolute; left: 66em; top: {$y}em'><button id='taxon_alt_toggle'></button></div>";
+echo "<div style='position:absolute; left: 63.4em; top: {$y}em'><button id='taxon_alt_toggle'></button></div>";
 
 $y += 3.5;
 $cf->label(11, $y, "typified by");
@@ -1486,8 +1533,9 @@ $cf->inputText(58.5, $y, 6.5, "series_number", $p_series_number, 50);
 $y += 2;
 $cf->labelMandatory(11, $y, 9, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
-$cf->inputJqAutocomplete(11, $y, 54, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
-echo "<div style='position: absolute; left: 66em; top: {$y}em;' id='displayCollectorLinks'></div>\n";
+$cf->inputJqAutocomplete(11, $y, 46, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
+$displayCollectorLinksTop = $y; // same row as collector field, aligned to ser.Nr. column
+echo "<div style='position: absolute; left: 58.5em; top: {$displayCollectorLinksTop}em; width: 6.5em; text-align: right; white-space: nowrap;' id='displayCollectorLinks'></div>\n";
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector()");
 
 $y += 4;
@@ -1517,7 +1565,16 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
     $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
 }
 $cf->label(49, $y, "Province");
-$cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1]);
+$provinceOptions = '';
+for ($i = 0; $i < count($province[0]); $i++) {
+    $value = htmlspecialchars($province[0][$i], ENT_QUOTES, 'UTF-8');
+    $label = htmlspecialchars($province[1][$i], ENT_QUOTES, 'UTF-8');
+    $selected = ($province[0][$i] == $p_province) ? ' selected' : '';
+    $provinceOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
+}
+echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; text-align: right; white-space: nowrap;'>"
+   . "<select name=\"province\" id=\"province\" style=\"width: 100%; max-width: 16.5em;\">{$provinceOptions}</select>"
+   . "</div>\n";
 
 $y += 2;
 $cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
@@ -1563,7 +1620,7 @@ $cf->inputText(57, $y, 8, "exactness", $p_exactness, 30);
 //$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
 
 $y += 1.75;
-echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 60.5em;\"><hr></div>\n";
+echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\"><hr></div>\n";
 //38.75
 
 $y += 1.05;
@@ -1596,7 +1653,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
         //$cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
-        $cf->buttonJavaScript(56, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
+        $cf->buttonJavaScript(58.5, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
 //        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
@@ -1604,7 +1661,7 @@ if (($_SESSION['editControl'] & 0x2000) != 0) {
 //        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
         $cf->buttonJavaScript(37, $y, " Insert &amp; Copy", "doSubmit( 'submitUpdateCopy' );", "", "submitUpdateCopy" );
 //        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
-        $cf->buttonJavaScript(56, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
+        $cf->buttonJavaScript(58.5, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
     }
 }
 $cf->buttonJavaScript(2, $y, " < Specimens ", "goBack($nr," . intval($p_specimen_ID) . "," . intval($edit) . "," . $_SESSION['sPTID'] . ")");
