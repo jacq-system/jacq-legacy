@@ -78,9 +78,9 @@ function generateFiles(int $source_id): void
     $settings = Settings::Load();
     $europeana_dir = $settings->get('EUROPEANA_DIR');
 
-    $sourceCode = $dbLink->query("SELECT source_code 
-                                  FROM meta 
-                                  WHERE source_id = $source_id")
+    $sourceCode = $dbLink->queryCatch("SELECT source_code 
+                                       FROM meta 
+                                       WHERE source_id = $source_id")
                          ->fetch_array()['source_code'];
     if (!file_exists($europeana_dir . $sourceCode)) {
         mkdir($europeana_dir . $sourceCode, 0755);
@@ -92,12 +92,15 @@ function generateFiles(int $source_id): void
             WHERE mc.source_id = $source_id 
              AND (   s.digital_image > 0 
                   OR s.digital_image_obs > 0)"
-        . (($options['new'])     ? " AND s.aktualdatum >= DATE_SUB(NOW(), INTERVAL 15 DAY)" : '')
-        . (($options['recheck']) ? " AND (ei.filesize < 1500 OR ei.filesize IS NULL)"       : " AND ei.filesize IS NULL");
-    $result = $dbLink->query($sql);
-    if (!$result) {
-        echo $source_id . ": " . $dbLink->error . "\n";
-    } else {
+         . (($options['new'])     ? " AND s.aktualdatum >= DATE_SUB(NOW(), INTERVAL 15 DAY)" : '')
+         . (($options['recheck']) ? " AND (ei.filesize < 1500 OR ei.filesize IS NULL)"       : " AND ei.filesize IS NULL");
+    try {
+        $result = $dbLink->query($sql);
+    } catch (Exception $e) {
+        echo $source_id . ": " . $e->__toString() . "\n";
+        $result = false;
+    }
+    if ($result) {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
             for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
@@ -122,17 +125,17 @@ function generateFiles(int $source_id): void
                     break;
                 }
             }
-            $dbLink->query("INSERT INTO gbif_pilot.europeana_images SET
-                             specimen_ID = {$row['specimen_ID']},
-                             filesize    = " . filesize($filename) . ",
-                             filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
-                             source_id   = $source_id,
-                             source_code = '$sourceCode'
-                            ON DUPLICATE KEY UPDATE
-                             filesize    = " . filesize($filename) . ",
-                             filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
-                             source_id   = $source_id,
-                             source_code = '$sourceCode'");
+            $dbLink->queryCatch("INSERT INTO gbif_pilot.europeana_images SET
+                                  specimen_ID = {$row['specimen_ID']},
+                                  filesize    = " . filesize($filename) . ",
+                                  filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                                  source_id   = $source_id,
+                                  source_code = '$sourceCode'
+                                 ON DUPLICATE KEY UPDATE
+                                  filesize    = " . filesize($filename) . ",
+                                  filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                                  source_id   = $source_id,
+                                  source_code = '$sourceCode'");
             if ($options['verbose'] > 1) {
                 echo "$sourceCode ($source_id): $filename" . ((filesize($filename) < 1500) ? ' empty' : '') . "\n";
             }

@@ -61,8 +61,7 @@ try {
     $dbLink1 = DbAccess::ConnectTo('INPUT', 2);
     $dbLink2 = DbAccess::ConnectTo('INPUT', 3);
 } catch (Exception $e) {
-    echo $e->__toString() . "\n";
-    die();
+    die($e->getMessage());
 }
 
 if (!$options['nometa']) {
