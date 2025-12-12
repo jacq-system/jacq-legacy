@@ -6,11 +6,11 @@ use Jacq\DbAccess;
  * Returns the stable identifier. Tries to make one if none is found in the database
  *
  * @param int $source_id Source-ID
- * @param string $HerbNummer Collection Herb.#
+ * @param string|null $HerbNummer Collection Herb.#
  * @param int $specimen_ID Specimen-ID
  * @return string the found or produced stable identifier
  */
-function StableIdentifier(int $source_id, string $HerbNummer, int $specimen_ID): string
+function StableIdentifier(int $source_id, ?string $HerbNummer, int $specimen_ID): string
 {
     $text = getStableIdentifier($specimen_ID);
     if (empty($text)) {

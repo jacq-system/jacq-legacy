@@ -106,10 +106,10 @@ public function queryCatch(string $query, int $result_mode = MYSQLI_STORE_RESULT
 /**
  * Prepares a string for use in a SQL query. If the string is empty, NULL is returned, else the escaped string with single quotes
  *
- * @param string $text the text to quote
+ * @param string|null $text the text to quote
  * @return string the quoted text
  */
-public function quoteString(string $text): string
+public function quoteString(?string $text): string
 {
     if (mb_strlen($text) > 0) {
         return "'" . $this->real_escape_string($text) . "'";

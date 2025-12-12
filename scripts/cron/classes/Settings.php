@@ -25,7 +25,7 @@ private static Settings $instance;
  */
 public static function Load(): Settings
 {
-    if (self::$instance == null) {
+    if (empty(self::$instance)) {
         self::$instance = new Settings();
     }
     return self::$instance;
