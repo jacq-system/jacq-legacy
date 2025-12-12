@@ -1,6 +1,6 @@
 #!/usr/bin/php -qC
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
 use Jacq\Settings;
@@ -38,13 +38,13 @@ try {
 
 // do the scanning
 if ($options['auto']) {
-    $rows = $dbLnk->query("SELECT source_id_fk FROM tbl_img_definition WHERE autoscan = 1")->fetch_all(MYSQLI_ASSOC);
+    $rows = $dbLnk->queryCatch("SELECT source_id_fk FROM tbl_img_definition WHERE autoscan = 1")->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as $row) {
         scanSource($row['source_id_fk']);
         echo "\n";
     }
 } elseif ($source_id) {
-    $row = $dbLnk->query("SELECT img_def_ID FROM tbl_img_definition WHERE source_id_fk = $source_id")->fetch_assoc();
+    $row = $dbLnk->queryCatch("SELECT img_def_ID FROM tbl_img_definition WHERE source_id_fk = $source_id")->fetch_assoc();
     if (!empty($row)) {
         scanSource($source_id);
     } else {
@@ -58,14 +58,14 @@ if ($options['auto']) {
 /**
  * scan a source for existing images with digital_image set to 0
  *
- * @param int $source_id ID of source to check
+ * @param int $source_id ID of the source to check
  * @return void
  */
-function scanSource(int $source_id)
+function scanSource(int $source_id): void
 {
     global $dbLnk, $options;
 
-    $source = $dbLnk->query("SELECT m.source_code, m.source_name, id.iiif_capable, id.imgserver_type, pid.extension
+    $source = $dbLnk->queryCatch("SELECT m.source_code, m.source_name, id.iiif_capable, id.imgserver_type, pid.extension
                              FROM meta m
                               JOIN tbl_img_definition id ON id.source_id_fk = m.source_id
                               LEFT JOIN herbar_pictures.iiif_definition pid ON pid.source_id_fk = m.source_id
@@ -73,7 +73,7 @@ function scanSource(int $source_id)
                     ->fetch_assoc();
 
     // check all specimens with digital_image == 0 if the image is now available and set digital_image = 1 if yes
-    $specimens = $dbLnk->query("SELECT s.specimen_ID, s.HerbNummer 
+    $specimens = $dbLnk->queryCatch("SELECT s.specimen_ID, s.HerbNummer 
                             FROM tbl_specimens s
                              LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                             WHERE mc.source_id = $source_id
@@ -94,7 +94,7 @@ function scanSource(int $source_id)
         }
         if ($imageExists) {
             if ($options['set']) {
-                $dbLnk->query("UPDATE tbl_specimens SET digital_image = 1 WHERE specimen_ID = {$specimen['specimen_ID']}");
+                $dbLnk->queryCatch("UPDATE tbl_specimens SET digital_image = 1 WHERE specimen_ID = {$specimen['specimen_ID']}");
             }
             if ($options["verbose"]) {
                 echo "found pictures for {$source['source_code']} {$specimen['HerbNummer']} (specimen-ID {$specimen['specimen_ID']})\n";
@@ -163,7 +163,7 @@ function queryDjatoka(int $specimenID): bool
 {
     global $dbLnk;
 
-    $rows = $dbLnk->query("SELECT id FROM herbar_pictures.djatoka_images WHERE specimen_ID = $specimenID")->fetch_all(MYSQLI_ASSOC);
+    $rows = $dbLnk->queryCatch("SELECT id FROM herbar_pictures.djatoka_images WHERE specimen_ID = $specimenID")->fetch_all(MYSQLI_ASSOC);
     return !empty($rows);
 }
 
@@ -192,10 +192,10 @@ function getManifest(int $specimenID): array
 }
 
 /**
- * checks if image from $url exists
+ * checks if the image from $url exists
  *
  * @param string $url image-url
- * @return bool true if image exists
+ * @return bool true if the image exists
  */
 function imageExists(string $url): bool
 {
