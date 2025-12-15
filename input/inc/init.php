@@ -24,7 +24,7 @@ session_start();
 /**
  * check if the user is logged in and send him to the login if not
  */
-if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
+if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     header("Location: login.php");
     exit();
 }
