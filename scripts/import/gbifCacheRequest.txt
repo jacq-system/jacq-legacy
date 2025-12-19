@@ -1,0 +1,10 @@
+https://www.gbif.org/occurrence/download/sql#create
+
+SELECT
+  gbifid
+FROM
+  occurrence
+WHERE
+  occurrence.basisofrecord = 'PRESERVED_SPECIMEN'
+  AND ARRAY_CONTAINS(occurrence.mediatype, 'StillImage')
+  AND occurrence.datasetkey = '857bce66-f762-11e1-a439-00145eb45e9a'
