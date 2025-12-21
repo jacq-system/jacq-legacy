@@ -305,9 +305,14 @@ if ($select == 'labels') {
     }
 } else {
     $rows_SpecimenIDs = dbi_query($_SESSION['sSQLquery'])->fetch_all(MYSQLI_ASSOC);
-    $specimenIDs = array();
-    foreach ($rows_SpecimenIDs as $row_SpecimenID) {
-        $specimenIDs[] = $row_SpecimenID['specimen_ID'];
+    if (!empty($rows_SpecimenIDs)) {
+        $specimenIDs = array();
+        foreach ($rows_SpecimenIDs as $row_SpecimenID) {
+            $specimenIDs[] = $row_SpecimenID['specimen_ID'];
+        }
+    } else {
+        // nothing found, so prevent the next SQL-command from crashing
+        $specimenIDs = [0];
     }
     $resultSpecimens = dbi_query("$sqlSelect FROM tbl_specimens s $sqlJoin WHERE s.specimen_ID IN (" . implode(',', $specimenIDs) . ")");
 }
