@@ -1,0 +1,14 @@
+{
+    "require": {
+        "php": ">=8.3",
+        "guzzlehttp/guzzle": "^7.0",
+        "ext-mysqli": "*",
+        "ext-mbstring": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jacq\\": "classes/"
+        }
+    }
+}

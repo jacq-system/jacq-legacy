@@ -3,12 +3,16 @@ session_start();
 require_once('../inc/tools.php');
 require_once('../inc/variables.php');
 
+if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
+    die('Connection failed');
+}
+
 $settings = clsSettings::Load();
 // connect to the database or stop on any connect error
 try {
     $db = new PDO('mysql:host=' . $settings->getSettings('DB', 'INPUT', 'HOST') . ';dbname=' . $settings->getSettings('DB', 'INPUT', 'NAME'),
-                  $_SESSION['username'],
-                  $_SESSION['password'],
+                  $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
+                  $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],
                   array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET character set utf8"));
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 }

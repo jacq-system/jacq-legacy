@@ -5,6 +5,7 @@ logs/
 
 composer.lock
 variables.php
+*.csv
 
 access/test.html
 annonaceae/inc/connect.php

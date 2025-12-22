@@ -153,7 +153,7 @@ if (isset($_GET['new'])) {
         if (extractID($p_taxon) != "NULL" && extractID($p_specimen) != "NULL") {
             $sql_data = "taxonID = " . extractID($p_taxon) . ",
                          specimenID = " . extractID($p_specimen) . ",
-                         typusID = " . quoteString($p_typus) . ",
+                         typusID = " . makeInt($p_typus) . ",
                          typified_by_Person = '" . dbi_escape_string($p_typified_by) . "',
                          typified_Date = '" . dbi_escape_string($p_typified_date) . "',
                          annotations = " . quoteString($p_annotations);

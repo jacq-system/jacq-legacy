@@ -5,7 +5,7 @@ require_once( 'class.natID.php' );
 
 /** @var array $_CONFIG */
 
-if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
+if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     if (substr(getcwd(), -5) == "/ajax") {
         die();
     } else {
@@ -17,8 +17,8 @@ if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
 mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown
 
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
-                     $_SESSION['username'],
-                     $_SESSION['password'],
+                     $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
+                     $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],
                      $_CONFIG['DATABASE']['INPUT']['name']);
 if ($dbLink->connect_errno) {
     header("Location: login.php");

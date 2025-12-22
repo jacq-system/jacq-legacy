@@ -473,10 +473,17 @@ if (isset($_GET['sel'])) {
                     $p_specimen_ID = intval($_POST['specimen_ID']);
                     logSpecimen($p_specimen_ID, $updated);
                     $result = dbi_query($sql);
+                    if (!$result) {
+                        $errorEdited = $dbLink->errno . ": " . $dbLink->error;
+                    }
                 } else {
                     $result = dbi_query($sql);
-                    $p_specimen_ID = dbi_insert_id();
-                    logSpecimen($p_specimen_ID, $updated);
+                    if ($result) {
+                        $p_specimen_ID = dbi_insert_id();
+                        logSpecimen($p_specimen_ID, $updated);
+                    } else {
+                        $errorEdited = $dbLink->errno . ": " . $dbLink->error;
+                    }
                 }
 
                 if (!empty($_POST['submitUpdateNew'])) {
@@ -593,6 +600,11 @@ if (isset($_GET['sel'])) {
       let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
       let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
       let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
+      let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
+
+      if (errorEdited) {
+          alert(errorEdited);
+      }
 
       function makeOptions()
       {

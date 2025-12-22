@@ -6,7 +6,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
 
-if (!isset($_SESSION['username']) || !isset($_SESSION['password'])) {
+if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     die("Login required");
 }
 
