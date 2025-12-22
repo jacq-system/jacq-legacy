@@ -88,12 +88,21 @@ if (isset($_GET['sel'])) {
 }
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-       "http://www.w3.org/TR/html4/transitional.dtd">
+        "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
   <title>herbardb - edit Users</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.13.2/themes/ui-lightness/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+          integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g="
+          crossorigin="anonymous">
+  </script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+          integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+          crossorigin="anonymous">
+  </script>
   <script type="text/javascript" language="JavaScript">
     function openEditAccess(sel) {
       options = "width=";
@@ -110,6 +119,60 @@ if (isset($_GET['sel'])) {
       newWindow = window.open("listUserAccess.php?sel="+sel,"editUserAccess",options);
       newWindow.focus();
     }
+    function checkMandatory()
+    {
+        var missing = 0;
+        var text = "";
+        var outtext = "";
+
+        if (document.f.username.value.length == 0) {
+            missing++; text += "Username\n";
+        }
+        if (document.f.groupID.value == 0) {
+            missing++; text += "Group\n";
+        }
+        if (document.f.firstname.value.length == 0) {
+            missing++; text += "First name\n";
+        }
+        if (document.f.surname.value.length == 0) {
+            missing++; text += "Name\n";
+        }
+        if (document.f.emailadress.value.length == 0) {
+            missing++; text += "Email\n";
+        }
+
+        if (missing>0) {
+            if (missing > 1) {
+                outtext = "The following " + missing + " entries are missing or invalid:\n";
+            } else {
+                outtext = "The following entry is missing or invalid:\n";
+            }
+            alert(outtext + text);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    $(function() {
+        $("form").on("submit", function( event) {
+            return checkMandatory();
+        });
+    });
+
+    $.extend({ alert: function (message, title) {
+            $("<div></div>").dialog( {
+                buttons: { "Ok": function () { $(this).dialog("close"); } },
+                close: function (event, ui) { $(this).remove(); },
+                resizable: false,
+                title: title,
+                modal: true,
+                height: 'auto',
+                width: 'auto',
+                position: { my: "right center", at: "center", of: window },
+            }).html(message);
+        }
+    });
   </script>
 </head>
 
