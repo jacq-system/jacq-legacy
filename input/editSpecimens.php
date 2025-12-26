@@ -471,10 +471,14 @@ if (isset($_GET['sel'])) {
             } else {
                 if ($updated) {
                     $p_specimen_ID = intval($_POST['specimen_ID']);
+                    $dbLink->begin_transaction();
                     logSpecimen($p_specimen_ID, $updated);
                     $result = dbi_query($sql);
                     if (!$result) {
                         $errorEdited = $dbLink->errno . ": " . $dbLink->error;
+                        $dbLink->rollback();
+                    } else {
+                        $dbLink->commit();
                     }
                 } else {
                     $result = dbi_query($sql);

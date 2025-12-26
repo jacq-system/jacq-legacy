@@ -1,7 +1,5 @@
 #!/usr/bin/php -qC
 <?php
-require 'inc/variables.php';
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
