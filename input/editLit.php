@@ -35,13 +35,13 @@ function rom2arab ($r)
 
     if (strlen($r) == 1) {
         switch ($r) {
-            case 'i': return    1; break;
-            case 'v': return    5; break;
-            case 'x': return   10; break;
-            case 'l': return   50; break;
-            case 'c': return  100; break;
-            case 'd': return  500; break;
-            case 'm': return 1000; break;
+            case 'i': return    1;
+            case 'v': return    5;
+            case 'x': return   10;
+            case 'l': return   50;
+            case 'c': return  100;
+            case 'd': return  500;
+            case 'm': return 1000;
         }
     } elseif (strlen($r) == 0) {
         return 0;
@@ -51,12 +51,12 @@ function rom2arab ($r)
                 if (substr($r, $j, 1) == substr($f, $i, 1)) {
                     $p = $j;
                     $z = substr($f, $i, 1);
-                    break 2;
+                    return rom2arab($z) - rom2arab(substr($r, 0, $p)) + rom2arab(substr($r, $p + 1));
                 }
             }
         }
-        return rom2arab($z) - rom2arab(substr($r, 0, $p)) + rom2arab(substr($r, $p + 1));
     }
+    return 0; // something went wrong
 }
 
 function parsePp ($pp)
@@ -136,13 +136,15 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $p_publisherIndex  = $row['publisherID'];
         $p_hideScientificNameAuthors = $row['hideScientificNameAuthors'];
     } else {
-        $p_citationID = $p_jahr = $p_code = $p_titel = $p_suptitel = $p_vol = $p_part = "";
+        $p_jahr = $p_code = $p_titel = $p_suptitel = $p_vol = $p_part = "";
         $p_pp = $p_verlagsort = $p_keywords = $p_annotation = $p_additions = $p_bestand = "";
         $p_hideScientificNameAuthors = $p_signature = $p_publ = $p_category = $p_autor = $p_editor = $p_periodical = "";
         $p_publisher = $p_url = "";
-        $p_autorIndex =  $p_editorIndex =  $p_periodicalIndex = $p_publisherIndex  = 0;
+        $p_citationID = $p_autorIndex =  $p_editorIndex =  $p_periodicalIndex = $p_publisherIndex  = 0;
     }
-    if (isset($_GET['new']) && $_GET['new'] == 1) $p_citationID = "";
+    if (isset($_GET['new']) && $_GET['new'] == 1) {
+        $p_citationID = 0;
+    }
     $edit = (!empty($_GET['edit'])) ? true : false;
 } else {
     $p_jahr       = $_POST['jahr'] ?? "";
@@ -226,8 +228,12 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
             $updated = 0;
         }
         $result = dbi_query($sql);
-        $p_citationID = (intval($_POST['citationID'])) ? intval($_POST['citationID']) : dbi_insert_id();
-        logLit($p_citationID, $updated);
+        if ($result) {
+            $p_citationID = (intval($_POST['citationID'])) ?: dbi_insert_id();
+            logLit($p_citationID, $updated);
+        } else {
+            $p_citationID = (intval($_POST['citationID'])) ?: 0;
+        }
         if (!empty($_POST['submitUpdateNew'])) {
             $location = "Location: editLit.php?sel=<0>&new=1";
             if (SID) $location .= "&" . SID;
@@ -239,11 +245,11 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         }
         $edit = false;
     } else if (!empty($_POST['submitNewCopy'])) {
-        $p_citationID = "";
+        $p_citationID = 0;
         $edit = false;
     } else {
         $edit = (!empty($_POST['reload']) && !empty($_POST['edit'])) ? true : false;
-        $p_citationID = $_POST['citationID'] ?? "";
+        $p_citationID = $_POST['citationID'] ?? 0;
     }
 }
 
