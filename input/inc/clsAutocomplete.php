@@ -1269,7 +1269,7 @@ class clsAutocomplete {
      */
     public function taxonCitation($value)
     {
-        $citationID = intval($_GET['citationID']);
+        $citationID = intval($_GET['citationID'] ?? 0);
         $results = array();
         $citationIDs = (isset($_GET['includeParents'])) ? $this->findParents($citationID) : array($citationID);
         $bChild = (isset($_GET['child'])) ? true : false;
