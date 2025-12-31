@@ -130,13 +130,17 @@ if (isset($_GET['new'])) {
                 $updated = 0;
             }
             $result = dbi_query($sql);
-            $id = (intval($p_taxindID)) ? intval($p_taxindID) : dbi_insert_id();
-            logIndex($id, $updated);
             if ($result) {
-                echo "<script language=\"JavaScript\">\n";
-                echo "  window.opener.document.f.reload.click()\n";
-                echo "  self.close()\n";
-                echo "</script>\n";
+                $id = (intval($p_taxindID)) ?: dbi_insert_id();
+                logIndex($id, $updated);
+                echo "<script language=\"JavaScript\">\n"
+                   . "  window.opener.document.f.reload.click()\n"
+                   . "  self.close()\n"
+                   . "</script>\n";
+            } else {
+                echo "<script type='text/javascript' language='JavaScript'>\n"
+                   . '  alert("' . $dbLink->errno . ': ' . $dbLink->error . '");' . "\n"
+                   . "</script>\n";
             }
         } else {
             echo "<script language=\"JavaScript\">\n";
