@@ -89,15 +89,19 @@ public function protolog ($citationID, $withID = false)
         $dbst->execute(array(":citationID" => $citationID));
         $row = $dbst->fetch();
 
-        $ret = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
-        if ($row['suptitel'])     $ret .= " in " . $row['editor'] . ": " . $row['suptitel'];
-        if ($row['periodicalID']) $ret .= " " . $row['periodical'];
-        $ret .= " " . $row['vol'];
-        if ($row['part']) $ret .= " (" . $row['part'] . ")";
-        $ret .= ": " . $row['pp'] . ".";
-        if ($withID) $ret .= " <" . $row['citationID'] . ">";
+        if (!empty($row)) {
+            $ret = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
+            if ($row['suptitel']) $ret .= " in " . $row['editor'] . ": " . $row['suptitel'];
+            if ($row['periodicalID']) $ret .= " " . $row['periodical'];
+            $ret .= " " . $row['vol'];
+            if ($row['part']) $ret .= " (" . $row['part'] . ")";
+            $ret .= ": " . $row['pp'] . ".";
+            if ($withID) $ret .= " <" . $row['citationID'] . ">";
 
-        return $ret;
+            return $ret;
+        } else {
+            return "";
+        }
     }
     catch (Exception $e) {
         exit($e->getMessage());
