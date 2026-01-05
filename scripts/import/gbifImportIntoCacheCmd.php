@@ -26,7 +26,7 @@ if ($options['help'] || empty($source_id) || empty($filename)) {
     echo $argv[0] . " [options] name x   import gbif-SQL-Export file 'name' into cache for source-ID x.\n\n"
             . "Options:\n"
             . "  -h  --help         this explanation\n"
-            . "  -v  --verbose      echo status messages"
+            . "  -v  --verbose      echo status messages\n"
             . "  -a  --all          import all entries, even if they already exist in cache\n\n";
     die();
 }
@@ -51,12 +51,15 @@ if (($handle = fopen(basename($filename), "r")) !== false) {
     while (($data = fgetcsv($handle, 1000, "\t")) !== false) {
         $specimenID = intval($data[0]);
         if ($specimenID) {
-            $row = $dbLink->queryCatch("SELECT specimen_ID, source_ID FROM specimens WHERE specimen_ID = $specimenID")->fetch_assoc();
+            $row = $dbLink->queryCatch("SELECT specimen_ID, source_ID, UNIX_TIMESTAMP(aktualdatum) as modified
+                                        FROM specimens 
+                                        WHERE specimen_ID = $specimenID")
+                          ->fetch_assoc();
             if (empty($row)) {
                 $dbLink->queryCatch("INSERT INTO specimens SET
                                       specimen_ID = $specimenID,
                                       source_id   = $source_id");
-            } elseif ($options['all']) {
+            } elseif ($options['all'] || $row['modified'] < $data[1]) {
                 $dbLink->queryCatch("UPDATE specimens SET
                                       aktualdatum = NULL,
                                       json        = NULL
@@ -66,11 +69,3 @@ if (($handle = fopen(basename($filename), "r")) !== false) {
     }
     fclose($handle);
 }
-
-/*
-SELECT mc.source_id, mc.coll_short_prj, count(mc.source_id)
-FROM tbl_specimens s
- JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-WHERE GBIF_ID IS  NULL
-GROUP BY mc.source_id
- */
