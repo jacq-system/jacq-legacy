@@ -19,7 +19,7 @@ private static $instance = null;
 \********************/
 
 /**
- * instances the class clsSettings
+ * instances the class Settings
  *
  * @return Settings new instance of that class
  */

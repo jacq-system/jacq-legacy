@@ -5,6 +5,7 @@ require("inc/cssf.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -505,7 +506,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 <?PHP
 $cf = new CSSF();
 
-$display = clsDisplay::Load();
+$display = Display::Load();
 $title="Taxon Synonymy<br>".$display->protolog($p_citationID);
 $serverParams="&citationID={$p_citationID}";
 
