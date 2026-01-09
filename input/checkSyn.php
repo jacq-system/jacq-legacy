@@ -3,8 +3,11 @@
  * this script checks for missing pictures (both database and harddisk)
  */
 require("inc/init.php");
+require __DIR__ . '/vendor/autoload.php';
 
-$display = clsDisplay::Load();
+use Jacq\Display;
+
+$display = Display::Load();
 
 try {
     /* @var $db clsDbAccess */

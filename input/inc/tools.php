@@ -98,7 +98,7 @@ function extractID2($text)
 /**
  * remove the ID from a string if present and returns the remaining part. ID must be enclosed in "<>" brackets and be positioned at the end
  *
- * @param tring $item string to parse
+ * @param string $item string to parse
  * @return string string with removed ID (if any)
  */
 function removeID ($item)

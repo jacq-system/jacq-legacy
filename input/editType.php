@@ -95,11 +95,12 @@ function makeSammler($search, $x, $y, $nr)
 <?php
 if (isset($_GET['new'])) {
     $p_taxon = getScientificName(extractID($_GET['ID'], true));
+    $p_typusID = 0;
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
 } elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
-    $sql ="SELECT typecollID, taxonID, series, leg_nr, alternate_number, date, duplicates, annotation,
+    $sql ="SELECT typecollID, taxonID, typusID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = tt.Sammler_2ID
@@ -109,6 +110,7 @@ if (isset($_GET['new'])) {
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
         $p_typecollID       = $row['typecollID'];
+        $p_typusID          = $row['typusID'];
         $p_series           = $row['series'];
         $p_leg_nr           = $row['leg_nr'];
         $p_alternate_number = $row['alternate_number'];
@@ -124,54 +126,13 @@ if (isset($_GET['new'])) {
         $p_taxon = getScientificName($row['taxonID']);
     } else {
         $p_taxon = $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
+        $p_typusID = 0;
         $p_typecollID = $p_sammler = $p_sammler2 ="";
         $p_sammlerIndex = $p_sammler2Index = 0;
     }
-} elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
-    $series = $_POST['series'];
-    $leg_nr = $_POST['leg_nr'];
-    $alternate_number = $_POST['alternate_number'];
-    $date = $_POST['date'];
-    $duplicates = $_POST['duplicates'];
-    $annotation = $_POST['annotation'];
-    if (intval($_POST['typecollID'])) {
-        $sql = "UPDATE tbl_tax_typecollections SET
-                 taxonID = " . extractID($_POST['taxon']) . ",
-                 SammlerID = " . extractID($_POST['sammler']) . ",
-                 Sammler_2ID = " . extractID($_POST['sammler2']) . ",
-                 series = " . quoteString($series) . ",
-                 leg_nr = " . quoteString($leg_nr) . ",
-                 alternate_number = " . quoteString($alternate_number) . ",
-                 date = " . quoteString($date) . ",
-                 duplicates = " . quoteString($duplicates) . ",
-                 annotation = " . quoteString($annotation) . "
-                WHERE typecollID = " . intval($_POST['typecollID']);
-        $updated = 1;
-    } else {
-        $sql = "INSERT INTO tbl_tax_typecollections SET
-                 taxonID = " . extractID($_POST['taxon']) . ",
-                 SammlerID = " . extractID($_POST['sammler']) . ",
-                 Sammler_2ID = " . extractID($_POST['sammler2']) . ",
-                 series = " . quoteString($series) . ",
-                 leg_nr = " . quoteString($leg_nr) . ",
-                 alternate_number = " . quoteString($alternate_number) . ",
-                 date = " . quoteString($date) . ",
-                 duplicates = " . quoteString($duplicates) . ",
-                 annotation = " . quoteString($annotation);
-        $updated = 0;
-    }
-    $result = dbi_query($sql);
-    $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
-    logTypecollections($id,$updated);
-    if ($result) {
-        echo "<script>\n";
-        echo "  window.opener.document.f.reload.click()\n";
-        echo "  self.close()\n";
-        echo "</script>\n";
-        die();
-    }
 } else {
     $p_taxon            = $_POST['taxon'];
+    $p_typusID          = $_POST['typusID'];
     $p_series           = $_POST['series'];
     $p_leg_nr           = $_POST['leg_nr'];
     $p_alternate_number = $_POST['alternate_number'];
@@ -184,6 +145,50 @@ if (isset($_GET['new'])) {
     $p_sammler2Index    = (strlen(trim($_POST['sammler2']))>0) ? $_POST['sammler2Index'] : 0;
     $p_typecollID       = $_POST['typecollID'];
 }
+
+if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
+    $sqlPart = " taxonID = "          . extractID($_POST['taxon']) . ",
+                 SammlerID = "        . extractID($_POST['sammler']) . ",
+                 Sammler_2ID = "      . extractID($_POST['sammler2']) . ",
+                 typusID = "          . intval($_POST['typusID']) . ",
+                 series = "           . quoteString($_POST['series']) . ",
+                 leg_nr = "           . quoteString($_POST['leg_nr']) . ",
+                 alternate_number = " . quoteString($_POST['alternate_number']) . ",
+                 date = "             . quoteString($_POST['date']) . ",
+                 duplicates = "       . quoteString($_POST['duplicates']) . ",
+                 annotation = "       . quoteString($_POST['annotation']);
+    if (intval($_POST['typecollID'])) {
+        $result = dbi_query("UPDATE tbl_tax_typecollections SET $sqlPart
+                             WHERE typecollID = " . intval($_POST['typecollID']));
+        $updated = 1;
+    } else {
+        $result = dbi_query("INSERT INTO tbl_tax_typecollections SET $sqlPart");
+        $updated = 0;
+    }
+    if ($result) {
+        $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
+        logTypecollections($id,$updated);
+        echo "<script>\n"
+           . "  window.opener.document.f.reload.click()\n"
+           . "  self.close()\n"
+           . "</script>\n";
+        die();
+    } else {
+        echo "<script type='text/javascript' language='JavaScript'>\n"
+           . '  alert("' . $dbLink->errno . ': ' . $dbLink->error . '");' . "\n"
+           . "</script>\n";
+    }
+}
+
+unset($typus);
+$typus[0][] = 0; $typus[1][] = "";
+$result = dbi_query("SELECT typusID, typus, typus_engl FROM tbl_typi ORDER BY typus");
+if ($result && mysqli_num_rows($result) > 0) {
+    while ($row = mysqli_fetch_array($result)) {
+        $typus[0][] = $row['typusID'];
+        $typus[1][] = $row['typus'] . " (" . $row['typus_engl'] . ")";
+    }
+}
 ?>
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
@@ -193,30 +198,30 @@ if (isset($_GET['new'])) {
 $cf = new CSSF();
 
 echo "<input type=\"hidden\" name=\"typecollID\" value=\"$p_typecollID\">\n";
-$cf->label(9, 0.5, "ID");
-$cf->text(9, 0.5, "&nbsp;" . (($p_typecollID) ? $p_typecollID : "new"));
+$cf->label(10, 0.5, "ID");
+$cf->text(10, 0.5, "&nbsp;" . (($p_typecollID) ? $p_typecollID : "new"));
 echo "<input type=\"hidden\" name=\"taxon\" value=\"$p_taxon\">\n";
-$cf->label(9, 2, "taxon");
-$cf->text(9, 2, "&nbsp;" . $p_taxon);
-$cf->label(9, 7.5, "first collector", "javascript:editCollector(document.f.sammler)");
+$cf->label(10, 2, "taxon");
+$cf->text(10, 2, "&nbsp;" . $p_taxon);
+$cf->label(10, 5.5, "first collector", "javascript:editCollector(document.f.sammler)");
 //$cf->editDropdown(9, 7.5, 28, "sammler", $p_sammler, makeSammler($p_sammler, 9, 6, 1), 270);
-$cf->inputJqAutocomplete(9, 7.5, 28, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 270, 2);
-$cf->label(9, 9.2, "search", "javascript:searchCollector()");
-$cf->label(9, 13, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
+$cf->inputJqAutocomplete(10, 5.5, 28, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 270, 2);
+$cf->label(10, 7.2, "search", "javascript:searchCollector()");
+$cf->label(10, 10, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
 //$cf->editDropdown(9, 13, 28, "sammler2", $p_sammler2, makeSammler($p_sammler2, 9, 11.5, 2), 270);
-$cf->inputJqAutocomplete(9, 13, 28, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 270, 2);
-$cf->label(9, 17, "series");
-$cf->inputText(9, 17, 28, "series", $p_series, 250);
-$cf->label(9, 19, "number");
-$cf->inputText(9, 19, 10, "leg_nr", $p_leg_nr, 50);
-$cf->label(9, 21, "alt. number");
-$cf->inputText(9, 21, 28, "alternate_number", $p_alternate_number, 250);
-$cf->label(9, 23, "date");
-$cf->inputText(9, 23, 28, "date", $p_date, 50);
-$cf->label(9, 25, "duplicates");
-$cf->inputText(9, 25, 28, "duplicates", $p_duplicates, 250);
-$cf->label(9, 27, "annotations");
-$cf->textarea(9, 27, 28, 4, "annotation", $p_annotation);
+$cf->inputJqAutocomplete(10, 10, 28, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 270, 2);
+$cf->label(10, 15, "series");
+$cf->inputText(10, 15, 28, "series", $p_series, 250);
+$cf->label(10, 17, "number");
+$cf->inputText(10, 17, 10, "leg_nr", $p_leg_nr, 50);
+$cf->label(10, 19, "alt. number");
+$cf->inputText(10, 19, 28, "alternate_number", $p_alternate_number, 250);
+$cf->label(10, 21, "date");
+$cf->inputText(10, 21, 28, "date", $p_date, 50);
+$cf->label(10, 23, "duplicates");
+$cf->inputText(10, 23, 28, "duplicates", $p_duplicates, 250);
+$cf->label(10, 25, "annotations");
+$cf->textarea(10, 25, 28, 4, "annotation", $p_annotation);
 
 if (($_SESSION['editControl'] & 0x400) != 0) {
     $text = ($p_typecollID) ? " Update " : " Insert ";

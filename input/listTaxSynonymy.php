@@ -1,7 +1,11 @@
 <?php
 session_start();
+
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Display;
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -107,12 +111,12 @@ echo<<<EOF
 EOF;
 
 if(count($rows)>0){
+    $display=Display::Load();
 	foreach($rows  as $row){
 		$radic=(($row['preferred_taxonomy']) ? "&radic;" : "") ;
 		$taxon=getScientificName($row['taxonID']);
 
-		$display=clsDisplay::Load();
-		$ref=$display->SynonymyReference(0,$row);
+		$ref=$display->SynonymyReference($row['tax_syn_ID']);
 
 		echo<<<EOF
 <tr class="out">

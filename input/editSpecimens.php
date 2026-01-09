@@ -304,7 +304,7 @@ if (isset($_GET['sel'])) {
     }
 } else {
     $p_collection        = $_POST['collection'] ?? "";
-    $p_institution       = $_POST['institution'] ?? "";
+    $p_institution       = intval($_POST['institution'] ?? 0);
     $p_HerbNummer        = $_POST['HerbNummer'] ?? "";
     $p_CollNummer        = $_POST['CollNummer'] ?? "";
     $p_identstatus       = $_POST['identstatus'] ?? "";
@@ -471,10 +471,14 @@ if (isset($_GET['sel'])) {
             } else {
                 if ($updated) {
                     $p_specimen_ID = intval($_POST['specimen_ID']);
+                    $dbLink->begin_transaction();
                     logSpecimen($p_specimen_ID, $updated);
                     $result = dbi_query($sql);
                     if (!$result) {
                         $errorEdited = $dbLink->errno . ": " . $dbLink->error;
+                        $dbLink->rollback();
+                    } else {
+                        $dbLink->commit();
                     }
                 } else {
                     $result = dbi_query($sql);

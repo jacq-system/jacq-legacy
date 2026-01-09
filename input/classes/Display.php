@@ -1,21 +1,10 @@
 <?php
-/**
- * Display methods singleton - formatting display
- *
- * A singleton to supply various display helper methods
- *
- * @author Johannes Schachner
- * @version 1.0
- * @package clsDisplay
- */
 
+namespace Jacq;
 
-/**
- * Display methods singleton - formatting display
- * @package clsDisplay
- * @subpackage classes
- */
-class clsDisplay
+use Exception;
+
+class Display
 {
 /********************\
 |                    |
@@ -32,14 +21,14 @@ private static $instance = null;
 \********************/
 
 /**
- * instances the class clsDisplay
+ * instances the class Display
  *
- * @return clsDisplay new instance of that class
+ * @return Display new instance of that class
  */
 public static function Load()
 {
     if (self::$instance == null) {
-        self::$instance = new clsDisplay();
+        self::$instance = new Display();
     }
     return self::$instance;
 }
@@ -70,16 +59,14 @@ protected function __construct () {}
  * returns a formatted protolog-string when given a valid citation-ID
  *
  * @param int $citationID citation-ID
- * @param bool[optional] adds the citationID between brackets at the end (default no)
+ * @param bool $withID [optional] adds the citationID between brackets at the end (default no)
  * @return string formatted protolog-string
  */
 public function protolog ($citationID, $withID = false)
 {
     try {
-        /* @var $db clsDbAccess */
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
 
-        /* @var $dbst PDOStatement */
         $dbst = $db->prepare("SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
                               FROM tbl_lit l
                                LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
@@ -91,12 +78,20 @@ public function protolog ($citationID, $withID = false)
 
         if (!empty($row)) {
             $ret = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
-            if ($row['suptitel']) $ret .= " in " . $row['editor'] . ": " . $row['suptitel'];
-            if ($row['periodicalID']) $ret .= " " . $row['periodical'];
+            if ($row['suptitel']) {
+                $ret .= " in " . $row['editor'] . ": " . $row['suptitel'];
+            }
+            if ($row['periodicalID']) {
+                $ret .= " " . $row['periodical'];
+            }
             $ret .= " " . $row['vol'];
-            if ($row['part']) $ret .= " (" . $row['part'] . ")";
+            if ($row['part']) {
+                $ret .= " (" . $row['part'] . ")";
+            }
             $ret .= ": " . $row['pp'] . ".";
-            if ($withID) $ret .= " <" . $row['citationID'] . ">";
+            if ($withID) {
+                $ret .= " <" . $row['citationID'] . ">";
+            }
 
             return $ret;
         } else {
@@ -113,23 +108,20 @@ public function protolog ($citationID, $withID = false)
  * returns a formatted taxon-string when given a valid taxon-ID
  *
  * @param int $taxonID taxon-ID
- * @param bool[optional] $withSeperator adds a seperator after genus and epithet (default no)
- * @param bool[optional] $withDT adds the DallaTorre information (default no)
- * @param bool[optional] $withID adds the taxonID between brackets at the end (default no)
+ * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
+ * @param bool $withDT [optional] adds the DallaTorre information (default no)
+ * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
 public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withID = false)
 {
     try {
-        /* @var $db clsDbAccess */
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
 
         // herbar_view.GetScientificName with optional seperator, Dalla Torre and ID
-        /* @var $dbst PDOStatement */
-        $dbst = $db->prepare("SELECT vt.`taxonID`,
-                                     vt.`genus`, vt.`author_g`, vt.`DallaTorreIDs`, vt.`DallaTorreZusatzIDs`, vt.`epithet`, vt.`author`,
-                                     vt.`epithet1`, vt.`author1`,vt.`epithet2`, vt.`author2`, vt.`epithet3`, vt.`author3`,
-                                     vt.`epithet4`, vt.`author4`, vt.`epithet5`, vt.`author5`, vt.`rank_abbr`
+        $dbst = $db->prepare("SELECT vt.`taxonID`, vt.`genus`, vt.`author_g`, vt.`DallaTorreIDs`, vt.`DallaTorreZusatzIDs`, 
+                               vt.`epithet`, vt.`author`, vt.`epithet1`, vt.`author1`,vt.`epithet2`, vt.`author2`, 
+                               vt.`epithet3`, vt.`author3`, vt.`epithet4`, vt.`author4`, vt.`epithet5`, vt.`author5`, vt.`rank_abbr`
                               FROM `herbar_view`.`view_taxon` vt
                               WHERE vt.`taxonID` = :taxonID");
         $dbst->execute(array(":taxonID" => $taxonID));
@@ -198,8 +190,12 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
 //        if ($row['epithet4']) { $ret .= " forma "    .$row['epithet4'] . " " . $row['author4']; }
 //        if ($row['epithet5']) { $ret .= " subforma " .$row['epithet5'] . " " . $row['author5']; }
 
-        if ($withDT) { $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs']; }
-        if ($withID) { $ret .= " <" . $row['taxonID'] . ">"; }
+        if ($withDT) {
+            $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
+        }
+        if ($withID) {
+            $ret .= " <" . $row['taxonID'] . ">";
+        }
 
         return $ret;
     }
@@ -210,20 +206,18 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
 
 /**
  * returns either a formatted hybrid-taxon-string (if taxon is a hybrid)
- * or a normal taxon-string (if taxon is'nt a hybrid) when given a taxon-ID
+ * or a normal taxon-string (if taxon isn't a hybrid) when given a taxon-ID
  *
  * @param int $taxonID taxon-ID
- * @param bool[optional] adds a seperator after genus and epithet (default no)
- * @param bool[optional] adds the taxonID between brackets at the end (default no)
+ * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
+ * @param bool $withID[optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
 public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = false)
 {
     try {
-        /* @var $db clsDbAccess */
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
 
-        /* @var $dbst PDOStatement */
         $dbst = $db->prepare("SELECT taxon_ID_fk, parent_1_ID, parent_2_ID
                               FROM tbl_tax_hybrids
                               WHERE taxon_ID_fk = :taxonID");
@@ -241,47 +235,42 @@ public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = fa
 }
 
 /**
- * returns either a formatted hybrid-taxon-string (if taxon is a hybrid)
- * or a normal taxon-string (if taxon is'nt a hybrid) when given a taxon-ID
+ * returns a formatted synonymy-reference-string when given a valid synonym-ID
  *
- * @param int $taxonID taxon-ID
- * @param bool[optional] adds a seperator after genus and epithet (default no)
- * @param bool[optional] adds the taxonID between brackets at the end (default no)
- * @return string formatted taxon-string
+ * @param int $synonymID synonym-ID
+ * @return string formatted synonymy-reference-string
  */
-public function SynonymyReference($synonymID,$row=array()){
-	try {
-		/* @var $db clsDbAccess */
-		$db = clsDbAccess::Connect('INPUT');
+public function SynonymyReference ($synonymID)
+{
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
 
-		if(count($row)==0){
-			/* @var $dbst PDOStatement */
-			$dbst = $db->prepare("SELECT source,source_citationID,source_person_ID ,source_serviceID FROM tbl_tax_synonymy WHERE tax_syn_ID =:synonymID");
-			$dbst->execute(array(":synonymID" => $synonymID));
-			$row = $dbst->fetch();
-		}
+        $dbst = $db->prepare("SELECT source, source_citationID, source_person_ID, source_serviceID 
+                              FROM tbl_tax_synonymy 
+                              WHERE tax_syn_ID =:synonymID");
+        $dbst->execute(array(":synonymID" => $synonymID));
+        $row = $dbst->fetch();
 
-		if(count($row) > 0){
-			if($row['source']=='literature'){
-				return $this->protolog($row['source_citationID'], true);
-			}else if($row['source']=='service'){
-				$dbst = $db->prepare("SELECT serviceID, name FROM tbl_nom_service WHERE serviceID=:serviceID  ");
-				$dbst->execute(array(":serviceID" => $row['source_serviceID']));
-				$row = $dbst->fetch();
+        if (!empty($row)) {
+            if ($row['source'] == 'literature') {
+                return $this->protolog($row['source_citationID'], true);
+            } elseif ($row['source'] == 'service') {
+                $dbst2 = $db->prepare("SELECT serviceID, name FROM tbl_nom_service WHERE serviceID = :serviceID");
+                $dbst2->execute(array(":serviceID" => $row['source_serviceID']));
+                $row2 = $dbst2->fetch();
 
-				return "{$row['name']} <{$row['serviceID']}>";
-			}else if($row['source']=='person'){
-				$dbst = $db->prepare("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE person_ID =:person_ID");
-				$dbst->execute(array(":person_ID" => $row['source_person_ID']));
-				$row = $dbst->fetch();
-				return "{$row['p_familyname']}, {$row['p_firstname']} ({$row['p_birthdate']} - {$row['p_death']} <{$row['person_ID']}>";
-			}
-		} else {
-			return "";
-		}
-	}catch (Exception $e) {
-		exit($e->getMessage());
-	}
+                return "{$row2['name']} <{$row2['serviceID']}>";
+            } elseif ($row['source'] == 'person'){
+                $dbst2 = $db->prepare("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE person_ID = :person_ID");
+                $dbst2->execute(array(":person_ID" => $row['source_person_ID']));
+                $row2 = $dbst2->fetch();
+                return "{$row2['p_familyname']}, {$row2['p_firstname']} ({$row2['p_birthdate']} - {$row2['p_death']} <{$row2['person_ID']}>";
+            }
+        }
+    } catch (Exception $e) {
+        exit($e->getMessage());
+    }
+    return "";
 }
 
 /***********************\
@@ -297,6 +286,5 @@ public function SynonymyReference($synonymID,$row=array()){
 \*********************/
 
 private function __clone () {}
-
 
 }
