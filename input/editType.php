@@ -207,23 +207,21 @@ $cf->label(10, 5.5, "first collector", "javascript:editCollector(document.f.samm
 //$cf->editDropdown(9, 7.5, 28, "sammler", $p_sammler, makeSammler($p_sammler, 9, 6, 1), 270);
 $cf->inputJqAutocomplete(10, 5.5, 28, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 270, 2);
 $cf->label(10, 7.2, "search", "javascript:searchCollector()");
-$cf->label(10, 11, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
+$cf->label(10, 10, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
 //$cf->editDropdown(9, 13, 28, "sammler2", $p_sammler2, makeSammler($p_sammler2, 9, 11.5, 2), 270);
-$cf->inputJqAutocomplete(10, 11, 28, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 270, 2);
-$cf->label(10, 15, "Typus");
-$cf->dropdown(10, 15, "typusID", $p_typusID, $typus[0], $typus[1]);
-$cf->label(10, 17, "series");
-$cf->inputText(10, 17, 28, "series", $p_series, 250);
-$cf->label(10, 19, "number");
-$cf->inputText(10, 19, 10, "leg_nr", $p_leg_nr, 50);
-$cf->label(10, 21, "alt. number");
-$cf->inputText(10, 21, 28, "alternate_number", $p_alternate_number, 250);
-$cf->label(10, 23, "date");
-$cf->inputText(10, 23, 28, "date", $p_date, 50);
-$cf->label(10, 25, "duplicates");
-$cf->inputText(10, 25, 28, "duplicates", $p_duplicates, 250);
-$cf->label(10, 27, "annotations");
-$cf->textarea(10, 27, 28, 4, "annotation", $p_annotation);
+$cf->inputJqAutocomplete(10, 10, 28, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 270, 2);
+$cf->label(10, 15, "series");
+$cf->inputText(10, 15, 28, "series", $p_series, 250);
+$cf->label(10, 17, "number");
+$cf->inputText(10, 17, 10, "leg_nr", $p_leg_nr, 50);
+$cf->label(10, 19, "alt. number");
+$cf->inputText(10, 19, 28, "alternate_number", $p_alternate_number, 250);
+$cf->label(10, 21, "date");
+$cf->inputText(10, 21, 28, "date", $p_date, 50);
+$cf->label(10, 23, "duplicates");
+$cf->inputText(10, 23, 28, "duplicates", $p_duplicates, 250);
+$cf->label(10, 25, "annotations");
+$cf->textarea(10, 25, 28, 4, "annotation", $p_annotation);
 
 if (($_SESSION['editControl'] & 0x400) != 0) {
     $text = ($p_typecollID) ? " Update " : " Insert ";
