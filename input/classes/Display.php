@@ -59,7 +59,7 @@ protected function __construct () {}
  * returns a formatted protolog-string when given a valid citation-ID
  *
  * @param int $citationID citation-ID
- * @param bool[optional] adds the citationID between brackets at the end (default no)
+ * @param bool $withID [optional] adds the citationID between brackets at the end (default no)
  * @return string formatted protolog-string
  */
 public function protolog ($citationID, $withID = false)
@@ -108,9 +108,9 @@ public function protolog ($citationID, $withID = false)
  * returns a formatted taxon-string when given a valid taxon-ID
  *
  * @param int $taxonID taxon-ID
- * @param bool[optional] $withSeperator adds a seperator after genus and epithet (default no)
- * @param bool[optional] $withDT adds the DallaTorre information (default no)
- * @param bool[optional] $withID adds the taxonID between brackets at the end (default no)
+ * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
+ * @param bool $withDT [optional] adds the DallaTorre information (default no)
+ * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
 public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withID = false)
@@ -190,8 +190,12 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
 //        if ($row['epithet4']) { $ret .= " forma "    .$row['epithet4'] . " " . $row['author4']; }
 //        if ($row['epithet5']) { $ret .= " subforma " .$row['epithet5'] . " " . $row['author5']; }
 
-        if ($withDT) { $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs']; }
-        if ($withID) { $ret .= " <" . $row['taxonID'] . ">"; }
+        if ($withDT) {
+            $ret .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
+        }
+        if ($withID) {
+            $ret .= " <" . $row['taxonID'] . ">";
+        }
 
         return $ret;
     }
@@ -205,8 +209,8 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
  * or a normal taxon-string (if taxon isn't a hybrid) when given a taxon-ID
  *
  * @param int $taxonID taxon-ID
- * @param bool[optional] adds a seperator after genus and epithet (default no)
- * @param bool[optional] adds the taxonID between brackets at the end (default no)
+ * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
+ * @param bool $withID[optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
 public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = false)
