@@ -158,7 +158,7 @@ if (isset($_POST['btnCheck']) && $_POST['btnCheck']) {
     if (trim($_POST['collector'])) $sql .= " AND tc.Sammler LIKE '" . dbi_escape_string(trim($_POST['collector'])) . "%'";
     $sql .= " GROUP BY st.taxonID ORDER BY st.taxonID";
     $result = dbi_query($sql);
-    unset($protologMissing);
+    $protologMissing = array();
     while ($row = mysqli_fetch_array($result)) {
         $protologMissing[$row['taxonID']] = htmlspecialchars($row['taxonID'] . " (" . $row['cnt'] . " specimens)");
     }

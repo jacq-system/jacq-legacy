@@ -187,6 +187,7 @@ $pdf->AddPage('L');
 
 $pdf->SetFont('freesans', '', 14);
 
+$labelText = array();
 /** @var mysqli_result $result_ID */
 $result_ID = $dbLink->query("SELECT `taxonID`, `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
 while ($row_ID = $result_ID->fetch_array()) {
