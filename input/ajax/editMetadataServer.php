@@ -40,6 +40,138 @@ function metadataGetColumns()
 }
 
 /**
+ * Cache list of nations for nationID_fk selector.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function metadataGetNations()
+{
+    static $nations = null;
+
+    if ($nations === null) {
+        $nations = array();
+        $sql = "SELECT nationID, nation_engl FROM tbl_geo_nation ORDER BY nation_engl";
+        $result = dbi_query($sql);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $nations[] = $row;
+            }
+        }
+    }
+
+    return $nations;
+}
+
+/**
+ * Check whether the metadata table includes a coords column.
+ *
+ * @return bool
+ */
+function metadataHasCoordsColumn()
+{
+    static $hasCoords = null;
+
+    if ($hasCoords === null) {
+        $hasCoords = false;
+        foreach (metadataGetColumns() as $column) {
+            if (isset($column['COLUMN_NAME']) && $column['COLUMN_NAME'] === 'coords') {
+                $hasCoords = true;
+                break;
+            }
+        }
+    }
+
+    return $hasCoords;
+}
+
+/**
+ * Convert a WKT POINT string to a lat,lon string.
+ *
+ * @param string $value
+ * @return string
+ */
+function metadataCoordsToLatLon($value)
+{
+    $value = trim($value);
+    if ($value === '') {
+        return '';
+    }
+
+    if (preg_match('/^POINT\\s*\\(\\s*(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)\\s*\\)$/i', $value, $matches)) {
+        $lon = $matches[1];
+        $lat = $matches[2];
+        return $lat . ',' . $lon;
+    }
+
+    return $value;
+}
+
+/**
+ * Parse a "lat,lon" string (or WKT POINT) into numeric coords.
+ *
+ * @param string $raw
+ * @param string|null $error
+ * @return array<string, float>|null
+ */
+function metadataParseLatLon($raw, &$error)
+{
+    $error = null;
+    $raw = trim($raw);
+    if ($raw === '') {
+        return null;
+    }
+
+    if (preg_match('/^(-?\\d+(?:\\.\\d+)?)\\s*,\\s*(-?\\d+(?:\\.\\d+)?)$/', $raw, $matches)) {
+        return array('lat' => (float)$matches[1], 'lon' => (float)$matches[2]);
+    }
+
+    if (preg_match('/^POINT\\s*\\(\\s*(-?\\d+(?:\\.\\d+)?)\\s+(-?\\d+(?:\\.\\d+)?)\\s*\\)$/i', $raw, $matches)) {
+        return array('lat' => (float)$matches[2], 'lon' => (float)$matches[1]);
+    }
+
+    $error = "Coords must be in 'lat,lon' format.";
+    return null;
+}
+
+/**
+ * Format floats for WKT output using a dot decimal separator.
+ *
+ * @param float $value
+ * @return string
+ */
+function metadataFormatFloat($value)
+{
+    $formatted = sprintf('%.8F', (float)$value);
+    $formatted = rtrim(rtrim($formatted, '0'), '.');
+    if ($formatted === '-0') {
+        $formatted = '0';
+    }
+    return $formatted;
+}
+
+/**
+ * Build a Google Maps link for a coords value.
+ *
+ * @param string $coordsValue
+ * @return string
+ */
+function metadataBuildMapLink($coordsValue)
+{
+    $error = null;
+    $coords = metadataParseLatLon($coordsValue, $error);
+    if ($coords === null) {
+        return '';
+    }
+
+    $latText = metadataFormatFloat($coords['lat']);
+    $lonText = metadataFormatFloat($coords['lon']);
+    $query = rawurlencode($latText . ',' . $lonText);
+    $href = "https://www.google.com/maps/search/?api=1&query=" . $query;
+
+    return "<a class='metadata-map-link' href='" . htmlspecialchars($href, ENT_QUOTES) . "' target='_blank' rel='noopener' title='Open in Google Maps' aria-label='Open in Google Maps'>&#128205;</a>";
+}
+
+/**
  * Fetch a metadata record by id.
  *
  * @param int|null $metadataId
@@ -52,7 +184,11 @@ function metadataFetchRecord($metadataId)
     }
 
     $id = intval($metadataId);
-    $sql = "SELECT * FROM metadata WHERE MetadataID = '$id'";
+    if (metadataHasCoordsColumn()) {
+        $sql = "SELECT *, ST_AsText(coords) AS coords FROM metadata WHERE MetadataID = '$id'";
+    } else {
+        $sql = "SELECT * FROM metadata WHERE MetadataID = '$id'";
+    }
     $result = dbi_query($sql);
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
@@ -206,6 +342,15 @@ function metadataRenderFields($record, $mode)
         'DatasetDetails' => 'GBIF dataset description',
         'LicenseText' => 'GBIF License',
     );
+    $nationLookup = null;
+    if ($readonly) {
+        $nationLookup = array();
+        foreach (metadataGetNations() as $nation) {
+            if (isset($nation['nationID'])) {
+                $nationLookup[(string)$nation['nationID']] = isset($nation['nation_engl']) ? (string)$nation['nation_engl'] : '';
+            }
+        }
+    }
 
     $html = "<table class='metadata-field-table'>\n";
     foreach ($columns as $column) {
@@ -232,16 +377,36 @@ function metadataRenderFields($record, $mode)
         $labelHtml = "<div class='metadata-label-wrapper'>$copyButton<span class='metadata-label-text'>$label</span></div>";
         $html .= "<th>$labelHtml</th>";
 
-        $dataValue = ($value === null) ? '' : (string)$value;
+        $displayValue = $value;
+        if ($name === 'coords' && $value !== null && $value !== '') {
+            $displayValue = metadataCoordsToLatLon((string)$value);
+        }
+        $dataValue = ($displayValue === null) ? '' : (string)$displayValue;
         $tdAttr = " data-value='" . htmlspecialchars($dataValue, ENT_QUOTES) . "' data-null='" . (($value === null) ? '1' : '0') . "'";
 
         $html .= "<td$tdAttr>";
 
+        $mapLink = '';
+        if ($name === 'coords' && $displayValue !== null && $displayValue !== '') {
+            $mapLink = metadataBuildMapLink((string)$displayValue);
+        }
+
         if ($readonly || $name === 'MetadataID') {
-            $display = ($value === null || $value === '') ? "<span class='metadata-null'>NULL</span>" : nl2br(htmlspecialchars((string)$value));
-            $html .= $display;
+            if ($name === 'nationID_fk' && $value !== null && $value !== '' && is_array($nationLookup)) {
+                $nationKey = (string)$value;
+                if (array_key_exists($nationKey, $nationLookup) && $nationLookup[$nationKey] !== '') {
+                    $display = htmlspecialchars($nationLookup[$nationKey]);
+                } else {
+                    $display = htmlspecialchars($nationKey);
+                }
+            } elseif ($name === 'coords' && $displayValue !== null && $displayValue !== '') {
+                $display = htmlspecialchars((string)$displayValue);
+            } else {
+                $display = ($value === null || $value === '') ? "<span class='metadata-null'>NULL</span>" : nl2br(htmlspecialchars((string)$value));
+            }
+            $html .= $display . $mapLink;
         } else {
-            $html .= metadataRenderEditableField($name, $value, $column);
+            $html .= metadataRenderEditableField($name, $value, $column) . $mapLink;
         }
 
         $html .= "</td>";
@@ -268,6 +433,27 @@ function metadataRenderEditableField($name, $value, $column)
     $isNullable = ($column['IS_NULLABLE'] === 'YES');
     $valueStr = ($value === null) ? '' : (string)$value;
     $valueEsc = htmlspecialchars($valueStr);
+    $inputClass = "metadata-input";
+
+    if ($name === 'coords') {
+        $coordsValue = metadataCoordsToLatLon($valueStr);
+        $coordsEsc = htmlspecialchars($coordsValue, ENT_QUOTES);
+        return "<input class='$inputClass' type='text' name='$name' value='$coordsEsc' placeholder='lat,lon'>";
+    }
+
+    if ($name === 'nationID_fk') {
+        $nations = metadataGetNations();
+        $options = array();
+        $options[] = "<option value=''>" . ($isNullable ? '--' : 'Select') . "</option>";
+        foreach ($nations as $nation) {
+            $nationId = isset($nation['nationID']) ? (string)$nation['nationID'] : '';
+            $nationLabel = isset($nation['nation_engl']) ? (string)$nation['nation_engl'] : '';
+            $selected = ($nationId !== '' && $nationId === $valueStr) ? " selected" : "";
+            $options[] = "<option value='" . htmlspecialchars($nationId, ENT_QUOTES) . "'$selected>"
+                . htmlspecialchars($nationLabel) . " (" . htmlspecialchars($nationId) . ")</option>";
+        }
+        return "<select class='metadata-input' name='$name'>" . implode('', $options) . "</select>";
+    }
 
     if ($dataType === 'set') {
         $checked = (strpos($valueStr, 'digital_image') !== false) ? " checked" : "";
@@ -279,7 +465,6 @@ function metadataRenderEditableField($name, $value, $column)
         return "<input type='checkbox' name='$name' value='1'$checked>";
     }
 
-    $inputClass = "metadata-input";
     if ($length !== null && $length > 255) {
         $rows = ($length > 512) ? 5 : 3;
         return "<textarea class='$inputClass' name='$name' rows='$rows'>$valueEsc</textarea>";
@@ -617,6 +802,27 @@ function metadataSave($formData)
         $isNullable = ($column['IS_NULLABLE'] === 'YES');
         $columnType = strtolower($column['COLUMN_TYPE']);
 
+        if ($dataType === 'point' || $name === 'coords') {
+            $raw = array_key_exists($name, $formData) ? trim((string)$formData[$name]) : '';
+            if ($raw === '') {
+                $valueSql = "NULL";
+            } else {
+                $error = null;
+                $coords = metadataParseLatLon($raw, $error);
+                if ($coords === null) {
+                    $message = ($error !== null) ? $error : 'Invalid coords value.';
+                    $response->assign('metadataMessages', 'innerHTML', "<div class='metadata-message error'>" . htmlspecialchars($message) . "</div>");
+                    return $response;
+                }
+                $lonText = metadataFormatFloat($coords['lon']);
+                $latText = metadataFormatFloat($coords['lat']);
+                $valueSql = "ST_GeomFromText('POINT(" . $lonText . " " . $latText . ")')";
+            }
+            $columnValues[$name] = $valueSql;
+            $updates[] = "`$name` = $valueSql";
+            continue;
+        }
+
         if ($dataType === 'set') {
             $value = isset($formData[$name]) ? 'digital_image' : null;
         } elseif ($dataType === 'tinyint' && $columnType === "tinyint(4)") {
@@ -689,6 +895,7 @@ function metadataSave($formData)
         $response->assign('metadataMessages', 'innerHTML', "<div class='metadata-message success'>Record $metadataId inserted.</div>");
     }
     $response->script('metadataAfterRightRender("clean");');
+    $response->script('var leftId = document.getElementById("metadata_left_id"); if (leftId && leftId.value) { jaxon_metadataNavigate("left", leftId.value, "reload"); }');
 
     return $response;
 }

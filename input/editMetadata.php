@@ -238,6 +238,16 @@ if (!$userHasAccess) {
             color: #888888;
             cursor: default;
         }
+        .metadata-map-link {
+            margin-left: 0.4em;
+            text-decoration: none;
+            font-size: 1.05em;
+            line-height: 1;
+        }
+        .metadata-map-link:hover,
+        .metadata-map-link:focus {
+            opacity: 0.8;
+        }
         @media (max-width: 1200px) {
             #metadataEditor {
                 flex-direction: column;
