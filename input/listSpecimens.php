@@ -38,6 +38,7 @@ if (!isset($_SESSION['sLabelDate']))    { $_SESSION['sLabelDate'] = ''; }
 if (!isset($_SESSION['sGeoGeneral']))   { $_SESSION['sGeoGeneral'] = ''; }
 if (!isset($_SESSION['sGeoRegion']))    { $_SESSION['sGeoRegion'] = ''; }
 if (!isset($_SESSION['sItemsPerPage'])) { $_SESSION['sItemsPerPage'] = 10; }
+if (!isset($_SESSION['sNotesInternal'])) { $_SESSION['sNotesInternal'] = ''; }
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
@@ -72,6 +73,7 @@ if (isset($_POST['resetFilters'])) {
     $_SESSION['sHabitat']          = '';
     $_SESSION['sHabitus']          = '';
     $_SESSION['sBemerkungen']      = '';
+    $_SESSION['sNotesInternal']    = '';
     $_SESSION['sTyp']              = '';
     $_SESSION['sSynonyms']         = '';
     $_SESSION['sImages']           = '';
@@ -106,6 +108,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = '';  // = $_POST['habitat'];
         $_SESSION['sHabitus']          = '';  // = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = '';  // = $_POST['annotations'];
+        $_SESSION['sNotesInternal']    = '';
 		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
         $_SESSION['sSynonyms']         = '';
 		$_SESSION['sImages']           = '';  // = $_POST['images'];
@@ -130,6 +133,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = $_POST['habitat'];
         $_SESSION['sHabitus']          = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = $_POST['annotations'];
+        $_SESSION['sNotesInternal']    = $_POST['notes_internal'];
 
 		$_SESSION['sTyp']      = (($_POST['typ']=="only") ? true : false);
         $_SESSION['sSynonyms'] = (($_POST['synonyms']=="yes") ? true : false);
@@ -150,6 +154,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sUserID'] = $_POST['userID'];
     $_SESSION['sUserDate'] = $_POST['user_date'];
@@ -162,6 +167,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sLabelDate'] = $_POST['label_date'];
 
@@ -576,6 +582,8 @@ jaxon_checkTypeLabelMapPdfButton();
     <td><input type="text" name="taxon" value="<?php echoSpecial('sTaxon', 'SESSION'); ?>"></td>
   <td align="right">&nbsp;<b>ident. history</b></td>
     <td><input type="text" name="taxon_alt" value="<?php echoSpecial('sTaxonAlt', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b>internal notes</b></td>
+    <td><input type="text" name="notes_internal" value="<?php echoSpecial('sNotesInternal', 'SESSION'); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
     <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>

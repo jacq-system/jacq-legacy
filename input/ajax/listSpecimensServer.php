@@ -189,6 +189,9 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         if (trim($_SESSION['sBemerkungen'])) {
             $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
         }
+        if (trim($_SESSION['sNotesInternal'])) {
+            $sql_restrict_specimen .= " AND s.notes_internal LIKE '%" . dbi_escape_string(trim($_SESSION['sNotesInternal'])) . "%'";
+        }
         if (trim($_SESSION['sTaxonAlt'])) {
             $sql_restrict_specimen .= " AND s.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['sTaxonAlt'])) . "%'";
         }
