@@ -3,7 +3,6 @@ require_once( 'variables.php' );
 require_once( 'tools.php' );
 require_once( 'class.natID.php' );
 
-/** @var array $_CONFIG */
 
 if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     if (substr(getcwd(), -5) == "/ajax") {
@@ -65,17 +64,20 @@ function dbi_query($sql, $debug = false)
 {
     global $_OPTIONS, $dbLink;
 
-    if($debug || $_OPTIONS['debug'] == 1) {
+    if ($debug || $_OPTIONS['debug'] == 1) {
         $debug = true;
     }
 
+    if (empty($sql)) {
+        error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']}.");
+    }
     $res = $dbLink->query($sql);
 
     if(!$res) {
         // log the error in php error log
-        error_log("SEVERE SQL-ERROR IN SCRIPT. SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
+        error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']} SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
         if ($debug){
-            // and show it additionally, if debug is on
+            // and show it additionally if debug is on
             echo $sql . "<br>\n";
             echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
         }
@@ -83,33 +85,6 @@ function dbi_query($sql, $debug = false)
 
     return $res;
 }
-
-/**
- * @deprecated since mysql_* functions are deprecated
- *
- * @param $sql
- * @param bool|FALSE $debug
- * @return resource
- *
- */
-//function db_query($sql, $debug=false)
-//{
-//    global $_OPTIONS;
-//
-//    if($debug || $_OPTIONS['debug'] == 1) {
-//        $debug=true;
-//    }
-//
-//    $res = mysql_query($sql);
-//
-//    if(!$res && $debug) {
-//        echo $sql;
-//        echo mysql_errno() . ": " . mysql_error() . "<br>\n";
-//    }
-//
-//    return $res;
-//}
-
 
 /**
  * wrapper function to mysqli_real_escape_string
