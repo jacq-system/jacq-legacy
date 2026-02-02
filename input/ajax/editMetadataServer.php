@@ -150,7 +150,7 @@ function metadataFormatFloat($value)
 }
 
 /**
- * Build a Google Maps link for a coords value.
+ * Build an OpenStreetMap link for a coords value.
  *
  * @param string $coordsValue
  * @return string
@@ -166,9 +166,9 @@ function metadataBuildMapLink($coordsValue)
     $latText = metadataFormatFloat($coords['lat']);
     $lonText = metadataFormatFloat($coords['lon']);
     $query = rawurlencode($latText . ',' . $lonText);
-    $href = "https://www.google.com/maps/search/?api=1&query=" . $query;
+    $href = "https://www.openstreetmap.org/?mlat=" . $latText . "&mlon=" . $lonText . "#map=15/" . $latText . "/" . $lonText;
 
-    return "<a class='metadata-map-link' href='" . htmlspecialchars($href, ENT_QUOTES) . "' target='_blank' rel='noopener' title='Open in Google Maps' aria-label='Open in Google Maps'>&#128205;</a>";
+    return "<a class='metadata-map-link' href='" . htmlspecialchars($href, ENT_QUOTES) . "' target='_blank' rel='noopener' title='Open in OpenStreetMap' aria-label='Open in OpenStreetMap'>&#128205;</a>";
 }
 
 /**
