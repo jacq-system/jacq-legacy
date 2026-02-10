@@ -36,6 +36,8 @@ if (isset($_GET['ptid'])) {
 $nr = isset($_GET['nr']) ? intval(filter_input(INPUT_GET, 'nr')) : 0;
 $linkList = $_SESSION['sLinkList'] ?? array();
 $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" kann Batches aendern
+$p_gbif_id = $p_dissco_id = "";
+$p_notes_internal = "";
 
 
 function makeTaxon2($search)
@@ -176,6 +178,7 @@ if (isset($_GET['sel'])) {
                  s.Fundort, s.Fundort_engl, s.habitat, s.habitus, s.Bemerkungen, s.digital_image, s.digital_image_obs,
                  s.garten, s.voucherID, s.ncbi_accession,
                  s.collectionID, s.typusID, s.NationID, s.provinceID,
+                 s.GBIF_ID, s.DiSSCo_ID, s.notes_internal,
                  c.SammlerID, c.Sammler, c2.Sammler_2ID, c2.Sammler_2,
                  mc.source_id
                 FROM tbl_specimens s
@@ -228,6 +231,9 @@ if (isset($_GET['sel'])) {
         $p_typus       = $row['typusID'];
         $p_nation      = $row['NationID'];
         $p_province    = $row['provinceID'];
+        $p_gbif_id     = $row['GBIF_ID'];
+        $p_dissco_id   = $row['DiSSCo_ID'];
+        $p_notes_internal = $row['notes_internal'];
 
         $p_sammler       = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
         $p_sammlerIndex  = $row['SammlerID'];
@@ -286,6 +292,8 @@ if (isset($_GET['sel'])) {
         $p_sammler = $p_sammler2 = "";
         $p_taxonIndex = $p_sammlerIndex = $p_sammler2Index = 0;
         $p_institution = $_SESSION['sid'];
+        $p_gbif_id = $p_dissco_id = "";
+        $p_notes_internal = "";
         if ($p_institution) {
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '$p_institution' ORDER BY collection";
             $row = mysqli_fetch_array(dbi_query($sql));
@@ -331,6 +339,7 @@ if (isset($_GET['sel'])) {
     $p_habitat           = $_POST['habitat'] ?? "";
     $p_habitus           = $_POST['habitus'] ?? "";
     $p_Bemerkungen       = $_POST['Bemerkungen'] ?? "";
+    $p_notes_internal    = $_POST['notes_internal'] ?? "";
     $p_digital_image     = filter_input(INPUT_POST, 'digital_image');
     $p_digital_image_obs = filter_input(INPUT_POST, 'digital_image_obs');
     $p_garten            = $_POST['garten'] ?? "";
@@ -346,6 +355,15 @@ if (isset($_GET['sel'])) {
     $p_sammlerIndex      = (strlen(trim($_POST['sammler'] ?? "")) > 0) ? $_POST['sammlerIndex'] : 0;
     $p_sammler2          = $_POST['sammler2'] ?? "";
     $p_sammler2Index     = (strlen(trim($_POST['sammler2'] ?? "")) > 0) ? $_POST['sammler2Index'] : 0;
+    $p_gbif_id = $p_dissco_id = "";
+    if (!empty($_POST['specimen_ID'])) {
+        $gbifResult = dbi_query("SELECT GBIF_ID, DiSSCo_ID FROM tbl_specimens WHERE specimen_ID = '" . intval($_POST['specimen_ID']) . "'");
+        if ($gbifResult && $gbifResult->num_rows > 0) {
+            $gbifRow = $gbifResult->fetch_assoc();
+            $p_gbif_id = $gbifRow['GBIF_ID'] ?? "";
+            $p_dissco_id = $gbifRow['DiSSCo_ID'] ?? "";
+        }
+    }
     $p_lat               = $_POST['lat'] ?? "";
     $p_lat_deg           = (($_POST['lat_deg'] ?? "") != "") ? intval($_POST['lat_deg']) : "";           // integers only
     $p_lat_min           = (($_POST['lat_min'] ?? "") != "") ? intval($_POST['lat_min']) : "";           // integers only
@@ -421,6 +439,7 @@ if (isset($_GET['sel'])) {
                     habitat = " . quoteString($p_habitat) . ",
                     habitus = " . quoteString($p_habitus) . ",
                     Bemerkungen = " . quoteString($p_Bemerkungen) . ",
+                    notes_internal = " . quoteString($p_notes_internal) . ",
                     digital_image = " . (($p_digital_image) ? "'1'" : "'0'") . ",
                     digital_image_obs = " . (($p_digital_image_obs) ? "'1'" : "'0'") . ",
                     garten = " . quoteString($p_garten) . ",
@@ -600,15 +619,67 @@ if (isset($_GET['sel'])) {
   <script type="text/javascript" language="JavaScript">
       var reload = false;
       var linktext = '';
-      let dialog_latLonQu;
-      let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
-      let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
-      let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
-      let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
+        let dialog_latLonQu;
+        let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
+        let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
+        let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
+        let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
+        let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
 
-      if (errorEdited) {
-          alert(errorEdited);
-      }
+        if (errorEdited) {
+            alert(errorEdited);
+        }
+
+        function showInstitutionChangeDialog(originalValue)
+        {
+            const $inst = $('[name="institution"]');
+            const resetInstitution = function() {
+                if ($inst.length) {
+                    $inst.val(originalValue);
+                }
+            };
+            const $dialog = $('#institutionChangeDialog');
+
+            if ($dialog.length && $.ui && $.ui.dialog) {
+                if (!$dialog.data('ui-dialog')) {
+                    $dialog.dialog({
+                        modal: true,
+                        buttons: {
+                            "OK": function() {
+                                $(this).dialog('close');
+                            }
+                        },
+                        close: function() {
+                            resetInstitution();
+                        }
+                    });
+                } else {
+                    $dialog.dialog('open');
+                }
+            } else {
+                alert("It is not foreseen to change the source Institution of a specimen.\n\nFor new specimens based on existing data please use \"New & Copy\" instead of \"Edit/Update\".\n\nFor existing specimens with a wrong institution please contact one of the admins: Heimo / Dominik / Johannes");
+                resetInstitution();
+            }
+        }
+
+        $(function() {
+            if (!institutionEditLocked) {
+                return;
+            }
+            const $inst = $('[name="institution"]');
+            if (!$inst.length) {
+                return;
+            }
+            const original = $inst.val();
+            $inst.data('original', original);
+            $inst.on('change', function() {
+                const originalValue = $(this).data('original');
+                if ($(this).val() === originalValue) {
+                    return;
+                }
+                showInstitutionChangeDialog(originalValue);
+            });
+        });
 
       function makeOptions()
       {
@@ -1459,11 +1530,23 @@ if (!empty($stblID)) {
     }
 }
 
+if (!empty($p_gbif_id)) {
+    $gbifValue = htmlspecialchars($p_gbif_id, ENT_QUOTES, 'UTF-8');
+    $cf->text(67, $y + 1.6, "<a href='{$gbifValue}' target='_blank' rel='noopener'>GBIF: {$gbifValue}</a>");
+}
+if (!empty($p_dissco_id)) {
+    $disscoValue = htmlspecialchars($p_dissco_id, ENT_QUOTES, 'UTF-8');
+    $cf->text(67, $y + 2.8, "<a href='{$disscoValue}' target='_blank' rel='noopener'>DiSSCo: {$disscoValue}</a>");
+}
+
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
 $cf->labelMandatory(11, $y, 9, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
-$cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
+$institutionDropdownAttr = (!empty($p_specimen_ID) && $edit)
+    ? "institution"
+    : "institution\" onchange=\"reload=true; self.document.f.submit();";
+$cf->dropdown(11, $y, $institutionDropdownAttr, $p_institution, $institution[0], $institution[1]);
 
 $cf->labelMandatory(23, $y, 6, "HerbarNr.");
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
@@ -1642,6 +1725,8 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 $y += 1.05;
 $cf->labelMandatory(11, $y, 9, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
 $cf->textarea(11, $y, 54, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
+$cf->text(65, 39.7, "<div class=\"cssflabel\" style=\"width: 9.375em;\">notes internal&nbsp;</div>");
+$cf->textarea(67, 41.3, 30, 10, "notes_internal", $p_notes_internal);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
 
@@ -1756,6 +1841,11 @@ if ($updateBlocked) {
             </tr>
         </table>
     </form>
+</div>
+<div style="display:none" id="institutionChangeDialog" title="Institution change not allowed">
+    <p>It is not foreseen to change the source Institution of a specimen.</p>
+    <p>For new specimens based on existing data please use "New &amp; Copy" instead of "Edit/Update".</p>
+    <p>For existing specimens with a wrong institution please contact one of the admins: Heimo / Dominik / Johannes</p>
 </div>
 <div style="display:none" id="stblIDbox">
     <?php
