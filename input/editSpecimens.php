@@ -619,15 +619,67 @@ if (isset($_GET['sel'])) {
   <script type="text/javascript" language="JavaScript">
       var reload = false;
       var linktext = '';
-      let dialog_latLonQu;
-      let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
-      let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
-      let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
-      let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
+        let dialog_latLonQu;
+        let geoname_user = "<?php echo $_OPTIONS['GEONAMES']['username']; ?>";
+        let specifiedHerbNummerLength = <?php echo getSpecifiedHerbNummerLength($p_institution ?? 0); ?>;
+        let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
+        let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
+        let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
 
-      if (errorEdited) {
-          alert(errorEdited);
-      }
+        if (errorEdited) {
+            alert(errorEdited);
+        }
+
+        function showInstitutionChangeDialog(originalValue)
+        {
+            const $inst = $('[name="institution"]');
+            const resetInstitution = function() {
+                if ($inst.length) {
+                    $inst.val(originalValue);
+                }
+            };
+            const $dialog = $('#institutionChangeDialog');
+
+            if ($dialog.length && $.ui && $.ui.dialog) {
+                if (!$dialog.data('ui-dialog')) {
+                    $dialog.dialog({
+                        modal: true,
+                        buttons: {
+                            "OK": function() {
+                                $(this).dialog('close');
+                            }
+                        },
+                        close: function() {
+                            resetInstitution();
+                        }
+                    });
+                } else {
+                    $dialog.dialog('open');
+                }
+            } else {
+                alert("It is not foreseen to change the source Institution of a specimen.\n\nFor new specimens based on existing data please use \"New & Copy\" instead of \"Edit/Update\".\n\nFor existing specimens with a wrong institution please contact one of the admins: Heimo / Dominik / Johannes");
+                resetInstitution();
+            }
+        }
+
+        $(function() {
+            if (!institutionEditLocked) {
+                return;
+            }
+            const $inst = $('[name="institution"]');
+            if (!$inst.length) {
+                return;
+            }
+            const original = $inst.val();
+            $inst.data('original', original);
+            $inst.on('change', function() {
+                const originalValue = $(this).data('original');
+                if ($(this).val() === originalValue) {
+                    return;
+                }
+                showInstitutionChangeDialog(originalValue);
+            });
+        });
 
       function makeOptions()
       {
@@ -1491,7 +1543,10 @@ $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
 $cf->labelMandatory(11, $y, 9, "Institution");
 //$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
-$cf->dropdown(11, $y, "institution\" onchange=\"reload=true; self.document.f.submit();", $p_institution, $institution[0], $institution[1]);
+$institutionDropdownAttr = (!empty($p_specimen_ID) && $edit)
+    ? "institution"
+    : "institution\" onchange=\"reload=true; self.document.f.submit();";
+$cf->dropdown(11, $y, $institutionDropdownAttr, $p_institution, $institution[0], $institution[1]);
 
 $cf->labelMandatory(23, $y, 6, "HerbarNr.");
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
@@ -1786,6 +1841,11 @@ if ($updateBlocked) {
             </tr>
         </table>
     </form>
+</div>
+<div style="display:none" id="institutionChangeDialog" title="Institution change not allowed">
+    <p>It is not foreseen to change the source Institution of a specimen.</p>
+    <p>For new specimens based on existing data please use "New &amp; Copy" instead of "Edit/Update".</p>
+    <p>For existing specimens with a wrong institution please contact one of the admins: Heimo / Dominik / Johannes</p>
 </div>
 <div style="display:none" id="stblIDbox">
     <?php
