@@ -16,7 +16,7 @@ $databases_cache = 'databases_cache.inc';
 if(isset($_GET['update']) || !file_exists($databases_cache) || (time()-filemtime($databases_cache)>50*7*24*60*60) ) {
     require_once('inc/jsonRPCClient.php');
 
-    $url = $options['serviceTaxamatch'] . "json_rpc_taxamatchMdld.php";
+    $url = $options['serviceTaxamatch'];
 
     try {
         $service = new jsonRPCClient($url);
@@ -65,7 +65,7 @@ if (!empty($_POST['username'])) {
         }
 
         $database='';
-        if ($_POST['showSyn'] == 'synonyms') {
+        if (($_POST['showSyn'] ?? '') == 'synonyms') {
             $database='s_';
         }
         $database.=$_POST['database'];
@@ -83,7 +83,7 @@ if (!empty($_POST['username'])) {
             while (!feof($handle)) {
                 $line = ucfirst(trim(fgets($handle)));
                 if (substr($line, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $line = substr($line, 3);
-                if ($line) {
+                if ($line && mb_check_encoding($line, 'UTF-8')) {
                     dbi_query("INSERT INTO tblqueries SET
                                jobID  = '$jobID',
                                lineNr = '$ctr',
@@ -250,7 +250,7 @@ EOF;
     $result = dbi_query("SELECT * FROM tbljobs WHERE finish IS NOT NULL AND uid = '" . $_SESSION['uid'] . "' ORDER by start DESC");
     if ($result->num_rows > 0) {
         while ($row = $result->fetch_array()) {
-            $database = $services[$row['db']]['name'];
+            $database = $services[$row['db']]['name'] ?? "unknown: {$row['db']}";
             echo "<tr class='out'>"
                . "<td class='outCenter'><a href='bulkshow.php?id=" . $row['jobID'] . "' target='_blank'>" . htmlspecialchars($row['filename']) . "</a></td>"
                . "<td class='outCenter'>" . htmlspecialchars($database) . "</td>"
