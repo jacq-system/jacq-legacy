@@ -338,8 +338,8 @@ if (empty($_POST['institution_QR'])) {  // make labels for a list of given speci
     preg_match('/\D/', strrev($input_start), $matches, PREG_OFFSET_CAPTURE);
     if ($matches) {
         $preamble    = substr($input_start, 0, -$matches[0][1]);
-        $numberStart = substr($input_start, -$matches[0][1]);
-        $numberEnd   = substr($input_stop, strlen($input_start) - $matches[0][1]);
+        $numberStart = intval(substr($input_start, -$matches[0][1]));
+        $numberEnd   = intval(substr($input_stop, strlen($input_start) - $matches[0][1]));
         $digits      = ($digits) ? $digits : $matches[0][1];
     } else {
         $preamble    = "";
