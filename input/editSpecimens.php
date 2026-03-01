@@ -272,10 +272,17 @@ if (isset($_GET['sel'])) {
             $p_external = $row2['external'];
             $p_taxonIndex = $row['taxonID'];
             $p_taxon = getScientificName( $p_taxonIndex, false, true, true );
+            $services = dbi_query("SELECT nsn.param1, ns.name, ns.url_head, ns.api_code
+                                   FROM tbl_nom_service_names nsn
+                                    INNER JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
+                                   WHERE nsn.taxonID = $p_taxonIndex
+                                    AND ns.api_code IS NOT NULL")
+                        ->fetch_all(MYSQLI_ASSOC);
         } else {
             $p_taxon = "";
             $p_taxonIndex = 0;
             $p_external = null;
+            $services = [];
         }
     } else {
         $p_specimen_ID = $p_CollNummer = $p_identstatus = "";
@@ -1604,6 +1611,13 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
 $cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
+if (!empty($services)) {
+    $serviceLabel = "";
+    foreach ($services as $service) {
+        $serviceLabel .= "<a href='{$service['url_head']}{$service['param1']}' title='{$service['name']}' target='_blank'>&lt;{$service['api_code']}&gt;</a>&nbsp;";
+    }
+    $cf->text(67, $y + 0.3, $serviceLabel);
+}
 
 $y += 4;
 $cf->labelMandatory(11, $y, 9, "det / rev / conf");
