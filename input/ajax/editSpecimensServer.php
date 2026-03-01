@@ -457,7 +457,7 @@ function updateLink($formData)
                                     $sqldata
                                     WHERE specimens_linkID = '" . $existingID . "'";
                         } else {
-                            $sql = "INSERT INTO tbl_specimens_links SET
+                            $sql = "INSERT IGNORE INTO tbl_specimens_links SET
                                     $sqldata";
                         }
                         dbi_query($sql);
