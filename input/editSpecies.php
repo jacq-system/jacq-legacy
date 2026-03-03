@@ -722,6 +722,22 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
+// check for name services and link to them
+$services = dbi_query("SELECT nsn.param1, ns.name, ns.url_head, ns.api_code
+                       FROM tbl_nom_service_names nsn
+                        INNER JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
+                       WHERE nsn.taxonID = '" . dbi_escape_string($p_taxonID) . "'
+                        AND ns.api_code IS NOT NULL")
+            ->fetch_all(MYSQLI_ASSOC);
+if (!empty($services)) {
+    $serviceLabel = "";
+    foreach ($services as $service) {
+        $serviceLabel .= "<a href='{$service['url_head']}{$service['param1']}' title='{$service['name']}' target='_blank'>"
+                . "<img src='webimages/nomService/{$service['api_code']}.png' alt='{$service['api_code']}' height='30px'>"
+                . "</a>&nbsp;";
+    }
+    $cf->text(64, 0.5, $serviceLabel);
+}
 // check for specimens and link to them
 $row_s = dbi_query("SELECT COUNT(*) 
                     FROM tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc
