@@ -565,6 +565,7 @@ function editMultiTaxa ($specimenID)
         $response->assign('iBox_content', 'innerHTML', $ret);
         $response->script('$("#iBox_content").dialog("option", "title", "edit multiple taxa");');
         $response->script('$("#iBox_content").dialog("open");');
+        displayMultiTaxa($specimenID);
     }
     return $response;
 }
@@ -617,6 +618,21 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
     return $response;
 }
 
+function displayMultiTaxa($specimenID)
+{
+    global $response;
+
+    $rows = dbi_query("SELECT taxonID FROM tbl_specimens_taxa WHERE specimen_ID = '" . intval($specimenID) . "'")->fetch_all(MYSQLI_ASSOC);
+    if (!empty($rows)) {
+        if (count($rows) == 1) {
+            $response->assign('multiTaxaText', 'innerHTML', getScientificName($rows[0]['taxonID']));
+        } else {
+            $response->assign('multiTaxaText', 'innerHTML', "+" . count($rows));
+        }
+    }
+    return $response;
+}
+
 function displayCollectorLinks($collectorID)
 {
     global $response;
@@ -627,27 +643,48 @@ function displayCollectorLinks($collectorID)
                       WHERE SammlerID = '" . intval($collectorID) . "'")
            ->fetch_assoc();
     if (!empty($row['WIKIDATA_ID']) && substr(trim($row['WIKIDATA_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' alt='wikidata' target='_blank'>"
-               . "<img src='webimages/wikidata.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' target='_blank'>"
+               . "<img src='webimages/wikidata.png' width='20px' alt='wikidata'></a>";
     }
     if (!empty($row['HUH_ID']) && substr(trim($row['HUH_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' alt='Index of Botanists (HUH)' target='_blank'>"
-               . "<img src='webimages/huh.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' target='_blank'>"
+               . "<img src='webimages/huh.png' width='20px' alt='HUH'></a>";
     }
     if (!empty($row['VIAF_ID']) && substr(trim($row['VIAF_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' alt='VIAF' target='_blank'>"
-               . "<img src='webimages/viaf.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' target='_blank'>"
+               . "<img src='webimages/viaf.png' width='20px' alt='VIAF'></a>";
     }
     if (!empty($row['ORCID']) && substr(trim($row['ORCID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' alt='ORCID' target='_blank'>"
-               . "<img src='webimages/orcid.logo.icon.svg' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' target='_blank'>"
+               . "<img src='webimages/orcid.logo.icon.svg' width='20px' alt='ORCID'></a>";
     }
     if (!empty($row['Bloodhound_ID']) && substr(trim($row['Bloodhound_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' alt='Bionomia' target='_blank'>"
-               . "<img src='webimages/bionomia_logo.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' target='_blank'>"
+               . "<img src='webimages/bionomia_logo.png' width='20px' alt='Bionomia'></a>";
     }
 
     $response->assign('displayCollectorLinks', 'innerHTML', implode("&nbsp;", $ret));
+
+    return $response;
+}
+
+function updateNomService($sciName)
+{
+    // UNDER CONSTRUCTION
+    
+    global $response, $_CONFIG;
+
+//    $_CONFIG['JACQ_SERVICES']
+
+    $curl = curl_init("https://api.jacq.org/v1/externalScinames/find/" . rawurlencode($sciName));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $curl_response = curl_exec($curl);
+    curl_close($curl);
+    if ($curl_response !== false) {
+        $response->assign('iBox_content', 'innerHTML', var_export(json_decode($curl_response, true), true));
+        $response->script('$("#iBox_content").dialog("option", "title", "show nomService");');
+        $response->script('$("#iBox_content").dialog("open");');
+    }
 
     return $response;
 }
@@ -667,5 +704,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 $jaxon->processRequest();

@@ -23,7 +23,9 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 
 if (!isset($_SESSION['sPTID'])) {
     $_SESSION['sPTID'] = 0;
@@ -1198,6 +1200,8 @@ if (isset($_GET['sel'])) {
       });
       $(function()
       {
+          jaxon_displayMultiTaxa('<?php echo $p_specimen_ID; ?>');
+
           $('#iBox_content').dialog( {
               autoOpen: false,
               modal: true,
@@ -1327,7 +1331,7 @@ if (isset($_GET['sel'])) {
                   $(this).css('overflow', '');
               });
           });
-
+          //jaxon_updateNomService('<?php //echo getScientificName($p_taxonIndex, false, false, false); ?>//');
       });
   </script>
 </head>
@@ -1611,6 +1615,7 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
 $cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
+$cf->text(11.5, $y + 1.7, "", "multiTaxaText");
 
 if (!empty($services)) {
     $serviceLabel = "";
@@ -1619,7 +1624,7 @@ if (!empty($services)) {
                        . "<img src='webimages/nomService/{$service['api_code']}.png' alt='{$service['api_code']}' height='30px'>"
                        . "</a>&nbsp;";
     }
-    $cf->text(67, $y + 0.3, $serviceLabel);
+    $cf->text(67, $y + 0.3, $serviceLabel, "nomService");
 }
 
 $y += 4;
