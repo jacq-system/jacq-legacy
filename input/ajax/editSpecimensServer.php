@@ -694,27 +694,37 @@ function updateNomService($taxonID)
     curl_close($curl);
     if ($curl_response !== false) {
         $res = json_decode($curl_response, true);
-        foreach ($res['results'] as $result) {
-            if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
-                if (!empty($result['match']['id'])) {
-                    dbi_query("INSERT INTO tbl_nom_service_log SET 
-                                taxonID   = $taxonID,
-                                serviceID = '" . dbi_escape_string($result['serviceID']) . "',
-                                param     = '" . dbi_escape_string($result['match']['id']) . "'");
-                    $row = dbi_query("SELECT name, url_head, api_code, serviceID 
-                                      FROM tbl_nom_service 
-                                      WHERE serviceID = '" . dbi_escape_string($result['serviceID']) . "'")
-                           ->fetch_assoc();
-                    if (!empty($row)) {
-                        $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
-                                                   . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
-                                                   . "</a>";
+        if (!empty($res['results'])) {
+            foreach ($res['results'] as $result) {
+                if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
+                    if (!empty($result['match']['id'])) {
+                        $row = dbi_query("SELECT ID
+                                          FROM tbl_nom_service_log
+                                          WHERE taxonID  = $taxonID 
+                                           AND serviceID = '" . dbi_escape_string($result['serviceID']) . "'
+                                           AND param     = '" . dbi_escape_string($result['match']['id']) . "'")
+                            ->fetch_assoc();
+                        if (empty($row)) {
+                            dbi_query("INSERT INTO tbl_nom_service_log SET 
+                                        taxonID   = $taxonID,
+                                        serviceID = '" . dbi_escape_string($result['serviceID']) . "',
+                                        param     = '" . dbi_escape_string($result['match']['id']) . "'");
+                        }
+                        $row = dbi_query("SELECT name, url_head, api_code, serviceID 
+                                          FROM tbl_nom_service 
+                                          WHERE serviceID = '" . dbi_escape_string($result['serviceID']) . "'")
+                               ->fetch_assoc();
+                        if (!empty($row)) {
+                            $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
+                                                       . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
+                                                       . "</a>";
+                        }
+                    } elseif (!empty($result['candidates'])) {
+                        dbi_query("INSERT INTO tbl_nom_service_log SET 
+                                    taxonID   = $taxonID,
+                                    serviceID = '" . $result['serviceID'] . "',
+                                    error     = '" . dbi_escape_string($sciname) . ": No match but multiple candidates found.'");
                     }
-                } elseif (!empty($result['candidates'])) {
-                    dbi_query("INSERT INTO tbl_nom_service_log SET 
-                                taxonID   = $taxonID,
-                                serviceID = '" . $result['serviceID'] . "',
-                                error     = '" . dbi_escape_string($sciname) . ": No match but multiple candidates found.'");
                 }
             }
         }
