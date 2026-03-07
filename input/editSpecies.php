@@ -4,6 +4,15 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jaxon\Jaxon;
+use Jacq\Settings;
+
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editSpeciesServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 
 if (!isset($_SESSION['txLinkList'])) $_SESSION['txLinkList'] = '';
 
@@ -378,10 +387,16 @@ if (mysqli_num_rows($result) > 0) {
 		height: 200px;
 	}
   </style>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     reload = false;
+
+    function callUpdateNomService()
+    {
+        jaxon_updateNomService('<?php echo $p_taxonID; ?>');
+    }
 
     function editGenera(sel) {
       target = "editGenera.php?update=1&sel=" + encodeURIComponent(sel.value);
@@ -498,6 +513,8 @@ if (mysqli_num_rows($result) > 0) {
 		MeinFenster = window.open(target,"edit Common Names",options);
 		MeinFenster.focus();
 	}
+
+    setTimeout(callUpdateNomService, 0);
 
   </script>
 </head>
@@ -722,22 +739,8 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
-// check for name services and link to them
-$services = dbi_query("SELECT nsn.param1, ns.name, ns.url_head, ns.api_code
-                       FROM tbl_nom_service_names nsn
-                        INNER JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
-                       WHERE nsn.taxonID = '" . dbi_escape_string($p_taxonID) . "'
-                        AND ns.api_code IS NOT NULL")
-            ->fetch_all(MYSQLI_ASSOC);
-if (!empty($services)) {
-    $serviceLabel = "";
-    foreach ($services as $service) {
-        $serviceLabel .= "<a href='{$service['url_head']}{$service['param1']}' title='{$service['name']}' target='_blank'>"
-                . "<img src='webimages/nomService/{$service['api_code']}.png' alt='{$service['api_code']}' height='30px'>"
-                . "</a>&nbsp;";
-    }
-    $cf->text(64, 0.5, $serviceLabel);
-}
+$cf->text(64, 0.5, "connecting...", "nomService");  // will be filled asynchronously by jaxon_updateNomService
+
 // check for specimens and link to them
 $row_s = dbi_query("SELECT COUNT(*) 
                     FROM tbl_specimens s, tbl_tax_species ts, tbl_tax_genera tg, tbl_tax_families tf, tbl_management_collections mc
