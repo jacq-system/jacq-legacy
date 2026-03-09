@@ -634,7 +634,8 @@ if (isset($_GET['sel'])) {
 
         function callUpdateNomService()
         {
-            jaxon_updateNomService('<?php echo $p_taxonIndex; ?>');
+            $("#nomService").text("connecting...");
+            jaxon_updateNomService(document.f.taxonIndex.value);
         }
 
         function showInstitutionChangeDialog(originalValue)
@@ -1330,6 +1331,9 @@ if (isset($_GET['sel'])) {
               });
           });
 
+          $('#taxonIndex').change(function() {
+              setTimeout(callUpdateNomService, 0);
+          } );
           setTimeout(callUpdateNomService, 0);
       });
   </script>
@@ -1616,7 +1620,7 @@ echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
 $cf->text(11.5, $y + 1.7, "", "multiTaxaText");
 
-$cf->text(67, $y + 0.3, "connecting...", "nomService");  // will be filled asynchronously by jaxon_updateNomService
+$cf->text(67, $y + 0.3, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
 
 $y += 4;
 $cf->labelMandatory(11, $y, 9, "det / rev / conf");
