@@ -41,21 +41,14 @@ function updateNomService($taxonID)
             foreach ($res['results'] as $result) {
                 if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
                     if (!empty($result['match']['id'])) {
-                        $row = dbi_query("SELECT ID
-                                          FROM tbl_nom_service_log
-                                          WHERE taxonID  = $taxonID 
-                                           AND serviceID = '" . dbi_escape_string($result['serviceID']) . "'
-                                           AND param     = '" . dbi_escape_string($result['match']['id']) . "'")
-                               ->fetch_assoc();
-                        if (empty($row)) {
-                            dbi_query("INSERT INTO tbl_nom_service_log SET 
-                                        taxonID   = $taxonID,
-                                        serviceID = '" . dbi_escape_string($result['serviceID']) . "',
-                                        param     = '" . dbi_escape_string($result['match']['id']) . "'");
-                        }
+                        dbi_query("INSERT INTO tbl_nom_service_names SET 
+                                    taxonID   = $taxonID,
+                                    serviceID = " . intval($result['serviceID']) . ",
+                                    param1    = '" . dbi_escape_string($result['match']['id']) . "',
+                                    auto      = 1");
                         $row = dbi_query("SELECT name, url_head, api_code, serviceID 
                                           FROM tbl_nom_service 
-                                          WHERE serviceID = '" . dbi_escape_string($result['serviceID']) . "'")
+                                          WHERE serviceID = " . intval($result['serviceID']))
                                ->fetch_assoc();
                         if (!empty($row)) {
                             $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
@@ -65,7 +58,7 @@ function updateNomService($taxonID)
                     } elseif (!empty($result['candidates'])) {
                         dbi_query("INSERT INTO tbl_nom_service_log SET 
                                     taxonID   = $taxonID,
-                                    serviceID = '" . $result['serviceID'] . "',
+                                    serviceID = " . intval($result['serviceID']) . ",
                                     error     = '" . dbi_escape_string($sciname) . ": No match but multiple candidates found.'");
                     }
                 }

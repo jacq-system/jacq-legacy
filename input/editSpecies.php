@@ -395,6 +395,7 @@ if (mysqli_num_rows($result) > 0) {
 
     function callUpdateNomService()
     {
+        $("#nomService").text("connecting...");
         jaxon_updateNomService('<?php echo $p_taxonID; ?>');
     }
 
@@ -739,7 +740,7 @@ $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
 
-$cf->text(64, 0.5, "connecting...", "nomService");  // will be filled asynchronously by jaxon_updateNomService
+$cf->text(64, 0.5, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
 
 // check for specimens and link to them
 $row_s = dbi_query("SELECT COUNT(*) 
