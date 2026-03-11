@@ -26,6 +26,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 
 if (!isset($_SESSION['sPTID'])) {
     $_SESSION['sPTID'] = 0;
@@ -627,6 +628,7 @@ if (isset($_GET['sel'])) {
         let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
         let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
         let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
+        let currentSpecimenId = <?php echo intval($p_specimen_ID); ?>;
 
         if (errorEdited) {
             alert(errorEdited);
@@ -636,6 +638,16 @@ if (isset($_GET['sel'])) {
         {
             $("#nomService").text("connecting...");
             jaxon_updateNomService(document.f.taxonIndex.value);
+        }
+
+        function callUpdateGgbnIdentifier()
+        {
+            if (!currentSpecimenId) {
+                $("#ggbnIdentifier").text("");
+                return;
+            }
+            $("#ggbnIdentifier").text("");
+            jaxon_updateGgbnIdentifier(currentSpecimenId);
         }
 
         function showInstitutionChangeDialog(originalValue)
@@ -1335,6 +1347,7 @@ if (isset($_GET['sel'])) {
               setTimeout(callUpdateNomService, 0);
           } );
           setTimeout(callUpdateNomService, 0);
+          setTimeout(callUpdateGgbnIdentifier, 0);
       });
   </script>
 </head>
@@ -1544,14 +1557,22 @@ if (!empty($stblID)) {
     }
 }
 
+$identifierIcons = array();
 if (!empty($p_gbif_id)) {
     $gbifValue = htmlspecialchars($p_gbif_id, ENT_QUOTES, 'UTF-8');
-    $cf->text(67, $y + 1.6, "<a href='{$gbifValue}' target='_blank' rel='noopener'>GBIF: {$gbifValue}</a>");
+    $identifierIcons[] = "<a href='{$gbifValue}' target='_blank' rel='noopener' title='GBIF'>"
+                       . "<img src='https://jacq.org/logo/services/serviceID51_logo.png' alt='GBIF' height='30px'>"
+                       . "</a>";
 }
 if (!empty($p_dissco_id)) {
     $disscoValue = htmlspecialchars($p_dissco_id, ENT_QUOTES, 'UTF-8');
-    $cf->text(67, $y + 2.8, "<a href='{$disscoValue}' target='_blank' rel='noopener'>DiSSCo: {$disscoValue}</a>");
+    $identifierIcons[] = "<a href='{$disscoValue}' target='_blank' rel='noopener' title='DiSSCo'>"
+                       . "<img src='https://jacq.org/logo/institutions/dissco-logo.png' alt='DiSSCo' height='30px'>"
+                       . "</a>";
 }
+$identifierIcons[] = "<span id='ggbnIdentifier'></span>";
+$cf->text(67, $y + 1.6, implode("&nbsp;", $identifierIcons));
+
 
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
@@ -1888,3 +1909,6 @@ if ($updateBlocked) {
 
 </body>
 </html>
+
+
+

@@ -668,6 +668,97 @@ function displayCollectorLinks($collectorID)
     return $response;
 }
 
+function updateGgbnIdentifier($specimenID)
+{
+    global $response;
+
+    $specimenID = intval($specimenID);
+    if ($specimenID <= 0) {
+        $response->assign('ggbnIdentifier', 'innerHTML', '');
+        return $response;
+    }
+
+    $result = dbi_query("SELECT stableIdentifier
+                         FROM tbl_specimens_stblid
+                         WHERE specimen_ID = $specimenID
+                          AND visible = 1
+                          AND stableIdentifier IS NOT NULL
+                         ORDER BY timestamp DESC
+                         LIMIT 1");
+    $row = ($result) ? $result->fetch_assoc() : array();
+    $stableIdentifier = $row['stableIdentifier'] ?? '';
+
+    if (empty($stableIdentifier)) {
+        $response->assign('ggbnIdentifier', 'innerHTML', '');
+        return $response;
+    }
+
+    $ggbnUrl = 'https://www.ggbn.org/ggbn_portal/api/search?getCounts&guid=' . rawurlencode($stableIdentifier);
+    $curl = curl_init($ggbnUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+    $curlResponse = curl_exec($curl);
+    $curlError = curl_error($curl);
+    curl_close($curl);
+
+    // Cross-platform fallback if cURL fails in the target runtime.
+    if ($curlResponse === false || trim($curlResponse) === '') {
+        $streamContext = stream_context_create(array(
+            'http' => array(
+                'timeout' => 10,
+                'ignore_errors' => true,
+                'header' => "Accept: application/json`r`n",
+            ),
+            'ssl' => array(
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ),
+        ));
+        $fallbackResponse = @file_get_contents($ggbnUrl, false, $streamContext);
+        if (is_string($fallbackResponse) && trim($fallbackResponse) !== '') {
+            $curlResponse = $fallbackResponse;
+        } else {
+            error_log("GGBN lookup failed for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . $curlError);
+        }
+    }
+
+    $label = '';
+    if ($curlResponse !== false && trim($curlResponse) !== '') {
+        $result = json_decode($curlResponse, true);
+        if (!is_array($result)) {
+            error_log("GGBN lookup returned invalid JSON for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
+        }
+        $ggbnLinks = array();
+        if (is_array($result) && !empty($result['ggbnId']) && is_array($result['ggbnId'])) {
+            foreach (array_keys($result['ggbnId']) as $ggbnId) {
+                $ggbnId = trim((string)$ggbnId);
+                if ($ggbnId !== '') {
+                    $ggbnIdHtml = htmlspecialchars($ggbnId, ENT_QUOTES, 'UTF-8');
+                    $ggbnLink = 'https://id.ggbn.org/' . rawurlencode($ggbnId);
+                    $ggbnLinkHtml = htmlspecialchars($ggbnLink, ENT_QUOTES, 'UTF-8');
+                    $ggbnLinks[$ggbnId] = "<a href='{$ggbnLinkHtml}' target='_blank' rel='noopener' title='GGBN: {$ggbnIdHtml}'>"
+                                        . "<img src='https://jacq.org/logo/services/GGBN.png' alt='GGBN' height='30px' style='background-color: white;'>"
+                                        . "</a>";
+                }
+            }
+        }
+        if (!empty($ggbnLinks)) {
+            $label = implode("&nbsp;", $ggbnLinks);
+        }
+        if (is_array($result) && empty($ggbnLinks)) {
+            error_log("GGBN lookup returned no ggbnId for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
+        }
+    }
+
+
+    $response->assign('ggbnIdentifier', 'innerHTML', $label);
+
+    return $response;
+}
+
 function updateNomService($taxonID)
 {
     global $response, $_CONFIG;
@@ -745,4 +836,8 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 $jaxon->processRequest();
+
+
+
