@@ -50,31 +50,33 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                     te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
                     te4.epithet epithet4, te5.epithet epithet5 ";
     $sql_tables = "FROM tbl_specimens s
-                    JOIN tbl_tax_species ts            ON ts.taxonID      = s.taxonID
-                    JOIN tbl_tax_genera tg             ON tg.genID        = ts.genID
-                    JOIN tbl_tax_families tf           ON tf.familyID     = tg.familyID
-                    JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                    LEFT JOIN tbl_specimens_types tst  ON tst.specimenID  = s.specimen_ID
-                    LEFT JOIN tbl_specimens_series ss  ON ss.seriesID     = s.seriesID
-                    LEFT JOIN tbl_typi t               ON t.typusID       = s.typusID
-                    LEFT JOIN tbl_geo_province p       ON p.provinceID    = s.provinceID
-                    LEFT JOIN tbl_geo_nation n         ON n.NationID      = s.NationID
-                    LEFT JOIN tbl_geo_region r         ON r.regionID      = n.regionID_fk
-                    LEFT JOIN tbl_collector c          ON c.SammlerID     = s.SammlerID
-                    LEFT JOIN tbl_collector_2 c2       ON c2.Sammler_2ID  = s.Sammler_2ID
-                    LEFT JOIN tbl_tax_authors  ta      ON ta.authorID     = ts.authorID
-                    LEFT JOIN tbl_tax_authors  ta1     ON ta1.authorID    = ts.subspecies_authorID
-                    LEFT JOIN tbl_tax_authors  ta2     ON ta2.authorID    = ts.variety_authorID
-                    LEFT JOIN tbl_tax_authors  ta3     ON ta3.authorID    = ts.subvariety_authorID
-                    LEFT JOIN tbl_tax_authors  ta4     ON ta4.authorID    = ts.forma_authorID
-                    LEFT JOIN tbl_tax_authors  ta5     ON ta5.authorID    = ts.subforma_authorID
-                    LEFT JOIN tbl_tax_epithets te      ON te.epithetID    = ts.speciesID
-                    LEFT JOIN tbl_tax_epithets te1     ON te1.epithetID   = ts.subspeciesID
-                    LEFT JOIN tbl_tax_epithets te2     ON te2.epithetID   = ts.varietyID
-                    LEFT JOIN tbl_tax_epithets te3     ON te3.epithetID   = ts.subvarietyID
-                    LEFT JOIN tbl_tax_epithets te4     ON te4.epithetID   = ts.formaID
-                    LEFT JOIN tbl_tax_epithets te5     ON te5.epithetID   = ts.subformaID
-                    LEFT JOIN tbl_tax_species ts2      ON ts2.taxonID     = tst.taxonID
+                    JOIN tbl_tax_species ts            ON ts.taxonID       = s.taxonID
+                    JOIN tbl_tax_genera tg             ON tg.genID         = ts.genID
+                    JOIN tbl_tax_families tf           ON tf.familyID      = tg.familyID
+                    JOIN tbl_management_collections mc ON mc.collectionID  = s.collectionID
+                    LEFT JOIN tbl_specimens_types tst  ON tst.specimenID   = s.specimen_ID
+                    LEFT JOIN tbl_specimens_taxa tsta  ON tsta.specimen_ID = s.specimen_ID
+                    LEFT JOIN tbl_specimens_series ss  ON ss.seriesID      = s.seriesID
+                    LEFT JOIN tbl_typi t               ON t.typusID        = s.typusID
+                    LEFT JOIN tbl_geo_province p       ON p.provinceID     = s.provinceID
+                    LEFT JOIN tbl_geo_nation n         ON n.NationID       = s.NationID
+                    LEFT JOIN tbl_geo_region r         ON r.regionID       = n.regionID_fk
+                    LEFT JOIN tbl_collector c          ON c.SammlerID      = s.SammlerID
+                    LEFT JOIN tbl_collector_2 c2       ON c2.Sammler_2ID   = s.Sammler_2ID
+                    LEFT JOIN tbl_tax_authors  ta      ON ta.authorID      = ts.authorID
+                    LEFT JOIN tbl_tax_authors  ta1     ON ta1.authorID     = ts.subspecies_authorID
+                    LEFT JOIN tbl_tax_authors  ta2     ON ta2.authorID     = ts.variety_authorID
+                    LEFT JOIN tbl_tax_authors  ta3     ON ta3.authorID     = ts.subvariety_authorID
+                    LEFT JOIN tbl_tax_authors  ta4     ON ta4.authorID     = ts.forma_authorID
+                    LEFT JOIN tbl_tax_authors  ta5     ON ta5.authorID     = ts.subforma_authorID
+                    LEFT JOIN tbl_tax_epithets te      ON te.epithetID     = ts.speciesID
+                    LEFT JOIN tbl_tax_epithets te1     ON te1.epithetID    = ts.subspeciesID
+                    LEFT JOIN tbl_tax_epithets te2     ON te2.epithetID    = ts.varietyID
+                    LEFT JOIN tbl_tax_epithets te3     ON te3.epithetID    = ts.subvarietyID
+                    LEFT JOIN tbl_tax_epithets te4     ON te4.epithetID    = ts.formaID
+                    LEFT JOIN tbl_tax_epithets te5     ON te5.epithetID    = ts.subformaID
+                    LEFT JOIN tbl_tax_species ts2      ON ts2.taxonID      = tst.taxonID
+                    LEFT JOIN tbl_tax_species ts3      ON ts3.taxonID      = tsta.taxonID
                    WHERE 1 = 1";  // to have a WHERE
     $sql_restrict_specimen = $sql_restrict_species = "";
     if (isset($_SESSION['taxonID']) && trim($_SESSION['taxonID'])) {
@@ -248,14 +250,19 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 
         if (empty($_SESSION['sSynonyms'])) {
             if (!empty($str_sub_taxonID)) {
-                $_SESSION['sSQLquery'] = "SELECT SQL_CALC_FOUND_ROWS * FROM (
-                                          ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . " GROUP BY specimen_ID)
-                                          UNION
-                                          ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                             AND ts.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)
-                                          UNION
-                                          ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
-                                             AND ts2.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)) AS union_tbl ";
+                $_SESSION['sSQLquery'] = "SELECT SQL_CALC_FOUND_ROWS * FROM 
+                                          (
+                                            ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . " GROUP BY specimen_ID)
+                                            UNION
+                                            ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
+                                               AND ts.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)
+                                            UNION
+                                            ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
+                                               AND ts2.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)
+                                            UNION
+                                            ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
+                                               AND ts3.taxonID IN ($str_sub_taxonID) GROUP BY specimen_ID)
+                                          ) AS union_tbl ";
             } else {
                 $_SESSION['sSQLquery'] = "SELECT SQL_CALC_FOUND_ROWS " . $sql_names . $sql_tables . $sql_restrict_specimen . $sql_restrict_species . "
                                          GROUP BY specimen_ID ";
@@ -312,6 +319,31 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                                             . "ts2.taxonID IN ($str_sub_synID)
                                                 OR ts2.basID IN ($str_sub_synID)
                                                 OR ts2.synID IN ($str_sub_synID)";
+                }
+                $_SESSION['sSQLquery'] .= ") GROUP BY specimen_ID)
+                                           UNION
+                                           ( SELECT " . $sql_names . $sql_tables . $sql_restrict_specimen . "
+                                              AND (";
+                if (!empty($str_sub_taxonID)) {
+                    $_SESSION['sSQLquery'] .= "ts3.taxonID IN ($str_sub_taxonID)
+                                                OR ts3.basID IN ($str_sub_taxonID)
+                                                OR ts3.synID IN ($str_sub_taxonID)";
+                    $connector = " OR ";
+                } else {
+                    $connector = "";
+                }
+                if (!empty($str_sub_basID)) {
+                    $_SESSION['sSQLquery'] .= $connector
+                        . "ts3.taxonID IN ($str_sub_basID)
+                                                OR ts3.basID IN ($str_sub_basID)
+                                                OR ts3.synID IN ($str_sub_basID)";
+                    $connector = " OR ";
+                }
+                if (!empty($str_sub_synID)) {
+                    $_SESSION['sSQLquery'] .= $connector
+                        . "ts3.taxonID IN ($str_sub_synID)
+                                                OR ts3.basID IN ($str_sub_synID)
+                                                OR ts3.synID IN ($str_sub_synID)";
                 }
                 $_SESSION['sSQLquery'] .= ") GROUP BY specimen_ID)) AS union_tbl ";
             } else {
@@ -406,13 +438,19 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
 				} else {
                     $textColl = "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                               . htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
-				};
+				}
+
+                $rows_multi = dbi_query("SELECT taxonID FROM tbl_specimens_taxa WHERE specimen_ID = {$row['specimen_ID']}")->fetch_all(MYSQLI_ASSOC);
+                $multiTaxa = array();
+                foreach ($rows_multi as $row_multi) {
+                    $multiTaxa[] = getScientificName($row_multi['taxonID'], false, false, false);
+                }
 
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                    . "<td class=\"out\">$digitalImage</td>"
                    . "<td class=\"out\">"
-                   . "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
-                   . htmlspecialchars(taxonItem($row)) . "</a></td>"
+                   .   "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
+                   .   htmlspecialchars(taxonItem($row)) . "</a>" . ((!empty($multiTaxa)) ? "<br />" . implode("<br />", $multiTaxa) : "") . "</td>"
                    . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                    . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                    . $textLatLon

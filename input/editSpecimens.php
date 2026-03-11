@@ -23,7 +23,10 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 
 if (!isset($_SESSION['sPTID'])) {
     $_SESSION['sPTID'] = 0;
@@ -447,7 +450,7 @@ if (isset($_GET['sel'])) {
                     observation = '0'";
 
         if (intval($_POST['specimen_ID'])) {
-            // check if user has access to the old collection
+            // check if the user has access to the old collection
             $sql = "SELECT source_id
                     FROM tbl_specimens, tbl_management_collections
                     WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
@@ -467,7 +470,7 @@ if (isset($_GET['sel'])) {
                  .  "eingabedatum = NULL";
             $updated = 0;
         }
-        // check if user has access to the new collection
+        // check if the user has access to the new collection
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
         // allow write access to database if user is editor or is granted for both old and new collection
@@ -542,7 +545,7 @@ if (isset($_GET['sel'])) {
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
         "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - edit Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -625,9 +628,26 @@ if (isset($_GET['sel'])) {
         let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
         let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
         let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
+        let currentSpecimenId = <?php echo intval($p_specimen_ID); ?>;
 
         if (errorEdited) {
             alert(errorEdited);
+        }
+
+        function callUpdateNomService()
+        {
+            $("#nomService").text("connecting...");
+            jaxon_updateNomService(document.f.taxonIndex.value);
+        }
+
+        function callUpdateGgbnIdentifier()
+        {
+            if (!currentSpecimenId) {
+                $("#ggbnIdentifier").text("");
+                return;
+            }
+            $("#ggbnIdentifier").text("");
+            jaxon_updateGgbnIdentifier(currentSpecimenId);
         }
 
         function showInstitutionChangeDialog(originalValue)
@@ -777,7 +797,7 @@ if (isset($_GET['sel'])) {
       {
           let target, MeinFenster;
 
-          if (document.f.batch.checked==true || sw) {
+          if (document.f.batch.checked === true || sw) {
               option2 = "&sw=2";
           } else {
               option2 = "&sw=1";
@@ -797,35 +817,35 @@ if (isset($_GET['sel'])) {
           var text = "";
           var outtext = "";
 
-          if (reload==true) {
+          if (reload === true) {
               return true;
           }
 
-          if (document.f.collection.selectedIndex==0) {
+          if (document.f.collection.selectedIndex === 0) {
               missing++; text += "Collection\n";
           }
-          if (document.f.taxon.value.indexOf("<")<0 || document.f.taxon.value.indexOf(">")<0) {
+          if (document.f.taxon.value.indexOf("<") < 0 || document.f.taxon.value.indexOf(">") < 0) {
               missing++; text += "taxon\n";
           }
-          if (document.f.det.value.length==0) {
+          if (document.f.det.value.length === 0) {
               missing++; text += "det / rev / conf\n";
           }
-          if (document.f.taxon_alt.value.length==0) {
+          if (document.f.taxon_alt.value.length === 0) {
               missing++; text += "ident. history\n";
           }
-          if (document.f.sammler.value.indexOf("<")<0 || document.f.sammler.value.indexOf(">")<0) {
+          if (document.f.sammler.value.indexOf("<") < 0 || document.f.sammler.value.indexOf(">") < 0) {
               missing++; text += "collector\n";
           }
-          if (document.f.Nummer.value.length==0 && document.f.alt_number.value.length==0) {
+          if (document.f.Nummer.value.length === 0 && document.f.alt_number.value.length === 0) {
               missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
           }
-          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) != document.f.Nummer.value) {
+          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) !== document.f.Nummer.value) {
               missing++; text += "Number must be an integer value. Move to alt.Nr.";
           }
-          if (document.f.Datum.value.length==0) {
+          if (document.f.Datum.value.length === 0) {
               missing++; text += "Date\n";
           }
-          if (document.f.Fundort1.value.length==0) {
+          if (document.f.Fundort1.value.length === 0) {
               missing++; text += "Locality\n";
           }
 
@@ -835,7 +855,7 @@ if (isset($_GET['sel'])) {
               } else {
                   outtext = "The following entry is missing or invalid:\n";
               }
-              if (outText!=0) {
+              if (outText !== 0) {
                   alert(outtext + text);
               }
               return false;
@@ -847,7 +867,7 @@ if (isset($_GET['sel'])) {
       function doSubmit( p_type )
       {
           // if we use the taxon-alt textarea, copy the content to the text input field
-          if ($('[name="taxon_alt"]').css("display") == "none") {
+          if ($('[name="taxon_alt"]').css("display") === "none") {
               $('[name="taxon_alt"]').val($('[name="taxon_alt_ta"]').val());
           }
 
@@ -929,7 +949,7 @@ if (isset($_GET['sel'])) {
               document.f.lon_deg.value = lon_deg;
               document.f.lon_min.value = lon_min;
               document.f.lon_sec.value = lon_sec;
-              if (lon_dir == 'W') {
+              if (lon_dir === 'W') {
                   document.f.lon.options.selectedIndex = 0;
               } else {
                   document.f.lon.options.selectedIndex = 1;
@@ -937,14 +957,14 @@ if (isset($_GET['sel'])) {
               document.f.lat_deg.value = lat_deg;
               document.f.lat_min.value = lat_min;
               document.f.lat_sec.value = lat_sec;
-              if (lat_dir == 'N') {
+              if (lat_dir === 'N') {
                   document.f.lat.options.selectedIndex = 0;
               } else {
                   document.f.lat.options.selectedIndex = 1;
               }
           }
           for (i = 0; i < document.f.nation.length; i++) {
-              if (document.f.nation.options[i].value == nationID) {
+              if (document.f.nation.options[i].value === nationID) {
                   document.f.nation.selectedIndex = i;
                   break;
               }
@@ -1191,6 +1211,8 @@ if (isset($_GET['sel'])) {
       });
       $(function()
       {
+          jaxon_displayMultiTaxa('<?php echo $p_specimen_ID; ?>');
+
           $('#iBox_content').dialog( {
               autoOpen: false,
               modal: true,
@@ -1238,12 +1260,12 @@ if (isset($_GET['sel'])) {
                   // var institutionNr = $('[name="institution"]').val();
                   // var institutionName = $('[name="institution"] option:selected').text();
               } else {
-                  if (oldHerbNumber > 0 && oldHerbNumber != number) {
+                  if (oldHerbNumber > 0 && oldHerbNumber !== number) {
                       if (!confirm("HerbarNr. differs from stored one.\nPlease confirm the difference.")) {
                           setTimeout(() => $(this).focus(), 1)
                       }
                   }
-                  if (specifiedHerbNummerLength && number.length != specifiedHerbNummerLength) {
+                  if (specifiedHerbNummerLength && number.length !== specifiedHerbNummerLength) {
                       if (!confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.")) {
                           setTimeout(() => $(this).focus(), 1)
                       }
@@ -1251,7 +1273,7 @@ if (isset($_GET['sel'])) {
               }
           })
           .keydown(function(event){
-              if (event.keyCode == 13){
+              if (event.keyCode === 13){
                   event.preventDefault()
                   event.stopPropagation()
                   $('[name="HerbNummer"]').blur()
@@ -1289,7 +1311,7 @@ if (isset($_GET['sel'])) {
               showLabel: false,
               label: "Toggle ident. history input field"
           }).on("click", function() {
-              if ($('[name="taxon_alt_ta"]').css("display") == "none") {
+              if ($('[name="taxon_alt_ta"]').css("display") === "none") {
                   $('[name="taxon_alt_ta"]').val($('[name="taxon_alt"]').val()).show();
                   $('[name="taxon_alt"]').hide();
                   $("#taxon_alt_toggle").button("option", "icon", "ui-icon-arrowthick-2-n-s");
@@ -1321,6 +1343,11 @@ if (isset($_GET['sel'])) {
               });
           });
 
+          $('#taxonIndex').change(function() {
+              setTimeout(callUpdateNomService, 0);
+          } );
+          setTimeout(callUpdateNomService, 0);
+          setTimeout(callUpdateGgbnIdentifier, 0);
       });
   </script>
 </head>
@@ -1513,8 +1540,8 @@ $cf->checkbox(50.5, $y, "checked", $p_checked);
 $cf->labelMandatory(60.5, $y, 6, "accessible");
 $cf->checkbox(60.5, $y, "accessible", $p_accessible);
 if ($p_specimen_ID && !$edit) {
-    $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' alt='JACQ' target='_blank'>"
-                        . "<img src='webimages/JACQ_LOGO.png'></a>");
+    $cf->text(63, $y+0.3, "<a href='https://www.jacq.org/detail.php?ID=$p_specimen_ID' title='JACQ detail' target='_blank'>"
+                        . "<img src='webimages/JACQ_LOGO.png' alt='JACQ'></a>");
 }
 
 if (!empty($stblID)) {
@@ -1522,7 +1549,7 @@ if (!empty($stblID)) {
         $cf->text(67, $y + 0.3, "<a href='#' onclick='open_stblIDbox();'>multiple entries</a>");
     } else {
         if (empty($stblID[0]['error'])) {
-            $cf->text(67, $y + 0.3, "<a href='{$stblID[0]['stblID']}' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>"
+            $cf->text(67, $y + 0.3, "<a href='{$stblID[0]['stblID']}' title='JACQ stable identifier' target='_blank'>"
                         . $stblID[0]['stblID'] . "</a>");
         } else {
             $cf->text(67, $y + 0.3, "<a href='editSpecimens.php?sel=" . htmlentities("<" . $stblID[0]['blockedBy'] . ">") . "'>{$stblID[0]['error']}</a>");
@@ -1530,14 +1557,22 @@ if (!empty($stblID)) {
     }
 }
 
+$identifierIcons = array();
 if (!empty($p_gbif_id)) {
     $gbifValue = htmlspecialchars($p_gbif_id, ENT_QUOTES, 'UTF-8');
-    $cf->text(67, $y + 1.6, "<a href='{$gbifValue}' target='_blank' rel='noopener'>GBIF: {$gbifValue}</a>");
+    $identifierIcons[] = "<a href='{$gbifValue}' target='_blank' rel='noopener' title='GBIF'>"
+                       . "<img src='https://jacq.org/logo/services/serviceID51_logo.png' alt='GBIF' height='30px'>"
+                       . "</a>";
 }
 if (!empty($p_dissco_id)) {
     $disscoValue = htmlspecialchars($p_dissco_id, ENT_QUOTES, 'UTF-8');
-    $cf->text(67, $y + 2.8, "<a href='{$disscoValue}' target='_blank' rel='noopener'>DiSSCo: {$disscoValue}</a>");
+    $identifierIcons[] = "<a href='{$disscoValue}' target='_blank' rel='noopener' title='DiSSCo'>"
+                       . "<img src='https://jacq.org/logo/institutions/dissco-logo.png' alt='DiSSCo' height='30px'>"
+                       . "</a>";
 }
+$identifierIcons[] = "<span id='ggbnIdentifier'></span>";
+$cf->text(67, $y + 1.6, implode("&nbsp;", $identifierIcons));
+
 
 $y += 2;
 //$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
@@ -1604,6 +1639,9 @@ if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) !=
 $cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
+$cf->text(11.5, $y + 1.7, "", "multiTaxaText");
+
+$cf->text(67, $y + 0.3, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
 
 $y += 4;
 $cf->labelMandatory(11, $y, 9, "det / rev / conf");
@@ -1725,8 +1763,8 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 $y += 1.05;
 $cf->labelMandatory(11, $y, 9, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
 $cf->textarea(11, $y, 54, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
-$cf->text(65, 39.7, "<div class=\"cssflabel\" style=\"width: 9.375em;\">notes internal&nbsp;</div>");
-$cf->textarea(67, 41.3, 30, 10, "notes_internal", $p_notes_internal);
+$cf->text(65, $y - 1.6, "<div class=\"cssflabel\" style=\"width: 9.375em;\">notes internal&nbsp;</div>");
+$cf->textarea(67, $y, 30, 10, "notes_internal", $p_notes_internal);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
 
@@ -1845,7 +1883,7 @@ if ($updateBlocked) {
 <div style="display:none" id="institutionChangeDialog" title="Institution change not allowed">
     <p>It is not foreseen to change the source Institution of a specimen.</p>
     <p>For new specimens based on existing data please use "New &amp; Copy" instead of "Edit/Update".</p>
-    <p>For existing specimens with a wrong institution please contact one of the admins: Heimo / Dominik / Johannes</p>
+    <p>For existing specimens with a wrong institution, please contact one of the admins: Heimo / Dominik / Johannes</p>
 </div>
 <div style="display:none" id="stblIDbox">
     <?php
@@ -1854,7 +1892,7 @@ if ($updateBlocked) {
         foreach ($stblID as $item) {
             echo "<tr>";
             if (empty($item['error'])) {
-                echo "<td><a href='{$item['stblID']}' title='JACQ stable identifier' alt='JACQ stable identifier' target='_blank'>"  . $item['stblID'] . "</a></td>"
+                echo "<td><a href='{$item['stblID']}' title='JACQ stable identifier' target='_blank'>"  . $item['stblID'] . "</a></td>"
                    . "<td>{$item['timestamp']}</td>"
                    . "<td style='text-align: center'>" . (($item['visible']) ? "true" : "false") . "</td>";
             } else {
@@ -1871,3 +1909,6 @@ if ($updateBlocked) {
 
 </body>
 </html>
+
+
+

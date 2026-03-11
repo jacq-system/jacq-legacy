@@ -457,7 +457,7 @@ function updateLink($formData)
                                     $sqldata
                                     WHERE specimens_linkID = '" . $existingID . "'";
                         } else {
-                            $sql = "INSERT INTO tbl_specimens_links SET
+                            $sql = "INSERT IGNORE INTO tbl_specimens_links SET
                                     $sqldata";
                         }
                         dbi_query($sql);
@@ -565,6 +565,7 @@ function editMultiTaxa ($specimenID)
         $response->assign('iBox_content', 'innerHTML', $ret);
         $response->script('$("#iBox_content").dialog("option", "title", "edit multiple taxa");');
         $response->script('$("#iBox_content").dialog("open");');
+        displayMultiTaxa($specimenID);
     }
     return $response;
 }
@@ -617,6 +618,21 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
     return $response;
 }
 
+function displayMultiTaxa($specimenID)
+{
+    global $response;
+
+    $rows = dbi_query("SELECT taxonID FROM tbl_specimens_taxa WHERE specimen_ID = '" . intval($specimenID) . "'")->fetch_all(MYSQLI_ASSOC);
+    if (!empty($rows)) {
+        if (count($rows) == 1) {
+            $response->assign('multiTaxaText', 'innerHTML', getScientificName($rows[0]['taxonID']));
+        } else {
+            $response->assign('multiTaxaText', 'innerHTML', "+" . count($rows));
+        }
+    }
+    return $response;
+}
+
 function displayCollectorLinks($collectorID)
 {
     global $response;
@@ -627,27 +643,177 @@ function displayCollectorLinks($collectorID)
                       WHERE SammlerID = '" . intval($collectorID) . "'")
            ->fetch_assoc();
     if (!empty($row['WIKIDATA_ID']) && substr(trim($row['WIKIDATA_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' alt='wikidata' target='_blank'>"
-               . "<img src='webimages/wikidata.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['WIKIDATA_ID']) . "' title='wikidata' target='_blank'>"
+               . "<img src='webimages/wikidata.png' width='20px' alt='wikidata'></a>";
     }
     if (!empty($row['HUH_ID']) && substr(trim($row['HUH_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' alt='Index of Botanists (HUH)' target='_blank'>"
-               . "<img src='webimages/huh.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['HUH_ID']) . "' title='Index of Botanists (HUH)' target='_blank'>"
+               . "<img src='webimages/huh.png' width='20px' alt='HUH'></a>";
     }
     if (!empty($row['VIAF_ID']) && substr(trim($row['VIAF_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' alt='VIAF' target='_blank'>"
-               . "<img src='webimages/viaf.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['VIAF_ID']) . "' title='VIAF' target='_blank'>"
+               . "<img src='webimages/viaf.png' width='20px' alt='VIAF'></a>";
     }
     if (!empty($row['ORCID']) && substr(trim($row['ORCID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' alt='ORCID' target='_blank'>"
-               . "<img src='webimages/orcid.logo.icon.svg' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['ORCID']) . "' title='ORCID' target='_blank'>"
+               . "<img src='webimages/orcid.logo.icon.svg' width='20px' alt='ORCID'></a>";
     }
     if (!empty($row['Bloodhound_ID']) && substr(trim($row['Bloodhound_ID']), 0, 4) == 'http') {
-        $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' alt='Bionomia' target='_blank'>"
-               . "<img src='webimages/bionomia_logo.png' width='20px'></a>";
+        $ret[] = "<a href='" . trim($row['Bloodhound_ID']) . "' title='Bionomia' target='_blank'>"
+               . "<img src='webimages/bionomia_logo.png' width='20px' alt='Bionomia'></a>";
     }
 
     $response->assign('displayCollectorLinks', 'innerHTML', implode("&nbsp;", $ret));
+
+    return $response;
+}
+
+function updateGgbnIdentifier($specimenID)
+{
+    global $response;
+
+    $specimenID = intval($specimenID);
+    if ($specimenID <= 0) {
+        $response->assign('ggbnIdentifier', 'innerHTML', '');
+        return $response;
+    }
+
+    $result = dbi_query("SELECT stableIdentifier
+                         FROM tbl_specimens_stblid
+                         WHERE specimen_ID = $specimenID
+                          AND visible = 1
+                          AND stableIdentifier IS NOT NULL
+                         ORDER BY timestamp DESC
+                         LIMIT 1");
+    $row = ($result) ? $result->fetch_assoc() : array();
+    $stableIdentifier = $row['stableIdentifier'] ?? '';
+
+    if (empty($stableIdentifier)) {
+        $response->assign('ggbnIdentifier', 'innerHTML', '');
+        return $response;
+    }
+
+    $ggbnUrl = 'https://www.ggbn.org/ggbn_portal/api/search?getCounts&guid=' . rawurlencode($stableIdentifier);
+    $curl = curl_init($ggbnUrl);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 10);
+    curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: application/json'));
+    $curlResponse = curl_exec($curl);
+    $curlError = curl_error($curl);
+    curl_close($curl);
+
+    // Cross-platform fallback if cURL fails in the target runtime.
+    if ($curlResponse === false || trim($curlResponse) === '') {
+        $streamContext = stream_context_create(array(
+            'http' => array(
+                'timeout' => 10,
+                'ignore_errors' => true,
+                'header' => "Accept: application/json`r`n",
+            ),
+            'ssl' => array(
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ),
+        ));
+        $fallbackResponse = @file_get_contents($ggbnUrl, false, $streamContext);
+        if (is_string($fallbackResponse) && trim($fallbackResponse) !== '') {
+            $curlResponse = $fallbackResponse;
+        } else {
+            error_log("GGBN lookup failed for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . $curlError);
+        }
+    }
+
+    $label = '';
+    if ($curlResponse !== false && trim($curlResponse) !== '') {
+        $result = json_decode($curlResponse, true);
+        if (!is_array($result)) {
+            error_log("GGBN lookup returned invalid JSON for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
+        }
+        $ggbnLinks = array();
+        if (is_array($result) && !empty($result['ggbnId']) && is_array($result['ggbnId'])) {
+            foreach (array_keys($result['ggbnId']) as $ggbnId) {
+                $ggbnId = trim((string)$ggbnId);
+                if ($ggbnId !== '') {
+                    $ggbnIdHtml = htmlspecialchars($ggbnId, ENT_QUOTES, 'UTF-8');
+                    $ggbnLink = 'https://id.ggbn.org/' . rawurlencode($ggbnId);
+                    $ggbnLinkHtml = htmlspecialchars($ggbnLink, ENT_QUOTES, 'UTF-8');
+                    $ggbnLinks[$ggbnId] = "<a href='{$ggbnLinkHtml}' target='_blank' rel='noopener' title='GGBN: {$ggbnIdHtml}'>"
+                                        . "<img src='https://jacq.org/logo/services/GGBN.png' alt='GGBN' height='30px' style='background-color: white;'>"
+                                        . "</a>";
+                }
+            }
+        }
+        if (!empty($ggbnLinks)) {
+            $label = implode("&nbsp;", $ggbnLinks);
+        }
+        if (is_array($result) && empty($ggbnLinks)) {
+            error_log("GGBN lookup returned no ggbnId for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
+        }
+    }
+
+
+    $response->assign('ggbnIdentifier', 'innerHTML', $label);
+
+    return $response;
+}
+
+function updateNomService($taxonID)
+{
+    global $response, $_CONFIG;
+
+    $taxonID = intval($taxonID);
+    $labels = array();
+
+    $rows = dbi_query("SELECT nsn.param1, ns.name, ns.url_head, ns.api_code, ns.serviceID
+                       FROM tbl_nom_service_names nsn
+                        INNER JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
+                       WHERE nsn.taxonID = $taxonID
+                        AND ns.api_code IS NOT NULL")
+            ->fetch_all(MYSQLI_ASSOC);
+    foreach ($rows as $row) {
+        $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$row['param1']}' title='{$row['name']}' target='_blank'>"
+                                   . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
+                                   . "</a>";
+    }
+
+    $sciname = getScientificName($taxonID, false, false, false);
+    $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $curl_response = curl_exec($curl);
+    curl_close($curl);
+    if ($curl_response !== false) {
+        $res = json_decode($curl_response, true);
+        if (!empty($res['results'])) {
+            foreach ($res['results'] as $result) {
+                if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
+                    if (!empty($result['match']['id'])) {
+                        dbi_query("INSERT INTO tbl_nom_service_names SET 
+                                    taxonID   = $taxonID,
+                                    serviceID = " . intval($result['serviceID']) . ",
+                                    param1    = '" . dbi_escape_string($result['match']['id']) . "',
+                                    auto      = 1");
+                        $row = dbi_query("SELECT name, url_head, api_code, serviceID 
+                                          FROM tbl_nom_service 
+                                          WHERE serviceID = " . intval($result['serviceID']))
+                               ->fetch_assoc();
+                        if (!empty($row)) {
+                            $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
+                                                       . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
+                                                       . "</a>";
+                        }
+                    } elseif (!empty($result['candidates'])) {
+                        dbi_query("INSERT INTO tbl_nom_service_log SET 
+                                    taxonID   = $taxonID,
+                                    serviceID = " . intval($result['serviceID']) . ",
+                                    error     = '" . dbi_escape_string($sciname) . ": No match but multiple candidates found.'");
+                    }
+                }
+            }
+        }
+    }
+    $response->assign('nomService', 'innerHTML', implode("&nbsp;", $labels));
 
     return $response;
 }
@@ -667,5 +833,11 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteLink");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "editMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 $jaxon->processRequest();
+
+
+

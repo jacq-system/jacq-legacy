@@ -4,6 +4,15 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jaxon\Jaxon;
+use Jacq\Settings;
+
+$jaxon = jaxon();
+$jaxon->setOption('core.request.uri', 'ajax/editSpeciesServer.php');
+
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 
 if (!isset($_SESSION['txLinkList'])) $_SESSION['txLinkList'] = '';
 
@@ -378,10 +387,17 @@ if (mysqli_num_rows($result) > 0) {
 		height: 200px;
 	}
   </style>
+  <?php echo $jaxon->getScript(true, true); ?>
   <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     reload = false;
+
+    function callUpdateNomService()
+    {
+        $("#nomService").text("connecting...");
+        jaxon_updateNomService('<?php echo $p_taxonID; ?>');
+    }
 
     function editGenera(sel) {
       target = "editGenera.php?update=1&sel=" + encodeURIComponent(sel.value);
@@ -498,6 +514,8 @@ if (mysqli_num_rows($result) > 0) {
 		MeinFenster = window.open(target,"edit Common Names",options);
 		MeinFenster.focus();
 	}
+
+    setTimeout(callUpdateNomService, 0);
 
   </script>
 </head>
@@ -721,6 +739,8 @@ $cf->label(9, 3.5, "edit Type", "javascript:taxType('$p_taxonID')");
 $cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
 $cf->text(9+strlen($p_taxonID), 5, $comnames);
+
+$cf->text(64, 0.5, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
 
 // check for specimens and link to them
 $row_s = dbi_query("SELECT COUNT(*) 
