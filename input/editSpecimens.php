@@ -533,7 +533,7 @@ if (isset($_GET['sel'])) {
     } else if (!empty($_POST['submitNewCopy'])) {
         $p_specimen_ID = "";
         $copyBits = dbi_query("SELECT copy_bits FROM metadb WHERE source_id_fk = {$_SESSION['sid']}")->fetch_assoc()['copy_bits'];
-        if (strpos($copyBits, "digital_image") === false) {
+        if (strpos($copyBits, "digital_image") == false) {
             $p_digital_image = $p_digital_image_obs = "";  // don't copy digital image checkmark
         }
         $edit = false;
@@ -694,7 +694,7 @@ if (isset($_GET['sel'])) {
             $inst.data('original', original);
             $inst.on('change', function() {
                 const originalValue = $(this).data('original');
-                if ($(this).val() === originalValue) {
+                if ($(this).val() == originalValue) {
                     return;
                 }
                 showInstitutionChangeDialog(originalValue);
@@ -797,7 +797,7 @@ if (isset($_GET['sel'])) {
       {
           let target, MeinFenster;
 
-          if (document.f.batch.checked === true || sw) {
+          if (document.f.batch.checked == true || sw) {
               option2 = "&sw=2";
           } else {
               option2 = "&sw=1";
@@ -817,35 +817,35 @@ if (isset($_GET['sel'])) {
           var text = "";
           var outtext = "";
 
-          if (reload === true) {
+          if (reload == true) {
               return true;
           }
 
-          if (document.f.collection.selectedIndex === 0) {
+          if (document.f.collection.selectedIndex == 0) {
               missing++; text += "Collection\n";
           }
           if (document.f.taxon.value.indexOf("<") < 0 || document.f.taxon.value.indexOf(">") < 0) {
               missing++; text += "taxon\n";
           }
-          if (document.f.det.value.length === 0) {
+          if (document.f.det.value.length == 0) {
               missing++; text += "det / rev / conf\n";
           }
-          if (document.f.taxon_alt.value.length === 0) {
+          if (document.f.taxon_alt.value.length == 0) {
               missing++; text += "ident. history\n";
           }
           if (document.f.sammler.value.indexOf("<") < 0 || document.f.sammler.value.indexOf(">") < 0) {
               missing++; text += "collector\n";
           }
-          if (document.f.Nummer.value.length === 0 && document.f.alt_number.value.length === 0) {
+          if (document.f.Nummer.value.length == 0 && document.f.alt_number.value.length == 0) {
               missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
           }
-          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) !== document.f.Nummer.value) {
+          if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) != document.f.Nummer.value) {
               missing++; text += "Number must be an integer value. Move to alt.Nr.";
           }
-          if (document.f.Datum.value.length === 0) {
+          if (document.f.Datum.value.length == 0) {
               missing++; text += "Date\n";
           }
-          if (document.f.Fundort1.value.length === 0) {
+          if (document.f.Fundort1.value.length == 0) {
               missing++; text += "Locality\n";
           }
 
@@ -867,7 +867,7 @@ if (isset($_GET['sel'])) {
       function doSubmit( p_type )
       {
           // if we use the taxon-alt textarea, copy the content to the text input field
-          if ($('[name="taxon_alt"]').css("display") === "none") {
+          if ($('[name="taxon_alt"]').css("display") == "none") {
               $('[name="taxon_alt"]').val($('[name="taxon_alt_ta"]').val());
           }
 
@@ -949,7 +949,7 @@ if (isset($_GET['sel'])) {
               document.f.lon_deg.value = lon_deg;
               document.f.lon_min.value = lon_min;
               document.f.lon_sec.value = lon_sec;
-              if (lon_dir === 'W') {
+              if (lon_dir == 'W') {
                   document.f.lon.options.selectedIndex = 0;
               } else {
                   document.f.lon.options.selectedIndex = 1;
@@ -957,14 +957,14 @@ if (isset($_GET['sel'])) {
               document.f.lat_deg.value = lat_deg;
               document.f.lat_min.value = lat_min;
               document.f.lat_sec.value = lat_sec;
-              if (lat_dir === 'N') {
+              if (lat_dir == 'N') {
                   document.f.lat.options.selectedIndex = 0;
               } else {
                   document.f.lat.options.selectedIndex = 1;
               }
           }
           for (i = 0; i < document.f.nation.length; i++) {
-              if (document.f.nation.options[i].value === nationID) {
+              if (document.f.nation.options[i].value == nationID) {
                   document.f.nation.selectedIndex = i;
                   break;
               }
@@ -1078,13 +1078,13 @@ if (isset($_GET['sel'])) {
                   return;
               }
 
-              if (!hidden.length || rowId.indexOf('new') === 0) {
+              if (!hidden.length || rowId.indexOf('new') == 0) {
                   row.remove();
                   linkEditUpdateDirtyState(form);
                   return;
               }
 
-              const marked = hidden.val() === '1';
+              const marked = hidden.val() == '1';
               if (marked) {
                   hidden.val('0');
                   row.removeClass('link-delete-marked');
@@ -1116,7 +1116,7 @@ if (isset($_GET['sel'])) {
           }
 
           form.find('input[id^="linkDelete_"]').each(function() {
-              if ($(this).val() === '1') {
+              if ($(this).val() == '1') {
                   const row = $(this).closest('tr');
                   row.addClass('link-delete-marked');
                   row.css({'text-decoration': 'line-through', 'opacity': '0.6'});
@@ -1273,7 +1273,7 @@ if (isset($_GET['sel'])) {
               }
           })
           .keydown(function(event){
-              if (event.keyCode === 13){
+              if (event.keyCode == 13){
                   event.preventDefault()
                   event.stopPropagation()
                   $('[name="HerbNummer"]').blur()
@@ -1311,7 +1311,7 @@ if (isset($_GET['sel'])) {
               showLabel: false,
               label: "Toggle ident. history input field"
           }).on("click", function() {
-              if ($('[name="taxon_alt_ta"]').css("display") === "none") {
+              if ($('[name="taxon_alt_ta"]').css("display") == "none") {
                   $('[name="taxon_alt_ta"]').val($('[name="taxon_alt"]').val()).show();
                   $('[name="taxon_alt"]').hide();
                   $("#taxon_alt_toggle").button("option", "icon", "ui-icon-arrowthick-2-n-s");
@@ -1909,6 +1909,3 @@ if ($updateBlocked) {
 
 </body>
 </html>
-
-
-
