@@ -370,7 +370,7 @@ foreach ($tbls as $tbl) {
                  habitus                  = " . $dbLink2->quoteString($row['habitus']) . ",
                  CountryName              = " . $dbLink2->quoteString($row['nation_engl']) . ",
                  ISO3Letter               = " . $dbLink2->quoteString($row['iso_alpha_3_code']) . ",
-                 NamedAreaName            = " . $dbLink2->quoteString(($row['nation_engl'] == "Austria") ? mb_substr($row['provinz'], 0, 2) : $row['provinz']) . ",
+                 NamedAreaName            = " . $dbLink2->quoteString($row['provinz']) . ",
                  NamedAreaClass           = " . (($row['nation_engl'] == "Austria") ? "'Bundesland'" : "NULL") . ",
                  MeasurmentLowerValue     = " . $dbLink2->quoteString($row['altitude_min']) . ",
                  MeasurmentUpperValue     = " . $dbLink2->quoteString($row['altitude_max']) . ",
@@ -421,9 +421,14 @@ foreach ($tbls as $tbl) {
         }
         $result->free();
         $rows = $dbLink1->queryCatch("SELECT gp.UnitIDNumeric
-                                 FROM $dbt.{$tbl['name']} gp
-                                  LEFT JOIN tbl_specimens s ON s.specimen_ID = gp.UnitIDNumeric
-                                 WHERE s.specimen_ID IS NULL")
+                                      FROM $dbt.{$tbl['name']} gp
+                                      WHERE gp.UnitIDNumeric NOT IN 
+                                       (
+                                       SELECT s.specimen_ID 
+                                       FROM tbl_specimens s
+                                        JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID 
+                                       WHERE mc.source_id = {$tbl['source_id']}
+                                       )")
                         ->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as $row) {
             $dbLink2->queryCatch("DELETE FROM $dbt.{$tbl['name']} WHERE UnitIDNumeric = {$row['UnitIDNumeric']}");
