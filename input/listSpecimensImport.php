@@ -165,7 +165,7 @@ if(isset($_POST['editors_action_do']) && $_POST['user_ID'] && $_POST['action'] &
                 $values[] = '(' . $id . ', ' . $_POST['user_ID'] . ')';
             }
         }
-        $sql = "INSERT INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
+        $sql = "INSERT IGNORE INTO tbl_specimens_import_users (specimen_ID, user_ID) VALUES " . implode(',', $values) . " ;";
         $result = dbi_query($sql);
     }
     if($_POST['action'] == 'remove') {

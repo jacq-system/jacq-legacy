@@ -364,7 +364,9 @@ if ($run == 2) {  // file uploaded
             $second[$key] = $row[3];
             $third[$key]  = $row[4];
         }
-        array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
+        if (is_array($first) && is_array($second) && is_array($third)) {
+            array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
+        }
     }
 
     dbi_query("DELETE FROM tbl_external_import_content
@@ -704,6 +706,10 @@ if ($run == 2) {  // file uploaded
          * fill geografical coordinates
          */
         if (isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25]) && isset($import[$i][26])) {
+            if (!is_numeric(strtr($import[$i][26], ",", "."))) {
+                $OK = false;
+                $status[$i] .= "no_numeric_sec_lat ";
+            }
             $data[$i]['Coord_N'] = ($import[$i][23]=='N') ? (($import[$i][24] != "") ? intval($import[$i][24]) : "") : "";  // integers only
             $data[$i]['N_Min']   = ($import[$i][23]=='N') ? (($import[$i][25] != "") ? intval($import[$i][25]) : "") : "";  // integers only
             $data[$i]['N_Sec']   = ($import[$i][23]=='N') ? strtr($import[$i][26], ",", ".") : "";
@@ -714,6 +720,10 @@ if ($run == 2) {  // file uploaded
             $data[$i]['Coord_N'] = $data[$i]['N_Min'] = $data[$i]['N_Sec'] = $data[$i]['Coord_S'] = $data[$i]['S_Min'] = $data[$i]['S_Sec'] = '';
         }
         if (isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29]) && isset($import[$i][30])) {
+            if (!is_numeric(strtr($import[$i][30], ",", "."))) {
+                $OK = false;
+                $status[$i] .= "no_numeric_sec_lon ";
+            }
             $data[$i]['Coord_W'] = ($import[$i][27]=='W') ? (($import[$i][28] != "") ? intval($import[$i][28]) : "") : "";  // integers only
             $data[$i]['W_Min']   = ($import[$i][27]=='W') ? (($import[$i][29] != "") ? intval($import[$i][29]) : "") : "";  // integers only
             $data[$i]['W_Sec']   = ($import[$i][27]=='W') ? strtr($import[$i][30], ",", ".") : "";
@@ -726,8 +736,20 @@ if ($run == 2) {  // file uploaded
         /**
          * Fill in quadrant info
          */
+        if (!is_numeric($import[$i][31])) {
+            $OK = false;
+            $status[$i] .= "no_numeric_quadrant ";
+        }
         $data[$i]['quadrant'] = (isset($import[$i][31])) ? $import[$i][31] : '';
+        if (!is_numeric($import[$i][32])) {
+            $OK = false;
+            $status[$i] .= "no_numeric_quadrant_sub ";
+        }
         $data[$i]['quadrant_sub'] = (isset($import[$i][32])) ? $import[$i][32] : '';
+        if (!is_numeric($import[$i][33])) {
+            $OK = false;
+            $status[$i] .= "no_numeric_exactness ";
+        }
         $data[$i]['exactness'] = (isset($import[$i][33])) ? strtr($import[$i][33], ",", ".") : '';
 
         /**
@@ -859,14 +881,14 @@ if ($run == 2) {  // file uploaded
                 echo "<td>" . $import[$i][23] . "</td>";
                 echo "<td>" . $import[$i][24] . "</td>";
                 echo "<td>" . $import[$i][25] . "</td>";
-                echo "<td>" . $import[$i][26] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][26] . "</td>";
                 echo "<td>" . $import[$i][27] . "</td>";
                 echo "<td>" . $import[$i][28] . "</td>";
                 echo "<td>" . $import[$i][29] . "</td>";
-                echo "<td>" . $import[$i][30] . "</td>";
-                echo "<td>" . $import[$i][31] . "</td>";
-                echo "<td>" . $import[$i][32] . "</td>";
-                echo "<td>" . $import[$i][33] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][30] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][31] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant_sub") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][32] . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_exactness") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][33] . "</td>";
                 echo "<td>" . $import[$i][34] . "</td>";
                 echo "<td>" . $import[$i][35] . "</td>";
                 echo "<td>" . $import[$i][36] . "</td>";
