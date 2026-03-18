@@ -706,7 +706,7 @@ if ($run == 2) {  // file uploaded
          * fill geografical coordinates
          */
         if (isset($import[$i][23]) && isset($import[$i][24]) && isset($import[$i][25]) && isset($import[$i][26])) {
-            if (!is_numeric(strtr($import[$i][26], ",", "."))) {
+            if (!empty($import[$i][26]) && !is_numeric(strtr($import[$i][26], ",", "."))) {
                 $OK = false;
                 $status[$i] .= "no_numeric_sec_lat ";
             }
@@ -720,7 +720,7 @@ if ($run == 2) {  // file uploaded
             $data[$i]['Coord_N'] = $data[$i]['N_Min'] = $data[$i]['N_Sec'] = $data[$i]['Coord_S'] = $data[$i]['S_Min'] = $data[$i]['S_Sec'] = '';
         }
         if (isset($import[$i][27]) && isset($import[$i][28]) && isset($import[$i][29]) && isset($import[$i][30])) {
-            if (!is_numeric(strtr($import[$i][30], ",", "."))) {
+            if (!empty($import[$i][30]) && !is_numeric(strtr($import[$i][30], ",", "."))) {
                 $OK = false;
                 $status[$i] .= "no_numeric_sec_lon ";
             }
@@ -736,17 +736,17 @@ if ($run == 2) {  // file uploaded
         /**
          * Fill in quadrant info
          */
-        if (!is_numeric($import[$i][31])) {
+        if (!empty($import[$i][31]) && !is_numeric($import[$i][31])) {
             $OK = false;
             $status[$i] .= "no_numeric_quadrant ";
         }
         $data[$i]['quadrant'] = (isset($import[$i][31])) ? $import[$i][31] : '';
-        if (!is_numeric($import[$i][32])) {
+        if (!empty($import[$i][32]) && !is_numeric($import[$i][32])) {
             $OK = false;
             $status[$i] .= "no_numeric_quadrant_sub ";
         }
         $data[$i]['quadrant_sub'] = (isset($import[$i][32])) ? $import[$i][32] : '';
-        if (!is_numeric($import[$i][33])) {
+        if (!empty($import[$i][33]) && !is_numeric($import[$i][33])) {
             $OK = false;
             $status[$i] .= "no_numeric_exactness ";
         }
