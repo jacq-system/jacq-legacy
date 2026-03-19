@@ -401,7 +401,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     var swInstitutionCollection = <?php echo ($_SESSION['wuCollection'] > 0) ? 1 : 0; ?>;
 
     function osMap(sid) {
-        OSMwindow = window.open('osm_leaflet.php?sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
+        OSMwindow = window.open('osm_leaflet.php?import=1&sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
         OSMwindow.focus();
     }
     function toggleInstitutionCollection() {
