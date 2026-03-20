@@ -18,15 +18,13 @@ function updateNomService($taxonID)
     $taxonID = intval($taxonID);
     $labels = array();
 
-    $rows = dbi_query("SELECT nsn.param1, ns.name, ns.url_head, ns.api_code, ns.serviceID
-                       FROM tbl_nom_service_names nsn
-                        INNER JOIN tbl_nom_service ns ON ns.serviceID = nsn.serviceID
-                       WHERE nsn.taxonID = $taxonID
-                        AND ns.api_code IS NOT NULL")
+    $rows = dbi_query("SELECT param1, provider, url_head, serviceID
+                       FROM herbar_view.view_taxon_link_service         
+                       WHERE taxonID = $taxonID")
         ->fetch_all(MYSQLI_ASSOC);
     foreach ($rows as $row) {
-        $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$row['param1']}' title='{$row['name']}' target='_blank'>"
-            . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
+        $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$row['param1']}' title='{$row['provider']}' target='_blank'>"
+            . "<img src='webimages/nomService/serviceID{$row['serviceID']}_logo.png' alt='{$row['provider']}' height='30px'>"
             . "</a>";
     }
 
@@ -46,13 +44,13 @@ function updateNomService($taxonID)
                                     serviceID = " . intval($result['serviceID']) . ",
                                     param1    = '" . dbi_escape_string($result['match']['id']) . "',
                                     auto      = 1");
-                        $row = dbi_query("SELECT name, url_head, api_code, serviceID 
+                        $row = dbi_query("SELECT name, url_head, serviceID 
                                           FROM tbl_nom_service 
                                           WHERE serviceID = " . intval($result['serviceID']))
                                ->fetch_assoc();
                         if (!empty($row)) {
                             $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
-                                                       . "<img src='webimages/nomService/{$row['api_code']}.png' alt='{$row['api_code']}' height='30px'>"
+                                                       . "<img src='webimages/nomService/serviceID{$row['serviceID']}_logo.png' alt='{$row['name']}' height='30px'>"
                                                        . "</a>";
                         }
                     } elseif (!empty($result['candidates'])) {

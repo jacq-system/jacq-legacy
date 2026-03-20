@@ -61,41 +61,23 @@ function collectionItem ($coll)
     }
 }
 
-if (!empty($_GET['import'])) {
-    $row = dbi_query("SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-                       s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-                       s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-                       c.Sammler, c2.Sammler_2,
-                       ss.series,
-                       mc.collection,
-                       tst.typusID,
-                       `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
-                      FROM (tbl_specimens_import s, tbl_management_collections mc)
-                       LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
-                       LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
-                       LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
-                       LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-                      WHERE mc.collectionID = s.collectionID
-                       AND s.specimen_ID = '" . intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT)) . "'")
-            ->fetch_assoc();
-} else {
-    $row = dbi_query("SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
-                       s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
-                       s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
-                       c.Sammler, c2.Sammler_2,
-                       ss.series,
-                       mc.collection,
-                       tst.typusID,
-                       `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
-                      FROM (tbl_specimens s, tbl_management_collections mc)
-                       LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
-                       LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
-                       LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
-                       LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-                      WHERE mc.collectionID = s.collectionID
-                       AND s.specimen_ID = '" . intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT)) . "'")
-            ->fetch_assoc();
-}
+$specimensTable = (!empty($_GET['import'])) ? "tbl_specimens_import" : "tbl_specimens";
+$row = dbi_query("SELECT s.specimen_ID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
+                   s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
+                   s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
+                   c.Sammler, c2.Sammler_2,
+                   ss.series,
+                   mc.collection,
+                   tst.typusID,
+                   `herbar_view`.GetScientificName(s.taxonID, 0) AS `scientificName`
+                  FROM ($specimensTable s, tbl_management_collections mc)
+                   LEFT JOIN tbl_specimens_types tst ON tst.specimenID = s.specimen_ID
+                   LEFT JOIN tbl_specimens_series ss ON ss.seriesID = s.seriesID
+                   LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
+                   LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
+                  WHERE mc.collectionID = s.collectionID
+                   AND s.specimen_ID = '" . intval(filter_input(INPUT_GET, 'sid', FILTER_SANITIZE_NUMBER_INT)) . "'")
+        ->fetch_assoc();
 $lat = dms2sec($row['Coord_S'], $row['S_Min'], $row['S_Sec'], $row['Coord_N'], $row['N_Min'], $row['N_Sec']) / 3600.0;
 $lng = dms2sec($row['Coord_W'], $row['W_Min'], $row['W_Sec'], $row['Coord_E'], $row['E_Min'], $row['E_Sec']) / 3600.0;
 $url = "https://www.jacq.org/detail.php?ID=" . $row['specimen_ID'];
