@@ -271,7 +271,6 @@ if (isset($_GET['sel'])) {
                             WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
                     $result = dbi_query($sql);
                     logSpecies($p_taxonID,1);
-                    updateTblTaxSciname($p_taxonID);
                     if (!$p_external) {
                         // check any used epitheta and authors and make them internal if still external
                         clearExternal('epithets', $p_speciesIndex);
@@ -312,7 +311,6 @@ if (isset($_GET['sel'])) {
                 if ($result) {
                     $p_taxonID = dbi_insert_id();
                     logSpecies($p_taxonID, 0);
-                    updateTblTaxSciname($p_taxonID);
                 } else {
                     $taxonID = 0;
                 }

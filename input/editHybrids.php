@@ -107,7 +107,6 @@ if (isset($_GET['ID'])) {
                         WHERE taxon_ID_fk = '$id'";
             }
             $result = dbi_query($sql);
-            updateTblTaxSciname($id);
         }
 
         echo "<html><head></head>\n<body>\n"

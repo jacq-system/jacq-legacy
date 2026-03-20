@@ -139,16 +139,6 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                             WHERE genID = '$id'";
                     $result = dbi_query($sql);
                     logGenera($id,1);
-                    // update tbl_tax_sciname
-                    $resSpecies = dbi_query("SELECT taxonID
-                                             FROM tbl_tax_species
-                                             WHERE genID = '$id'");
-                    if ($resSpecies && $resSpecies->num_rows > 0) {
-                        $rowsSpecies = $resSpecies->fetch_all(MYSQLI_ASSOC);
-                        foreach ($rowsSpecies as $rowSpecies) {
-                            updateTblTaxSciname($rowSpecies['taxonID']);
-                        }
-                    }
                 }
             } else {
                 $genus_name = $_POST['genus'] ?? '';
