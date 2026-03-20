@@ -21,14 +21,52 @@ function showInstitutionChangeDialog(originalValue)
             $inst.val(originalValue);
         }
     };
-    const $dialog = $('#institutionChangeDialog');
 
+    if (canMoveAcrossInstitutions) {
+        const confirmMessage = "You are about to move this specimen to a different source Institution.\n\nDo you want to continue?";
+        let confirmed = false;
+
+        if ($.ui && $.ui.dialog) {
+            $('<div></div>')
+                .html('<p>Changing the source Institution will move this specimen to a different institution.</p><p>The form will now reload and preselect a collection of that institution.</p><p>Do you want to continue?</p>')
+                .dialog({
+                    modal: true,
+                    title: 'Confirm institution change',
+                    buttons: {
+                        'Continue': function() {
+                            confirmed = true;
+                            $(this).dialog('close');
+                            reload = true;
+                            $('#f').trigger('submit');
+                        },
+                        'Cancel': function() {
+                            resetInstitution();
+                            $(this).dialog('close');
+                        }
+                    },
+                    close: function() {
+                        if (!confirmed) {
+                            resetInstitution();
+                        }
+                        $(this).remove();
+                    }
+                });
+        } else if (!confirm(confirmMessage)) {
+            resetInstitution();
+        } else {
+            reload = true;
+            $('#f').trigger('submit');
+        }
+        return;
+    }
+
+    const $dialog = $('#institutionChangeDialog');
     if ($dialog.length && $.ui && $.ui.dialog) {
         if (!$dialog.data('ui-dialog')) {
             $dialog.dialog({
                 modal: true,
                 buttons: {
-                    "OK": function() {
+                    'OK': function() {
                         $(this).dialog('close');
                     }
                 },

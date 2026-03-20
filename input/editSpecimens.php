@@ -473,8 +473,9 @@ if (isset($_GET['sel'])) {
         // check if the user has access to the new collection
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
+        $p_institution = intval($rowCheck['source_id']);
         // allow write access to database if user is editor or is granted for both old and new collection
-        if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
+        if (checkRight('admin') || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
             $dummy = dbi_query("SELECT s.`specimen_ID`
                                 FROM `tbl_specimens` s, `tbl_management_collections` mc
                                 WHERE s.`collectionID` = mc.`collectionID`
@@ -626,6 +627,7 @@ if (isset($_GET['sel'])) {
       let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
       let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
       let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
+      let canMoveAcrossInstitutions = <?php echo (checkRight('admin') ? 'true' : 'false'); ?>;
       let currentSpecimenId = <?php echo intval($p_specimen_ID); ?>;
       let currentListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;
       let linkEditUnsaved = { tracking: false, initial: '' };
@@ -689,6 +691,10 @@ if ($result && mysqli_num_rows($result) > 0) {
         $collection[1][] = $row['collection'];
     }
 }
+if (!in_array($p_collection, $collection[0]) && count($collection[0]) > 1) {
+    $p_collection = $collection[0][1];
+}
+
 
 unset($typus);
 $typus[0][] = 0; $typus[1][] = "";
