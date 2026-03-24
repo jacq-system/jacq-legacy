@@ -94,19 +94,20 @@ if (isset($_GET['ID'])) {
     $newHybrid = (!empty($row['taxon_ID_fk'])) ? false : true;
 
     if (!empty($_POST['submitUpdate']) && $_SESSION['editorControl']) {
-        if ($newHybrid) {
-            $sql = "INSERT INTO tbl_tax_hybrids SET
-                     taxon_ID_fk = '$id',
-                     parent_1_ID = " . extractID($p_parent_1_ID) . ",
-                     parent_2_ID = " . extractID($p_parent_2_ID);
-        } else {
-            $sql = "UPDATE tbl_tax_hybrids SET
-                     parent_1_ID = " . extractID($p_parent_1_ID) . ",
-                     parent_2_ID = ".extractID($p_parent_2_ID) . "
-                    WHERE taxon_ID_fk = '$id'";
+        if (!empty(extractID($p_parent_1_ID)) && !empty(extractID($p_parent_2_ID))) {   // both parents must be set
+            if ($newHybrid) {
+                $sql = "INSERT INTO tbl_tax_hybrids SET
+                         taxon_ID_fk = '$id',
+                         parent_1_ID = " . extractID($p_parent_1_ID) . ",
+                         parent_2_ID = " . extractID($p_parent_2_ID);
+            } else {
+                $sql = "UPDATE tbl_tax_hybrids SET
+                         parent_1_ID = " . extractID($p_parent_1_ID) . ",
+                         parent_2_ID = " . extractID($p_parent_2_ID) . "
+                        WHERE taxon_ID_fk = '$id'";
+            }
+            $result = dbi_query($sql);
         }
-        $result = dbi_query($sql);
-        updateTblTaxSciname($id);
 
         echo "<html><head></head>\n<body>\n"
            . "<script language=\"JavaScript\">\n"

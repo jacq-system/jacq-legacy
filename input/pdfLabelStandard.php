@@ -160,6 +160,20 @@ function makeText($id)  {
   return $text;
 }
 
+// first approach to detect japanese text
+//function isKanji($text) {
+//    return preg_match('/[\x{4E00}-\x{9FBF}]/u', $text) > 0;
+//}
+//function isHiragana($text) {
+//    return preg_match('/[\x{3040}-\x{309F}]/u', $text) > 0;
+//}
+//function isKatakana($text) {
+//    return preg_match('/[\x{30A0}-\x{30FF}]/u', $text) > 0;
+//}
+//function isJapanese($text) {
+//    return isKanji($text) || isHiragana($text) || isKatakana($text);
+//}
+
 
 class LABEL extends TCPDF {
   var $offset;
@@ -290,11 +304,17 @@ while ($row_ID=mysqli_fetch_array($result_ID)) {
       $seperateColl1Date = false;
 
     if ($labelText['Fundort'])  {
+      if ($labelText['nation'] == "Japan") {
+        $pdf->SetFont('cid0jp','',10);
+      } elseif ($labelText['nation'] == "China") {
+          $pdf->SetFont('cid0cs', '', 10);
+      }
       $pdf->MultiCell(100,4.3,$labelText['Fundort']);
       $pdf->Ln(3);
     }
 
     if ($labelText['lonlat'] || $labelText['alt']) {
+      $pdf->SetFont('freeserif','',12);
       $pdf->Cell(50,4.3,$labelText['lonlat']);
       $pdf->Cell(50,4.3,$labelText['alt'],0,1,'R');
       $pdf->Ln(3);
