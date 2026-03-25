@@ -449,14 +449,19 @@ if (isset($_GET['sel'])) {
                     voucherID = " . makeInt($p_voucher) . ",
                     observation = '0'";
 
+        $isAdminUser = checkRight('admin');
+        $isEditorUser = checkRight('editor');
+        $oldSourceId = null;
+
         if (intval($_POST['specimen_ID'])) {
-            // check if the user has access to the old collection
+            // check source institution of the current specimen before applying an update
             $sql = "SELECT source_id
                     FROM tbl_specimens, tbl_management_collections
                     WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
                      AND specimen_ID = '" . intval($_POST['specimen_ID']) . "'";
             $dummy = dbi_query($sql)->fetch_array();
-            $checkSource = $dummy['source_id'] == $_SESSION['sid'];
+            $oldSourceId = intval($dummy['source_id']);
+            $checkSource = $oldSourceId == $_SESSION['sid'];
 
             $sql = "UPDATE tbl_specimens SET "
                  .  $sqldata . " "
@@ -473,9 +478,16 @@ if (isset($_GET['sel'])) {
         // check if the user has access to the new collection
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
-        $p_institution = intval($rowCheck['source_id']);
-        // allow write access to database if user is editor or is granted for both old and new collection
-        if (checkRight('admin') || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
+        $newSourceId = intval($rowCheck['source_id']);
+        $p_institution = $newSourceId;
+        $movesAcrossSource = ($updated && $oldSourceId !== null && $oldSourceId !== $newSourceId);
+        $hasWriteAccess = $isAdminUser
+            || $isEditorUser
+            || ($_SESSION['sid'] == $newSourceId && $checkSource);
+
+        // Editors may edit specimens across all institutions, but only admins may move an existing
+        // specimen from one source institution to another.
+        if ($hasWriteAccess && (!$movesAcrossSource || $isAdminUser)) {
             $dummy = dbi_query("SELECT s.`specimen_ID`
                                 FROM `tbl_specimens` s, `tbl_management_collections` mc
                                 WHERE s.`collectionID` = mc.`collectionID`
@@ -527,7 +539,7 @@ if (isset($_GET['sel'])) {
         }
         else {
             $updateBlocked = true;
-            $blockCause = 2;  // no write access to the new collection
+            $blockCause = 2;  // no write access to the new collection or forbidden source change
             $edit = ($_POST['edit']) ? true : false;
             $p_specimen_ID = $_POST['specimen_ID'];
         }
@@ -1215,3 +1227,5 @@ if ($updateBlocked) {
 
 </body>
 </html>
+
+
