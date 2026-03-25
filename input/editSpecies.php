@@ -414,7 +414,7 @@ if (mysqli_num_rows($result) > 0) {
     }
     function editHybrids(sel) {
       target  = "editHybrids.php?ID=" + encodeURIComponent(sel);
-      MeinFenster = window.open(target,"editHybrids","width=900,height=220,top=50,left=50,scrollbars=yes,resizable=yes");
+      MeinFenster = window.open(target,"editHybrids","width=900,height=260,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function searchAuthor() {
