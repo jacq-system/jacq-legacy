@@ -70,16 +70,17 @@ function dbi_query($sql, $debug = false)
 
     if (empty($sql)) {
         error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']}.");
-    }
-    $res = $dbLink->query($sql);
-
-    if(!$res) {
-        // log the error in php error log
-        error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']} SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
-        if ($debug){
-            // and show it additionally if debug is on
-            echo $sql . "<br>\n";
-            echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+        $res = false;
+    } else {
+        $res = $dbLink->query($sql);
+        if (!$res) {
+            // log the error in php error log
+            error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']} SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
+            if ($debug) {
+                // and show it additionally if debug is on
+                echo $sql . "<br>\n";
+                echo $dbLink->errno . ": " . $dbLink->error . "<br>\n";
+            }
         }
     }
 
