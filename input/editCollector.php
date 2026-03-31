@@ -6,33 +6,37 @@ require("inc/log_functions.php");
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
-  <title>herbardb - edit Collector</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" type="text/css" href="css/screen.css">
-  <script type="text/javascript" language="JavaScript">
-    function showExternal(sel) {
-      MeinFenster = window.open(sel.value,"showHUH");
-      MeinFenster.focus();
-    }
-    function checkCollector()
-    {
-        var collector = document.f.Sammler.value;
-        if (collector.trim() == '') {
-            alert("No empty collector names allowed");
-            return false;
-        } else {
-            return true;
+    <title>herbardb - edit Collector</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="css/screen.css">
+    <script type="text/javascript" language="JavaScript">
+        function showExternal(sel)
+        {
+            let MeinFenster = window.open(sel.value,"showHUH");
+            MeinFenster.focus();
         }
-    }
-  </script>
+        function checkCollector()
+        {
+            let collector = document.f.Sammler.value;
+            if (collector.trim() == '') {
+                alert("No empty collector names allowed");
+                return false;
+            } else {
+                return true;
+            }
+        }
+    </script>
 </head>
 
 <body>
 
 <?php
-if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)) {
+$right_collIns = checkRight('collIns');
+$right_collUpd = checkRight('collUpd');
+
+if (!empty($_POST['submitUpdate']) && ($right_collUpd || $right_collIns)) {
     $sw = true;
     $sql = "SELECT SammlerID, Sammler
             FROM tbl_collector
@@ -55,8 +59,9 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
         $sw = false;
     }
     if ($sw) {
+        $sql = "";
         if (intval($_POST['ID'])) {
-            if (($_SESSION['editControl'] & 0x1000) != 0) {
+            if ($right_collUpd) {
                 $sql = "UPDATE tbl_collector SET
                          Sammler = '"      . dbi_escape_string($_POST['Sammler']) . "',
                          HUH_ID = "        . quoteString($_POST['HUH_ID']) . ",
@@ -65,24 +70,26 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
                          ORCID = "         . quoteString($_POST['ORCID']) . ",
                          Bloodhound_ID = " . quoteString($_POST['Bionomia']) . "
                         WHERE SammlerID = '" . intval($_POST['ID']) . "'";
-            } else {
-                $sql = "";
             }
             $updated = 1;
         } else {
-            $sql = "INSERT INTO tbl_collector SET
-                     Sammler = '"      . dbi_escape_string($_POST['Sammler']) . "',
-                     HUH_ID = "        . quoteString($_POST['HUH_ID']) . ",
-                     VIAF_ID = "       . quoteString($_POST['VIAF_ID']) . ",
-                     WIKIDATA_ID = "   . quoteString($_POST['WIKIDATA_ID']) . ",
-                     ORCID = "         . quoteString($_POST['ORCID']) . ",
-                     Bloodhound_ID = " . quoteString($_POST['Bionomia']);
+            if ($right_collIns) {
+                $sql = "INSERT INTO tbl_collector SET
+                         Sammler = '"      . dbi_escape_string($_POST['Sammler']) . "',
+                         HUH_ID = "        . quoteString($_POST['HUH_ID']) . ",
+                         VIAF_ID = "       . quoteString($_POST['VIAF_ID']) . ",
+                         WIKIDATA_ID = "   . quoteString($_POST['WIKIDATA_ID']) . ",
+                         ORCID = "         . quoteString($_POST['ORCID']) . ",
+                         Bloodhound_ID = " . quoteString($_POST['Bionomia']);
+            }
             $updated = 0;
         }
-        $result = dbi_query($sql);
-        $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
         if ($sql) {
+            $result = dbi_query($sql);
+            $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
             logCollector($id, $updated);
+        } else {
+            $id = intval($_POST['ID']);
         }
 
         echo "<script language=\"JavaScript\">\n";
@@ -126,10 +133,17 @@ $cf->inputText(7,10.5,50,"ORCID", ($row['ORCID'] ?? ''),200);
 $cf->label(7,12.5,"Bionomia","javascript:showExternal(document.f.Bionomia)");
 $cf->inputText(7,12.5,50,"Bionomia", ($row['Bloodhound_ID'] ?? ''),200);
 
-if (($_SESSION['editControl'] & 0x1800)!=0) {
-  $text = (!empty($row['SammlerID'])) ? " Update " : " Insert ";
-  $cf->buttonSubmit(2,16,"submitUpdate",$text);
-  $cf->buttonJavaScript(12,16," New ","self.location.href='editCollector.php?sel=<0>'");
+if (!empty($row['SammlerID'])) {
+    if ($right_collUpd) {
+        $cf->buttonSubmit(2,16,"submitUpdate", " Update ");
+    }
+} else {
+    if ($right_collIns) {
+        $cf->buttonSubmit(2,16,"submitUpdate", " Insert ");
+    }
+}
+if ($right_collIns) {
+    $cf->buttonJavaScript(12, 16, " New ", "self.location.href='editCollector.php?sel=<0>'");
 }
 
 echo "</form>\n";
