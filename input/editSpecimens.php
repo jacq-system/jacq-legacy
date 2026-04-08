@@ -332,8 +332,8 @@ if (isset($_GET['sel'])) {
     $p_typified          = $_POST['typified'] ?? "";
     $p_taxon_alt         = $_POST['taxon_alt'] ?? "";
     $p_Bezirk            = $_POST['Bezirk'] ?? "";
-    $p_quadrant          = $_POST['quadrant'] ?? "";
-    $p_quadrant_sub      = $_POST['quadrant_sub'] ?? "";
+    $p_quadrant          = (isset($_POST['quadrant']) && $_POST['quadrant'] !== "") ? intval($_POST['quadrant']) : "";                       // integers only
+    $p_quadrant_sub      = (isset($_POST['quadrant_sub']) && $_POST['quadrant_sub'] !== "") ? intval($_POST['quadrant_sub']) : "";           // integers only
     $p_exactness         = $_POST['exactness'] ?? "";
     $p_altitude_min      = (isset($_POST['altitude_min']) && $_POST['altitude_min'] !== "") ? intval($_POST['altitude_min']) : "";           // integers only
     $p_altitude_max      = (isset($_POST['altitude_max']) && $_POST['altitude_max'] !== "") ? intval($_POST['altitude_max']) : "";           // integers only
@@ -1227,5 +1227,3 @@ if ($updateBlocked) {
 
 </body>
 </html>
-
-

@@ -170,12 +170,12 @@ if (isset($_GET['new'])) {
         }
         if (intval($_POST['tax_syn_ID'])) {
             $sql = "UPDATE tbl_tax_synonymy SET
-                $sqldata
-                WHERE tax_syn_ID = " . intval($_POST['tax_syn_ID']);
+                    $sqldata
+                    WHERE tax_syn_ID = " . intval($_POST['tax_syn_ID']);
             $updated = 1;
         } else {
             $sql = "INSERT INTO tbl_tax_synonymy SET
-                $sqldata";
+                    $sqldata";
             $updated = 0;
         }
         $result = dbi_query($sql);

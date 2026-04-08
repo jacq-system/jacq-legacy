@@ -199,35 +199,44 @@ function checkMandatory(outText)
     let header = "";
     let text = "";
 
-    if (reload == true) {
+    if (reload === true) {
         return true;
     }
 
-    if (document.f.collection.selectedIndex == 0) {
+    if (document.f.collection.selectedIndex === 0) {
         missing++; text += "Collection\n";
     }
     if (document.f.taxon.value.indexOf("<") < 0 || document.f.taxon.value.indexOf(">") < 0) {
         missing++; text += "taxon\n";
     }
-    if (document.f.det.value.length == 0) {
+    if (document.f.HerbNummer.value.length > 25) {
+        missing++; text += "HerbarNr. too long\n";
+    }
+    if (document.f.det.value.length === 0) {
         missing++; text += "det / rev / conf\n";
     }
-    if (document.f.taxon_alt.value.length == 0) {
+    if (document.f.taxon_alt.value.length === 0) {
         missing++; text += "ident. history\n";
     }
     if (document.f.sammler.value.indexOf("<") < 0 || document.f.sammler.value.indexOf(">") < 0) {
         missing++; text += "collector\n";
     }
-    if (document.f.Nummer.value.length == 0 && document.f.alt_number.value.length == 0) {
+    if (document.f.Nummer.value.length === 0 && document.f.alt_number.value.length === 0) {
         missing++; text += "Number and alt.Nr.\n enter s.n. in alt.Nr. if no number is available";
     }
     if (document.f.Nummer.value.length > 0 && parseInt(document.f.Nummer.value, 10) != document.f.Nummer.value) {
         missing++; text += "Number must be an integer value. Move to alt.Nr.";
     }
-    if (document.f.Datum.value.length == 0) {
+    if (document.f.Datum.value.length === 0) {
         missing++; text += "Date\n";
     }
-    if (document.f.Fundort1.value.length == 0) {
+    if (isNaN(document.f.exactness.value)) {
+        missing++; text += "exactness must be numeric\n";
+    }
+    if (isNaN(document.f.lat_sec.value) || isNaN(document.f.lon_sec.value)) {
+        missing++; text += "Lat/Lon Seconds must be numeric\n";
+    }
+    if (document.f.Fundort1.value.length === 0) {
         missing++; text += "Locality\n";
     }
 
