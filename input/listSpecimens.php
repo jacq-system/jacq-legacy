@@ -31,6 +31,7 @@ if (!isset($_SESSION['sTyp']))          { $_SESSION['sTyp'] = ''; }
 if (!isset($_SESSION['sSynonyms']))     { $_SESSION['sSynonyms'] = ''; }
 if (!isset($_SESSION['sType']))         { $_SESSION['sType'] = 0; }
 if (!isset($_SESSION['sImages']))       { $_SESSION['sImages'] = ''; }
+if (!isset($_SESSION['sAccessible']))   { $_SESSION['sAccessible'] = ''; }
 if (!isset($_SESSION['sLinkList']))     { $_SESSION['sLinkList'] = array(); }
 if (!isset($_SESSION['sUserID']))       { $_SESSION['sUserID'] = -1; }
 if (!isset($_SESSION['sUserDate']))     { $_SESSION['sUserDate'] = ''; }
@@ -77,6 +78,7 @@ if (isset($_POST['resetFilters'])) {
     $_SESSION['sTyp']              = '';
     $_SESSION['sSynonyms']         = '';
     $_SESSION['sImages']           = '';
+    $_SESSION['sAccessible']       = '';
     $_SESSION['sOrder']            = "genus, epithet, author, Sammler, Sammler_2, series, Nummer, alt_number, Datum, typus_lat";
     $_SESSION['sOrTyp']            = 1;
     $_SESSION['labelOrder']        = $_SESSION['sOrder'];
@@ -112,6 +114,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
         $_SESSION['sSynonyms']         = '';
 		$_SESSION['sImages']           = '';  // = $_POST['images'];
+        $_SESSION['sAccessible']       = '';  // = $_POST['accessible'];
 	} else {
 		unset($_SESSION['taxonID']);
 		$_SESSION['wuCollection']      = $_POST['collection'];
@@ -138,6 +141,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sTyp']      = (($_POST['typ']=="only") ? true : false);
         $_SESSION['sSynonyms'] = (($_POST['synonyms']=="yes") ? true : false);
 		$_SESSION['sImages']   = $_POST['images'];
+        $_SESSION['sAccessible'] = $_POST['accessible'];
 	}
 
     $_SESSION['sOrder'] = "genus, epithet, author, "
@@ -151,7 +155,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sNumber'] = $_SESSION['sNumberList'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
@@ -164,7 +168,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
@@ -661,8 +665,15 @@ jaxon_checkTypeLabelMapPdfButton();
     <b>No</b>
     <input type="radio" name="images" value="all"<?php if($_SESSION['sImages'] != 'only' && $_SESSION['sImages'] != 'no') echo " checked"; ?>>
     <b>All</b>
-  </td><td colspan="2">
-  </td>
+  </td><td align="right">&nbsp;<b>Accessible&nbsp;</b></td>
+    <td>
+      <input type="radio" name="accessible" value="only"<?php if($_SESSION['sAccessible'] == 'only') echo " checked"; ?>>
+      <b>Yes</b>
+      <input type="radio" name="accessible" value="no"<?php if($_SESSION['sAccessible'] == 'no') echo " checked"; ?>>
+      <b>No</b>
+      <input type="radio" name="accessible" value="all"<?php if($_SESSION['sAccessible'] != 'only' && $_SESSION['sAccessible'] != 'no') echo " checked"; ?>>
+      <b>All</b>
+    </td>
 </tr><tr>
   <td colspan="3">
       <input class="button" type="submit" name="search" value=" search ">

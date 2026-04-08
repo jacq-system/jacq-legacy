@@ -13,24 +13,13 @@ $jaxon->setOption('core.request.uri', 'ajax/editTaxSynonymyServer.php');
 
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
 
-function dateconvert($date,$tomysql=false){
-	/*if($tomysql){
-		$date=explode('/',$date);
-		return $date[2].'-'.$date[1].'-'.$date[0];
-	}else{
-		$date=explode('-',$date);
-		return $date[2].'/'.$date[1].'/'.$date[0];
-	}*/
-	return $date;
-}
-
 
 if (isset($_GET['new'])) {
     $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-         author, author1, author2, author3, author4, author5,
-         epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-        FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-        WHERE taxonID = " . extractID($_GET['ID']);
+             author, author1, author2, author3, author4, author5,
+             epithet,epithet1,epithet2,epithet3,epithet4,epithet5
+            FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
+            WHERE taxonID = " . extractID($_GET['ID']);
     $p_taxon = taxon(dbi_query($sql)->fetch_array());
     $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
     $p_preferred = 0;
@@ -41,14 +30,12 @@ if (isset($_GET['new'])) {
     $p_sourceService = "";
     $p_timestamp = "";
     $p_user = "";
-    $p_ref_date="";
-    $p_source_specimen="";
-    $p_source_specimenIndex="";
-
-
+    $p_ref_date = "";
+    $p_source_specimen = "";
+    $p_source_specimenIndex = "";
 } elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT ts.tax_syn_ID, ts.taxonID, ts.acc_taxon_ID, ts.annotations, ts.preferred_taxonomy,
-             ts.source, ts.source_citationID, ts.source_person_ID, ts.source_serviceID,ts.ref_date,ts.source_specimenID, ts.timestamp,
+             ts.source, ts.source_citationID, ts.source_person_ID, ts.source_serviceID, ts.ref_date, ts.source_specimenID, ts.timestamp,
              hu.firstname, hu.surname
             FROM tbl_tax_synonymy ts
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON ts.userID = hu.userID
@@ -61,7 +48,7 @@ if (isset($_GET['new'])) {
         $p_annotations = $row['annotations'];
         $p_timestamp   = $row['timestamp'];
         $p_user        = $row['firstname'] . " " . $row['surname'];
-        $p_ref_date=dateconvert($row['ref_date']);
+        $p_ref_date    = $row['ref_date'];
 
         $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
                  author,  author1,  author2,  author3,  author4,  author5,
@@ -113,65 +100,12 @@ if (isset($_GET['new'])) {
 
     }
     else {
-        $p_taxon = $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
+        $p_taxon = $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = $p_ref_date = "";
         $p_preferred = 0;
         $p_source = "person";
         $p_sourcePers = "Anonymous <39269>";
         $p_sourcePersIndex = 39269;
         $p_sourceLit = $p_sourceLitIndex = $p_sourceService = $p_timestamp = $p_user = "";
-    }
-} elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
-
-   if (!empty($_POST['preferred'])) {
-        dbi_query("UPDATE tbl_tax_synonymy SET
-                   preferred_taxonomy = 0
-                  WHERE taxonID = " . extractID($_POST['taxon']));
-    }
-    $annotations = $_POST['annotations'];
-    $sqldata = "taxonID = " . extractID($_POST['taxon']) . ",
-                acc_taxon_ID = " . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'" ) . ",
-                preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
-                annotations = " . quoteString($annotations) . ",
-                ref_date = " . quoteString($_POST['ref_date']) . ",
-                source_specimenID = '" . intval($_POST['source_specimenIndex']) . "',
-                userID = '" . intval($_SESSION['uid']) . "'";
-    if ($_POST['source'] == 'literature') {
-        $sqldata .= ", source = 'literature',
-                       source_citationID = '" . intval($_POST['sourceLitIndex']) . "',
-                       source_person_ID = NULL,
-                       source_serviceID = NULL";
-    } elseif ($_POST['source'] == 'service') {
-        $sqldata .= ", source = 'service',
-                       source_citationID = NULL,
-                       source_person_ID = NULL,
-                       source_serviceID = '" . intval($_POST['sourceService']) . "'";
-    } else {
-        $sqldata .= ", source = 'person',
-                       source_citationID = NULL,
-                       source_person_ID = '" . intval($_POST['sourcePersIndex']) . "',
-                       source_serviceID = NULL";
-    }
-    if (intval($_POST['tax_syn_ID'])) {
-        $sql = "UPDATE tbl_tax_synonymy SET
-                $sqldata
-                WHERE tax_syn_ID = " . intval($_POST['tax_syn_ID']);
-        $updated = 1;
-    } else {
-        $sql = "INSERT INTO tbl_tax_synonymy SET
-                $sqldata";
-        $updated = 0;
-    }//echo $sql;exit;
-    $result = dbi_query($sql);
-    $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ? intval($_POST['tax_syn_ID']) : dbi_insert_id();
-    logTbl_tax_synonymy($p_tax_syn_ID, $updated);
-    if ($result) {
-        echo "<html><head>\n"
-           . "<script language=\"JavaScript\">\n"
-           . "  window.opener.document.f.reload.click()\n"
-           . "  self.close()\n"
-           . "</script>\n"
-           . "</head><body></body></html>\n";
-        die();
     }
 } else {
     $p_taxon           = $_POST['taxon'];
@@ -205,11 +139,63 @@ if (isset($_GET['new'])) {
         $p_sourcePersIndex = $_POST['sourcePersIndex'];
         $p_sourceService   = "";
     }
+    if (!empty($_POST['submitUpdate']) && checkRight('lit')) {
+        if (!empty($_POST['preferred'])) {
+            dbi_query("UPDATE tbl_tax_synonymy SET
+                        preferred_taxonomy = 0
+                       WHERE taxonID = " . extractID($_POST['taxon']));
+        }
+        $sqldata = "taxonID = "            . extractID($_POST['taxon']) . ",
+                    acc_taxon_ID = "       . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'") . ",
+                    preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
+                    annotations = "        . quoteString($_POST['annotations']) . ",
+                    ref_date = "           . quoteString($_POST['ref_date']) . ",
+                    source_specimenID = '" . intval($_POST['source_specimenIndex']) . "',
+                    userID = '"            . intval($_SESSION['uid']) . "'";
+        if ($_POST['source'] == 'literature') {
+            $sqldata .= ", source = 'literature',
+                           source_citationID = '" . intval($_POST['sourceLitIndex']) . "',
+                           source_person_ID = NULL,
+                           source_serviceID = NULL";
+        } elseif ($_POST['source'] == 'service') {
+            $sqldata .= ", source = 'service',
+                           source_citationID = NULL,
+                           source_person_ID = NULL,
+                           source_serviceID = '" . intval($_POST['sourceService']) . "'";
+        } else {
+            $sqldata .= ", source = 'person',
+                           source_citationID = NULL,
+                           source_person_ID = '" . intval($_POST['sourcePersIndex']) . "',
+                           source_serviceID = NULL";
+        }
+        if (intval($_POST['tax_syn_ID'])) {
+            $sql = "UPDATE tbl_tax_synonymy SET
+                    $sqldata
+                    WHERE tax_syn_ID = " . intval($_POST['tax_syn_ID']);
+            $updated = 1;
+        } else {
+            $sql = "INSERT INTO tbl_tax_synonymy SET
+                    $sqldata";
+            $updated = 0;
+        }
+        $result = dbi_query($sql);
+        if ($result) {
+            $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ?: dbi_insert_id();
+            logTbl_tax_synonymy($p_tax_syn_ID, $updated);
+            echo "<html><head>\n"
+                    . "<script language=\"JavaScript\">\n"
+                    . "  window.opener.document.f.reload.click()\n"
+                    . "  self.close()\n"
+                    . "</script>\n"
+                    . "</head><body></body></html>\n";
+            die();
+        }
+    }
 }
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - edit Synonymy</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -258,26 +244,19 @@ if (isset($_GET['new'])) {
 		}
 	});
 	function checkdate() {
-		val=$("#ref_date").val();
-		if(!val.match(/^\d\d\d\d?-\d\d?-\d\d$/) && !val.match(/^YYYY-MM-DD$/) && val!=''){
+		val = $("#ref_date").val();
+		if(!val.match(/^\d\d\d\d?-\d\d?-\d\d$/) && !val.match(/^YYYY-MM-DD$/) && val != ''){
 			alert("\nMistake in Reference Date.\n\nPlease insert blank or correct Date.\n");
 			$("#ref_date").focus();
 		}
     }
-	function hideParts() {
-
-    }
-
-
-
-
     function setSource() {
       jaxon_setSource(jaxon.getFormValues('f'));
     }
   </script>
 </head>
 
-<body onload="hideParts();">
+<body>
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
@@ -332,8 +311,7 @@ $cf->textarea(11, 19, 28, 4, "annotations", $p_annotations);
 $cf->label(11, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIndex>\" target=\"Species");
 $cf->inputJqAutocomplete(11, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
 
-
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (checkRight('lit')) {
     $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 31, "reload", " Reload ");
     $cf->buttonReset(10, 31, " Reset ");

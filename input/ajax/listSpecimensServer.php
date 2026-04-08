@@ -206,6 +206,11 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         } else if ($_SESSION['sImages'] == 'no') {
             $sql_restrict_specimen .= " AND s.digital_image = 0";
         }
+        if ($_SESSION['sAccessible'] == 'only') {
+            $sql_restrict_specimen .= " AND s.accessible != 0";
+        } else if ($_SESSION['sAccessible'] == 'no') {
+            $sql_restrict_specimen .= " AND s.accessible = 0";
+        }
     }
 
     $str_sub_taxonID = $str_sub_basID = $str_sub_synID = '';
