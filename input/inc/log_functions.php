@@ -189,6 +189,7 @@ function logSpecimen ($ID, $updated)
                  habitat           = " . quoteString($row['habitat']) . ",
                  habitus           = " . quoteString($row['habitus']) . ",
                  Bemerkungen       = " . quoteString($row['Bemerkungen']) . ",
+                 notes_internal    = " . quoteString($row['notes_internal']) . ",
                  aktualdatum       = " . quoteString($row['aktualdatum']) . ",
                  eingabedatum      = " . quoteString($row['eingabedatum']) . ",
                  digital_image     = " . quoteString($row['digital_image']) . ",
