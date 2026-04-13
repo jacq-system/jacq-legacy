@@ -9,9 +9,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
-$jaxon->setOption('core.request.uri', 'ajax/editLitTaxaServer.php');
-
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
+$jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -202,7 +200,7 @@ if (isset($_GET['new'])) {
       }
     }
     function setSource() {
-      jaxon_setSource(jaxon.getFormValues('f'));
+        Jacq.Jaxon.EditLitTaxaServer.setSource(jaxon.getFormValues('f'));
     }
   </script>
 </head>

@@ -6,13 +6,9 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jaxon\Jaxon;
-use Jacq\Settings;
 
 $jaxon = jaxon();
-$jaxon->setOption('core.request.uri', 'ajax/editHybridsServer.php');
-
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "checkParents");
-
+$jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 function makeParent($search)
 {
@@ -120,6 +116,7 @@ if (isset($_GET['ID'])) {
 <head>
     <title>herbardb - edit Hybrids</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="icon" type="image/png" href="webimages/JACQ_LOGO.png">
     <link rel="stylesheet" type="text/css" href="css/screen.css">
     <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/ui-lightness/jquery-ui.custom.css">
     <style type="text/css">
@@ -147,13 +144,13 @@ if (isset($_GET['ID'])) {
         {
             const parent1index = $('#parent_1Index');
             const parent2index = $('#parent_2Index');
-            
-            jaxon_checkParents($('#ID').val(), parent1index.val(), parent2index.val())
+
+            Jacq.Jaxon.EditHybridsServer.checkParents($('#ID').val(), parent1index.val(), parent2index.val())
             parent1index.change(function() {
-                jaxon_checkParents($('#ID').val(), parent1index.val(), parent2index.val())
+                Jacq.Jaxon.EditHybridsServer.checkParents($('#ID').val(), parent1index.val(), parent2index.val())
             });
             parent2index.change(function() {
-                jaxon_checkParents($('#ID').val(), parent1index.val(), parent2index.val())
+                Jacq.Jaxon.EditHybridsServer.checkParents($('#ID').val(), parent1index.val(), parent2index.val())
             });
         });
     </script>
