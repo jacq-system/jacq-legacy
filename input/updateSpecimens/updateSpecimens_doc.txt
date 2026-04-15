@@ -1,0 +1,37 @@
+update specimens (updateSpecimens.php) - single file application
+
+1st run:
+$_FILES['userfile'] is empty
+$_POST['update_data'] is empty
+$type = 0  ... means: show just the basic form to upload a _FILES
+
+2nd run:
+$_FILES['userfile'] holds the name of the uploaded file
+$_POST['update_data'] is still empty
+$type = 1 ... means: file is uploaded and will be parsed. After that, the parsed data will be displayed for further actions
+
+3rd run:
+$_FILES['userfile'] is empty
+$_POST['update_data'] is not empty, means the according button was clicked
+$type = 2 ... means: specimens will be updated in tbl_specimens, taxa will be imported into various tables
+
+
+variables for the 2nd run are:
+$update[line][columns] ........ 2D-array: read file data, each row is a line of the file, the columns are numbered according to the csv-scheme
+$status[line] ................. string  : holds the stati of a line (no_collection, no_identstatus, no_taxa, similar_taxa, no_genus,
+                                          no_collector, no_series, no_type, no_nation, no_province or OK)
+$updateableTaxaPresent ........ boolean : an importable taxa was found, so user has to choose an externalID
+$data[line][namedColumns] ..... 2D-array: parsed file data, each row is a line of the file, the columns are namedColumns
+$exists[line][namedColumns] ... 2D-array: data read from the database
+$header[#columns] ............. list of the headers to display
+$namedColumns[#columns] ....... list of the namedColumns, same order as $header
+
+Layout:
+A table should be displayed, each line consisting of two sub-lines. The upper one holds the data of $data, the lower of $exists. The header of the
+table should display the columns named in $header.
+For each cell it should be able to choose, if the db-data should be left unchanged or being updated
+Each column should be clickable, so all lines of this column should be changed to select the upper or the lower cell
+Each line should be clickable, so all columns of this line should be changed to select the upper or the lower cell
+In case of a taxon which is to be inserted, a block should be displayed below the according line similar to importSpecimens.php / Block 2 or 3
+
+The selection of the user should be sent back to the script for the 3rd run, in which the database will be updated.
