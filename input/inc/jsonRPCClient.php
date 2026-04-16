@@ -42,12 +42,21 @@ class jsonRPCClient {
 	 * @var string
 	 */
 	private $url;
+
+	/**
+	 * Optional proxy placeholder for compatibility with the legacy implementation.
+	 *
+	 * @var string
+	 */
+	private $proxy = '';
+
 	/**
 	 * The request id
 	 *
 	 * @var integer
 	 */
 	private $id;
+
 	/**
 	 * If true, notifications are performed instead of requests
 	 *
@@ -61,7 +70,7 @@ class jsonRPCClient {
 	 * @param string $url
 	 * @param boolean $debug
 	 */
-	public function __construct($url,$debug = false) {
+	public function __construct($url, $debug = false) {
 		// server URL
 		$this->url = $url;
 		// proxy
@@ -84,6 +93,79 @@ class jsonRPCClient {
 							$this->notification = true;
 	}
 
+	private function isLocalEnvironment() {
+		$hostHeader = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+		$normalizedHost = strtolower(preg_replace('/:.*/', '', $hostHeader));
+		return in_array($normalizedHost, array('localhost', '127.0.0.1', '::1'), true);
+	}
+
+	private function requestViaCurl($request, &$transportError = null) {
+		if (!function_exists('curl_init')) {
+			$transportError = 'cURL extension not available';
+			return false;
+		}
+
+		$verifySsl = !$this->isLocalEnvironment();
+		$curl = curl_init($this->url);
+		curl_setopt($curl, CURLOPT_POST, true);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $request);
+		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
+		curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $verifySsl);
+		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, ($verifySsl) ? 2 : 0);
+
+		$response = curl_exec($curl);
+		if ($response === false) {
+			$transportError = curl_error($curl);
+		}
+		curl_close($curl);
+
+		return $response;
+	}
+
+	private function requestViaStream($request, &$transportError = null) {
+		$verifySsl = !$this->isLocalEnvironment();
+		$opts = array(
+			'http' => array(
+				'method' => 'POST',
+				'header' => "Content-type: application/json\r\n",
+				'content' => $request,
+				'timeout' => 20,
+				'ignore_errors' => true,
+			),
+			'ssl' => array(
+				'verify_peer' => $verifySsl,
+				'verify_peer_name' => $verifySsl,
+				'allow_self_signed' => false,
+			),
+		);
+		$context = stream_context_create($opts);
+
+		$phpError = null;
+		set_error_handler(function ($severity, $message) use (&$phpError) {
+			$phpError = $message;
+			return true;
+		});
+		$fp = fopen($this->url, 'r', false, $context);
+		restore_error_handler();
+
+		if (!$fp) {
+			$transportError = ($phpError) ? $phpError : 'stream request failed';
+			return false;
+		}
+
+		$response = '';
+		while ($row = fgets($fp)) {
+			$response .= trim($row) . "\n";
+		}
+		fclose($fp);
+
+		return $response;
+	}
+
 	/**
 	 * Performs a jsonRCP request and gets the results as an array
 	 *
@@ -91,9 +173,9 @@ class jsonRPCClient {
 	 * @param array $params
 	 * @return array
 	 */
-	public function __call($method,$params) {
-		$debug='';
-		
+	public function __call($method, $params) {
+		$debug = '';
+
 		// check
 		if (!is_scalar($method)) {
 			throw new Exception('Method name has no scalar value');
@@ -121,29 +203,34 @@ class jsonRPCClient {
 						'id' => $currentId
 						);
 		$request = json_encode($request);
-		if ($this->debug){
-			$debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+		if ($this->debug) {
+			$debug .= '***** Request *****' . "\n" . $request . "\n" . '***** End Of request *****' . "\n\n";
 		}
-		// performs the HTTP POST
-		$opts = array ('http' => array (
-							'method'  => 'POST',
-							'header'  => 'Content-type: application/json',
-							'content' => $request
-							));
-		$context  = stream_context_create($opts);
-		if ($fp = fopen($this->url, 'r', false, $context)) {
-			$response = '';
-			while($row = fgets($fp)) {
-				$response.= trim($row)."\n";
-			}
 
-			if ($this->debug){
-				$debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
-			}
-			$response = json_decode($response,true);
-		} else {
-			throw new Exception('Unable to connect to '.$this->url);
+		$response = false;
+		$curlError = null;
+		$streamError = null;
+
+		$response = $this->requestViaCurl($request, $curlError);
+		if ($response === false) {
+			$response = $this->requestViaStream($request, $streamError);
 		}
+
+		if ($response === false) {
+			$message = 'Unable to connect to ' . $this->url;
+			if ($curlError) {
+				$message .= ' (cURL: ' . $curlError . ')';
+			}
+			if ($streamError) {
+				$message .= ' (stream: ' . $streamError . ')';
+			}
+			throw new Exception($message);
+		}
+
+		if ($this->debug) {
+			$debug .= '***** Server response *****' . "\n" . $response . '***** End of server response *****' . "\n";
+		}
+		$response = json_decode($response, true);
 
 		// debug output
 		if ($this->debug) {
@@ -154,10 +241,10 @@ class jsonRPCClient {
 		if (!$this->notification) {
 			// check
 			if ($response['id'] != $currentId) {
-				throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
+				throw new Exception('Incorrect response id (request id: ' . $currentId . ', response id: ' . $response['id'] . ')');
 			}
 			if (!empty($response['error'])) {
-				throw new Exception('Request error: '.$response['error']);
+				throw new Exception('Request error: ' . $response['error']);
 			}
 
 			return $response['result'];

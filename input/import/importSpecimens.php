@@ -29,6 +29,274 @@ function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
     }
 }
 
+function isLocalImportEnvironment()
+{
+    $hostHeader = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
+    $normalizedHost = strtolower(preg_replace('/:.*/', '', $hostHeader));
+    $localHosts = array('localhost', '127.0.0.1', '::1');
+
+    return in_array($normalizedHost, $localHosts, true);
+}
+
+function getAllowedImportDownloadHosts()
+{
+    $hosts = array(
+        'jacq.org',
+        'www.jacq.org',
+        'digidash.bo.berlin',
+        'services.jacq.org',
+        'openrefine.bo.berlin',
+    );
+
+    if (!empty($_SERVER['HTTP_HOST'])) {
+        $hosts[] = strtolower(preg_replace('/:\d+$/', '', trim($_SERVER['HTTP_HOST'])));
+    }
+
+    return array_values(array_unique(array_filter($hosts)));
+}
+
+function isAllowedImportDownloadUrl($url, &$error = '')
+{
+    $url = trim($url);
+    if ($url === '') {
+        $error = 'The download URL is empty.';
+        return false;
+    }
+
+    if (filter_var($url, FILTER_VALIDATE_URL) === false) {
+        $error = 'The download URL is invalid.';
+        return false;
+    }
+
+    $parts = parse_url($url);
+    if (empty($parts['scheme']) || strtolower($parts['scheme']) !== 'https') {
+        $error = 'Only HTTPS download URLs are allowed.';
+        return false;
+    }
+    if (empty($parts['host'])) {
+        $error = 'The download URL does not contain a valid host.';
+        return false;
+    }
+    if (!empty($parts['user']) || !empty($parts['pass'])) {
+        $error = 'Credentials in download URLs are not allowed.';
+        return false;
+    }
+
+    $host = strtolower($parts['host']);
+    // Domain allowlist is intentionally disabled for now.
+    // Keep the helper functions in place so host restrictions can be re-enabled later.
+
+    return true;
+}
+
+function resolveImportDownloadUrl($baseUrl, $location, &$error = '')
+{
+    $location = trim($location);
+    if ($location === '') {
+        $error = 'Redirect response without Location header.';
+        return false;
+    }
+
+    if (preg_match('~^https://~i', $location)) {
+        return $location;
+    }
+    if (preg_match('~^http://~i', $location)) {
+        $error = 'Only HTTPS redirects are allowed.';
+        return false;
+    }
+
+    $base = parse_url($baseUrl);
+    if (!$base || empty($base['scheme']) || empty($base['host'])) {
+        $error = 'Failed to resolve redirect URL.';
+        return false;
+    }
+
+    $scheme = strtolower($base['scheme']);
+    $host = $base['host'];
+    $port = isset($base['port']) ? ':' . $base['port'] : '';
+
+    if (strpos($location, '//') === 0) {
+        return $scheme . ':' . $location;
+    }
+
+    if ($location[0] === '/') {
+        return $scheme . '://' . $host . $port . $location;
+    }
+
+    $basePath = isset($base['path']) ? $base['path'] : '/';
+    $directory = preg_replace('~/[^/]*$~', '/', $basePath);
+
+    return $scheme . '://' . $host . $port . $directory . $location;
+}
+
+function isAllowedImportDownloadResponse($contentType, $url)
+{
+    $contentType = strtolower(trim((string)$contentType));
+    if (($pos = strpos($contentType, ';')) !== false) {
+        $contentType = trim(substr($contentType, 0, $pos));
+    }
+
+    $path = (string)parse_url($url, PHP_URL_PATH);
+    $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $allowedExtensions = array('txt', 'csv');
+    $allowedContentTypes = array('text/plain', 'text/csv', 'application/csv');
+    $binaryContentTypes = array('application/octet-stream', 'application/vnd.ms-excel');
+
+    if (in_array($contentType, $allowedContentTypes, true)) {
+        return true;
+    }
+    if (in_array($contentType, $binaryContentTypes, true) && in_array($extension, $allowedExtensions, true)) {
+        return true;
+    }
+    if ($contentType === '' && in_array($extension, $allowedExtensions, true)) {
+        return true;
+    }
+
+    return false;
+}
+
+function downloadImportInput($url, &$inputPath, &$inputName, &$error = '')
+{
+    $maxBytes = 8000000;
+    $maxRedirects = 3;
+    $currentUrl = trim($url);
+
+    if (!function_exists('curl_init')) {
+        $error = 'cURL is not available for URL imports.';
+        return false;
+    }
+
+    for ($redirect = 0; $redirect <= $maxRedirects; $redirect++) {
+        if (!isAllowedImportDownloadUrl($currentUrl, $error)) {
+            return false;
+        }
+
+        $tempPath = tempnam(sys_get_temp_dir(), 'imp_');
+        if ($tempPath === false) {
+            $error = 'Could not create a temporary file for the download.';
+            return false;
+        }
+
+        $fp = fopen($tempPath, 'wb');
+        if ($fp === false) {
+            @unlink($tempPath);
+            $error = 'Could not open a temporary file for the download.';
+            return false;
+        }
+
+        $headers = array();
+        $downloadedBytes = 0;
+        $sizeLimitExceeded = false;
+
+        $ch = curl_init($currentUrl);
+        $verifySsl = !isLocalImportEnvironment();
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, $verifySsl);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, ($verifySsl) ? 2 : 0);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'JACQ importSpecimens downloader');
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept: text/plain,text/csv,application/csv'));
+        curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, $headerLine) use (&$headers) {
+            $length = strlen($headerLine);
+            $trimmed = trim($headerLine);
+            if ($trimmed === '') {
+                return $length;
+            }
+            if (stripos($headerLine, 'HTTP/') === 0) {
+                $headers = array();
+                return $length;
+            }
+
+            $parts = explode(':', $headerLine, 2);
+            if (count($parts) === 2) {
+                $headers[strtolower(trim($parts[0]))] = trim($parts[1]);
+            }
+
+            return $length;
+        });
+        curl_setopt($ch, CURLOPT_WRITEFUNCTION, function ($ch, $chunk) use ($fp, $maxBytes, &$downloadedBytes, &$sizeLimitExceeded) {
+            $length = strlen($chunk);
+            $downloadedBytes += $length;
+            if ($downloadedBytes > $maxBytes) {
+                $sizeLimitExceeded = true;
+                return 0;
+            }
+
+            return fwrite($fp, $chunk);
+        });
+
+        $execResult = curl_exec($ch);
+        $curlError = curl_error($ch);
+        $httpStatus = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        fclose($fp);
+
+        if ($sizeLimitExceeded) {
+            @unlink($tempPath);
+            $error = 'The downloaded file exceeds the maximum size of 8000000 bytes.';
+            return false;
+        }
+
+        if ($execResult === false) {
+            @unlink($tempPath);
+            $error = 'Download failed: ' . $curlError;
+            return false;
+        }
+
+        if (isset($headers['content-length']) && (int)$headers['content-length'] > $maxBytes) {
+            @unlink($tempPath);
+            $error = 'The remote file exceeds the maximum size of 8000000 bytes.';
+            return false;
+        }
+
+        if ($httpStatus >= 300 && $httpStatus < 400) {
+            @unlink($tempPath);
+            $redirectUrl = resolveImportDownloadUrl($currentUrl, isset($headers['location']) ? $headers['location'] : '', $error);
+            if ($redirectUrl === false) {
+                return false;
+            }
+            $currentUrl = $redirectUrl;
+            continue;
+        }
+
+        if ($httpStatus !== 200) {
+            @unlink($tempPath);
+            $error = 'Download failed with HTTP status ' . $httpStatus . '.';
+            return false;
+        }
+
+        if ($downloadedBytes === 0) {
+            @unlink($tempPath);
+            $error = 'The downloaded file is empty.';
+            return false;
+        }
+
+        $contentType = isset($headers['content-type']) ? $headers['content-type'] : '';
+        if (!isAllowedImportDownloadResponse($contentType, $currentUrl)) {
+            @unlink($tempPath);
+            $error = 'The downloaded file is not an allowed text import file.';
+            return false;
+        }
+
+        $inputPath = $tempPath;
+        $inputName = $currentUrl;
+        return true;
+    }
+
+    $error = 'Too many redirects while downloading the import file.';
+    return false;
+}
+
+function renderImportInputForm($downloadUrl = '')
+{
+    echo "<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />\n"
+       . "Import this file: <input name='userfile' type='file' /><br>\n"
+       . "or download URL: <input name='download_url' type='url' size='90' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' /><br>\n"
+       . "Allowed HTTPS domains: all (txt/csv only)<br>\n"
+       . "<input type='submit' value='check Import' />\n";
+}
 /**
  * queries the database for a taxon with given ID
  *
@@ -319,12 +587,22 @@ $blocked = false;  // for now, anybody may insert anything   TODO: check the acc
 </script>
 <?php endif; ?>
 
+<?php
+$downloadUrl = isset($_POST['download_url']) ? trim($_POST['download_url']) : '';
+$hasUploadedFile = isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name']);
+$hasDownloadUrl = (strlen($downloadUrl) > 0);
+$inputPath = '';
+$inputName = '';
+$inputCleanupNeeded = false;
+$inputSource = '';
+$inputError = '';
+?>
 <h1>Import Specimens - <?php
-if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name'])) {
+if ($hasUploadedFile || $hasDownloadUrl) {
     /**
-     * a file was uploaded and is ready to be parsed
+     * a file was provided and is ready to be parsed
      */
-    $run = 2; // file uploaded => 2nd run
+    $run = 2; // input provided => 2nd run
     echo "2nd run";
 } elseif (!empty($_POST['import_data'])) {
     /**
@@ -344,31 +622,53 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
 <form enctype="multipart/form-data" Action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']);?>" Method="POST" name="f">
 
 <?php
-if ($run == 2) {  // file uploaded
+if ($run == 2) {  // file provided
     $import = array();
-    $handle = @fopen($_FILES['userfile']['tmp_name'], "r");
-    if ($handle) {
-        $linenumber = 1;
-        while (!feof($handle)) {
-            $parts = parseLine($handle, 6);
-            if ($parts !== false) {
-                $parts['linenumber'] = $linenumber++;
-                array_push($import, $parts);
-            }
-        }
-        fclose($handle);
 
-        foreach ($import as $key => $row) {
-            $first[$key]  = $row[0];
-            $second[$key] = $row[3];
-            $third[$key]  = $row[4];
-        }
-        if (is_array($first) && is_array($second) && is_array($third)) {
-            array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
+    if ($hasUploadedFile) {
+        $inputPath = $_FILES['userfile']['tmp_name'];
+        $inputName = $_FILES['userfile']['name'];
+        $inputSource = 'upload';
+    } elseif ($hasDownloadUrl) {
+        $inputSource = 'download_url';
+        $inputCleanupNeeded = true;
+        if (!downloadImportInput($downloadUrl, $inputPath, $inputName, $inputError)) {
+            $inputPath = '';
         }
     }
 
-    dbi_query("DELETE FROM tbl_external_import_content
+    if (!$inputError && $inputPath !== '') {
+        $handle = @fopen($inputPath, "r");
+        if ($handle) {
+            $linenumber = 1;
+            while (!feof($handle)) {
+                $parts = parseLine($handle, 6);
+                if ($parts !== false) {
+                    $parts['linenumber'] = $linenumber++;
+                    array_push($import, $parts);
+                }
+            }
+            fclose($handle);
+
+            $first = $second = $third = array();
+            foreach ($import as $key => $row) {
+                $first[$key]  = $row[0];
+                $second[$key] = $row[3];
+                $third[$key]  = $row[4];
+            }
+            if (!empty($first) && !empty($second) && !empty($third)) {
+                array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
+            }
+        } else {
+            $inputError = 'The import file could not be opened.';
+        }
+    }
+
+    if ($inputError) {
+        echo "<div class=\"error\">" . htmlspecialchars($inputError) . "</div>\n";
+        renderImportInputForm($downloadUrl);
+    } else {
+        dbi_query("DELETE FROM tbl_external_import_content
                WHERE specimen_ID IS NULL
                 AND externalID IS NULL
                 AND taxonID IS NULL");
@@ -773,10 +1073,15 @@ if ($run == 2) {  // file uploaded
         $data[$i]['observation'] = (!empty($import[$i][38])) ? 1 : 0;
 
         /**
+         * fill notes_internal
+         */
+        $data[$i]['notes_internal'] = (isset($import[$i][39]) && trim($import[$i][39]) !== '') ? $import[$i][39] : '';
+
+        /**
          * finished -> log the file contents and processing errors (if any)
          */
         dbi_query("INSERT INTO tbl_external_import_content SET
-                    filename = " . quoteString($_FILES['userfile']['name']) . ",
+                    filename = " . quoteString($inputName) . ",
                     linenumber = " . makeInt($import[$i]['linenumber']) . ",
                     line = " . quoteString(var_export($import[$i], true)) . ",
                     processingError = " . quoteString($status[$i]) . ",
@@ -893,6 +1198,7 @@ if ($run == 2) {  // file uploaded
                 echo "<td>" . $import[$i][36] . "</td>";
                 echo "<td>" . $import[$i][37] . "</td>";
                 echo "<td>" . $import[$i][38] . "</td>";
+                echo "<td>" . htmlspecialchars((isset($import[$i][39])) ? $import[$i][39] : '') . "</td>";
                 echo "</tr>\n";
 
                 if (strpos($status[$i], "similar_taxa") !== false) {
@@ -967,6 +1273,7 @@ if ($run == 2) {  // file uploaded
                        . "<input type=\"hidden\" name=\"digitalimage_$ctr\" value=\""  . htmlspecialchars($data[$i]['digital_image']) . "\">"
                        . "<input type=\"hidden\" name=\"digitalimageobs_$ctr\" value=\""  . htmlspecialchars($data[$i]['digital_image_obs']) . "\">"
                        . "<input type=\"hidden\" name=\"observation_$ctr\" value=\""   . htmlspecialchars($data[$i]['observation']) . "\">"
+                       . "<input type=\"hidden\" name=\"notesinternal_$ctr\" value=\"" . htmlspecialchars($data[$i]['notes_internal']) . "\">"
                        . "<input type=\"hidden\" name=\"contentid_$ctr\" value=\""     . htmlspecialchars($data[$i]['contentID']) . "\">"
                        . "<input type=\"hidden\" name=\"position_$ctr\" value=\""      . htmlspecialchars($position[$i]) . "\">\n";
 
@@ -975,6 +1282,11 @@ if ($run == 2) {  // file uploaded
             }
         }
         echo "</table>\n";
+    }
+    }
+
+    if ($inputCleanupNeeded && $inputPath && file_exists($inputPath)) {
+        @unlink($inputPath);
     }
 } elseif ($run == 3) {  // insert data
     $data = array();
@@ -1030,6 +1342,8 @@ if ($run == 2) {  // file uploaded
             $data[intval($pieces[1])]['digital_image_obs'] = $v;
         } elseif ($pieces[0] == 'observation') {
             $data[intval($pieces[1])]['observation'] = $v;
+        } elseif ($pieces[0] == 'notesinternal') {
+            $data[intval($pieces[1])]['notes_internal'] = $v;
         } elseif ($pieces[0] == 'Fundortengl') {
             $data[intval($pieces[1])]['Fundort_engl'] = $v;
         } elseif ($pieces[0] == 'quadrantsub') {
@@ -1139,6 +1453,7 @@ if ($run == 2) {  // file uploaded
                                digital_image = " . quoteString($data[$i]['digital_image']) . ",
                                digital_image_obs = " . quoteString($data[$i]['digital_image_obs']) . ",
                                observation = "   . quoteString($data[$i]['observation'])   . ",
+                               notes_internal = " . ((strlen($data[$i]['notes_internal']) > 0) ? quoteString($data[$i]['notes_internal']) : "NULL") . ",
                                userID = "        . quoteString($_SESSION['uid']);
                 dbi_query($sqlInsert);
                 $specimen_ID = dbi_insert_id();
@@ -1153,9 +1468,7 @@ if ($run == 2) {  // file uploaded
     echo "</div>\n";
     echo '<div id="import_success">' . $imported . (($imported > 1) ? " entries have" : " entry has") . " been imported </div>\n";
 } else {    // show upload form
-    echo "<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />\n"
-       . "Import this file: <input name='userfile' type='file' />\n"
-       . "<input type='submit' value='check Import' />\n";
+    renderImportInputForm($downloadUrl);
 }
 
 ?></form>
