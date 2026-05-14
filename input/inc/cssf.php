@@ -123,16 +123,18 @@ class CSSF{
 		}
 		$this->yrel=$y;
 
-		$width = (strlen($label) + 1) / 1.6;
+		$width = (strlen($label) + 3) / 1.6;
 		$xh = $x - $width;
 		if ($width>0) {
             print "<div class=\"cssflabel\" ";
             if ($id) {
                 print "id=\"$id\" ";
             }
-            print "style=\"position: absolute; left: ".$xh."em; top: ".($y+0.2)."em; width: ".$width."em;\">";
+            print "style=\"position: absolute; left: ".$xh."em; top: ".($y+0.2)."em; width: ".$width."em; ";
             if ($link) {
-                print "<a href=\"$link\">";
+                print "z-index: -1\"><a href=\"$link\">";
+            } else {
+                print "z-index: -10\">";
             }
             print $label;
             if ($link) {

@@ -911,8 +911,8 @@ $cf->inputText(59, $y, 5.7, "CollNummer", $p_CollNummer, 25);
 
 $y += 2;
 $cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
-$cf->label(44, $y, "T", "javascript:editSpecimensTypes('$p_specimen_ID')");
-$cf->label(47, $y, "type");
+$cf->label(41, $y, "T", "javascript:editSpecimensTypes('$p_specimen_ID')");
+$cf->label(44, $y, "type");
 $typusOptions = '';
 for ($i = 0; $i < count($typus[0]); $i++) {
     $value = htmlspecialchars($typus[0][$i], ENT_QUOTES, 'UTF-8');
@@ -932,7 +932,7 @@ $cf->label(25, $y, "Garden");
 $cf->inputText(25, $y, 11, "garten", $p_garten, 50);
 
 echo "<img border=\"1\" height=\"16\" src=\"webimages/ncbi.gif\" width=\"14\" ".
-     "style=\"position:absolute; left:38em; top:" . ($y + 0.2) . "em\"";
+     "style=\"position:absolute; left:37.5em; top:" . ($y + 0.2) . "em; z-index:10;\" \"";
 if ($p_ncbi) echo " title=\"$p_ncbi\"";
 echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
 $cf->label(44, $y, "voucher","javascript:editVoucher()");
@@ -1032,7 +1032,7 @@ echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; tex
    . "</div>\n";
 
 $y += 2;
-$cf->label(10, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
+$cf->label(11, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 //$cf->label(35, $y, "**","#\" onclick=\"jaxon_searchGeonamesService(document.f.Bezirk.value);");
 $cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);  //TODO: Bezirk seems to be unused???
 
@@ -1068,7 +1068,7 @@ $cf->text(38.5, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
 $cf->dropdown(39.5, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
 
 echo "<div style='position:absolute; left: 43.5em; top: {$y}em'><button id='del_latLon'></button></div>";
-echo "<div style='position:absolute; left: 46.5em; top: {$y}em'><button id='open_latLonQuDialog'></button></div>";
+echo "<div style='position:absolute; left: 46.5em; top: {$y}em; z-index: 10'><button id='open_latLonQuDialog'></button></div>";
 
 $cf->label(57, $y, "exactn. (m)");
 $cf->inputText(57, $y, 8, "exactness", $p_exactness, 30);
