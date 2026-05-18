@@ -626,79 +626,45 @@ function getUpdateImportHeaderSourceAliases()
     $aliases = array(
         'herbnummer' => 'HerbNummer',
         'collectionid' => 'collectionID',
-        'collection' => 'collectionID',
-        'collnummer' => 'CollNummer',
-        'identstatus' => 'identstatusID',
-        'identstatusid' => 'identstatusID',
-        'identificationstatus' => 'identstatusID',
+        'collectionnumber' => 'CollNummer',
+        'status' => 'identstatusID',
         'taxon' => 'taxonID',
-        'collector' => 'collector',
         'sammler' => 'collector',
-        'collector1' => 'collector1',
-        'collector2' => 'collector2',
-        'sammler1' => 'collector1',
-        'sammler2' => 'collector2',
         'series' => 'seriesID',
         'seriesnumber' => 'series_number',
-        'seriesno' => 'series_number',
         'nummer' => 'Nummer',
         'altnumber' => 'alt_number',
         'datum' => 'Datum',
-        'date' => 'Datum',
         'datum2' => 'Datum2',
-        'date2' => 'Datum2',
         'det' => 'det',
         'typified' => 'typified',
-        'type' => 'typusID',
+        'typus' => 'typusID',
         'taxonalt' => 'taxon_alt',
-        'nation' => 'NationID',
-        'country' => 'NationID',
-        'province' => 'provinceID',
+        'nationengl' => 'NationID',
+        'provinz' => 'provinceID',
         'fundort' => 'Fundort',
-        'locality' => 'Fundort',
         'fundortengl' => 'Fundort_engl',
-        'localityengl' => 'Fundort_engl',
         'habitat' => 'habitat',
         'habitus' => 'habitus',
         'bemerkungen' => 'Bemerkungen',
-        'remarks' => 'Bemerkungen',
-        'latcardinal' => 'lat_cardinal',
-        'latdeg' => 'lat_deg',
-        'latmin' => 'lat_min',
-        'latsec' => 'lat_sec',
-        'loncardinal' => 'lon_cardinal',
-        'londeg' => 'lon_deg',
-        'lonmin' => 'lon_min',
-        'lonsec' => 'lon_sec',
-        'ndeg' => 'Coord_N',
-        'nmin' => 'N_Min',
-        'nsec' => 'N_Sec',
-        'sdeg' => 'Coord_S',
-        'smin' => 'S_Min',
-        'ssec' => 'S_Sec',
-        'wdeg' => 'Coord_W',
-        'wmin' => 'W_Min',
-        'wsec' => 'W_Sec',
-        'edeg' => 'Coord_E',
-        'emin' => 'E_Min',
-        'esec' => 'E_Sec',
+        'coordns' => 'lat_cardinal',
+        'latdegree' => 'lat_deg',
+        'latminute' => 'lat_min',
+        'latsecond' => 'lat_sec',
+        'coordwe' => 'lon_cardinal',
+        'longdegree' => 'lon_deg',
+        'longminute' => 'lon_min',
+        'longsecond' => 'lon_sec',
         'quadrant' => 'quadrant',
         'quadrantsub' => 'quadrant_sub',
         'exactness' => 'exactness',
         'altmin' => 'altitude_min',
-        'altitudemin' => 'altitude_min',
         'altmax' => 'altitude_max',
-        'altitudemax' => 'altitude_max',
         'digitalimage' => 'digital_image',
         'digitalimageobs' => 'digital_image_obs',
         'observation' => 'observation',
         'notesinternal' => 'notes_internal',
     );
-
-    foreach (getUpdateFieldDefinitions() as $field => $definition) {
-        $aliases[normalizeUpdateImportHeaderName($field)] = $field;
-        $aliases[normalizeUpdateImportHeaderName($definition['label'])] = $field;
-    }
 
     return $aliases;
 }
@@ -1307,6 +1273,7 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
     }
 
     $columnMap = getDefaultUpdateImportColumnMap();
+    $expectedColumnCount = 0;
     $lineNumber = 1;
     if ($hasHeaderLine) {
         $headerRow = parseUpdateLine($handle, 1);
@@ -1315,6 +1282,7 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
             $error = 'The uploaded file does not contain a readable header line.';
             return array();
         }
+        $expectedColumnCount = count($headerRow);
         $columnMap = mapUpdateHeaderColumns($headerRow, $error);
         if ($columnMap === array()) {
             fclose($handle);
@@ -1327,6 +1295,11 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
     while (!feof($handle)) {
         $parts = parseUpdateLine($handle, 1);
         if ($parts !== false) {
+            if ($hasHeaderLine && count($parts) !== $expectedColumnCount) {
+                fclose($handle);
+                $error = 'Header/data column count mismatch on line ' . $lineNumber . ': header has ' . $expectedColumnCount . ' column(s), row has ' . count($parts) . '. Processing was aborted.';
+                return array();
+            }
             $rows[] = buildParsedUpdateRow($parts, $lineNumber, $columnMap);
             $lineNumber++;
         }
@@ -1535,7 +1508,16 @@ function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_he
        . "Accepted input files are semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files, uploaded directly or downloaded from an HTTPS URL.<br>\n"
        . "Choose <strong>without header line</strong> for the legacy fixed-column export format. "
        . "Choose <strong>with header line</strong> for files that contain a header row with a selected subset of fields. "
-       . "For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update."
+       . "For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update.<br>\n"
+       . "Allowed header attributes are exactly: "
+       . "<strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, "
+       . "<strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, "
+       . "<strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, "
+       . "<strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, "
+       . "<strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, "
+       . "<strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, "
+       . "<strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, "
+       . "<strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>."
        . "</div>\n";
 }
 function buildStatusText(array $statusCodes)
