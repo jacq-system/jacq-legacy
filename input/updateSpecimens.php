@@ -9,9 +9,12 @@ require_once('inc/clsTaxonTokenizer.php');
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
 
-function parseUpdateLine($handle, $minNumOfParts = 6, $delimiter = ';', $enclosure = '"')
+function parseUpdateLine($handle, $minNumOfParts = 1, $delimiter = ';', $enclosure = '"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    if ($parts !== false && count($parts) === 1 && trim((string)$parts[0]) === '') {
+        return false;
+    }
     if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     }
@@ -513,23 +516,23 @@ function getUpdateFieldDefinitions()
         'habitat' => array('label' => 'Habitat', 'type' => 'string'),
         'habitus' => array('label' => 'Habitus', 'type' => 'string'),
         'Bemerkungen' => array('label' => 'Bemerkungen', 'type' => 'string'),
-        'Coord_N' => array('label' => 'N Deg', 'type' => 'string'),
-        'N_Min' => array('label' => 'N Min', 'type' => 'string'),
-        'N_Sec' => array('label' => 'N Sec', 'type' => 'string'),
-        'Coord_S' => array('label' => 'S Deg', 'type' => 'string'),
-        'S_Min' => array('label' => 'S Min', 'type' => 'string'),
-        'S_Sec' => array('label' => 'S Sec', 'type' => 'string'),
-        'Coord_W' => array('label' => 'W Deg', 'type' => 'string'),
-        'W_Min' => array('label' => 'W Min', 'type' => 'string'),
-        'W_Sec' => array('label' => 'W Sec', 'type' => 'string'),
-        'Coord_E' => array('label' => 'E Deg', 'type' => 'string'),
-        'E_Min' => array('label' => 'E Min', 'type' => 'string'),
-        'E_Sec' => array('label' => 'E Sec', 'type' => 'string'),
-        'quadrant' => array('label' => 'Quadrant', 'type' => 'string'),
-        'quadrant_sub' => array('label' => 'Quadrant Sub', 'type' => 'string'),
-        'exactness' => array('label' => 'Exactness', 'type' => 'string'),
-        'altitude_min' => array('label' => 'Alt Min', 'type' => 'string'),
-        'altitude_max' => array('label' => 'Alt Max', 'type' => 'string'),
+        'Coord_N' => array('label' => 'N Deg', 'type' => 'numeric'),
+        'N_Min' => array('label' => 'N Min', 'type' => 'numeric'),
+        'N_Sec' => array('label' => 'N Sec', 'type' => 'numeric'),
+        'Coord_S' => array('label' => 'S Deg', 'type' => 'numeric'),
+        'S_Min' => array('label' => 'S Min', 'type' => 'numeric'),
+        'S_Sec' => array('label' => 'S Sec', 'type' => 'numeric'),
+        'Coord_W' => array('label' => 'W Deg', 'type' => 'numeric'),
+        'W_Min' => array('label' => 'W Min', 'type' => 'numeric'),
+        'W_Sec' => array('label' => 'W Sec', 'type' => 'numeric'),
+        'Coord_E' => array('label' => 'E Deg', 'type' => 'numeric'),
+        'E_Min' => array('label' => 'E Min', 'type' => 'numeric'),
+        'E_Sec' => array('label' => 'E Sec', 'type' => 'numeric'),
+        'quadrant' => array('label' => 'Quadrant', 'type' => 'numeric'),
+        'quadrant_sub' => array('label' => 'Quadrant Sub', 'type' => 'numeric'),
+        'exactness' => array('label' => 'Exactness', 'type' => 'numeric'),
+        'altitude_min' => array('label' => 'Alt Min', 'type' => 'numeric'),
+        'altitude_max' => array('label' => 'Alt Max', 'type' => 'numeric'),
         'digital_image' => array('label' => 'Digital Image', 'type' => 'nullable_bool'),
         'digital_image_obs' => array('label' => 'Digital Image Obs', 'type' => 'nullable_bool'),
         'observation' => array('label' => 'Observation', 'type' => 'nullable_bool'),
@@ -554,6 +557,252 @@ function addStatusCode(&$statusCodes, $code)
 function getCsvValue(array $row, $index)
 {
     return isset($row[$index]) ? trim((string)$row[$index]) : '';
+}
+
+function getDefaultUpdateImportColumnMap()
+{
+    return array(
+        'HerbNummer' => 0,
+        'collectionID' => 1,
+        'CollNummer' => 2,
+        'identstatusID' => 3,
+        'taxonID' => 4,
+        'collector' => 5,
+        'seriesID' => 6,
+        'series_number' => 7,
+        'Nummer' => 8,
+        'alt_number' => 9,
+        'Datum' => 10,
+        'Datum2' => 11,
+        'det' => 12,
+        'typified' => 13,
+        'typusID' => 14,
+        'taxon_alt' => 15,
+        'NationID' => 16,
+        'provinceID' => 17,
+        'Fundort' => 18,
+        'Fundort_engl' => 19,
+        'habitat' => 20,
+        'habitus' => 21,
+        'Bemerkungen' => 22,
+        'lat_cardinal' => 23,
+        'lat_deg' => 24,
+        'lat_min' => 25,
+        'lat_sec' => 26,
+        'lon_cardinal' => 27,
+        'lon_deg' => 28,
+        'lon_min' => 29,
+        'lon_sec' => 30,
+        'quadrant' => 31,
+        'quadrant_sub' => 32,
+        'exactness' => 33,
+        'altitude_min' => 34,
+        'altitude_max' => 35,
+        'digital_image' => 36,
+        'digital_image_obs' => 37,
+        'observation' => 38,
+        'notes_internal' => 39,
+    );
+}
+
+function normalizeUpdateImportHeaderName($header)
+{
+    $header = trim((string)$header);
+    if ($header === '') {
+        return '';
+    }
+
+    $header = mb_strtolower($header, 'UTF-8');
+    return preg_replace('/[^\p{L}\p{N}]+/u', '', $header);
+}
+
+function getUpdateImportHeaderSourceAliases()
+{
+    static $aliases = null;
+    if ($aliases !== null) {
+        return $aliases;
+    }
+
+    $aliases = array(
+        'herbnummer' => 'HerbNummer',
+        'collectionid' => 'collectionID',
+        'collection' => 'collectionID',
+        'collnummer' => 'CollNummer',
+        'identstatus' => 'identstatusID',
+        'identstatusid' => 'identstatusID',
+        'identificationstatus' => 'identstatusID',
+        'taxon' => 'taxonID',
+        'collector' => 'collector',
+        'sammler' => 'collector',
+        'collector1' => 'collector1',
+        'collector2' => 'collector2',
+        'sammler1' => 'collector1',
+        'sammler2' => 'collector2',
+        'series' => 'seriesID',
+        'seriesnumber' => 'series_number',
+        'seriesno' => 'series_number',
+        'nummer' => 'Nummer',
+        'altnumber' => 'alt_number',
+        'datum' => 'Datum',
+        'date' => 'Datum',
+        'datum2' => 'Datum2',
+        'date2' => 'Datum2',
+        'det' => 'det',
+        'typified' => 'typified',
+        'type' => 'typusID',
+        'taxonalt' => 'taxon_alt',
+        'nation' => 'NationID',
+        'country' => 'NationID',
+        'province' => 'provinceID',
+        'fundort' => 'Fundort',
+        'locality' => 'Fundort',
+        'fundortengl' => 'Fundort_engl',
+        'localityengl' => 'Fundort_engl',
+        'habitat' => 'habitat',
+        'habitus' => 'habitus',
+        'bemerkungen' => 'Bemerkungen',
+        'remarks' => 'Bemerkungen',
+        'latcardinal' => 'lat_cardinal',
+        'latdeg' => 'lat_deg',
+        'latmin' => 'lat_min',
+        'latsec' => 'lat_sec',
+        'loncardinal' => 'lon_cardinal',
+        'londeg' => 'lon_deg',
+        'lonmin' => 'lon_min',
+        'lonsec' => 'lon_sec',
+        'ndeg' => 'Coord_N',
+        'nmin' => 'N_Min',
+        'nsec' => 'N_Sec',
+        'sdeg' => 'Coord_S',
+        'smin' => 'S_Min',
+        'ssec' => 'S_Sec',
+        'wdeg' => 'Coord_W',
+        'wmin' => 'W_Min',
+        'wsec' => 'W_Sec',
+        'edeg' => 'Coord_E',
+        'emin' => 'E_Min',
+        'esec' => 'E_Sec',
+        'quadrant' => 'quadrant',
+        'quadrantsub' => 'quadrant_sub',
+        'exactness' => 'exactness',
+        'altmin' => 'altitude_min',
+        'altitudemin' => 'altitude_min',
+        'altmax' => 'altitude_max',
+        'altitudemax' => 'altitude_max',
+        'digitalimage' => 'digital_image',
+        'digitalimageobs' => 'digital_image_obs',
+        'observation' => 'observation',
+        'notesinternal' => 'notes_internal',
+    );
+
+    foreach (getUpdateFieldDefinitions() as $field => $definition) {
+        $aliases[normalizeUpdateImportHeaderName($field)] = $field;
+        $aliases[normalizeUpdateImportHeaderName($definition['label'])] = $field;
+    }
+
+    return $aliases;
+}
+
+function mapUpdateHeaderColumns(array $headerRow, &$error = '')
+{
+    $aliases = getUpdateImportHeaderSourceAliases();
+    $columnMap = array();
+
+    foreach ($headerRow as $index => $headerText) {
+        $normalizedHeader = normalizeUpdateImportHeaderName($headerText);
+        if ($normalizedHeader === '' || !isset($aliases[$normalizedHeader])) {
+            continue;
+        }
+        $sourceKey = $aliases[$normalizedHeader];
+        if (isset($columnMap[$sourceKey])) {
+            $error = 'Duplicate header mapping for "' . trim((string)$headerText) . '".';
+            return array();
+        }
+        $columnMap[$sourceKey] = $index;
+    }
+
+    foreach (array('HerbNummer', 'collectionID') as $requiredColumn) {
+        if (!isset($columnMap[$requiredColumn])) {
+            $error = 'The header line must contain both HerbNummer and CollectionID.';
+            return array();
+        }
+    }
+
+    return $columnMap;
+}
+
+function getImportSourceValue(array $row, $sourceKey, array $columnMap)
+{
+    if (!isset($columnMap[$sourceKey])) {
+        return '';
+    }
+
+    return getCsvValue($row, $columnMap[$sourceKey]);
+}
+
+function hasImportSourceColumn(array $columnMap, $sourceKey)
+{
+    return isset($columnMap[$sourceKey]);
+}
+
+function hasAnyImportSourceColumn(array $columnMap, array $sourceKeys)
+{
+    foreach ($sourceKeys as $sourceKey) {
+        if (hasImportSourceColumn($columnMap, $sourceKey)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function getVisibleUpdateFields(array $columnMap, $hasHeaderLine = false)
+{
+    if (!$hasHeaderLine) {
+        return array_keys(getUpdateFieldDefinitions());
+    }
+
+    $visible = array();
+    foreach ($columnMap as $sourceKey => $columnIndex) {
+        switch ($sourceKey) {
+            case 'HerbNummer':
+            case 'collectionID':
+                break;
+            case 'collector':
+            case 'collector1':
+            case 'collector2':
+                $visible[] = 'SammlerID';
+                $visible[] = 'Sammler_2ID';
+                break;
+            case 'lat_cardinal':
+            case 'lat_deg':
+            case 'lat_min':
+            case 'lat_sec':
+                $visible = array_merge($visible, array('Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec'));
+                break;
+            case 'lon_cardinal':
+            case 'lon_deg':
+            case 'lon_min':
+            case 'lon_sec':
+                $visible = array_merge($visible, array('Coord_W', 'W_Min', 'W_Sec', 'Coord_E', 'E_Min', 'E_Sec'));
+                break;
+            default:
+                if (array_key_exists($sourceKey, getUpdateFieldDefinitions())) {
+                    $visible[] = $sourceKey;
+                }
+                break;
+        }
+    }
+
+    $visible = array_values(array_unique($visible));
+    $ordered = array();
+    foreach (getUpdateFieldDefinitions() as $field => $definition) {
+        if (in_array($field, $visible, true)) {
+            $ordered[] = $field;
+        }
+    }
+
+    return $ordered;
 }
 
 function splitImportHerbNummer($rawValue)
@@ -582,7 +831,9 @@ function splitImportCollectors($collectorText)
     $collector2 = trim(substr($collectorText, strlen($collector1) + 2));
 
     return array($collector1, $collector2);
-}function getTaxonText($id, $withAuthors = true)
+}
+
+function getTaxonText($id, $withAuthors = true)
 {
     $sql = "SELECT tg.genus,
              ta0.author author0, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
@@ -632,6 +883,16 @@ function normalizeValueForType($type, $value)
 {
     if ($type === 'int') {
         return (intval($value) !== 0) ? intval($value) : '';
+    }
+    if ($type === 'numeric') {
+        if ($value === null || trim((string)$value) === '') {
+            return '';
+        }
+        $normalized = strtr(trim((string)$value), ',', '.');
+        if (!is_numeric($normalized)) {
+            return trim((string)$value);
+        }
+        return (string)(0 + $normalized);
     }
     if ($type === 'nullable_bool') {
         if ($value === null || $value === '' || $value === 0 || $value === '0') {
@@ -787,24 +1048,24 @@ function getSimilarTaxaSuggestions($taxonText)
 }
 
 
-function buildParsedUpdateRow(array $rawRow, $lineNumber)
+function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
 {
     $normalized = initializeFieldArray();
     $display = initializeFieldArray();
     $statusCodes = array();
 
-    $collectionId = intval(getCsvValue($rawRow, 1));
+    $collectionId = intval(getImportSourceValue($rawRow, 'collectionID', $columnMap));
     $collectionResult = dbi_query("SELECT collectionID FROM tbl_management_collections WHERE collectionID = '" . $collectionId . "'");
     if ($collectionId === 0 || !$collectionResult || mysqli_num_rows($collectionResult) === 0) {
         addStatusCode($statusCodes, 'no_collection');
         $collectionId = 0;
     }
 
-    $herbNummer = splitImportHerbNummer(getCsvValue($rawRow, 0));
-    $normalized['CollNummer'] = getCsvValue($rawRow, 2);
+    $herbNummer = splitImportHerbNummer(getImportSourceValue($rawRow, 'HerbNummer', $columnMap));
+    $normalized['CollNummer'] = getImportSourceValue($rawRow, 'CollNummer', $columnMap);
     $display['CollNummer'] = $normalized['CollNummer'];
 
-    $identStatusText = getCsvValue($rawRow, 3);
+    $identStatusText = getImportSourceValue($rawRow, 'identstatusID', $columnMap);
     $display['identstatusID'] = $identStatusText;
     if ($identStatusText !== '') {
         $result = dbi_query('SELECT identstatusID FROM tbl_specimens_identstatus WHERE identification_status = ' . quoteString($identStatusText));
@@ -816,9 +1077,11 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         }
     }
 
-    $taxonText = getCsvValue($rawRow, 4);
+    $taxonText = getImportSourceValue($rawRow, 'taxonID', $columnMap);
     $display['taxonID'] = $taxonText;
-    $normalized['taxonID'] = resolveImportTaxon($taxonText, $statusCodes);
+    if (hasImportSourceColumn($columnMap, 'taxonID')) {
+        $normalized['taxonID'] = resolveImportTaxon($taxonText, $statusCodes);
+    }
     $taxonSuggestions = array();
     if ($normalized['taxonID'] === '' && in_array('no_taxa', $statusCodes, true) && !in_array('no_genus', $statusCodes, true)) {
         $taxonSuggestions = getSimilarTaxaSuggestions($taxonText);
@@ -827,11 +1090,20 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         }
     }
 
-    list($collector1, $collector2) = splitImportCollectors(getCsvValue($rawRow, 5));
+    $collector1 = '';
+    $collector2 = '';
+    if (hasImportSourceColumn($columnMap, 'collector')) {
+        list($collector1, $collector2) = splitImportCollectors(getImportSourceValue($rawRow, 'collector', $columnMap));
+    } else {
+        $collector1 = getImportSourceValue($rawRow, 'collector1', $columnMap);
+        $collector2 = getImportSourceValue($rawRow, 'collector2', $columnMap);
+    }
     $display['SammlerID'] = $collector1;
     $display['Sammler_2ID'] = $collector2;
     $collectorsOk = false;
-    if ($collector1 !== '') {
+    if (!hasAnyImportSourceColumn($columnMap, array('collector', 'collector1', 'collector2'))) {
+        $collectorsOk = true;
+    } elseif ($collector1 !== '') {
         $result = dbi_query('SELECT SammlerID FROM tbl_collector WHERE Sammler = ' . quoteString($collector1));
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
@@ -853,7 +1125,7 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         addStatusCode($statusCodes, 'no_collector');
     }
 
-    $seriesText = getCsvValue($rawRow, 6);
+    $seriesText = getImportSourceValue($rawRow, 'seriesID', $columnMap);
     $display['seriesID'] = $seriesText;
     if ($seriesText !== '') {
         $result = dbi_query('SELECT seriesID FROM tbl_specimens_series WHERE series = ' . quoteString($seriesText));
@@ -866,27 +1138,27 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
     }
 
     $simpleMap = array(
-        'series_number' => 7,
-        'Nummer' => 8,
-        'alt_number' => 9,
-        'Datum' => 10,
-        'Datum2' => 11,
-        'det' => 12,
-        'typified' => 13,
-        'taxon_alt' => 15,
-        'Fundort' => 18,
-        'Fundort_engl' => 19,
-        'habitat' => 20,
-        'habitus' => 21,
-        'Bemerkungen' => 22,
-        'notes_internal' => 39,
+        'series_number' => 'series_number',
+        'Nummer' => 'Nummer',
+        'alt_number' => 'alt_number',
+        'Datum' => 'Datum',
+        'Datum2' => 'Datum2',
+        'det' => 'det',
+        'typified' => 'typified',
+        'taxon_alt' => 'taxon_alt',
+        'Fundort' => 'Fundort',
+        'Fundort_engl' => 'Fundort_engl',
+        'habitat' => 'habitat',
+        'habitus' => 'habitus',
+        'Bemerkungen' => 'Bemerkungen',
+        'notes_internal' => 'notes_internal',
     );
-    foreach ($simpleMap as $field => $csvIndex) {
-        $normalized[$field] = getCsvValue($rawRow, $csvIndex);
+    foreach ($simpleMap as $field => $sourceKey) {
+        $normalized[$field] = getImportSourceValue($rawRow, $sourceKey, $columnMap);
         $display[$field] = $normalized[$field];
     }
 
-    $typeText = getCsvValue($rawRow, 14);
+    $typeText = getImportSourceValue($rawRow, 'typusID', $columnMap);
     $display['typusID'] = $typeText;
     if ($typeText !== '') {
         $result = dbi_query('SELECT typusID FROM tbl_typi WHERE typus_lat = ' . quoteString($typeText));
@@ -898,7 +1170,7 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         }
     }
 
-    $nationText = getCsvValue($rawRow, 16);
+    $nationText = getImportSourceValue($rawRow, 'NationID', $columnMap);
     $display['NationID'] = $nationText;
     if ($nationText !== '') {
         $result = dbi_query('SELECT nationID FROM tbl_geo_nation WHERE nation_engl = ' . quoteString($nationText));
@@ -910,7 +1182,7 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         }
     }
 
-    $provinceText = getCsvValue($rawRow, 17);
+    $provinceText = getImportSourceValue($rawRow, 'provinceID', $columnMap);
     $display['provinceID'] = $provinceText;
     if ($provinceText !== '') {
         $sql = 'SELECT provinceID FROM tbl_geo_province WHERE provinz = ' . quoteString($provinceText) . ' AND nationID = ' . makeInt($normalized['NationID']);
@@ -923,67 +1195,93 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
         }
     }
 
-    $latCardinal = getCsvValue($rawRow, 23);
-    $latDeg = getCsvValue($rawRow, 24);
-    $latMin = getCsvValue($rawRow, 25);
-    $latSec = strtr(getCsvValue($rawRow, 26), ',', '.');
-    if ($latSec !== '' && !is_numeric($latSec)) {
-        addStatusCode($statusCodes, 'no_numeric_sec_lat');
+    $hasDirectLatColumns = isset($columnMap['Coord_N']) || isset($columnMap['N_Min']) || isset($columnMap['N_Sec']) || isset($columnMap['Coord_S']) || isset($columnMap['S_Min']) || isset($columnMap['S_Sec']);
+    if ($hasDirectLatColumns) {
+        $normalized['Coord_N'] = getImportSourceValue($rawRow, 'Coord_N', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'Coord_N', $columnMap)) : '';
+        $normalized['N_Min'] = getImportSourceValue($rawRow, 'N_Min', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'N_Min', $columnMap)) : '';
+        $normalized['N_Sec'] = strtr(getImportSourceValue($rawRow, 'N_Sec', $columnMap), ',', '.');
+        $normalized['Coord_S'] = getImportSourceValue($rawRow, 'Coord_S', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'Coord_S', $columnMap)) : '';
+        $normalized['S_Min'] = getImportSourceValue($rawRow, 'S_Min', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'S_Min', $columnMap)) : '';
+        $normalized['S_Sec'] = strtr(getImportSourceValue($rawRow, 'S_Sec', $columnMap), ',', '.');
+        if (($normalized['N_Sec'] !== '' && !is_numeric($normalized['N_Sec'])) || ($normalized['S_Sec'] !== '' && !is_numeric($normalized['S_Sec']))) {
+            addStatusCode($statusCodes, 'no_numeric_sec_lat');
+        }
+    } else {
+        $latCardinal = getImportSourceValue($rawRow, 'lat_cardinal', $columnMap);
+        $latDeg = getImportSourceValue($rawRow, 'lat_deg', $columnMap);
+        $latMin = getImportSourceValue($rawRow, 'lat_min', $columnMap);
+        $latSec = strtr(getImportSourceValue($rawRow, 'lat_sec', $columnMap), ',', '.');
+        if ($latSec !== '' && !is_numeric($latSec)) {
+            addStatusCode($statusCodes, 'no_numeric_sec_lat');
+        }
+        $normalized['Coord_N'] = ($latCardinal === 'N') ? (($latDeg !== '') ? intval($latDeg) : '') : '';
+        $normalized['N_Min'] = ($latCardinal === 'N') ? (($latMin !== '') ? intval($latMin) : '') : '';
+        $normalized['N_Sec'] = ($latCardinal === 'N') ? $latSec : '';
+        $normalized['Coord_S'] = ($latCardinal === 'S') ? (($latDeg !== '') ? intval($latDeg) : '') : '';
+        $normalized['S_Min'] = ($latCardinal === 'S') ? (($latMin !== '') ? intval($latMin) : '') : '';
+        $normalized['S_Sec'] = ($latCardinal === 'S') ? $latSec : '';
     }
-    $normalized['Coord_N'] = ($latCardinal === 'N') ? (($latDeg !== '') ? intval($latDeg) : '') : '';
-    $normalized['N_Min'] = ($latCardinal === 'N') ? (($latMin !== '') ? intval($latMin) : '') : '';
-    $normalized['N_Sec'] = ($latCardinal === 'N') ? $latSec : '';
-    $normalized['Coord_S'] = ($latCardinal === 'S') ? (($latDeg !== '') ? intval($latDeg) : '') : '';
-    $normalized['S_Min'] = ($latCardinal === 'S') ? (($latMin !== '') ? intval($latMin) : '') : '';
-    $normalized['S_Sec'] = ($latCardinal === 'S') ? $latSec : '';
 
-    $lonCardinal = getCsvValue($rawRow, 27);
-    $lonDeg = getCsvValue($rawRow, 28);
-    $lonMin = getCsvValue($rawRow, 29);
-    $lonSec = strtr(getCsvValue($rawRow, 30), ',', '.');
-    if ($lonSec !== '' && !is_numeric($lonSec)) {
-        addStatusCode($statusCodes, 'no_numeric_sec_lon');
+    $hasDirectLonColumns = isset($columnMap['Coord_W']) || isset($columnMap['W_Min']) || isset($columnMap['W_Sec']) || isset($columnMap['Coord_E']) || isset($columnMap['E_Min']) || isset($columnMap['E_Sec']);
+    if ($hasDirectLonColumns) {
+        $normalized['Coord_W'] = getImportSourceValue($rawRow, 'Coord_W', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'Coord_W', $columnMap)) : '';
+        $normalized['W_Min'] = getImportSourceValue($rawRow, 'W_Min', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'W_Min', $columnMap)) : '';
+        $normalized['W_Sec'] = strtr(getImportSourceValue($rawRow, 'W_Sec', $columnMap), ',', '.');
+        $normalized['Coord_E'] = getImportSourceValue($rawRow, 'Coord_E', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'Coord_E', $columnMap)) : '';
+        $normalized['E_Min'] = getImportSourceValue($rawRow, 'E_Min', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'E_Min', $columnMap)) : '';
+        $normalized['E_Sec'] = strtr(getImportSourceValue($rawRow, 'E_Sec', $columnMap), ',', '.');
+        if (($normalized['W_Sec'] !== '' && !is_numeric($normalized['W_Sec'])) || ($normalized['E_Sec'] !== '' && !is_numeric($normalized['E_Sec']))) {
+            addStatusCode($statusCodes, 'no_numeric_sec_lon');
+        }
+    } else {
+        $lonCardinal = getImportSourceValue($rawRow, 'lon_cardinal', $columnMap);
+        $lonDeg = getImportSourceValue($rawRow, 'lon_deg', $columnMap);
+        $lonMin = getImportSourceValue($rawRow, 'lon_min', $columnMap);
+        $lonSec = strtr(getImportSourceValue($rawRow, 'lon_sec', $columnMap), ',', '.');
+        if ($lonSec !== '' && !is_numeric($lonSec)) {
+            addStatusCode($statusCodes, 'no_numeric_sec_lon');
+        }
+        $normalized['Coord_W'] = ($lonCardinal === 'W') ? (($lonDeg !== '') ? intval($lonDeg) : '') : '';
+        $normalized['W_Min'] = ($lonCardinal === 'W') ? (($lonMin !== '') ? intval($lonMin) : '') : '';
+        $normalized['W_Sec'] = ($lonCardinal === 'W') ? $lonSec : '';
+        $normalized['Coord_E'] = ($lonCardinal === 'E') ? (($lonDeg !== '') ? intval($lonDeg) : '') : '';
+        $normalized['E_Min'] = ($lonCardinal === 'E') ? (($lonMin !== '') ? intval($lonMin) : '') : '';
+        $normalized['E_Sec'] = ($lonCardinal === 'E') ? $lonSec : '';
     }
-    $normalized['Coord_W'] = ($lonCardinal === 'W') ? (($lonDeg !== '') ? intval($lonDeg) : '') : '';
-    $normalized['W_Min'] = ($lonCardinal === 'W') ? (($lonMin !== '') ? intval($lonMin) : '') : '';
-    $normalized['W_Sec'] = ($lonCardinal === 'W') ? $lonSec : '';
-    $normalized['Coord_E'] = ($lonCardinal === 'E') ? (($lonDeg !== '') ? intval($lonDeg) : '') : '';
-    $normalized['E_Min'] = ($lonCardinal === 'E') ? (($lonMin !== '') ? intval($lonMin) : '') : '';
-    $normalized['E_Sec'] = ($lonCardinal === 'E') ? $lonSec : '';
 
     foreach (array('Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_W', 'W_Min', 'W_Sec', 'Coord_E', 'E_Min', 'E_Sec') as $field) {
         $display[$field] = formatDisplayValue($field, $normalized[$field]);
     }
 
-    $quadrant = getCsvValue($rawRow, 31);
+    $quadrant = getImportSourceValue($rawRow, 'quadrant', $columnMap);
     if ($quadrant !== '' && !is_numeric($quadrant)) {
         addStatusCode($statusCodes, 'no_numeric_quadrant');
     }
     $normalized['quadrant'] = $quadrant;
     $display['quadrant'] = $quadrant;
 
-    $quadrantSub = getCsvValue($rawRow, 32);
+    $quadrantSub = getImportSourceValue($rawRow, 'quadrant_sub', $columnMap);
     if ($quadrantSub !== '' && !is_numeric($quadrantSub)) {
         addStatusCode($statusCodes, 'no_numeric_quadrant_sub');
     }
     $normalized['quadrant_sub'] = $quadrantSub;
     $display['quadrant_sub'] = $quadrantSub;
 
-    $exactness = strtr(getCsvValue($rawRow, 33), ',', '.');
+    $exactness = strtr(getImportSourceValue($rawRow, 'exactness', $columnMap), ',', '.');
     if ($exactness !== '' && !is_numeric($exactness)) {
         addStatusCode($statusCodes, 'no_numeric_exactness');
     }
     $normalized['exactness'] = $exactness;
     $display['exactness'] = $exactness;
 
-    $normalized['altitude_min'] = getCsvValue($rawRow, 34) !== '' ? intval(getCsvValue($rawRow, 34)) : '';
-    $normalized['altitude_max'] = getCsvValue($rawRow, 35) !== '' ? intval(getCsvValue($rawRow, 35)) : '';
+    $normalized['altitude_min'] = getImportSourceValue($rawRow, 'altitude_min', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'altitude_min', $columnMap)) : '';
+    $normalized['altitude_max'] = getImportSourceValue($rawRow, 'altitude_max', $columnMap) !== '' ? intval(getImportSourceValue($rawRow, 'altitude_max', $columnMap)) : '';
     $display['altitude_min'] = formatDisplayValue('altitude_min', $normalized['altitude_min']);
     $display['altitude_max'] = formatDisplayValue('altitude_max', $normalized['altitude_max']);
 
-    $normalized['digital_image'] = normalizeValueForType('nullable_bool', getCsvValue($rawRow, 36));
-    $normalized['digital_image_obs'] = normalizeValueForType('nullable_bool', getCsvValue($rawRow, 37));
-    $normalized['observation'] = normalizeValueForType('nullable_bool', getCsvValue($rawRow, 38));
+    $normalized['digital_image'] = normalizeValueForType('nullable_bool', getImportSourceValue($rawRow, 'digital_image', $columnMap));
+    $normalized['digital_image_obs'] = normalizeValueForType('nullable_bool', getImportSourceValue($rawRow, 'digital_image_obs', $columnMap));
+    $normalized['observation'] = normalizeValueForType('nullable_bool', getImportSourceValue($rawRow, 'observation', $columnMap));
     $display['digital_image'] = formatDisplayValue('digital_image', $normalized['digital_image']);
     $display['digital_image_obs'] = formatDisplayValue('digital_image_obs', $normalized['digital_image_obs']);
     $display['observation'] = formatDisplayValue('observation', $normalized['observation']);
@@ -1000,7 +1298,7 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber)
     );
 }
 
-function loadUploadedUpdateRows($tmpPath)
+function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleFields = array(), &$error = '')
 {
     $rows = array();
     $handle = @fopen($tmpPath, 'r');
@@ -1008,17 +1306,47 @@ function loadUploadedUpdateRows($tmpPath)
         return $rows;
     }
 
+    $columnMap = getDefaultUpdateImportColumnMap();
     $lineNumber = 1;
+    if ($hasHeaderLine) {
+        $headerRow = parseUpdateLine($handle, 1);
+        if ($headerRow === false) {
+            fclose($handle);
+            $error = 'The uploaded file does not contain a readable header line.';
+            return array();
+        }
+        $columnMap = mapUpdateHeaderColumns($headerRow, $error);
+        if ($columnMap === array()) {
+            fclose($handle);
+            return array();
+        }
+        $lineNumber = 2;
+    }
+    $visibleFields = getVisibleUpdateFields($columnMap, $hasHeaderLine);
+
     while (!feof($handle)) {
-        $parts = parseUpdateLine($handle, 6);
+        $parts = parseUpdateLine($handle, 1);
         if ($parts !== false) {
-            $rows[] = buildParsedUpdateRow($parts, $lineNumber);
+            $rows[] = buildParsedUpdateRow($parts, $lineNumber, $columnMap);
             $lineNumber++;
         }
     }
     fclose($handle);
 
     return $rows;
+}
+
+function applyActiveFieldMask(array $importNormalized, array $importDisplay, array $databaseNormalized, array $databaseDisplay, array $activeFields)
+{
+    foreach (getUpdateFieldDefinitions() as $field => $definition) {
+        if (in_array($field, $activeFields, true)) {
+            continue;
+        }
+        $importNormalized[$field] = $databaseNormalized[$field];
+        $importDisplay[$field] = $databaseDisplay[$field];
+    }
+
+    return array($importNormalized, $importDisplay);
 }
 
 function findMatchingSpecimenId($collectionId, $herbNummer)
@@ -1126,6 +1454,9 @@ function buildSqlValue($type, $value)
     if ($type === 'int') {
         return makeInt($value);
     }
+    if ($type === 'numeric') {
+        return quoteString((string)$value);
+    }
     if ($type === 'nullable_bool') {
         return !empty($value) ? "'1'" : 'NULL';
     }
@@ -1185,13 +1516,27 @@ function updateSpecimenRow($specimenId, array $selectedData)
     $dbLink->commit();
     return array('success' => true, 'message' => 'Updated.', 'changedFields' => $changedFields);
 }
-function renderUpdateInputForm($downloadUrl = '')
+function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_header_line')
 {
+    $withoutHeaderSelected = ($inputHeaderMode !== 'with_header_line') ? " selected='selected'" : '';
+    $withHeaderSelected = ($inputHeaderMode === 'with_header_line') ? " selected='selected'" : '';
+
     echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . UPDATE_SPECIMENS_MAX_FILE_SIZE . "' />\n"
        . "Import this file: <input name='userfile' type='file' /><br>\n"
        . "or download URL: <input name='download_url' type='url' size='90' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' /><br>\n"
+       . "Input format: <select name='input_header_mode'>"
+       . "<option value='without_header_line'" . $withoutHeaderSelected . ">without header line</option>"
+       . "<option value='with_header_line'" . $withHeaderSelected . ">with header line</option>"
+       . "</select><br>\n"
        . "Allowed HTTPS hosts: " . htmlspecialchars(implode(', ', getAllowedImportDownloadHosts())) . "<br>\n"
-       . "<input type='submit' value='check Update'>\n";
+       . "<input type='submit' value='check Update'>\n"
+       . "<div class='notice'>"
+       . "This tool updates existing specimen records by matching <strong>HerbNummer</strong> and <strong>CollectionID</strong>. "
+       . "Accepted input files are semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files, uploaded directly or downloaded from an HTTPS URL.<br>\n"
+       . "Choose <strong>without header line</strong> for the legacy fixed-column export format. "
+       . "Choose <strong>with header line</strong> for files that contain a header row with a selected subset of fields. "
+       . "For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update."
+       . "</div>\n";
 }
 function buildStatusText(array $statusCodes)
 {
@@ -1271,6 +1616,30 @@ function buildLockedImportFields(array $statusCodes)
     return $lockedFields;
 }
 
+function buildWarningFieldStyles(array $statusCodes)
+{
+    $styles = array();
+
+    foreach ($statusCodes as $statusCode) {
+        if ($statusCode === 'similar_taxa') {
+            $styles['taxonID'] = 'warning-similar';
+            continue;
+        }
+
+        foreach (getFallbackFieldsForStatus($statusCode) as $field) {
+            if (!isset($styles[$field])) {
+                $styles[$field] = 'warning-invalid';
+            }
+        }
+    }
+
+    if (in_array('similar_taxa', $statusCodes, true)) {
+        $styles['taxonID'] = 'warning-similar';
+    }
+
+    return $styles;
+}
+
 function getDifferingFields(array $importNormalized, array $databaseNormalized)
 {
     $differingFields = array();
@@ -1301,6 +1670,7 @@ if (isset($_POST['archive_update_process'])) {
 }
 
 $downloadUrl = isset($_POST['download_url']) ? trim((string)$_POST['download_url']) : '';
+$inputHeaderMode = (isset($_POST['input_header_mode']) && $_POST['input_header_mode'] === 'with_header_line') ? 'with_header_line' : 'without_header_line';
 $run = detectUpdateRun();
 $readyRows = array();
 $issueRows = array();
@@ -1308,6 +1678,7 @@ $updateResults = array();
 $pageError = $preRunPageError;
 $seenSpecimens = array();
 $changedColumns = array();
+$displayFields = array_keys(getUpdateFieldDefinitions());
 
 if ($run === 2) {
     $rows = array();
@@ -1332,9 +1703,13 @@ if ($run === 2) {
     } elseif ($inputPath === '') {
         $pageError = 'No update file was provided.';
     } else {
-        $rows = loadUploadedUpdateRows($inputPath);
-        if (empty($rows)) {
-            $pageError = 'The uploaded file could not be read or did not contain enough columns.';
+        $headerError = '';
+        $rows = loadUploadedUpdateRows($inputPath, $inputHeaderMode === 'with_header_line', $displayFields, $headerError);
+        if ($headerError !== '') {
+            $pageError = $headerError;
+            clearUpdateProcessContext();
+        } elseif (empty($rows)) {
+            $pageError = 'The uploaded file could not be read or did not contain any usable data rows.';
             clearUpdateProcessContext();
         } elseif (!storeUpdateProcessInputFile($inputPath, $inputName, $inputError)) {
             $pageError = $inputError;
@@ -1384,11 +1759,15 @@ if ($run === 2) {
                 }
 
                 $seenSpecimens[$specimenId] = true;
+                list($maskedImportNormalized, $maskedImportDisplay) = applyActiveFieldMask($row['normalized'], $row['display'], $databaseRow['normalized'], $databaseRow['display'], $displayFields);
+                $rowSummary['importNormalized'] = $maskedImportNormalized;
+                $rowSummary['importDisplay'] = $maskedImportDisplay;
                 $rowSummary['databaseDisplay'] = $databaseRow['display'];
                 $rowSummary['databaseNormalized'] = $databaseRow['normalized'];
-                $rowSummary['selectedNormalized'] = buildDefaultSelectedData($row['normalized'], $databaseRow['normalized'], $warningStatusCodes);
+                $rowSummary['selectedNormalized'] = buildDefaultSelectedData($maskedImportNormalized, $databaseRow['normalized'], $warningStatusCodes);
                 $rowSummary['lockedImportFields'] = buildLockedImportFields($warningStatusCodes);
-                $rowSummary['differingFields'] = getDifferingFields($row['normalized'], $databaseRow['normalized']);
+                $rowSummary['warningFieldStyles'] = buildWarningFieldStyles($warningStatusCodes);
+                $rowSummary['differingFields'] = getDifferingFields($maskedImportNormalized, $databaseRow['normalized']);
                 foreach ($rowSummary['differingFields'] as $field) {
                     $changedColumns[$field] = true;
                 }
@@ -1433,7 +1812,7 @@ if ($run === 2) {
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Update Specimens</title>
     <style type="text/css">
-        body { font-family: Arial, sans-serif; font-size: 13px; }
+        body { font-family: Arial, sans-serif; font-size: 13px; background: #C2C2C2; }
         table { border-collapse: collapse; }
         th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
         .error { color: #a40000; margin: 10px 0; }
@@ -1447,15 +1826,22 @@ if ($run === 2) {
         .compare-table td.selected, .compare-table th.selected { background: #d7e7c8; }
         .compare-table td.unselected, .compare-table th.unselected { background: #f7f7f7; }
         .compare-table tr.db-row td, .compare-table tr.db-row th { border-bottom: 2px solid #333; }
-        .compare-cell.locked-import { background: #f3e7c2; color: #6b5d1a; }
-        .compare-cell.warning-field { border-color: #d3ab2f; }
-        .compare-cell.selected.warning-field { background: linear-gradient(135deg, #f3e7c2 0%, #f3e7c2 16%, #d7e7c8 16%, #d7e7c8 100%); }
-        .compare-cell.unselected.warning-field { background: #f3e7c2; }
+        .compare-cell.warning-field.warning-invalid { border-color: #c35757; }
+        .compare-cell.warning-field.warning-similar { border-color: #d3ab2f; }
+        .compare-cell.locked-import.warning-invalid { background: #f5d3d3; color: #7a1f1f; }
+        .compare-cell.locked-import.warning-similar { background: #f3e7c2; color: #6b5d1a; }
+        .compare-cell.selected.warning-field.warning-invalid { background: linear-gradient(135deg, #f5d3d3 0%, #f5d3d3 16%, #d7e7c8 16%, #d7e7c8 100%); }
+        .compare-cell.selected.warning-field.warning-similar { background: linear-gradient(135deg, #f3e7c2 0%, #f3e7c2 16%, #d7e7c8 16%, #d7e7c8 100%); }
+        .compare-cell.unselected.warning-field.warning-invalid { background: #f5d3d3; color: #7a1f1f; }
+        .compare-cell.unselected.warning-field.warning-similar { background: #f3e7c2; color: #6b5d1a; }
         .compare-cell.identical, .compare-header.identical { background: #e2e2e2; color: #666; cursor: default; }
         .compare-cell.clickable, .compare-row-label.clickable, .compare-header.clickable { cursor: pointer; }
         .compare-table.changed-only .column-globally-unchanged { display: none; }
         .compare-row-label { position: sticky; left: 0; z-index: 2; white-space: nowrap; background: #eef1f4; }
         .compare-row-label.mixed { background: #f3e7c2; }
+        .compare-header-label { font-weight: bold; margin-bottom: 4px; }
+        .compare-header-actions { display: flex; flex-direction: column; gap: 4px; }
+        .column-action-button { width: 100%; font-size: 11px; line-height: 1.2; padding: 3px 4px; white-space: normal; }
         .compare-value { white-space: normal; }
         .taxon-suggestion-box { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #d3ab2f; font-size: 12px; }
         .taxon-suggestion { width: 100%; margin-top: 4px; }
@@ -1477,7 +1863,7 @@ if ($run === 2) {
 
 <?php if ($run === 1) { ?>
     <form enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="f">
-        <?php renderUpdateInputForm($downloadUrl); ?>
+        <?php renderUpdateInputForm($downloadUrl, $inputHeaderMode); ?>
     </form>
 <?php } elseif ($run === 2) { ?>
     <div class="summary">
@@ -1499,13 +1885,14 @@ if ($run === 2) {
                 'db' => $row['databaseNormalized'],
                 'selected' => $row['selectedNormalized'],
                 'lockedImportFields' => $row['lockedImportFields'],
+                'warningFieldStyles' => isset($row['warningFieldStyles']) ? $row['warningFieldStyles'] : array(),
                 'differingFields' => $row['differingFields'],
                 'taxonSuggestions' => $row['taxonSuggestions'],
                 'suggestedTaxonID' => '',
             );
         }
     ?>
-        <div class="notice">Click a cell to switch between import and database values. Click a header to toggle the whole column. Click the row label to select the full import or database row.</div>
+        <div class="notice">Click a cell to switch between import and database values. Use the buttons in each header to select all file or all JACQ values for a column. Click the row label to select the full import or database row.</div>
         <button type="button" id="toggle_columns_button">Show changed columns only</button>
         <form action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="update_form">
             <input type="hidden" name="update_payload" id="update_payload" value="">
@@ -1514,8 +1901,16 @@ if ($run === 2) {
                     <thead>
                     <tr>
                         <th>Line / Record</th>
-                        <?php foreach (getUpdateFieldDefinitions() as $field => $definition) { ?>
-                            <th class="compare-header <?php echo !empty($changedColumns[$field]) ? 'clickable' : 'identical column-globally-unchanged'; ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-selected-source="import"><?php echo htmlspecialchars($definition['label']); ?></th>
+                        <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
+                            <th class="compare-header <?php echo !empty($changedColumns[$field]) ? '' : 'identical column-globally-unchanged'; ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-selected-source="import">
+                                <div class="compare-header-label"><?php echo htmlspecialchars($definition['label']); ?></div>
+                                <?php if (!empty($changedColumns[$field])) { ?>
+                                    <div class="compare-header-actions">
+                                        <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="db">select all JACQ entries</button>
+                                        <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="import">select all file entries</button>
+                                    </div>
+                                <?php } ?>
+                            </th>
                         <?php } ?>
                     </tr>
                     </thead>
@@ -1527,14 +1922,14 @@ if ($run === 2) {
                                 <?php echo htmlspecialchars($row['HerbNummer']); ?> / collection <?php echo intval($row['collectionID']); ?>
                                 <?php if ($row['warningStatusText'] !== 'OK') { ?><br><span title="These imported fields were not resolved and therefore default to the database value."><?php echo htmlspecialchars($row['warningStatusText']); ?></span><?php } ?>
                             </th>
-                            <?php foreach (getUpdateFieldDefinitions() as $field => $definition) { ?>
-                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); ?>
+                            <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
+                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
                                 <td class="compare-cell <?php
                                     if (!$fieldDiffers) {
                                         echo 'identical';
                                     } else {
                                         if ($fieldLocked) {
-                                            echo 'unselected locked-import warning-field';
+                                            echo 'unselected locked-import warning-field ' . $fieldWarningClass;
                                         } else {
                                             echo 'selected clickable';
                                         }
@@ -1564,11 +1959,11 @@ if ($run === 2) {
                                 Database<br>
                                 <a href="editSpecimens.php?sel=<?php echo htmlspecialchars('<' . $row['specimen_ID'] . '>'); ?>" target="Specimens">specimen <?php echo intval($row['specimen_ID']); ?></a>
                             </th>
-                            <?php foreach (getUpdateFieldDefinitions() as $field => $definition) { ?>
-                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); ?>
+                            <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
+                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
                                 <td class="compare-cell <?php
                                     if ($fieldDiffers) {
-                                        echo $fieldLocked ? 'selected clickable warning-field' : 'unselected clickable';
+                                        echo $fieldLocked ? 'selected clickable warning-field ' . $fieldWarningClass : 'unselected clickable';
                                     } else {
                                         echo 'identical';
                                     }
@@ -1616,6 +2011,13 @@ if ($run === 2) {
                         return false;
                     }
                     return !!(comparisonData[rowKey] && comparisonData[rowKey].lockedImportFields && comparisonData[rowKey].lockedImportFields.indexOf(fieldKey) !== -1);
+                }
+
+                function getWarningFieldClass(rowKey, fieldKey) {
+                    if (!comparisonData[rowKey] || !comparisonData[rowKey].warningFieldStyles) {
+                        return '';
+                    }
+                    return comparisonData[rowKey].warningFieldStyles[fieldKey] || '';
                 }
 
                 function getSelectedSource(rowKey, fieldKey) {
@@ -1666,6 +2068,7 @@ if ($run === 2) {
                     var cells = document.querySelectorAll(selector);
                     var selectedSource = getSelectedSource(rowKey, fieldKey);
                     var lockedImport = isLockedImportField(rowKey, fieldKey);
+                    var warningFieldClass = getWarningFieldClass(rowKey, fieldKey);
                     for (var i = 0; i < cells.length; i++) {
                         var cell = cells[i];
                         if (!fieldDiffers(rowKey, fieldKey)) {
@@ -1681,8 +2084,8 @@ if ($run === 2) {
                         if (!lockedImport || cellSource === 'db') {
                             className += ' clickable';
                         }
-                        if (lockedImport) {
-                            className += ' warning-field';
+                        if (lockedImport && warningFieldClass !== '') {
+                            className += ' warning-field ' + warningFieldClass;
                             if (cellSource === 'import') {
                                 className += ' locked-import';
                             }
@@ -1771,15 +2174,14 @@ if ($run === 2) {
                     updatePayload();
                 }
 
-                function toggleColumn(fieldKey) {
+                function selectColumn(fieldKey, source) {
                     var header = document.querySelector('.compare-header[data-field-key="' + fieldKey + '"]');
                     if (header.className.indexOf('identical') !== -1) {
                         return;
                     }
-                    var nextSource = (header.getAttribute('data-selected-source') === 'db') ? 'import' : 'db';
                     for (var rowKey in comparisonData) {
                         if (comparisonData.hasOwnProperty(rowKey)) {
-                            selectField(rowKey, fieldKey, nextSource);
+                            selectField(rowKey, fieldKey, source);
                         }
                     }
                     updateHeaderSelectionState(fieldKey);
@@ -1812,10 +2214,13 @@ if ($run === 2) {
                     };
                 }
 
-                var headers = document.querySelectorAll('.compare-header');
-                for (var k = 0; k < headers.length; k++) {
-                    headers[k].onclick = function () {
-                        toggleColumn(this.getAttribute('data-field-key'));
+                var columnActionButtons = document.querySelectorAll('.column-action-button');
+                for (var k = 0; k < columnActionButtons.length; k++) {
+                    columnActionButtons[k].onclick = function (event) {
+                        if (event) {
+                            event.stopPropagation();
+                        }
+                        selectColumn(this.getAttribute('data-field-key'), this.getAttribute('data-source'));
                     };
                 }
 
@@ -1882,7 +2287,7 @@ if ($run === 2) {
     <?php if ($pageError !== '' && empty($readyRows) && empty($issueRows)) { ?>
         <hr>
         <form enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="f">
-            <?php renderUpdateInputForm($downloadUrl); ?>
+            <?php renderUpdateInputForm($downloadUrl, $inputHeaderMode); ?>
         </form>
     <?php } ?>
 <?php } elseif ($run === 3) { ?>
