@@ -207,7 +207,7 @@ $(function() {
     $(document)
         .on('click', '#jstree_classificationBrowser .specimenBox', function() {
             var taxon = $(this).parent().attr('data-taxon');
-            window.open('https://www.jacq.org/index.php?taxon=' + encodeURIComponent(taxon));
+            window.open('https://jacq.org/database?taxon=' + encodeURIComponent(taxon));
 
             return false;
         });
@@ -216,7 +216,7 @@ $(function() {
     $(document).
         on('click', '#jstree_classificationBrowser .typeBox', function() {
             var taxon = $(this).parent().attr('data-taxon');
-            window.open('https://www.jacq.org/index.php?taxon=' + encodeURIComponent(taxon));
+            window.open('https://jacq.org/database?taxon=' + encodeURIComponent(taxon));
 
             return false;
         });

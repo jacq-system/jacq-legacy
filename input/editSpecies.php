@@ -724,21 +724,21 @@ if ($p_taxonID) {
 } else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";
 }
-$cf->label(9, 0.5, "taxonID");
-$cf->text(9, 0.5, "&nbsp;" . $text);
+$cf->label(10, 0.5, "taxonID");
+$cf->text(10, 0.5, "&nbsp;" . $text);
 
 if ($p_taxonID) {
-    $cf->text(9 + strlen($p_taxonID), 0.5, $display_head1);
-    $cf->text(9 + strlen($p_taxonID), 2, $display_head2);
-    $cf->text(9 + strlen($p_taxonID), 3.5, $display_head3);
+    $cf->text(10 + strlen($p_taxonID), 0.5, $display_head1);
+    $cf->text(10 + strlen($p_taxonID), 2, $display_head2);
+    $cf->text(10 + strlen($p_taxonID), 3.5, $display_head3);
 }
-$cf->label(9, 2, "edit Index", "javascript:taxIndex('$p_taxonID')");
-$cf->label(9, 3.5, "edit Type", "javascript:taxType('$p_taxonID')");
-$cf->label(9, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
+$cf->label(10, 2, "edit Index", "javascript:taxIndex('$p_taxonID')");
+$cf->label(10, 3.5, "edit Type", "javascript:taxType('$p_taxonID')");
+$cf->label(10, 5, "Common Names", "javascript:editCommonNames('$p_taxonID')");
 
-$cf->text(9+strlen($p_taxonID), 5, $comnames);
+$cf->text(10 + strlen($p_taxonID), 5, $comnames);
 
-$cf->text(64, 0.5, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
+$cf->text(65, 0.5, "", "nomService");  // will be filled asynchronously by jaxon_updateNomService
 
 // check for specimens and link to them
 $row_s = dbi_query("SELECT COUNT(*) 
@@ -750,7 +750,7 @@ $row_s = dbi_query("SELECT COUNT(*)
                      AND ts.taxonID = '$p_taxonID'")
          ->fetch_row();
 if ($row_s[0] > 0) {
-	$cf->label(73.5, 7.5, "specimens ({$row_s[0]})", "javascript:listSpecimens('$p_taxonID')");
+	$cf->label(74.5, 7.5, "specimens ({$row_s[0]})", "javascript:listSpecimens('$p_taxonID')");
 }
 
 // check for typeSpecimens and link to them
@@ -759,99 +759,99 @@ $row_ts = dbi_query("SELECT COUNT(*)
                      WHERE taxonID = '$p_taxonID'")
           ->fetch_row();
 if ($row_ts[0] > 0) {
-    $cf->label(73.5, 9.5, "type specimens ({$row_ts[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
+    $cf->label(74.5, 9.5, "type specimens ({$row_ts[0]})", "javascript:listTypeSpecimens('$p_taxonID')");
 }
 
 
 if ($p_external) {
-    $cf->label(59, 5.5, "external");
-    $cf->checkbox(59, 5.5, "external", $p_external);
+    $cf->label(60, 5.5, "external");
+    $cf->checkbox(60, 5.5, "external", $p_external);
 }
 
-$cf->labelMandatory(9, 7.5, 6, "Genus", "javascript:editGenera(document.f.genIndex)");
-$cf->inputJqAutocomplete(9, 7.5, 51, "gen", $p_gen, $p_genIndex, "index_jq_autocomplete.php?field=genus", 650, 2);
+$cf->labelMandatory(10, 7.5, 6, "Genus", "javascript:editGenera(document.f.genIndex)");
+$cf->inputJqAutocomplete(10, 7.5, 51, "gen", $p_gen, $p_genIndex, "index_jq_autocomplete.php?field=genus", 650, 2);
 
-$cf->labelMandatory(9, 10.5, 6, "Rank");
-$cf->dropdown(9, 10.5, "rankIndex", $p_rankIndex, $rank[0], $rank[1]);
+$cf->labelMandatory(10, 10.5, 6, "Rank");
+$cf->dropdown(10, 10.5, "rankIndex", $p_rankIndex, $rank[0], $rank[1]);
 
 if ($p_statusIndex == 1) {
-    $cf->labelMandatory(36, 10.5, 6, "parents", "javascript:editHybrids($p_taxonID)");
+    $cf->labelMandatory(37, 10.5, 6, "parents", "javascript:editHybrids($p_taxonID)");
 } else {
-    $cf->labelMandatory(36, 10.5, 6, "tax. Status");
+    $cf->labelMandatory(37, 10.5, 6, "tax. Status");
 }
-$cf->dropdown(36, 10.5, "statusIndex", $p_statusIndex, $status[0], $status[1]);
+$cf->dropdown(37, 10.5, "statusIndex", $p_statusIndex, $status[0], $status[1]);
 //if ($p_statusIndex == 96 || $p_statusIndex == 97 || $p_statusIndex == 103 || $p_statusIndex == 1) {
-    $cf->label(30, 10.5, "list synonyms", "javascript:listSynonyms($p_taxonID)");
+    $cf->label(31, 10.5, "list synonyms", "javascript:listSynonyms($p_taxonID)");
 //}
 
-$cf->labelMandatory(9, 13.5, 6, "Species", "javascript:editEpithet(document.f.speciesIndex,'e')");
-$cf->inputJqAutocomplete(9, 13.5, 20, "species", $p_species, $p_speciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->labelMandatory(40, 13.5, 6, "Author", "javascript:editAuthor(document.f.authorIndex,'a')");
-$cf->inputJqAutocomplete(40, 13.5, 20, "author", $p_author, $p_authorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals",650, 2);
-$cf->label(40, 15, "search", "javascript:searchAuthor()");
+$cf->labelMandatory(10, 13.5, 6, "Species", "javascript:editEpithet(document.f.speciesIndex,'e')");
+$cf->inputJqAutocomplete(10, 13.5, 20, "species", $p_species, $p_speciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->labelMandatory(41, 13.5, 6, "Author", "javascript:editAuthor(document.f.authorIndex,'a')");
+$cf->inputJqAutocomplete(41, 13.5, 20, "author", $p_author, $p_authorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals",650, 2);
+$cf->label(41, 15, "search", "javascript:searchAuthor()");
 
-$cf->label(9, 17, "Subspecies","javascript:editEpithet(document.f.subspeciesIndex,'s')");
-$cf->inputJqAutocomplete(9, 17, 20, "subspecies", $p_subspecies, $p_subspeciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->label(40, 17, "Author","javascript:editAuthor(document.f.subauthorIndex,'s')");
-$cf->inputJqAutocomplete(40, 17, 20, "subauthor", $p_subauthor, $p_subauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
+$cf->label(10, 17, "Subspecies","javascript:editEpithet(document.f.subspeciesIndex,'s')");
+$cf->inputJqAutocomplete(10, 17, 20, "subspecies", $p_subspecies, $p_subspeciesIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->label(41, 17, "Author","javascript:editAuthor(document.f.subauthorIndex,'s')");
+$cf->inputJqAutocomplete(41, 17, 20, "subauthor", $p_subauthor, $p_subauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
-$cf->label(9, 20, "Variety","javascript:editEpithet(document.f.varietyIndex,'v')");
-$cf->inputJqAutocomplete(9, 20, 20, "variety", $p_variety, $p_varietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->label(40, 20, "Author","javascript:editAuthor(document.f.varauthorIndex,'v')");
-$cf->inputJqAutocomplete(40, 20, 20, "varauthor", $p_varauthor, $p_varauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
+$cf->label(10, 20, "Variety","javascript:editEpithet(document.f.varietyIndex,'v')");
+$cf->inputJqAutocomplete(10, 20, 20, "variety", $p_variety, $p_varietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->label(41, 20, "Author","javascript:editAuthor(document.f.varauthorIndex,'v')");
+$cf->inputJqAutocomplete(41, 20, 20, "varauthor", $p_varauthor, $p_varauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
-$cf->label(9, 23, "Subvariety","javascript:editEpithet(document.f.subvarietyIndex,'sv')");
-$cf->inputJqAutocomplete(9, 23, 20, "subvariety", $p_subvariety, $p_subvarietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->label(40 ,23, "Author","javascript:editAuthor(document.f.subvarauthorIndex,'sv')");
-$cf->inputJqAutocomplete(40, 23, 20, "subvarauthor", $p_subvarauthor, $p_subvarauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
+$cf->label(10, 23, "Subvariety","javascript:editEpithet(document.f.subvarietyIndex,'sv')");
+$cf->inputJqAutocomplete(10, 23, 20, "subvariety", $p_subvariety, $p_subvarietyIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->label(41 ,23, "Author","javascript:editAuthor(document.f.subvarauthorIndex,'sv')");
+$cf->inputJqAutocomplete(41, 23, 20, "subvarauthor", $p_subvarauthor, $p_subvarauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
-$cf->label(9, 26, "Forma","javascript:editEpithet(document.f.formaIndex,'f')");
-$cf->inputJqAutocomplete(9, 26, 20, "forma", $p_forma, $p_formaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->label(40, 26, "Author","javascript:editAuthor(document.f.forauthorIndex,'f')");
-$cf->inputJqAutocomplete(40, 26, 20, "forauthor", $p_forauthor, $p_forauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
+$cf->label(10, 26, "Forma","javascript:editEpithet(document.f.formaIndex,'f')");
+$cf->inputJqAutocomplete(10, 26, 20, "forma", $p_forma, $p_formaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->label(41, 26, "Author","javascript:editAuthor(document.f.forauthorIndex,'f')");
+$cf->inputJqAutocomplete(41, 26, 20, "forauthor", $p_forauthor, $p_forauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
-$cf->label(9, 29, "Subforma", "javascript:editEpithet(document.f.subformaIndex,'sf')");
-$cf->inputJqAutocomplete(9, 29, 20, "subforma", $p_subforma, $p_subformaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
-$cf->label(40, 29, "Author","javascript:editAuthor(document.f.subforauthorIndex,'sf')");
-$cf->inputJqAutocomplete(40, 29, 20, "subforauthor", $p_subforauthor, $p_subforauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
+$cf->label(10, 29, "Subforma", "javascript:editEpithet(document.f.subformaIndex,'sf')");
+$cf->inputJqAutocomplete(10, 29, 20, "subforma", $p_subforma, $p_subformaIndex, "index_jq_autocomplete.php?field=epithetNoExternals", 650, 2);
+$cf->label(41, 29, "Author","javascript:editAuthor(document.f.subforauthorIndex,'sf')");
+$cf->inputJqAutocomplete(41, 29, 20, "subforauthor", $p_subforauthor, $p_subforauthorIndex, "index_jq_autocomplete.php?field=taxAuthorNoExternals", 650, 2);
 
-$cf->label(9, 32, "accepted Taxon", "javascript:listTaxSynonymy('$p_taxonID');");
-$cf->inputJqAutocomplete(9, 32, 51, "syn", $p_syn, $p_synIndex, "index_jq_autocomplete.php?field=taxonWithDT", 650, 2);
-$cf->label(5, 33.2, "<font size=\"+1\"><b>&laquo;</b></font>", "javascript:history.back()");
+$cf->label(10, 32, "accepted Taxon", "javascript:listTaxSynonymy('$p_taxonID');");
+$cf->inputJqAutocomplete(10, 32, 51, "syn", $p_syn, $p_synIndex, "index_jq_autocomplete.php?field=taxonWithDT", 650, 2);
+$cf->label(6, 33.2, "<font size=\"+1\"><b>&laquo;</b></font>", "javascript:history.back()");
 if ($p_synIndex) {
-    $cf->label(9, 33.5, "link","editSpecies.php?sel=" . htmlspecialchars("<$p_synIndex>"));
+    $cf->label(10, 33.5, "link","editSpecies.php?sel=" . htmlspecialchars("<$p_synIndex>"));
 }
 
-$cf->label(9, 35.5, "Basionym");
-$cf->inputJqAutocomplete(9, 35.5, 51, "bas", $p_bas, $p_basIndex, "index_jq_autocomplete.php?field=taxonWithDT", 650, 2);
-$cf->label(5, 36.7, "<font size=\"+1\"><b>&laquo;</b></font>", "javascript:history.back()");
+$cf->label(10, 35.5, "Basionym");
+$cf->inputJqAutocomplete(10, 35.5, 51, "bas", $p_bas, $p_basIndex, "index_jq_autocomplete.php?field=taxonWithDT", 650, 2);
+$cf->label(6, 36.7, "<font size=\"+1\"><b>&laquo;</b></font>", "javascript:history.back()");
 if ($p_basIndex) {
-    $cf->label(9, 37, "link","editSpecies.php?sel=" . htmlspecialchars("<$p_basIndex>"));
+    $cf->label(10, 37, "link","editSpecies.php?sel=" . htmlspecialchars("<$p_basIndex>"));
 }
 
-$cf->label(9, 39, "annotations");
-$cf->textarea(9, 39, 51, 9.6, "annotation", $p_annotation);
+$cf->label(10, 39, "annotations");
+$cf->textarea(10, 39, 51, 9.6, "annotation", $p_annotation);
 
-$cf->buttonSubmit(16, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
+$cf->buttonSubmit(17, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
 
 if (($_SESSION['editControl'] & 0x1) != 0) {
     if ($p_taxonID) {
         if ($edit) {
-            $cf->buttonJavaScript(22, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");
-            $cf->buttonSubmit(31, 50, "submitUpdate", " Update ");
+            $cf->buttonJavaScript(23, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");
+            $cf->buttonSubmit(32, 50, "submitUpdate", " Update ");
         } else {
-            $cf->buttonJavaScript(22, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">'");
-            $cf->buttonJavaScript(31, 50, " Edit ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");
+            $cf->buttonJavaScript(23, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">'");
+            $cf->buttonJavaScript(32, 50, " Edit ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");
         }
-        $cf->buttonSubmit(47, 50, "submitNewCopy", " New &amp; Copy");
+        $cf->buttonSubmit(48, 50, "submitNewCopy", " New &amp; Copy");
     } else {
-        $cf->buttonReset(22, 50, " Reset ");
-        $cf->buttonSubmit(31, 50, "submitUpdate", " Insert ");
-        $cf->buttonSubmit(37, 50, "submitUpdateCopy", " Insert &amp; Copy");
-        $cf->buttonSubmit(47, 50, "submitUpdateNew", " Insert &amp; New");
+        $cf->buttonReset(23, 50, " Reset ");
+        $cf->buttonSubmit(32, 50, "submitUpdate", " Insert ");
+        $cf->buttonSubmit(38, 50, "submitUpdateCopy", " Insert &amp; Copy");
+        $cf->buttonSubmit(48, 50, "submitUpdateNew", " Insert &amp; New");
     }
 }
-$cf->buttonJavaScript(2, 50, " < Taxonomy ", "self.location.href='listTax.php?nr=$nr'");
+$cf->buttonJavaScript(3, 50, " < Taxonomy ", "self.location.href='listTax.php?nr=$nr'");
 ?>
 </form>
 

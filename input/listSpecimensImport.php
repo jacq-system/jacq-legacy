@@ -44,7 +44,7 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
                      'det', 'typified', 'typusID', 'taxon_alt', 'NationID', 'provinceID', 'Bezirk', 'Coord_W', 'W_Min',
                      'W_Sec', 'Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_E', 'E_Min', 'E_Sec',
                      'quadrant', 'quadrant_sub', 'exactness', 'altitude_min', 'altitude_max', 'Fundort', 'Fundort_engl',
-                     'habitat', 'habitus', 'Bemerkungen', 'digital_image', 'digital_image_obs', 'garten', 'voucherID');
+                     'habitat', 'habitus', 'Bemerkungen', 'notes_internal', 'digital_image', 'digital_image_obs', 'garten', 'voucherID');
   $importable_specimens_sql = "SELECT si.* FROM tbl_specimens_import as si
         LEFT JOIN tbl_specimens_import_users as si_u ON si.specimen_ID = si_u.specimen_ID
         WHERE checked > 0 AND " . user_where_clause();

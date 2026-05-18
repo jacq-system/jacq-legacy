@@ -540,7 +540,7 @@ EOF;
 
 // only show edit link if we have a valid citation
 if( $p_citationID ) {
-$cf->inputMapLines(48,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
+$cf->inputMapLines(52,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
 'index_jq_autocomplete.php?field=taxon2','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml,2);
 }
 
@@ -586,14 +586,14 @@ if ($p_citationID) {
     // only display edit buttons if we have a valid citation
     $cf->label(7, 2.5, "edit Index", "javascript:taxIndex('$p_citationID')");
 
-    $cf->label(13.5, 2.5, "cited taxa ", "javascript:taxa('$p_citationID')");
-    $cf->label(21, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
+    $cf->label(14.5, 2.5, "cited taxa ", "javascript:taxa('$p_citationID')");
+    $cf->label(23.5, 2.5, "cited persons ", "javascript:persons('$p_citationID')");
 
-    $cf->label(28.5, 2.5, "list Container", "#\" onclick=\"jaxon_listContainer('$p_citationID');");
-    $cf->label(37, 2.5, "edit Container", "#\" onclick=\"jaxon_editContainer('$p_citationID');");
+    $cf->label(32, 2.5, "list Container", "#\" onclick=\"jaxon_listContainer('$p_citationID');");
+    $cf->label(41, 2.5, "edit Container", "#\" onclick=\"jaxon_editContainer('$p_citationID');");
 
     // label for editing the classification
-    $cf->label(62, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
+    $cf->label(66, 2.5, "edit tax classification", "#\" onclick=\"$('#edit_tax_classification').dialog( 'open' );");
 }
 else {
     $text = "<span style=\"background-color: #66FF66\">&nbsp;<b>new</b>&nbsp;</span>";

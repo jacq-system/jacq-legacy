@@ -336,11 +336,11 @@ function getFilteredJsTree(string $referenceType, int $referenceId, int $taxonID
  * @param string $resource resource-part of the url
  * @param array $pathParams path parameters
  * @param array|null $queryParams optional query parameters
- * @return array the response
+ * @return array|null the response
  * @throws GuzzleException
  * @global Client $client guzzle client for REST-operations
  */
-function getJson(string $resource, array $pathParams, ?array $queryParams = array()): array
+function getJson(string $resource, array $pathParams, ?array $queryParams = array()): ?array
 {
     global $client;
 

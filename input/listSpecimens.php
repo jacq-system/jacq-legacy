@@ -160,8 +160,8 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
 
-    $_SESSION['sUserID'] = $_POST['userID'];
-    $_SESSION['sUserDate'] = $_POST['user_date'];
+    $_SESSION['sUserID'] = (checkRight('specimensHistory')) ? $_POST['userID'] : (($_POST['userID'] != $_SESSION['uid']) ? -1 : $_SESSION['uid']);
+    $_SESSION['sUserDate'] = $_POST['user_date'] ?? '';
 } else if (isset($_POST['prepareLabels'])) {
     $_SESSION['sType'] = 3;  // change label settings
     $_SESSION['wuCollection'] = 0;
@@ -261,15 +261,20 @@ function makeDropdownCollection()
 
 function makeDropdownUsername()
 {
-    $sql = "SELECT userID, firstname, surname, username
-            FROM herbarinput_log.tbl_herbardb_users
-            WHERE userID IN
-             (SELECT userID FROM herbarinput_log.log_specimens GROUP BY userID)
-            ORDER BY surname, firstname, username";
-    $result = dbi_query($sql);
-    echo "<select size='1' name='userID' onchange='jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)'>\n";
-    echo "  <option value='-1'></option>\n";
-    echo "  <option value='0'" . (($_SESSION['sUserID'] == 0) ? " selected" : '') . ">--- all users ---</option>\n";
+    echo "<select size='1' name='userID' onchange='jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)'>\n"
+       . "  <option value='-1'></option>\n";
+
+    if (checkRight('specimensHistory')) {
+        $sql = "SELECT userID, firstname, surname, username
+                FROM herbarinput_log.tbl_herbardb_users
+                WHERE userID IN
+                 (SELECT userID FROM herbarinput_log.log_specimens GROUP BY userID)
+                ORDER BY surname, firstname, username";
+        $result = dbi_query($sql);
+        echo "  <option value='0'" . (($_SESSION['sUserID'] == 0) ? " selected" : '') . ">--- all users ---</option>\n";
+    } else {
+        $result = dbi_query("SELECT userID, firstname, surname, username FROM herbarinput_log.tbl_herbardb_users WHERE userID = {$_SESSION['uid']}");
+    }
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value='" . htmlspecialchars($row['userID']) . "'";
         if ($_SESSION['sUserID'] == $row['userID']) {
@@ -708,14 +713,13 @@ jaxon_checkTypeLabelMapPdfButton();
   <?php makeDropdownDate(true); ?>
   <input class="button" type="submit" name="prepareLabels" value=" Labels ">
   <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=labels&type=xlsx';return false;" name="labelsXLSX" src="webimages/disk.png" title="download Labels XLS">
-</td>
-<?php if (checkRight('editor')):    // only editors may check logged in users ?>
-<td style="width: 2em">&nbsp;</td><td>
+</td><td style="width: 2em">&nbsp;</td><td>
   <b>User&nbsp;</b> <?php makeDropdownUsername(); ?> <?php makeDropdownDate(); ?>
   <input class="button" type="submit" name="selectUser" value=" search ">
-  <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=user&type=xlsx';return false;" name="userXLSX" src="webimages/disk.png" title="download user Labels XLS">
+  <?php if (checkRight('specimensHistory')):    // only users with this right may also download the history ?>
+    <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=user&type=xlsx';return false;" name="userXLSX" src="webimages/disk.png" title="download user Labels XLS">
+  <?php endif; ?>
 </td>
-<?php endif; ?>
 </tr></table>
 </form>
 
@@ -843,7 +847,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
     </script>
     <?php
 } else if ($_SESSION['sType'] == 2) {  // list user activities
-    if (intval($_SESSION['sUserID']) >= 0 || strlen(trim($_SESSION['sUserDate'])) > 0) {
+    if (intval($_SESSION['sUserID']) >= 0 && strlen(trim($_SESSION['sUserDate'])) > 0) {
         $sql = "SELECT ls.specimenID, ls.updated, ls.timestamp, hu.firstname, hu.surname
                 FROM herbarinput_log.log_specimens ls, herbarinput_log.tbl_herbardb_users hu
                 WHERE ls.userID = hu.userID ";
@@ -884,7 +888,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             echo "<b>nothing found!</b>\n";
         }
     } else {
-        echo "<b>select either user or date or both!!</b>\n";
+        echo "<b>result is empty!</b>\n";
     }
 } else if ($_SESSION['sType'] == 3) {  // change label settings
     if (strlen(trim($_SESSION['sLabelDate'])) > 0) {

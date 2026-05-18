@@ -149,7 +149,7 @@ if (isset($_GET['sel'])) {
                  si.Coord_W, si.W_Min, si.W_Sec, si.Coord_N, si.N_Min, si.N_Sec,
                  si.Coord_S, si.S_Min, si.S_Sec, si.Coord_E, si.E_Min, si.E_Sec,
                  si.quadrant, si.quadrant_sub, si.exactness, si.altitude_min, si.altitude_max,
-                 si.Fundort, si.Fundort_engl, si.habitat, si.habitus, si.Bemerkungen, si.digital_image, si.digital_image_obs,
+                 si.Fundort, si.Fundort_engl, si.habitat, si.habitus, si.Bemerkungen, si.notes_internal, si.digital_image, si.digital_image_obs,
                  si.garten, si.voucherID, si.ncbi_accession,
                  si.collectionID, si.typusID, si.NationID, si.provinceID,
                  c.SammlerID, c.Sammler, c2.Sammler_2ID, c2.Sammler_2,
@@ -193,6 +193,7 @@ if (isset($_GET['sel'])) {
         $p_habitat           = $row['habitat'];
         $p_habitus           = $row['habitus'];
         $p_Bemerkungen       = $row['Bemerkungen'];
+        $p_notes_internal    = $row['notes_internal'];
         $p_digital_image     = $row['digital_image'];
         $p_digital_image_obs = $row['digital_image_obs'];
         $p_garten            = $row['garten'];
@@ -252,7 +253,7 @@ if (isset($_GET['sel'])) {
         $p_lat_deg = $p_lat_min = $p_lat_sec = ""; $p_lat = "N";
         $p_lon_deg = $p_lon_min = $p_lon_sec = ""; $p_lon = "E";
         $p_quadrant = $p_quadrant_sub = $p_exactness = $p_altitude_min = $p_altitude_max = "";
-        $p_Fundort = $p_Fundort_engl = $p_habitat = $p_habitus = $p_Bemerkungen = "";
+        $p_Fundort = $p_Fundort_engl = $p_habitat = $p_habitus = $p_Bemerkungen = $p_notes_internal = "";
         $p_digital_image = $p_digital_image_obs = $p_garten = $p_voucher = $p_ncbi = "";
         $p_typus = $p_nation = $p_province = "";
         $p_sammler = $p_sammler2 = "";
@@ -294,6 +295,7 @@ if (isset($_GET['sel'])) {
     $p_habitat           = $_POST['habitat'];
     $p_habitus           = $_POST['habitus'];
     $p_Bemerkungen       = $_POST['Bemerkungen'];
+    $p_notes_internal    = $_POST['notes_internal'] ?? '';
     $p_digital_image     = $_POST['digital_image'] ?? 0;
     $p_digital_image_obs = $_POST['digital_image_obs'] ?? 0;
     $p_garten            = $_POST['garten'];
@@ -381,6 +383,7 @@ if (isset($_GET['sel'])) {
                     habitat = " . quoteString($p_habitat) . ",
                     habitus = " . quoteString($p_habitus) . ",
                     Bemerkungen = " . quoteString($p_Bemerkungen) . ",
+                    notes_internal = " . quoteString($p_notes_internal) . ",
                     digital_image = " . (($p_digital_image) ? "'1'" : "'0'") . ",
                     digital_image_obs = " . (($p_digital_image_obs) ? "'1'" : "'0'") . ",
                     garten = " . quoteString($p_garten) . ",
@@ -1013,6 +1016,8 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 54.5em;\">
 $y += 1.05;
 $cf->labelMandatory(9, $y, 8, "Locality","#\" onclick=\"call_toggleLanguage();\" id=\"labelLocality");
 $cf->textarea(9, $y, 46, 3.6, "Fundort1\" id=\"Fundort1", $p_Fundort);
+$cf->text(57, $y - 1.6, "<div class=\"cssflabel\" style=\"width: 9.375em;\">notes internal&nbsp;</div>");
+$cf->textarea(57, $y, 20, 9.2, "notes_internal", $p_notes_internal);
 echo "<input type=\"hidden\" name=\"Fundort2\" id=\"Fundort2\" value=\"$p_Fundort_engl\">\n";
 echo "<input type=\"hidden\" name=\"toggleLanguage\" id=\"toggleLanguage\" value=\"0\">\n";
 
@@ -1073,3 +1078,6 @@ if ($updateBlocked) {
 
 </body>
 </html>
+
+
+

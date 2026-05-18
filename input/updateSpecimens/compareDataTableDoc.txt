@@ -1,0 +1,26 @@
+1. 
+initialize a new class-object inside your html file at the desired postition where to display the table
+set a unique id to the table, given as the constructor param
+    let compareTable = new CompareDataTable(id);
+    
+2.
+set your header-titles and your data 
+make sure your data always looks like a 2D list. each item of the list represents a row and is also a list holding every cell item
+make sure your data is always in a coulmn-sorted list, and all have the same length and order
+your import- and databaseData must have an ID at the first array-item
+    compareTable.setHeader(yourHeader);
+    compareTable.setImportData(yourImportData);
+    compareTable.setDatabaseData(yourDbData);
+    
+3.
+build and display the table with:
+    compareTable.buildTable();
+    
+4.
+to get the current selected data (i.E.: inside a submit-buttons-onclick function), type:
+    compareData.returnChosenData();
+the returned data looks like a data-object with key-value assignments
+the key represents the ID of the dataset and the value represents a list containing the selected data
+
+    
+    

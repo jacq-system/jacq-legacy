@@ -46,9 +46,10 @@ $sql = "SELECT ls.*, hu.firstname, hu.surname
         WHERE ls.userID = hu.userID
          AND ls.specimenID = '" . intval($_GET['sel']) . "'";
 $result = dbi_query($sql);
+$hasRight = checkRight('specimensHistory');
 while ($row = mysqli_fetch_array($result)) {
     echo "<tr class=\"out\">\n"
-       . "  <td class=\"out\">" . htmlspecialchars($row['firstname'] . " " . $row['surname']) . "</td>\n"
+       . "  <td class=\"out\">" . (($hasRight || $row['userID'] == $_SESSION['uid']) ? htmlspecialchars($row['firstname'] . " " . $row['surname']) : $row['userID']) . "</td>\n"
        . "  <td class=\"out\">" . htmlspecialchars($row['timestamp']) . "</td>\n"
        . "  <td class=\"out\">" . (($row['updated']) ? "updated" : "") . "</td>\n";
     for ($i = 0; $i < count($fields); $i++) {

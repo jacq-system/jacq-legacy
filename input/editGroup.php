@@ -133,22 +133,22 @@ while ($row = mysqli_fetch_array($result)) {
 $cf = new CSSF();
 
 echo "<input type=\"hidden\" name=\"groupID\" value=\"$p_groupID\">\n";
-$cf->label(9, 0.5, "groupID");
-$cf->text(9, 0.5, "&nbsp;" . (($p_groupID) ? $p_groupID : "<span style=\"background-color: red\">&nbsp;<b>new</b>&nbsp;</span>"));
-$cf->labelMandatory(9, 2, 7, "Group name");
-$cf->inputText(9, 2, 40, "group_name", $p_group_name, 40);
-$cf->labelMandatory(9, 4, 7, "Description");
-$cf->textarea(9, 4, 40, 2.5, "group_description", $p_group_description);
+$cf->label(12, 0.5, "groupID");
+$cf->text(12, 0.5, "&nbsp;" . (($p_groupID) ? $p_groupID : "<span style=\"background-color: red\">&nbsp;<b>new</b>&nbsp;</span>"));
+$cf->labelMandatory(12, 2, 7, "Group name");
+$cf->inputText(12, 2, 40, "group_name", $p_group_name, 40);
+$cf->labelMandatory(12, 4, 7, "Description");
+$cf->textarea(12, 4, 40, 2.5, "group_description", $p_group_description);
 $line = 7;
 foreach ($p_rights as $key => $val) {
-    $cf->label(9, $line, $key);
-    $cf->checkbox(9, $line, $key, $val);
+    $cf->label(12, $line, $key);
+    $cf->checkbox(12, $line, $key, $val);
     if (strlen($rightDescription[$key]) > 0) {
-        $cf->text(10.5, $line, $rightDescription[$key]);
+        $cf->text(14, $line, $rightDescription[$key]);
     }
     $line += 1.5;
 }
-$cf->label(9, $line, "Table unlock", "javascript:openGroupUnlock('$p_groupID')");
+$cf->label(12, $line, "Table unlock", "javascript:openGroupUnlock('$p_groupID')");
 $line += 2;
 
 if (checkRight('admin')) {

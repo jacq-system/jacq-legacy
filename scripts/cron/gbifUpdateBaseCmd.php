@@ -65,6 +65,18 @@ try {
 }
 
 if (!$options['nometa']) {
+    // set metadata.DateModified to the maximal date of all specimens of this source
+    $rows = $dbLink->queryCatch("SELECT mc.source_id, MAX(s.aktualdatum) as max_date
+                                 FROM tbl_specimens s
+                                  LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID 
+                                 GROUP BY mc.source_id")
+                   ->fetch_all(MYSQLI_ASSOC);
+    foreach ($rows as $row) {
+        if (!empty($row['max_date'])) {
+            $dbLink1->queryCatch("UPDATE metadata SET DateModified = '{$row['max_date']}' WHERE MetadataID = {$row['source_id']}");
+        }
+    }
+
     $dbLink2->queryCatch("DROP TABLE IF EXISTS $dbt.metadata");
     $dbLink2->queryCatch("CREATE TABLE $dbt.metadata LIKE metadata");
     $dbLink2->queryCatch("INSERT $dbt.metadata SELECT * FROM metadata");
@@ -406,6 +418,7 @@ foreach ($tbls as $tbl) {
                  RecordBasis              = " . (($row['observation'] > 0) ? "'HumanObservation'" : "'PreservedSpecimen'") . ",
                  Notes                    = " . ((false) ? $dbLink2->quoteString($row['Bemerkungen']) : "NULL");
             // TODO: add field "Notes" to fill conditionally with tbl_specimens.Bemerkungen if a flag in "meta" is set
+            // TODO: add two fields "ncbi_accession" and "material_state" before "Notes"
             $hash = hash('md5', $sql);
             $unit = $dbLink2->queryCatch("SELECT UnitID, hash FROM $dbt.{$tbl['name']} WHERE UnitIDNumeric = {$row['specimen_ID']}")->fetch_assoc();
             if (empty($unit)) {

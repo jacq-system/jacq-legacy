@@ -54,7 +54,7 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
       if (screen.availHeight<810)
         options += (screen.availHeight - 10);
       else
-        options += "810";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
 
       newWindow = window.open(target,name,options);
