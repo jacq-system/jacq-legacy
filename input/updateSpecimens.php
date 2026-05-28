@@ -876,6 +876,26 @@ function normalizeValueForType($type, $value)
     return (string)$value;
 }
 
+function normalizeComparableFieldValue($field, $type, $value)
+{
+    $normalized = normalizeValueForType($type, $value);
+    $multilineComparableFields = array(
+        'Fundort',
+        'Fundort_engl',
+        'habitat',
+        'habitus',
+        'Bemerkungen',
+        'notes_internal',
+    );
+
+    if (in_array($field, $multilineComparableFields, true)) {
+        $normalized = preg_replace('/\s+/u', ' ', str_replace(array("\r\n", "\r", "\n"), ' ', (string)$normalized));
+        return trim((string)$normalized);
+    }
+
+    return $normalized;
+}
+
 function normalizeImportTaxonText($taxonText)
 {
     $taxonText = trim((string)$taxonText);
@@ -1449,7 +1469,9 @@ function buildSpecimenUpdateAssignments(array $selectedData, array $currentData)
     foreach ($definitions as $field => $definition) {
         $selectedValue = array_key_exists($field, $selectedData) ? normalizeValueForType($definition['type'], $selectedData[$field]) : '';
         $currentValue = array_key_exists($field, $currentData) ? normalizeValueForType($definition['type'], $currentData[$field]) : '';
-        if ($selectedValue !== $currentValue) {
+        $selectedComparable = normalizeComparableFieldValue($field, $definition['type'], $selectedData[$field] ?? '');
+        $currentComparable = normalizeComparableFieldValue($field, $definition['type'], $currentData[$field] ?? '');
+        if ($selectedComparable !== $currentComparable) {
             $assignments[] = $field . ' = ' . buildSqlValue($definition['type'], $selectedValue);
             $changedFields[] = $field;
         }
@@ -1627,8 +1649,8 @@ function getDifferingFields(array $importNormalized, array $databaseNormalized)
     $differingFields = array();
 
     foreach (getUpdateFieldDefinitions() as $field => $definition) {
-        $importValue = array_key_exists($field, $importNormalized) ? normalizeValueForType($definition['type'], $importNormalized[$field]) : '';
-        $databaseValue = array_key_exists($field, $databaseNormalized) ? normalizeValueForType($definition['type'], $databaseNormalized[$field]) : '';
+        $importValue = array_key_exists($field, $importNormalized) ? normalizeComparableFieldValue($field, $definition['type'], $importNormalized[$field]) : '';
+        $databaseValue = array_key_exists($field, $databaseNormalized) ? normalizeComparableFieldValue($field, $definition['type'], $databaseNormalized[$field]) : '';
         if ($importValue !== $databaseValue) {
             $differingFields[] = $field;
         }
