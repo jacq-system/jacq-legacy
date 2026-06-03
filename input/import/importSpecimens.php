@@ -41,6 +41,59 @@ function importStatusHasFlag($status, $flag)
     return preg_match('/(?:^|\s)' . preg_quote($flag, '/') . '(?:\s|$)/', (string)$status) === 1;
 }
 
+function importStatusHasCollectorIssue($status)
+{
+    return importStatusHasFlag($status, 'no_collector')
+        || importStatusHasFlag($status, 'no_collector_primary')
+        || importStatusHasFlag($status, 'no_collector_additional');
+}
+
+function parseImportCollectors($value)
+{
+    $value = trim((string)$value);
+
+    if (substr($value, -6) == 'et al.') {
+        return array(
+            'collector' => trim(substr($value, 0, -7)),
+            'collector2' => 'et al.',
+        );
+    }
+
+    $collectors = trim(strtr($value, '&', ','));
+    $parts = explode(', ', $collectors);
+    $collector = trim($parts[0]);
+    $collector2 = trim(substr($value, strlen($collector) + 2));
+
+    return array(
+        'collector' => $collector,
+        'collector2' => $collector2,
+    );
+}
+
+function renderCollectorValidationDisplay($rowData, $rawValue)
+{
+    if (empty($rowData['collector_validation_detail'])) {
+        return htmlspecialchars((string)$rawValue);
+    }
+
+    $parts = array();
+    $primaryStyle = !empty($rowData['collector_primary_found'])
+        ? 'display:inline-block;background-color:#00FF00;padding:1px 4px;margin:1px 4px 1px 0;color:#000;'
+        : 'display:inline-block;background-color:#ffb3b3;padding:1px 4px;margin:1px 4px 1px 0;color:#000;';
+    $parts[] = '<span style="' . $primaryStyle . '">Collector: ' . htmlspecialchars((string)$rowData['collector_primary_raw']) . '</span>';
+
+    if (!empty($rowData['collector_additional_checked']) || !empty($rowData['collector_additional_raw'])) {
+        $additionalStyle = !empty($rowData['collector_additional_found'])
+            ? 'display:inline-block;background-color:#00FF00;padding:1px 4px;margin:1px 4px 1px 0;color:#000;'
+            : 'display:inline-block;background-color:#ffb3b3;padding:1px 4px;margin:1px 4px 1px 0;color:#000;';
+        $parts[] = '<span style="' . $additionalStyle . '">Collector2: ' . htmlspecialchars((string)$rowData['collector_additional_raw']) . '</span>';
+    }
+
+    $html = '<div style="line-height:1.6">' . implode('<br>', $parts) . '</div>';
+
+    return $html;
+}
+
 function addImportExportUniqueValue(&$values, $value)
 {
     $value = trim((string)$value);
@@ -64,7 +117,8 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
 {
     $errorColumns = array(
         'no_taxa' => 4,
-        'no_collector' => 5,
+        'no_collector_primary' => null,
+        'no_collector_additional' => null,
         'no_series' => 6,
         'no_type' => 14,
         'no_nation' => 16,
@@ -80,6 +134,18 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
 
     for ($i = 0; $i < count($import); $i++) {
         foreach ($errorColumns as $flag => $column) {
+            if ($flag === 'no_collector_primary') {
+                if (empty($data[$i]['collector_primary_found'])) {
+                    addImportExportUniqueValue($payload['errors'][$flag], isset($data[$i]['collector_primary_raw']) ? $data[$i]['collector_primary_raw'] : '');
+                }
+                continue;
+            }
+            if ($flag === 'no_collector_additional') {
+                if (!empty($data[$i]['collector_additional_checked']) && empty($data[$i]['collector_additional_found'])) {
+                    addImportExportUniqueValue($payload['errors'][$flag], isset($data[$i]['collector_additional_raw']) ? $data[$i]['collector_additional_raw'] : '');
+                }
+                continue;
+            }
             if (importStatusHasFlag($status[$i], $flag)) {
                 if ($flag === 'no_taxa' && importStatusHasFlag($status[$i], 'similar_taxa')) {
                     continue;
@@ -182,23 +248,25 @@ function streamImportValidationExportWorkbook($payload)
     $errorSheet->setTitle('errors');
     $errorHeaders = array(
         'A1' => 'no_taxa',
-        'B1' => 'no_collector',
-        'C1' => 'no_series',
-        'D1' => 'no_type',
-        'E1' => 'no_nation',
-        'F1' => 'no_province',
+        'B1' => 'no_collector_primary',
+        'C1' => 'no_collector_additional',
+        'D1' => 'no_series',
+        'E1' => 'no_type',
+        'F1' => 'no_nation',
+        'G1' => 'no_province',
     );
     foreach ($errorHeaders as $cell => $label) {
         $errorSheet->setCellValue($cell, $label);
     }
-    styleImportExportHeader($errorSheet, 'A1:F1', 'FFFF0000');
+    styleImportExportHeader($errorSheet, 'A1:G1', 'FFFF0000');
     $errorColumns = array(
         'A' => 'no_taxa',
-        'B' => 'no_collector',
-        'C' => 'no_series',
-        'D' => 'no_type',
-        'E' => 'no_nation',
-        'F' => 'no_province',
+        'B' => 'no_collector_primary',
+        'C' => 'no_collector_additional',
+        'D' => 'no_series',
+        'E' => 'no_type',
+        'F' => 'no_nation',
+        'G' => 'no_province',
     );
     foreach ($errorColumns as $column => $flag) {
         $row = 2;
@@ -211,7 +279,7 @@ function streamImportValidationExportWorkbook($payload)
     }
     $errorSheet->freezePane('A2');
     $errorSheet->getTabColor()->setRGB('FF0000');
-    autosizeImportExportColumns($errorSheet, 'F');
+    autosizeImportExportColumns($errorSheet, 'G');
 
     $similarSheet = $spreadsheet->createSheet();
     $similarSheet->setTitle('Taxon not found but similar');
@@ -1102,36 +1170,50 @@ if ($run == 2) {  // file provided
          * check the collectors (first and additional)
          */
         $collectorsOK = false;
-        if (substr(trim($import[$i][5]), -6) == 'et al.') {
-            $collector = substr(trim($import[$i][5]), 0, -7);
-            $collector2 = "et al.";
-        } else {
-            $collectors = trim(strtr($import[$i][5], '&', ','));
-            $parts = explode(', ', $collectors);
-            $collector = trim($parts[0]);
-            $collector2 = trim(substr(trim($import[$i][5]), strlen($collector) + 2));
-        }
+        $collectorParts = parseImportCollectors($import[$i][5]);
+        $collector = $collectorParts['collector'];
+        $collector2 = $collectorParts['collector2'];
+        $data[$i]['collector_validation_detail'] = false;
+        $data[$i]['collector_primary_raw'] = $collector;
+        $data[$i]['collector_additional_raw'] = $collector2;
+        $data[$i]['collector_primary_found'] = false;
+        $data[$i]['collector_additional_found'] = false;
+        $data[$i]['collector_additional_checked'] = (strlen($collector2) > 0);
+        $data[$i]['SammlerID'] = "";
+        $data[$i]['Sammler_2ID'] = "";
+
         $result = dbi_query("SELECT SammlerID FROM tbl_collector WHERE Sammler = " . quoteString($collector));
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
-            $collectorID = $row['SammlerID'];
-            if (strlen($collector2) > 0) {
-                $result = dbi_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
-                if (mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_array($result);
-                    $collectorsOK = true;
-                    $data[$i]['SammlerID'] = $collectorID;
-                    $data[$i]['Sammler_2ID'] = $row['Sammler_2ID'];
-                }
-            } else {
-                $collectorsOK = true;
-                $data[$i]['SammlerID'] = $collectorID;
-                $data[$i]['Sammler_2ID'] = "";
+            $data[$i]['collector_primary_found'] = true;
+            $data[$i]['SammlerID'] = $row['SammlerID'];
+        }
+
+        if (strlen($collector2) > 0) {
+            $result = dbi_query("SELECT Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2 = " . quoteString($collector2));
+            if (mysqli_num_rows($result) > 0) {
+                $row = mysqli_fetch_array($result);
+                $data[$i]['collector_additional_found'] = true;
+                $data[$i]['Sammler_2ID'] = $row['Sammler_2ID'];
             }
+        }
+
+        if ($data[$i]['collector_primary_found'] && (strlen($collector2) === 0 || $data[$i]['collector_additional_found'])) {
+            $collectorsOK = true;
         }
         if (!$collectorsOK) {
             $OK = false;
-            $status[$i] .= "no_collector ";
+            $data[$i]['collector_validation_detail'] = true;
+            if (!$data[$i]['collector_primary_found'] && (!$data[$i]['collector_additional_checked'] || !$data[$i]['collector_additional_found'])) {
+                $status[$i] .= "no_collector ";
+            } else {
+                if (!$data[$i]['collector_primary_found']) {
+                    $status[$i] .= "no_collector_primary ";
+                }
+                if ($data[$i]['collector_additional_checked'] && !$data[$i]['collector_additional_found']) {
+                    $status[$i] .= "no_collector_additional ";
+                }
+            }
         }
 
         /**
@@ -1429,7 +1511,7 @@ if ($run == 2) {  // file provided
                     echo "<td>";
                 }
                 echo htmlspecialchars($import[$i][4]) . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_collector") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][5]) . "</td>";
+                echo "<td" . ((importStatusHasCollectorIssue($status[$i])) ? " style=\"background-color:red\"" : "") . ">" . renderCollectorValidationDisplay($data[$i], $import[$i][5]) . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_series") !== false) ? " style=\"background-color:red\"" : "") . ">" . htmlspecialchars($import[$i][6]) . "</td>";
                 echo "<td>" . $import[$i][7] . "</td>";
                 echo "<td>" . $import[$i][8] . "</td>";
@@ -1458,11 +1540,11 @@ if ($run == 2) {  // file provided
                 echo "<td" . ((strpos($status[$i], "no_numeric_quadrant") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][31] . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_numeric_quadrant_sub") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][32] . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_numeric_exactness") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][33] . "</td>";
-                echo "<td>" . $import[$i][34] . "</td>";
-                echo "<td>" . $import[$i][35] . "</td>";
-                echo "<td>" . $import[$i][36] . "</td>";
-                echo "<td>" . $import[$i][37] . "</td>";
-                echo "<td>" . $import[$i][38] . "</td>";
+                echo "<td>" . (isset($import[$i][34]) ? $import[$i][34] : '') . "</td>";
+                echo "<td>" . (isset($import[$i][35]) ? $import[$i][35] : '') . "</td>";
+                echo "<td>" . (isset($import[$i][36]) ? $import[$i][36] : '') . "</td>";
+                echo "<td>" . (isset($import[$i][37]) ? $import[$i][37] : '') . "</td>";
+                echo "<td>" . (isset($import[$i][38]) ? $import[$i][38] : '') . "</td>";
                 echo "<td>" . htmlspecialchars((isset($import[$i][39])) ? $import[$i][39] : '') . "</td>";
                 echo "</tr>\n";
 
