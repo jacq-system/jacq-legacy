@@ -1517,29 +1517,46 @@ function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_he
     $withHeaderSelected = ($inputHeaderMode === 'with_header_line') ? " selected='selected'" : '';
 
     echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . UPDATE_SPECIMENS_MAX_FILE_SIZE . "' />\n"
-       . "Import this file: <input name='userfile' type='file' /><br>\n"
-       . "or download URL: <input name='download_url' type='url' size='90' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' /><br>\n"
-       . "Input format: <select name='input_header_mode'>"
-       . "<option value='without_header_line'" . $withoutHeaderSelected . ">without header line</option>"
-       . "<option value='with_header_line'" . $withHeaderSelected . ">with header line</option>"
-       . "</select><br>\n"
-       . "Allowed HTTPS hosts: " . htmlspecialchars(implode(', ', getAllowedImportDownloadHosts())) . "<br>\n"
-       . "<input type='submit' value='check Update'>\n"
-       . "<div class='notice'>"
-       . "This tool updates existing specimen records by matching <strong>HerbNummer</strong> and <strong>CollectionID</strong>. "
-       . "Accepted input files are semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files, uploaded directly or downloaded from an HTTPS URL.<br>\n"
-       . "Choose <strong>without header line</strong> for the legacy fixed-column export format. "
-       . "Choose <strong>with header line</strong> for files that contain a header row with a selected subset of fields. "
-       . "For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update.<br>\n"
-       . "Allowed header attributes are exactly: "
-       . "<strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, "
-       . "<strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, "
-       . "<strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, "
-       . "<strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, "
-       . "<strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, "
-       . "<strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, "
-       . "<strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, "
-       . "<strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>."
+       . "<div class='panel form-panel'>\n"
+       . "  <div class='panel-heading'>Import Source</div>\n"
+       . "  <div class='form-layout'>\n"
+       . "    <div class='form-field'>\n"
+       . "      <label class='form-label' for='update_userfile'>Import file</label>\n"
+       . "      <div class='form-control-wrap'>\n"
+       . "        <input id='update_userfile' name='userfile' type='file' class='form-control form-control-file'>\n"
+       . "      </div>\n"
+       . "    </div>\n"
+       . "    <div class='form-field'>\n"
+       . "      <label class='form-label' for='update_download_url'>Download URL</label>\n"
+       . "      <div class='form-control-wrap'>\n"
+       . "        <input id='update_download_url' name='download_url' type='url' class='form-control' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' placeholder='https://...'>\n"
+       . "      </div>\n"
+       . "    </div>\n"
+       . "    <div class='form-field'>\n"
+       . "      <label class='form-label' for='update_input_header_mode'>Input format</label>\n"
+       . "      <div class='form-control-wrap'>\n"
+       . "        <select id='update_input_header_mode' name='input_header_mode' class='form-control'>\n"
+       . "          <option value='without_header_line'" . $withoutHeaderSelected . ">without header line</option>\n"
+       . "          <option value='with_header_line'" . $withHeaderSelected . ">with header line</option>\n"
+       . "        </select>\n"
+       . "      </div>\n"
+       . "    </div>\n"
+       . "    <div class='form-field'>\n"
+       . "      <div class='form-label'>Allowed HTTPS hosts</div>\n"
+       . "      <div class='form-control-wrap form-static-text'>" . htmlspecialchars(implode(', ', getAllowedImportDownloadHosts())) . "</div>\n"
+       . "    </div>\n"
+       . "  </div>\n"
+       . "  <div class='form-actions'>\n"
+       . "    <input type='submit' value='check Update' class='button-primary'>\n"
+       . "  </div>\n"
+       . "</div>\n"
+       . "<div class='panel info-panel'>\n"
+       . "  <div class='panel-heading'>Update Rules</div>\n"
+       . "  <div class='notice form-notice'>\n"
+       . "    <p>This tool updates existing specimen records by matching <strong>HerbNummer</strong> and <strong>CollectionID</strong>. Accepted input files are semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files, uploaded directly or downloaded from an HTTPS URL.</p>\n"
+       . "    <p>Choose <strong>without header line</strong> for the legacy fixed-column export format. Choose <strong>with header line</strong> for files that contain a header row with a selected subset of fields. For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update.</p>\n"
+       . "    <p>Allowed header attributes are exactly: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
+       . "  </div>\n"
        . "</div>\n";
 }
 function buildStatusText(array $statusCodes)
@@ -1816,12 +1833,193 @@ if ($run === 2) {
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Update Specimens</title>
     <style type="text/css">
-        body { font-family: Arial, sans-serif; font-size: 13px; background: #C2C2C2; }
-        table { border-collapse: collapse; }
-        th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; }
-        .error { color: #a40000; margin: 10px 0; }
-        .notice { margin: 10px 0; }
-        .compare-container { overflow: auto; max-height: 75vh; max-width: 100%; margin: 15px 0; border: 1px solid #999; }
+        :root {
+            --page-bg: #cfd6d0;
+            --panel-bg: #f7f8f5;
+            --panel-border: #b5beb5;
+            --panel-shadow: rgba(37, 58, 39, 0.08);
+            --text-main: #213126;
+            --text-muted: #5a6a60;
+            --accent: #5b7c4d;
+            --accent-dark: #3f5b36;
+            --accent-soft: #dde7d6;
+            --line: #9ca89c;
+            --warning-soft: #f4ebc8;
+            --error-soft: #f2d2d2;
+            --table-head: #e4eadf;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--text-main);
+            background: linear-gradient(180deg, #bfc8c1 0%, var(--page-bg) 100%);
+        }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #888; padding: 7px 9px; vertical-align: top; }
+        h1, h2 { margin: 0; }
+        p { margin: 0 0 10px; }
+        a { color: #2a4d7d; }
+        .page-shell {
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: 28px 24px 40px;
+        }
+        .page-header {
+            margin-bottom: 20px;
+            padding: 18px 22px;
+            border: 1px solid var(--panel-border);
+            background: linear-gradient(135deg, #f5f7f2 0%, #e6ece1 100%);
+            box-shadow: 0 12px 24px var(--panel-shadow);
+        }
+        .page-title {
+            font-size: 28px;
+            line-height: 1.1;
+            color: #2f4636;
+        }
+        .page-subtitle {
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        .panel {
+            margin: 0 0 18px;
+            padding: 18px 20px;
+            border: 1px solid var(--panel-border);
+            background: var(--panel-bg);
+            box-shadow: 0 10px 24px var(--panel-shadow);
+        }
+        .panel-heading {
+            margin-bottom: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 0.02em;
+            color: #2f4636;
+            text-transform: uppercase;
+        }
+        .summary {
+            margin: 0 0 18px;
+            padding: 14px 18px;
+            border: 1px solid #b8c7b2;
+            background: var(--accent-soft);
+            color: #2d4730;
+            box-shadow: 0 8px 18px var(--panel-shadow);
+        }
+        .error {
+            margin: 0 0 18px;
+            padding: 12px 14px;
+            border: 1px solid #c87f7f;
+            background: var(--error-soft);
+            color: #8b1f1f;
+            box-shadow: 0 8px 18px rgba(128, 46, 46, 0.08);
+        }
+        .notice {
+            margin: 0;
+            color: var(--text-main);
+        }
+        .form-panel,
+        .info-panel {
+            max-width: 1120px;
+        }
+        .form-layout {
+            display: grid;
+            grid-template-columns: minmax(170px, 220px) minmax(0, 1fr);
+            gap: 14px 18px;
+            align-items: start;
+        }
+        .form-field {
+            display: contents;
+        }
+        .form-label {
+            padding-top: 10px;
+            font-weight: bold;
+            color: #35503d;
+        }
+        .form-control-wrap {
+            min-width: 0;
+        }
+        .form-control {
+            width: 100%;
+            min-height: 38px;
+            padding: 8px 10px;
+            border: 1px solid #aeb8b1;
+            background: #fff;
+            color: var(--text-main);
+            font: inherit;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(91, 124, 77, 0.16);
+        }
+        .form-control-file {
+            padding: 6px 8px;
+        }
+        .form-static-text {
+            min-height: 38px;
+            padding: 9px 10px;
+            border: 1px solid #d0d7d1;
+            background: #eef2ec;
+            color: #435248;
+        }
+        .form-actions {
+            margin-top: 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        input[type="submit"],
+        button {
+            min-height: 36px;
+            padding: 8px 14px;
+            border: 1px solid #889687;
+            background: linear-gradient(180deg, #ffffff 0%, #ecefe8 100%);
+            color: var(--text-main);
+            font: inherit;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover,
+        button:hover {
+            background: linear-gradient(180deg, #ffffff 0%, #dfe7d8 100%);
+        }
+        .button-primary {
+            border-color: var(--accent-dark);
+            background: linear-gradient(180deg, #6d915d 0%, #4f7143 100%);
+            color: #fff;
+            font-weight: bold;
+        }
+        .button-primary:hover {
+            background: linear-gradient(180deg, #769c65 0%, #46663b 100%);
+        }
+        .form-notice p:last-child {
+            margin-bottom: 0;
+        }
+        .action-buttons {
+            margin: 0 0 18px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .action-buttons form {
+            margin: 0;
+        }
+        .table-panel {
+            padding: 16px 18px;
+        }
+        .table-panel table th {
+            background: var(--table-head);
+            text-align: left;
+        }
+        .compare-toolbar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .compare-container { overflow: auto; max-height: 75vh; max-width: 100%; margin: 0 0 15px; border: 1px solid #999; background: #fff; }
         .compare-table { border-collapse: separate; border-spacing: 0; width: max-content; }
         .compare-table thead th { position: sticky; top: 0; z-index: 3; }
         .compare-table thead th:first-child { left: 0; z-index: 5; background: #dfe7ef; }
@@ -1849,17 +2047,31 @@ if ($run === 2) {
         .compare-value { white-space: normal; }
         .taxon-suggestion-box { margin-top: 6px; padding-top: 6px; border-top: 1px dashed #d3ab2f; font-size: 12px; }
         .taxon-suggestion { width: 100%; margin-top: 4px; }
-        .summary { margin: 12px 0; }
-        .action-buttons { margin: 12px 0; }
-        .action-buttons form { display: inline-block; margin-right: 10px; }
         .result-ok { color: #1a5e20; }
         .result-error { color: #a40000; }
-        .result-ok { color: #1a5e20; }
-        .result-error { color: #a40000; }
+        @media (max-width: 860px) {
+            .page-shell {
+                padding: 18px 14px 28px;
+            }
+            .page-title {
+                font-size: 24px;
+            }
+            .form-layout {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            .form-label {
+                padding-top: 0;
+            }
+        }
     </style>
 </head>
 <body>
-<h1>Update Specimens - <?php echo ($run === 2) ? '2nd run' : (($run === 3) ? '3rd run' : '1st run'); ?></h1>
+<div class="page-shell">
+<div class="page-header">
+    <h1 class="page-title">Update Specimens</h1>
+    <div class="page-subtitle"><?php echo ($run === 2) ? 'Review imported values against JACQ and choose what should be updated.' : (($run === 3) ? 'Update results and archive options.' : 'Upload a file or provide a download URL to start an update run.'); ?></div>
+</div>
 
 <?php if ($pageError !== '') { ?>
     <div class="error"><?php echo htmlspecialchars($pageError); ?></div>
@@ -1896,90 +2108,98 @@ if ($run === 2) {
             );
         }
     ?>
-        <div class="notice">Click a cell to switch between import and database values. Use the buttons in each header to select all file or all JACQ values for a column. Click the row label to select the full import or database row.</div>
-        <button type="button" id="toggle_columns_button">Show changed columns only</button>
+        <div class="panel">
+            <div class="notice">Click a cell to switch between import and database values. Use the buttons in each header to select all file or all JACQ values for a column. Click the row label to select the full import or database row.</div>
+        </div>
         <form action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="update_form">
             <input type="hidden" name="update_payload" id="update_payload" value="">
-            <div class="compare-container">
-                <table class="compare-table" id="compare_table">
-                    <thead>
-                    <tr>
-                        <th>Line / Record</th>
-                        <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
-                            <th class="compare-header <?php echo !empty($changedColumns[$field]) ? '' : 'identical column-globally-unchanged'; ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-selected-source="import">
-                                <div class="compare-header-label"><?php echo htmlspecialchars($definition['label']); ?></div>
-                                <?php if (!empty($changedColumns[$field])) { ?>
-                                    <div class="compare-header-actions">
-                                        <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="db">select all JACQ entries</button>
-                                        <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="import">select all file entries</button>
-                                    </div>
-                                <?php } ?>
-                            </th>
-                        <?php } ?>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <?php foreach ($readyRows as $row) { ?>
-                        <tr class="import-row">
-                            <th class="compare-row-label selected clickable" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-source="import">
-                                Import line <?php echo intval($row['lineNumber']); ?><br>
-                                <?php echo htmlspecialchars($row['HerbNummer']); ?> / collection <?php echo intval($row['collectionID']); ?>
-                                <?php if ($row['warningStatusText'] !== 'OK') { ?><br><span title="These imported fields were not resolved and therefore default to the database value."><?php echo htmlspecialchars($row['warningStatusText']); ?></span><?php } ?>
-                            </th>
+            <div class="panel">
+                <div class="compare-toolbar">
+                    <button type="button" id="toggle_columns_button">Show changed columns only</button>
+                </div>
+                <div class="compare-container">
+                    <table class="compare-table" id="compare_table">
+                        <thead>
+                        <tr>
+                            <th>Line / Record</th>
                             <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
-                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
-                                <td class="compare-cell <?php
-                                    if (!$fieldDiffers) {
-                                        echo 'identical';
-                                    } else {
-                                        if ($fieldLocked) {
-                                            echo 'unselected locked-import warning-field ' . $fieldWarningClass;
-                                        } else {
-                                            echo 'selected clickable';
-                                        }
-                                    }
-                                    if (empty($changedColumns[$field])) {
-                                        echo ' column-globally-unchanged';
-                                    }
-                                ?>" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="import"<?php if ($fieldLocked) { ?> title="Import value for this field could not be resolved and therefore stays on the database value by default."<?php } ?>>
-                                    <div class="compare-value"><?php echo htmlspecialchars($row['importDisplay'][$field]); ?></div>
-                                    <?php if ($field === 'taxonID' && !empty($row['taxonSuggestions'])) { ?>
-                                        <div class="taxon-suggestion-box">
-                                            <label>Suggestion:
-                                                <select class="taxon-suggestion" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="taxonID">
-                                                    <option value="">Keep database value</option>
-                                                    <?php foreach ($row['taxonSuggestions'] as $suggestion) { ?>
-                                                        <option value="<?php echo intval($suggestion['taxonID']); ?>"><?php echo htmlspecialchars($suggestion['taxon']); ?></option>
-                                                    <?php } ?>
-                                                </select>
-                                            </label>
+                                <th class="compare-header <?php echo !empty($changedColumns[$field]) ? '' : 'identical column-globally-unchanged'; ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-selected-source="import">
+                                    <div class="compare-header-label"><?php echo htmlspecialchars($definition['label']); ?></div>
+                                    <?php if (!empty($changedColumns[$field])) { ?>
+                                        <div class="compare-header-actions">
+                                            <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="db">select all JACQ entries</button>
+                                            <button type="button" class="column-action-button" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="import">select all file entries</button>
                                         </div>
                                     <?php } ?>
-                                </td>
+                                </th>
                             <?php } ?>
                         </tr>
-                        <tr class="db-row">
-                            <th class="compare-row-label unselected clickable" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-source="db">
-                                Database<br>
-                                <a href="editSpecimens.php?sel=<?php echo htmlspecialchars('<' . $row['specimen_ID'] . '>'); ?>" target="Specimens">specimen <?php echo intval($row['specimen_ID']); ?></a>
-                            </th>
-                            <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
-                                <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
-                                <td class="compare-cell <?php
-                                    if ($fieldDiffers) {
-                                        echo $fieldLocked ? 'selected clickable warning-field ' . $fieldWarningClass : 'unselected clickable';
-                                    } else {
-                                        echo 'identical';
-                                    }
-                                    echo empty($changedColumns[$field]) ? ' column-globally-unchanged' : '';
-                                ?>" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="db"<?php if ($fieldLocked) { ?> title="Database value is preselected because the import value for this field could not be resolved."<?php } ?>><?php echo htmlspecialchars($row['databaseDisplay'][$field]); ?></td>
-                            <?php } ?>
-                        </tr>
-                    <?php } ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        <?php foreach ($readyRows as $row) { ?>
+                            <tr class="import-row">
+                                <th class="compare-row-label selected clickable" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-source="import">
+                                    Import line <?php echo intval($row['lineNumber']); ?><br>
+                                    <?php echo htmlspecialchars($row['HerbNummer']); ?> / collection <?php echo intval($row['collectionID']); ?>
+                                    <?php if ($row['warningStatusText'] !== 'OK') { ?><br><span title="These imported fields were not resolved and therefore default to the database value."><?php echo htmlspecialchars($row['warningStatusText']); ?></span><?php } ?>
+                                </th>
+                                <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
+                                    <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
+                                    <td class="compare-cell <?php
+                                        if (!$fieldDiffers) {
+                                            echo 'identical';
+                                        } else {
+                                            if ($fieldLocked) {
+                                                echo 'unselected locked-import warning-field ' . $fieldWarningClass;
+                                            } else {
+                                                echo 'selected clickable';
+                                            }
+                                        }
+                                        if (empty($changedColumns[$field])) {
+                                            echo ' column-globally-unchanged';
+                                        }
+                                    ?>" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="import"<?php if ($fieldLocked) { ?> title="Import value for this field could not be resolved and therefore stays on the database value by default."<?php } ?>>
+                                        <div class="compare-value"><?php echo htmlspecialchars($row['importDisplay'][$field]); ?></div>
+                                        <?php if ($field === 'taxonID' && !empty($row['taxonSuggestions'])) { ?>
+                                            <div class="taxon-suggestion-box">
+                                                <label>Suggestion:
+                                                    <select class="taxon-suggestion" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="taxonID">
+                                                        <option value="">Keep database value</option>
+                                                        <?php foreach ($row['taxonSuggestions'] as $suggestion) { ?>
+                                                            <option value="<?php echo intval($suggestion['taxonID']); ?>"><?php echo htmlspecialchars($suggestion['taxon']); ?></option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </label>
+                                            </div>
+                                        <?php } ?>
+                                    </td>
+                                <?php } ?>
+                            </tr>
+                            <tr class="db-row">
+                                <th class="compare-row-label unselected clickable" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-source="db">
+                                    Database<br>
+                                    <a href="editSpecimens.php?sel=<?php echo htmlspecialchars('<' . $row['specimen_ID'] . '>'); ?>" target="Specimens">specimen <?php echo intval($row['specimen_ID']); ?></a>
+                                </th>
+                                <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
+                                    <?php $fieldDiffers = in_array($field, $row['differingFields'], true); $fieldLocked = in_array($field, $row['lockedImportFields'], true); $fieldWarningClass = isset($row['warningFieldStyles'][$field]) ? $row['warningFieldStyles'][$field] : ''; ?>
+                                    <td class="compare-cell <?php
+                                        if ($fieldDiffers) {
+                                            echo $fieldLocked ? 'selected clickable warning-field ' . $fieldWarningClass : 'unselected clickable';
+                                        } else {
+                                            echo 'identical';
+                                        }
+                                        echo empty($changedColumns[$field]) ? ' column-globally-unchanged' : '';
+                                    ?>" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-field-key="<?php echo htmlspecialchars($field); ?>" data-source="db"<?php if ($fieldLocked) { ?> title="Database value is preselected because the import value for this field could not be resolved."<?php } ?>><?php echo htmlspecialchars($row['databaseDisplay'][$field]); ?></td>
+                                <?php } ?>
+                            </tr>
+                        <?php } ?>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="form-actions">
+                    <input type="submit" name="update_data" value="update selected values" class="button-primary">
+                </div>
             </div>
-            <input type="submit" name="update_data" value="update selected values">
         </form>
         <script type="text/javascript">
             (function () {
@@ -2192,12 +2412,16 @@ if ($run === 2) {
                 }
 
                 function updateColumnMode() {
+                    var unchangedColumns = compareTable.querySelectorAll('.column-globally-unchanged');
                     if (changedOnlyMode) {
                         compareTable.classList.add('changed-only');
                         toggleColumnsButton.textContent = 'Show all columns';
                     } else {
                         compareTable.classList.remove('changed-only');
                         toggleColumnsButton.textContent = 'Show changed columns only';
+                    }
+                    for (var i = 0; i < unchangedColumns.length; i++) {
+                        unchangedColumns[i].style.display = changedOnlyMode ? 'none' : '';
                     }
                 }
 
@@ -2266,26 +2490,28 @@ if ($run === 2) {
     <?php } ?>
 
     <?php if (!empty($issueRows)) { ?>
-        <h2>Rows With Issues</h2>
-        <table>
-            <tr>
-                <th>Line</th>
-                <th>HerbNummer</th>
-                <th>Collection</th>
-                <th>Specimen</th>
-                <th>Status</th>
-            </tr>
-            <?php foreach ($issueRows as $row) { ?>
+        <div class="panel table-panel">
+            <h2>Rows With Issues</h2>
+            <table>
                 <tr>
-                    <td><?php echo intval($row['lineNumber']); ?></td>
-                    <td><?php echo htmlspecialchars($row['HerbNummer']); ?></td>
-                    <td><?php echo intval($row['collectionID']); ?></td>
-                    <td><?php echo !empty($row['specimen_ID']) ? intval($row['specimen_ID']) : ''; ?></td>
-                    <td><?php echo htmlspecialchars($row['statusText']); ?></td>
+                    <th>Line</th>
+                    <th>HerbNummer</th>
+                    <th>Collection</th>
+                    <th>Specimen</th>
+                    <th>Status</th>
                 </tr>
-            <?php } ?>
-        </table>
-        <div class="notice">Rows with unresolved reference data or without a unique specimen match are not updated by this first scaffold version.</div>
+                <?php foreach ($issueRows as $row) { ?>
+                    <tr>
+                        <td><?php echo intval($row['lineNumber']); ?></td>
+                        <td><?php echo htmlspecialchars($row['HerbNummer']); ?></td>
+                        <td><?php echo intval($row['collectionID']); ?></td>
+                        <td><?php echo !empty($row['specimen_ID']) ? intval($row['specimen_ID']) : ''; ?></td>
+                        <td><?php echo htmlspecialchars($row['statusText']); ?></td>
+                    </tr>
+                <?php } ?>
+            </table>
+            <div class="notice" style="margin-top:12px;">Rows with unresolved reference data or without a unique specimen match are not updated by this first scaffold version.</div>
+        </div>
     <?php } ?>
 
     <?php if ($pageError !== '' && empty($readyRows) && empty($issueRows)) { ?>
@@ -2313,23 +2539,26 @@ if ($run === 2) {
             <input type="submit" name="reset_update_process" value="Start new update process">
         </form>
     </div>
-    <table>
-        <tr>
-            <th>Row</th>
-            <th>Specimen</th>
-            <th>Result</th>
-            <th>Changed Fields</th>
-        </tr>
-        <?php foreach ($updateResults as $result) { ?>
+    <div class="panel table-panel">
+        <table>
             <tr>
-                <td><?php echo htmlspecialchars($result['rowKey']); ?></td>
-                <td><?php echo intval($result['specimen_ID']); ?></td>
-                <td class="<?php echo $result['success'] ? 'result-ok' : 'result-error'; ?>"><?php echo htmlspecialchars($result['message']); ?></td>
-                <td><?php echo htmlspecialchars(implode(', ', $result['changedFields'])); ?></td>
+                <th>Row</th>
+                <th>Specimen</th>
+                <th>Result</th>
+                <th>Changed Fields</th>
             </tr>
-        <?php } ?>
-    </table>
+            <?php foreach ($updateResults as $result) { ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($result['rowKey']); ?></td>
+                    <td><?php echo intval($result['specimen_ID']); ?></td>
+                    <td class="<?php echo $result['success'] ? 'result-ok' : 'result-error'; ?>"><?php echo htmlspecialchars($result['message']); ?></td>
+                    <td><?php echo htmlspecialchars(implode(', ', $result['changedFields'])); ?></td>
+                </tr>
+            <?php } ?>
+        </table>
+    </div>
 <?php } ?>
+</div>
 </body>
 </html>
 
