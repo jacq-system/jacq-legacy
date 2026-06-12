@@ -349,6 +349,12 @@ function sanitizeUpdateProcessFilename($inputName, $defaultName = 'update_input.
     return ($filename !== '') ? $filename : $defaultName;
 }
 
+function isAllowedUploadedUpdateFilename($inputName)
+{
+    $extension = strtolower(pathinfo((string)$inputName, PATHINFO_EXTENSION));
+    return in_array($extension, array('txt', 'csv'), true);
+}
+
 function storeUpdateProcessInputFile($sourcePath, $inputName, &$error = '')
 {
     clearUpdateProcessContext();
@@ -624,6 +630,7 @@ function getUpdateImportHeaderSourceAliases()
     }
 
     $aliases = array(
+        'specimenid' => 'specimen_ID',
         'herbnummer' => 'HerbNummer',
         'collectionid' => 'collectionID',
         'collectionnumber' => 'CollNummer',
@@ -687,9 +694,9 @@ function mapUpdateHeaderColumns(array $headerRow, &$error = '')
         $columnMap[$sourceKey] = $index;
     }
 
-    foreach (array('HerbNummer', 'collectionID') as $requiredColumn) {
+    foreach (array('specimen_ID') as $requiredColumn) {
         if (!isset($columnMap[$requiredColumn])) {
-            $error = 'The header line must contain both HerbNummer and CollectionID.';
+            $error = 'The header line must contain specimen_id.';
             return array();
         }
     }
@@ -731,6 +738,7 @@ function getVisibleUpdateFields(array $columnMap, $hasHeaderLine = false)
     $visible = array();
     foreach ($columnMap as $sourceKey => $columnIndex) {
         switch ($sourceKey) {
+            case 'specimen_ID':
             case 'HerbNummer':
             case 'collectionID':
                 break;
@@ -1040,12 +1048,15 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
     $display = initializeFieldArray();
     $statusCodes = array();
 
-    $collectionId = intval(getImportSourceValue($rawRow, 'collectionID', $columnMap));
-    $collectionResult = dbi_query("SELECT collectionID FROM tbl_management_collections WHERE collectionID = '" . $collectionId . "'");
-    if ($collectionId === 0 || !$collectionResult || mysqli_num_rows($collectionResult) === 0) {
-        addStatusCode($statusCodes, 'no_collection');
-        $collectionId = 0;
+    $specimenId = 0;
+    $specimenIdText = getImportSourceValue($rawRow, 'specimen_ID', $columnMap);
+    if ($specimenIdText === '' || !ctype_digit($specimenIdText) || intval($specimenIdText) <= 0) {
+        addStatusCode($statusCodes, 'no_specimen_id');
+    } else {
+        $specimenId = intval($specimenIdText);
     }
+
+    $collectionId = hasImportSourceColumn($columnMap, 'collectionID') ? intval(getImportSourceValue($rawRow, 'collectionID', $columnMap)) : 0;
 
     $herbNummer = splitImportHerbNummer(getImportSourceValue($rawRow, 'HerbNummer', $columnMap));
     $normalized['CollNummer'] = getImportSourceValue($rawRow, 'CollNummer', $columnMap);
@@ -1274,6 +1285,7 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
 
     return array(
         'lineNumber' => $lineNumber,
+        'specimen_ID' => $specimenId,
         'collectionID' => $collectionId,
         'HerbNummer' => $herbNummer,
         'raw' => $rawRow,
@@ -1287,29 +1299,31 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
 function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleFields = array(), &$error = '')
 {
     $rows = array();
+    if (!$hasHeaderLine) {
+        $error = 'Only header-based update files are supported.';
+        return $rows;
+    }
+
     $handle = @fopen($tmpPath, 'r');
     if (!$handle) {
         return $rows;
     }
 
-    $columnMap = getDefaultUpdateImportColumnMap();
     $expectedColumnCount = 0;
     $lineNumber = 1;
-    if ($hasHeaderLine) {
-        $headerRow = parseUpdateLine($handle, 1);
-        if ($headerRow === false) {
-            fclose($handle);
-            $error = 'The uploaded file does not contain a readable header line.';
-            return array();
-        }
-        $expectedColumnCount = count($headerRow);
-        $columnMap = mapUpdateHeaderColumns($headerRow, $error);
-        if ($columnMap === array()) {
-            fclose($handle);
-            return array();
-        }
-        $lineNumber = 2;
+    $headerRow = parseUpdateLine($handle, 1);
+    if ($headerRow === false) {
+        fclose($handle);
+        $error = 'The uploaded file does not contain a readable header line.';
+        return array();
     }
+    $expectedColumnCount = count($headerRow);
+    $columnMap = mapUpdateHeaderColumns($headerRow, $error);
+    if ($columnMap === array()) {
+        fclose($handle);
+        return array();
+    }
+    $lineNumber = 2;
     $visibleFields = getVisibleUpdateFields($columnMap, $hasHeaderLine);
 
     while (!feof($handle)) {
@@ -1342,13 +1356,13 @@ function applyActiveFieldMask(array $importNormalized, array $importDisplay, arr
     return array($importNormalized, $importDisplay);
 }
 
-function findMatchingSpecimenId($collectionId, $herbNummer)
+function findMatchingSpecimenId($specimenId)
 {
-    if (intval($collectionId) === 0 || trim((string)$herbNummer) === '') {
-        return array('specimen_ID' => null, 'error' => 'no_specimen');
+    if (intval($specimenId) <= 0) {
+        return array('specimen_ID' => null, 'error' => 'no_specimen_id');
     }
 
-    $sql = 'SELECT specimen_ID FROM tbl_specimens WHERE collectionID = ' . makeInt($collectionId) . ' AND HerbNummer = ' . quoteString($herbNummer);
+    $sql = "SELECT specimen_ID FROM tbl_specimens WHERE specimen_ID = '" . intval($specimenId) . "'";
     $result = dbi_query($sql);
     if (!$result || mysqli_num_rows($result) === 0) {
         return array('specimen_ID' => null, 'error' => 'no_specimen');
@@ -1363,7 +1377,7 @@ function findMatchingSpecimenId($collectionId, $herbNummer)
 
 function fetchExistingSpecimenData($specimenId)
 {
-    $sql = "SELECT s.specimen_ID, s.CollNummer, s.identstatusID, sis.identification_status,
+    $sql = "SELECT s.specimen_ID, s.HerbNummer, s.collectionID, s.CollNummer, s.identstatusID, sis.identification_status,
                    s.taxonID, s.SammlerID, c.Sammler, s.Sammler_2ID, c2.Sammler_2,
                    s.seriesID, ss.series, s.series_number, s.Nummer, s.alt_number,
                    s.Datum, s.Datum2, s.det, s.typified, s.typusID, ty.typus_lat,
@@ -1414,6 +1428,10 @@ function fetchExistingSpecimenData($specimenId)
     return array(
         'normalized' => $normalized,
         'display' => $display,
+        'meta' => array(
+            'HerbNummer' => isset($row['HerbNummer']) ? trim((string)$row['HerbNummer']) : '',
+            'collectionID' => isset($row['collectionID']) ? intval($row['collectionID']) : 0,
+        ),
     );
 }
 
@@ -1511,11 +1529,8 @@ function updateSpecimenRow($specimenId, array $selectedData)
     $dbLink->commit();
     return array('success' => true, 'message' => 'Updated.', 'changedFields' => $changedFields);
 }
-function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_header_line')
+function renderUpdateInputForm($downloadUrl = '')
 {
-    $withoutHeaderSelected = ($inputHeaderMode !== 'with_header_line') ? " selected='selected'" : '';
-    $withHeaderSelected = ($inputHeaderMode === 'with_header_line') ? " selected='selected'" : '';
-
     echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . UPDATE_SPECIMENS_MAX_FILE_SIZE . "' />\n"
        . "<div class='panel form-panel'>\n"
        . "  <div class='panel-heading'>Import Source</div>\n"
@@ -1533,15 +1548,6 @@ function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_he
        . "      </div>\n"
        . "    </div>\n"
        . "    <div class='form-field'>\n"
-       . "      <label class='form-label' for='update_input_header_mode'>Input format</label>\n"
-       . "      <div class='form-control-wrap'>\n"
-       . "        <select id='update_input_header_mode' name='input_header_mode' class='form-control'>\n"
-       . "          <option value='without_header_line'" . $withoutHeaderSelected . ">without header line</option>\n"
-       . "          <option value='with_header_line'" . $withHeaderSelected . ">with header line</option>\n"
-       . "        </select>\n"
-       . "      </div>\n"
-       . "    </div>\n"
-       . "    <div class='form-field'>\n"
        . "      <div class='form-label'>Allowed HTTPS hosts</div>\n"
        . "      <div class='form-control-wrap form-static-text'>" . htmlspecialchars(implode(', ', getAllowedImportDownloadHosts())) . "</div>\n"
        . "    </div>\n"
@@ -1553,9 +1559,9 @@ function renderUpdateInputForm($downloadUrl = '', $inputHeaderMode = 'without_he
        . "<div class='panel info-panel'>\n"
        . "  <div class='panel-heading'>Update Rules</div>\n"
        . "  <div class='notice form-notice'>\n"
-       . "    <p>This tool updates existing specimen records by matching <strong>HerbNummer</strong> and <strong>CollectionID</strong>. Accepted input files are semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files, uploaded directly or downloaded from an HTTPS URL.</p>\n"
-       . "    <p>Choose <strong>without header line</strong> for the legacy fixed-column export format. Choose <strong>with header line</strong> for files that contain a header row with a selected subset of fields. For header-based files, only <strong>HerbNummer</strong> and <strong>CollectionID</strong> are required; only the provided fields are shown in the preview and considered for update.</p>\n"
-       . "    <p>Allowed header attributes are exactly: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
+       . "    <p>This tool only accepts semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files with a header line. Files can be uploaded directly or downloaded from an HTTPS URL.</p>\n"
+       . "    <p>The header line must contain <strong>specimen_id</strong>. This is the central key for all updates. <strong>HerbNummer</strong> is optional; if it is present and differs from the current JACQ value for the same specimen, the row is flagged with a warning.</p>\n"
+       . "    <p>Only the provided header fields are shown in the preview and considered for update. Allowed header attributes are exactly: <strong>specimen_id</strong>, <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
        . "  </div>\n"
        . "</div>\n";
 }
@@ -1567,6 +1573,7 @@ function buildStatusText(array $statusCodes)
 function getBlockingStatusCodes()
 {
     return array(
+        'no_specimen_id',
         'no_collection',
         'no_specimen',
         'multiple_specimens',
@@ -1605,6 +1612,16 @@ function getFallbackFieldsForStatus($statusCode)
         default:
             return array();
     }
+}
+
+function hasHerbNummerMismatch($importHerbNummer, $databaseHerbNummer)
+{
+    $importHerbNummer = trim((string)$importHerbNummer);
+    if ($importHerbNummer === '') {
+        return false;
+    }
+
+    return strcmp($importHerbNummer, trim((string)$databaseHerbNummer)) !== 0;
 }
 
 function buildDefaultSelectedData(array $importNormalized, array $databaseNormalized, array $statusCodes)
@@ -1691,7 +1708,7 @@ if (isset($_POST['archive_update_process'])) {
 }
 
 $downloadUrl = isset($_POST['download_url']) ? trim((string)$_POST['download_url']) : '';
-$inputHeaderMode = (isset($_POST['input_header_mode']) && $_POST['input_header_mode'] === 'with_header_line') ? 'with_header_line' : 'without_header_line';
+$inputHeaderMode = 'with_header_line';
 $run = detectUpdateRun();
 $readyRows = array();
 $issueRows = array();
@@ -1713,19 +1730,25 @@ if ($run === 2) {
     if ($hasUploadedFile) {
         $inputPath = $_FILES['userfile']['tmp_name'];
         $inputName = isset($_FILES['userfile']['name']) ? (string)$_FILES['userfile']['name'] : '';
+        if (!isAllowedUploadedUpdateFilename($inputName)) {
+            $pageError = 'Only .txt or .csv update files with a header line are supported.';
+            $inputPath = '';
+        }
     } elseif ($hasDownloadUrl) {
         if (downloadImportInput($downloadUrl, $inputPath, $inputName, $inputError)) {
             $inputCleanupNeeded = true;
         }
     }
 
-    if ($inputError !== '') {
+    if (isset($_POST['input_header_mode']) && $_POST['input_header_mode'] !== '' && $_POST['input_header_mode'] !== 'with_header_line') {
+        $pageError = 'Only .txt or .csv update files with a header line are supported.';
+    } elseif ($inputError !== '') {
         $pageError = $inputError;
     } elseif ($inputPath === '') {
         $pageError = 'No update file was provided.';
     } else {
         $headerError = '';
-        $rows = loadUploadedUpdateRows($inputPath, $inputHeaderMode === 'with_header_line', $displayFields, $headerError);
+        $rows = loadUploadedUpdateRows($inputPath, true, $displayFields, $headerError);
         if ($headerError !== '') {
             $pageError = $headerError;
             clearUpdateProcessContext();
@@ -1737,7 +1760,7 @@ if ($run === 2) {
         } else {
             foreach ($rows as $row) {
                 $statusCodes = $row['statusCodes'];
-                $match = findMatchingSpecimenId($row['collectionID'], $row['HerbNummer']);
+                $match = findMatchingSpecimenId($row['specimen_ID']);
                 if ($match['error'] !== '') {
                     addStatusCode($statusCodes, $match['error']);
                 }
@@ -1757,6 +1780,7 @@ if ($run === 2) {
                 $rowSummary = array(
                     'rowKey' => $rowKey,
                     'lineNumber' => $row['lineNumber'],
+                    'fileSpecimenID' => $row['specimen_ID'],
                     'collectionID' => $row['collectionID'],
                     'HerbNummer' => $row['HerbNummer'],
                     'specimen_ID' => $specimenId,
@@ -1785,6 +1809,11 @@ if ($run === 2) {
                 $rowSummary['importDisplay'] = $maskedImportDisplay;
                 $rowSummary['databaseDisplay'] = $databaseRow['display'];
                 $rowSummary['databaseNormalized'] = $databaseRow['normalized'];
+                $rowSummary['databaseMeta'] = isset($databaseRow['meta']) ? $databaseRow['meta'] : array();
+                if (hasHerbNummerMismatch($row['HerbNummer'], $rowSummary['databaseMeta']['HerbNummer'] ?? '')) {
+                    addStatusCode($warningStatusCodes, 'herbnummer_mismatch');
+                }
+                $rowSummary['warningStatusText'] = buildStatusText($warningStatusCodes);
                 $rowSummary['selectedNormalized'] = buildDefaultSelectedData($maskedImportNormalized, $databaseRow['normalized'], $warningStatusCodes);
                 $rowSummary['lockedImportFields'] = buildLockedImportFields($warningStatusCodes);
                 $rowSummary['warningFieldStyles'] = buildWarningFieldStyles($warningStatusCodes);
@@ -2070,7 +2099,7 @@ if ($run === 2) {
 <div class="page-shell">
 <div class="page-header">
     <h1 class="page-title">Update Specimens</h1>
-    <div class="page-subtitle"><?php echo ($run === 2) ? 'Review imported values against JACQ and choose what should be updated.' : (($run === 3) ? 'Update results and archive options.' : 'Upload a file or provide a download URL to start an update run.'); ?></div>
+    <div class="page-subtitle"><?php echo ($run === 2) ? 'Review imported values against JACQ and choose what should be updated.' : (($run === 3) ? 'Update results and archive options.' : 'Upload a header-based .txt or .csv file, or provide a download URL, to start an update run.'); ?></div>
 </div>
 
 <?php if ($pageError !== '') { ?>
@@ -2079,11 +2108,11 @@ if ($run === 2) {
 
 <?php if ($run === 1) { ?>
     <form enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="f">
-        <?php renderUpdateInputForm($downloadUrl, $inputHeaderMode); ?>
+        <?php renderUpdateInputForm($downloadUrl); ?>
     </form>
 <?php } elseif ($run === 2) { ?>
     <div class="summary">
-        <?php echo count($readyRows); ?> matched row(s) are ready to be compared and updated.<br>
+        <?php echo count($readyRows); ?> specimen_id matched row(s) are ready to be compared and updated.<br>
         <?php echo count($issueRows); ?> row(s) need manual correction before they can be updated.
     </div>
     <div class="action-buttons">
@@ -2140,7 +2169,9 @@ if ($run === 2) {
                             <tr class="import-row">
                                 <th class="compare-row-label selected clickable" data-row-key="<?php echo htmlspecialchars($row['rowKey']); ?>" data-source="import">
                                     Import line <?php echo intval($row['lineNumber']); ?><br>
-                                    <?php echo htmlspecialchars($row['HerbNummer']); ?> / collection <?php echo intval($row['collectionID']); ?>
+                                    specimen_id <?php echo intval($row['fileSpecimenID']); ?>
+                                    <?php if ($row['HerbNummer'] !== '') { ?><br><?php echo htmlspecialchars($row['HerbNummer']); ?><?php } ?>
+                                    <?php if (!empty($row['collectionID'])) { ?> / collection <?php echo intval($row['collectionID']); ?><?php } ?>
                                     <?php if ($row['warningStatusText'] !== 'OK') { ?><br><span title="These imported fields were not resolved and therefore default to the database value."><?php echo htmlspecialchars($row['warningStatusText']); ?></span><?php } ?>
                                 </th>
                                 <?php foreach ($displayFields as $field) { $definition = getUpdateFieldDefinitions()[$field]; ?>
@@ -2495,6 +2526,7 @@ if ($run === 2) {
             <table>
                 <tr>
                     <th>Line</th>
+                    <th>File specimen_id</th>
                     <th>HerbNummer</th>
                     <th>Collection</th>
                     <th>Specimen</th>
@@ -2503,6 +2535,7 @@ if ($run === 2) {
                 <?php foreach ($issueRows as $row) { ?>
                     <tr>
                         <td><?php echo intval($row['lineNumber']); ?></td>
+                        <td><?php echo !empty($row['fileSpecimenID']) ? intval($row['fileSpecimenID']) : ''; ?></td>
                         <td><?php echo htmlspecialchars($row['HerbNummer']); ?></td>
                         <td><?php echo intval($row['collectionID']); ?></td>
                         <td><?php echo !empty($row['specimen_ID']) ? intval($row['specimen_ID']) : ''; ?></td>
@@ -2510,7 +2543,7 @@ if ($run === 2) {
                     </tr>
                 <?php } ?>
             </table>
-            <div class="notice" style="margin-top:12px;">Rows with unresolved reference data or without a unique specimen match are not updated by this first scaffold version.</div>
+            <div class="notice" style="margin-top:12px;">Rows with invalid reference data or without a valid specimen_id match are not updated.</div>
         </div>
     <?php } ?>
 

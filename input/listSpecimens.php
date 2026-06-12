@@ -684,6 +684,7 @@ jaxon_checkTypeLabelMapPdfButton();
       <input class="button" type="submit" name="search" value=" search ">
       <input class="button" type="submit" name="resetFilters" value=" reset ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=csv';return false;" name="downloadCSV" value=" download CSV ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=updatecsv';return false;" name="downloadUpdateCSV" value=" download update CSV ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=xslx';return false;" name="downloadXLSX" value=" download XLSX ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=ods';return false;" name="downloadODS" value=" download ODS ">
   </td>
