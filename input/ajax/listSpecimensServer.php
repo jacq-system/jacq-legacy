@@ -211,6 +211,11 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
         } else if ($_SESSION['sAccessible'] == 'no') {
             $sql_restrict_specimen .= " AND s.accessible = 0";
         }
+        if ($_SESSION['sCoordinates'] == 'only') {
+            $sql_restrict_specimen .= " AND (Coord_W IS NOT NULL OR Coord_E IS NOT NULL OR Coord_N IS NOT NULL OR Coord_S IS NOT NULL)";
+        } else if ($_SESSION['sCoordinates'] == 'no') {
+            $sql_restrict_specimen .= " AND (Coord_W IS NULL AND Coord_E IS NULL AND Coord_N IS NULL AND Coord_S IS  NULL)";
+        }
     }
 
     $str_sub_taxonID = $str_sub_basID = $str_sub_synID = '';
@@ -379,7 +384,8 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>"
                . "<th class=\"out\">"
                . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>"
-               . "<th class=\"out\">Date</th>"
+               . "<th class=\"out\">"
+               . "<a href=\"listSpecimens.php?order=c\">Date</a>" . sortItem($_SESSION['sOrTyp'], 3) . "</th>"
                . "<th class=\"out\">X/Y</th>"
                . "<th class=\"out\">Location</th>"
                . "<th class=\"out\">"
