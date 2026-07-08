@@ -51,6 +51,20 @@ function collection($Sammler, $Sammler_2, $series, $series_number, $Nummer, $alt
     return $text;
 }
 
+function updateCsvCollector($Sammler, $Sammler_2)
+{
+    $Sammler = trim((string)$Sammler);
+    $Sammler_2 = trim((string)$Sammler_2);
+    if ($Sammler === '') {
+        return $Sammler_2;
+    }
+    if ($Sammler_2 === '') {
+        return $Sammler;
+    }
+
+    return $Sammler . ', ' . $Sammler_2;
+}
+
 function makeTaxon($taxonID)
 {
     // prepare variables
@@ -228,15 +242,15 @@ $spreadsheet->getActiveSheet()
 ;
 
 $sqlSelect = "SELECT s.specimen_ID, tg.genus, c.Sammler, c2.Sammler_2, ss.series, s.series_number,
-               s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.det, s.taxon_alt, s.Bemerkungen,
+               s.Nummer, s.alt_number, s.Datum, s.Datum2, s.Fundort, s.Fundort_engl, s.det, s.taxon_alt, s.Bemerkungen,
                s.CollNummer, s.altitude_min, s.altitude_max,
                n.nation_engl, p.provinz, s.Bezirk, s.Fundort, tf.family, tsc.cat_description, si.identification_status, sv.voucher,
-               mc.collection, mc.collectionID, mc.coll_short, s.typified, m.source_code,
+               mc.collection, mc.collectionID, mc.coll_short, s.typified, ty.typus_lat, m.source_code,
                s.digital_image, s.digital_image_obs, s.HerbNummer, s.ncbi_accession, s.checked, s.accessible,
                s.Coord_W, s.W_Min, s.W_Sec, s.Coord_N, s.N_Min, s.N_Sec,
                s.Coord_S, s.S_Min, s.S_Sec, s.Coord_E, s.E_Min, s.E_Sec,
                s.quadrant, s.quadrant_sub, s.exactness,
-               s.habitat, s.habitus, s.garten,
+               s.habitat, s.habitus, s.garten, s.notes_internal,
                s.observation,
                atb.date_supplied, atb.remarks,
                tr.rank_abbr,
@@ -252,6 +266,7 @@ $sqlJoin = " LEFT JOIN tbl_specimens_series          ss  ON ss.seriesID = s.seri
              LEFT JOIN tbl_geo_province              p   ON p.provinceID = s.provinceID
              LEFT JOIN tbl_collector                 c   ON c.SammlerID = s.SammlerID
              LEFT JOIN tbl_collector_2               c2  ON c2.Sammler_2ID = s.Sammler_2ID
+             LEFT JOIN tbl_typi                      ty  ON ty.typusID = s.typusID
              LEFT JOIN tbl_tax_species               ts  ON ts.taxonID = s.taxonID
              LEFT JOIN tbl_tax_authors               ta  ON ta.authorID = ts.authorID
              LEFT JOIN tbl_tax_authors               ta1 ON ta1.authorID = ts.subspecies_authorID
@@ -317,9 +332,133 @@ if ($select == 'labels') {
     $resultSpecimens = dbi_query("$sqlSelect FROM tbl_specimens s $sqlJoin WHERE s.specimen_ID IN (" . implode(',', $specimenIDs) . ")");
 }
 
+$exportType = filter_input(INPUT_GET, 'type');
+if ($exportType === 'updatecsv') {
+    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    $spreadsheet->getActiveSheet()->fromArray(array(
+        'specimen_id',
+        'HerbNummer',
+        'collectionID',
+        'CollectionNumber',
+        'status',
+        'taxon',
+        'Sammler',
+        'series',
+        'series_number',
+        'Nummer',
+        'alt_number',
+        'Datum',
+        'Datum2',
+        'det',
+        'typified',
+        'typus',
+        'taxon_alt',
+        'nation_engl',
+        'provinz',
+        'Fundort',
+        'Fundort_engl',
+        'Habitat',
+        'Habitus',
+        'Bemerkungen',
+        'coord_NS',
+        'lat_degree',
+        'lat_minute',
+        'lat_second',
+        'coord_WE',
+        'long_degree',
+        'long_minute',
+        'long_second',
+        'quadrant',
+        'quadrant_sub',
+        'exactness',
+        'alt_min',
+        'alt_max',
+        'digital_image',
+        'digital_image_obs',
+        'observation',
+        'notes_internal',
+    ), null, 'A1');
+}
+
 $i = 2;
 while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
     $sammler = collection($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2'], $rowSpecimen['series'], $rowSpecimen['series_number'], $rowSpecimen['Nummer'], $rowSpecimen['alt_number'], $rowSpecimen['Datum']);
+
+    if ($exportType === 'updatecsv') {
+        if ($rowSpecimen['Coord_S'] > 0 || $rowSpecimen['S_Min'] > 0 || $rowSpecimen['S_Sec'] > 0) {
+            $latHemisphere = 'S';
+            $latDegree = $rowSpecimen['Coord_S'];
+            $latMinute = $rowSpecimen['S_Min'];
+            $latSecond = $rowSpecimen['S_Sec'];
+        } elseif ($rowSpecimen['Coord_N'] > 0 || $rowSpecimen['N_Min'] > 0 || $rowSpecimen['N_Sec'] > 0) {
+            $latHemisphere = 'N';
+            $latDegree = $rowSpecimen['Coord_N'];
+            $latMinute = $rowSpecimen['N_Min'];
+            $latSecond = $rowSpecimen['N_Sec'];
+        } else {
+            $latHemisphere = $latDegree = $latMinute = $latSecond = '';
+        }
+
+        if ($rowSpecimen['Coord_W'] > 0 || $rowSpecimen['W_Min'] > 0 || $rowSpecimen['W_Sec'] > 0) {
+            $lonHemisphere = 'W';
+            $lonDegree = $rowSpecimen['Coord_W'];
+            $lonMinute = $rowSpecimen['W_Min'];
+            $lonSecond = $rowSpecimen['W_Sec'];
+        } elseif ($rowSpecimen['Coord_E'] > 0 || $rowSpecimen['E_Min'] > 0 || $rowSpecimen['E_Sec'] > 0) {
+            $lonHemisphere = 'E';
+            $lonDegree = $rowSpecimen['Coord_E'];
+            $lonMinute = $rowSpecimen['E_Min'];
+            $lonSecond = $rowSpecimen['E_Sec'];
+        } else {
+            $lonHemisphere = $lonDegree = $lonMinute = $lonSecond = '';
+        }
+
+        $spreadsheet->getActiveSheet()->fromArray(array(
+            $rowSpecimen['specimen_ID'],
+            $rowSpecimen['HerbNummer'],
+            $rowSpecimen['collectionID'],
+            $rowSpecimen['CollNummer'],
+            $rowSpecimen['identification_status'],
+            makeTaxon($rowSpecimen['taxonID']),
+            updateCsvCollector($rowSpecimen['Sammler'], $rowSpecimen['Sammler_2']),
+            $rowSpecimen['series'],
+            $rowSpecimen['series_number'],
+            $rowSpecimen['Nummer'],
+            $rowSpecimen['alt_number'],
+            $rowSpecimen['Datum'],
+            $rowSpecimen['Datum2'],
+            $rowSpecimen['det'],
+            $rowSpecimen['typified'],
+            $rowSpecimen['typus_lat'],
+            $rowSpecimen['taxon_alt'],
+            $rowSpecimen['nation_engl'],
+            $rowSpecimen['provinz'],
+            $rowSpecimen['Fundort'],
+            $rowSpecimen['Fundort_engl'] ?? '',
+            $rowSpecimen['habitat'],
+            $rowSpecimen['habitus'],
+            ((substr($rowSpecimen['Bemerkungen'], 0, 1) == '=') ? " " : "") . $rowSpecimen['Bemerkungen'],
+            $latHemisphere,
+            $latDegree,
+            $latMinute,
+            $latSecond,
+            $lonHemisphere,
+            $lonDegree,
+            $lonMinute,
+            $lonSecond,
+            $rowSpecimen['quadrant'],
+            $rowSpecimen['quadrant_sub'],
+            $rowSpecimen['exactness'],
+            $rowSpecimen['altitude_min'],
+            $rowSpecimen['altitude_max'],
+            ($rowSpecimen['digital_image']) ? '1' : '',
+            ($rowSpecimen['digital_image_obs']) ? '1' : '',
+            ($rowSpecimen['observation']) ? '1' : '',
+            $rowSpecimen['notes_internal'] ?? '',
+        ), null, 'A' . $i);
+        $i++;
+        continue;
+    }
 
     if ($rowSpecimen['epithet5']) {
         $infra_spec = $rowSpecimen['epithet5'];
@@ -550,7 +689,15 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
     $i++;
 }
 
-switch (filter_input(INPUT_GET, 'type')) {
+switch ($exportType) {
+    case 'updatecsv':
+        header("Content-type: text/csv; charset=utf-8");
+        header("Content-Disposition: attachment; filename=specimens_update_download.csv");
+        header('Cache-Control: max-age=0');
+        $writer = IOFactory::createWriter($spreadsheet, 'Csv');
+        $writer->setDelimiter(';');
+        $writer->save('php://output');
+        break;
     case 'csv':
         // Redirect output to a client’s web browser (CSV)
         header("Content-type: text/csv; charset=utf-8");
