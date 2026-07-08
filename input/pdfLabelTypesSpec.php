@@ -150,14 +150,13 @@ function makeText($id, $sub)
         $row = mysqli_fetch_array($result);
 
         $text['typus_lat']  = $row['typus_lat'];
-        // BP, 08/2010: TODO: taxonWithHybrids expects $row['statusID'], but $row does not contain it. Problem???
         $text['taxon']      = taxonWithHybrids($row, true);
         $text['coll_short'] = mb_strtoupper($row['coll_short_prj'], 'UTF-8');
         $text['HerbNummer'] = $row['HerbNummer'];
 
         // Check if typus is "no typus" (ID 34), then we need "annotavit"!
-        ( $row['typusID'] == 34 ) ? $text['typified']   = "annotavit " : $text['typified']   = "typificavit ";
-        $text['typified'] .= $row['typified_by_Person'] . " " . $row['typified_Date'];
+        $text['typified'] = (($row['typusID'] == 34) ? "annotavit " : "typificavit ")
+                          . $row['typified_by_Person'] . " " . $row['typified_Date'];
 
         if ($row['synID']) {
             $synonyms = generateSynonymsList($row['synID']);
@@ -390,7 +389,7 @@ while ($row_ID=mysqli_fetch_array($result_ID)) {
                     if ($labelText['accName']) {
                         $pdf->Ln(2);
                         $pdf->SetFont('freesans', '', 9);
-                        $pdf->writeHTML($labelText['accName']);
+                        $pdf->writeHTMLCell(0, 4, null, null, $labelText['accName'], 0, 1);
                     }
 
                     if ($labelText['typified']) {

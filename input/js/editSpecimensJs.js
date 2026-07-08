@@ -193,6 +193,20 @@ function reloadButtonPressed()
     reload = true;
 }
 
+function confirmHerbNummerLength(number)
+{
+    if (!specifiedHerbNummerLength) {
+        return true;
+    }
+
+    number = (number || '').trim();
+    if (number.length === 0 || number.length === specifiedHerbNummerLength) {
+        return true;
+    }
+
+    return confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.");
+}
+
 function checkMandatory(outText)
 {
     let missing = 0;
@@ -265,7 +279,7 @@ function doSubmit( p_type )
 
     // If all fields are set, trigger a submit
     if( checkMandatory(1) ) {
-        if (confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
+        if (confirmHerbNummerLength(document.f.HerbNummer.value) && confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
             $('#submit_type').val(p_type);
             $('#f').submit();
         }
@@ -648,6 +662,7 @@ $(function()
                     dataType: "json",
                     success: function (data) {
                         $('[name="HerbNummer"]').val(data['HerbNummer']).change();
+                        confirmHerbNummerLength(data['HerbNummer']);
                         //console.log("Success, you submit your form" + data);
                     }
                 });
@@ -660,10 +675,8 @@ $(function()
                         setTimeout(() => $(this).focus(), 1)
                     }
                 }
-                if (specifiedHerbNummerLength && number.length != specifiedHerbNummerLength) {
-                    if (!confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.")) {
-                        setTimeout(() => $(this).focus(), 1)
-                    }
+                if (!confirmHerbNummerLength(number)) {
+                    setTimeout(() => $(this).focus(), 1)
                 }
             }
         })

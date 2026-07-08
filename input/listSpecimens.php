@@ -32,6 +32,7 @@ if (!isset($_SESSION['sSynonyms']))     { $_SESSION['sSynonyms'] = ''; }
 if (!isset($_SESSION['sType']))         { $_SESSION['sType'] = 0; }
 if (!isset($_SESSION['sImages']))       { $_SESSION['sImages'] = ''; }
 if (!isset($_SESSION['sAccessible']))   { $_SESSION['sAccessible'] = ''; }
+if (!isset($_SESSION['sCoordinates']))  { $_SESSION['sCoordinates'] = ''; }
 if (!isset($_SESSION['sLinkList']))     { $_SESSION['sLinkList'] = array(); }
 if (!isset($_SESSION['sUserID']))       { $_SESSION['sUserID'] = -1; }
 if (!isset($_SESSION['sUserDate']))     { $_SESSION['sUserDate'] = ''; }
@@ -79,6 +80,7 @@ if (isset($_POST['resetFilters'])) {
     $_SESSION['sSynonyms']         = '';
     $_SESSION['sImages']           = '';
     $_SESSION['sAccessible']       = '';
+    $_SESSION['sCoordinates']      = '';
     $_SESSION['sOrder']            = "genus, epithet, author, Sammler, Sammler_2, series, Nummer, alt_number, Datum, typus_lat";
     $_SESSION['sOrTyp']            = 1;
     $_SESSION['labelOrder']        = $_SESSION['sOrder'];
@@ -115,11 +117,12 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sSynonyms']         = '';
 		$_SESSION['sImages']           = '';  // = $_POST['images'];
         $_SESSION['sAccessible']       = '';  // = $_POST['accessible'];
+        $_SESSION['sCoordinates']      = '';  // = $_POST['coordinates'];
 	} else {
 		unset($_SESSION['taxonID']);
 		$_SESSION['wuCollection']      = $_POST['collection'];
 		$_SESSION['sNumber']           = $_POST['number'];
-	$_SESSION['sNumberList']       = isset($_POST['number_list']) ? trim($_POST['number_list']) : '';
+	    $_SESSION['sNumberList']       = isset($_POST['number_list']) ? trim($_POST['number_list']) : '';
 		$_SESSION['sSeries']           = $_POST['series'];
 		$_SESSION['sFamily']           = $_POST['family'];
 		$_SESSION['sTaxon']            = $_POST['taxon'];
@@ -138,10 +141,11 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
 		$_SESSION['sBemerkungen']      = $_POST['annotations'];
         $_SESSION['sNotesInternal']    = $_POST['notes_internal'];
 
-		$_SESSION['sTyp']      = (($_POST['typ']=="only") ? true : false);
-        $_SESSION['sSynonyms'] = (($_POST['synonyms']=="yes") ? true : false);
-		$_SESSION['sImages']   = $_POST['images'];
-        $_SESSION['sAccessible'] = $_POST['accessible'];
+		$_SESSION['sTyp']         = (($_POST['typ']=="only") ? true : false);
+        $_SESSION['sSynonyms']    = (($_POST['synonyms']=="yes") ? true : false);
+		$_SESSION['sImages']      = $_POST['images'];
+        $_SESSION['sAccessible']  = $_POST['accessible'];
+        $_SESSION['sCoordinates'] = $_POST['coordinates'];
 	}
 
     $_SESSION['sOrder'] = "genus, epithet, author, "
@@ -155,7 +159,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sNumber'] = $_SESSION['sNumberList'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
@@ -168,7 +172,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sNumber'] = $_SESSION['sSeries'] = $_SESSION['sFamily'] = "";
     $_SESSION['sTaxon'] = $_SESSION['sTaxonAlt'] = $_SESSION['sCollector'] = $_SESSION['sNumberCollector'] = $_SESSION['sNumberCollection'] = "";
     $_SESSION['sDate'] = $_SESSION['sCountry'] = $_SESSION['sProvince'] = $_SESSION['sLoc'] = "";
-    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
+    $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
@@ -189,6 +193,16 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
             $_SESSION['sOrTyp'] = -2;
         } else {
             $_SESSION['sOrTyp'] = 2;
+        }
+    }
+    else if ($_GET['order'] == "c") {
+        $_SESSION['sOrder'] = "Datum, genus, epithet, author, "
+                            . "Sammler, Sammler_2, series, Nummer, alt_number, "
+                            . "typus_lat";
+        if ($_SESSION['sOrTyp'] == 3) {
+            $_SESSION['sOrTyp'] = -3;
+        } else {
+            $_SESSION['sOrTyp'] = 3;
         }
     }
     else if ($_GET['order'] == "d") {
@@ -684,6 +698,7 @@ jaxon_checkTypeLabelMapPdfButton();
       <input class="button" type="submit" name="search" value=" search ">
       <input class="button" type="submit" name="resetFilters" value=" reset ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=csv';return false;" name="downloadCSV" value=" download CSV ">
+      <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=updatecsv';return false;" name="downloadUpdateCSV" value=" download update CSV ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=xslx';return false;" name="downloadXLSX" value=" download XLSX ">
       <input class="button" type="button" onclick="document.location.href='listSpecimensExport.php?select=list&type=ods';return false;" name="downloadODS" value=" download ODS ">
   </td>
@@ -693,7 +708,14 @@ jaxon_checkTypeLabelMapPdfButton();
     <?php if (checkRight('specim')): ?>
     <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecimens.php?sel=<0>&new=1'">
     <?php endif; ?>
-  </td><td colspan="2">
+  </td><td align="right">&nbsp;<b>Coordinates&nbsp;</b></td>
+    <td>
+      <input type="radio" name="coordinates" value="only"<?php if($_SESSION['sCoordinates'] == 'only') echo " checked"; ?>>
+      <b>Yes</b>
+      <input type="radio" name="coordinates" value="no"<?php if($_SESSION['sCoordinates'] == 'no') echo " checked"; ?>>
+      <b>No</b>
+      <input type="radio" name="coordinates" value="all"<?php if($_SESSION['sCoordinates'] != 'only' && $_SESSION['sCoordinates'] != 'no') echo " checked"; ?>>
+      <b>All</b>
   </td>
 </tr>
 </table>
