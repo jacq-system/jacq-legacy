@@ -774,7 +774,7 @@ $cf->inputJqAutocomplete(10, 7.5, 51, "gen", $p_gen, $p_genIndex, "index_jq_auto
 $cf->labelMandatory(10, 10.5, 6, "Rank");
 $cf->dropdown(10, 10.5, "rankIndex", $p_rankIndex, $rank[0], $rank[1]);
 
-if ($p_statusIndex == 1) {
+if ($p_statusIndex == 1 && $p_taxonID) {
     $cf->labelMandatory(37, 10.5, 6, "parents", "javascript:editHybrids($p_taxonID)");
 } else {
     $cf->labelMandatory(37, 10.5, 6, "tax. Status");

@@ -138,6 +138,7 @@ if (isset($_GET['new'])) {
                    . "  self.close()\n"
                    . "</script>\n";
             } else {
+                error_log("SQL-ERROR in editIndex has been shown to the user.");
                 echo "<script type='text/javascript' language='JavaScript'>\n"
                    . '  alert("' . $dbLink->errno . ': ' . $dbLink->error . '");' . "\n"
                    . "</script>\n";

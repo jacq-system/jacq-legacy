@@ -86,7 +86,7 @@ if (isset($_GET['ID'])) {
     $newHybrid = (!empty($row['taxon_ID_fk'])) ? false : true;
 
     if (!empty($_POST['submitUpdate']) && $_SESSION['editorControl']) {
-        if (!empty(extractID($p_parent_1)) && !empty(extractID($p_parent_2))) {   // both parents must be set
+        if (extractID($p_parent_1) != "NULL" && extractID($p_parent_2) != "NULL") {   // both parents must be set
             if ($newHybrid) {
                 $sql = "INSERT INTO tbl_tax_hybrids SET
                          taxon_ID_fk = '$id',
