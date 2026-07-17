@@ -103,7 +103,7 @@ function generateFiles(int $source_id): void
     if ($result) {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
-            for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
+            for ($i = 0; $i < 3; $i++) {  // PI often needs longer to react...
                 $fh = fopen($filename, 'w');
                 $curlOptions = array(
                     CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}" . "?withredirect=1",
@@ -125,19 +125,23 @@ function generateFiles(int $source_id): void
                     break;
                 }
             }
+            $filesize = (str_starts_with(mime_content_type($filename), 'text/')) ? 42 : filesize($filename);
+            $url = ($filesize >= 1500) ? "'https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg'" : "NULL";
             $dbLink->queryCatch("INSERT INTO gbif_pilot.europeana_images SET
                                   specimen_ID = {$row['specimen_ID']},
-                                  filesize    = " . filesize($filename) . ",
+                                  filesize    = $filesize,
                                   filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
                                   source_id   = $source_id,
-                                  source_code = '$sourceCode'
+                                  source_code = '$sourceCode',
+                                  url         = $url
                                  ON DUPLICATE KEY UPDATE
-                                  filesize    = " . filesize($filename) . ",
+                                  filesize    = $filesize,
                                   filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
                                   source_id   = $source_id,
-                                  source_code = '$sourceCode'");
+                                  source_code = '$sourceCode',
+                                  url         = $url");
             if ($options['verbose'] > 1) {
-                echo "$sourceCode ($source_id): $filename" . ((filesize($filename) < 1500) ? ' empty' : '') . "\n";
+                echo "$sourceCode ($source_id): $filename" . (($filesize < 1500) ? ' empty' : '') . "\n";
             }
         }
     }
