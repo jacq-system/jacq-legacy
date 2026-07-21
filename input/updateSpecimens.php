@@ -8,10 +8,62 @@ require_once('inc/clsTaxonTokenizer.php');
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
+const UPDATE_PENDING_INPUT_SESSION_KEY = 'update_specimens_pending_input';
 
+function normalizeUpdateImportText($value)
+{
+    $value = (string)$value;
+    if ($value === '' || mb_check_encoding($value, 'UTF-8')) {
+        return $value;
+    }
+
+    $sourceEncoding = mb_detect_encoding($value, array('Windows-1252', 'ISO-8859-1'), true);
+    return mb_convert_encoding($value, 'UTF-8', $sourceEncoding ?: 'Windows-1252');
+}
+
+function detectUpdateImportEncoding($inputPath)
+{
+    $content = @file_get_contents($inputPath);
+    if ($content === false) {
+        return '';
+    }
+    if (mb_check_encoding($content, 'UTF-8')) {
+        return 'UTF-8';
+    }
+
+    return mb_detect_encoding($content, array('Windows-1252', 'ISO-8859-1'), true) ?: '';
+}
+
+function convertUpdateImportFileToUtf8($sourcePath, $sourceEncoding, &$targetPath, &$error = '')
+{
+    if (!in_array($sourceEncoding, array('Windows-1252', 'ISO-8859-1'), true)) {
+        $error = 'Only Windows-1252 and ISO-8859-1 files can be converted automatically.';
+        return false;
+    }
+
+    $content = @file_get_contents($sourcePath);
+    if ($content === false) {
+        $error = 'Could not read the file selected for conversion.';
+        return false;
+    }
+
+    $targetPath = tempnam(sys_get_temp_dir(), 'upd_utf8_');
+    if ($targetPath === false || @file_put_contents($targetPath, mb_convert_encoding($content, 'UTF-8', $sourceEncoding)) === false) {
+        if ($targetPath !== false) {
+            @unlink($targetPath);
+        }
+        $error = 'Could not create the UTF-8 converted file.';
+        return false;
+    }
+
+    return true;
+}
 function parseUpdateLine($handle, $minNumOfParts = 1, $delimiter = ';', $enclosure = '"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    if ($parts !== false) {
+        $parts = array_map('normalizeUpdateImportText', $parts);
+    }
     if ($parts !== false && count($parts) === 1 && trim((string)$parts[0]) === '') {
         return false;
     }
@@ -286,15 +338,17 @@ function downloadImportInput($url, &$inputPath, &$inputName, &$error = '')
 function detectUpdateRun()
 {
     $hasResetRequest = isset($_POST['reset_update_process']);
+    $hasCancelEncodingRequest = isset($_POST['cancel_update_input_encoding']);
     $hasArchiveRequest = isset($_POST['archive_update_process']);
+    $hasEncodingConversionRequest = isset($_POST['convert_update_input_encoding']);
     $hasUploadedFile = isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name']);
     $hasDownloadUrl = isset($_POST['download_url']) && trim((string)$_POST['download_url']) !== '';
     $hasUpdatePayload = isset($_POST['update_payload']) && trim((string)$_POST['update_payload']) !== '';
 
-    if ($hasResetRequest) {
+    if ($hasResetRequest || $hasCancelEncodingRequest) {
         return 1;
     }
-    if ($hasUploadedFile || $hasDownloadUrl) {
+    if ($hasUploadedFile || $hasDownloadUrl || $hasEncodingConversionRequest) {
         return 2;
     }
     if ($hasUpdatePayload || $hasArchiveRequest) {
@@ -323,6 +377,24 @@ function clearUpdateProcessContext()
     unset($_SESSION[UPDATE_PROCESS_SESSION_KEY]);
 }
 
+function clearPendingUpdateInput()
+{
+    if (isset($_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY]) && is_array($_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY])) {
+        $pending = $_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY];
+        if (!empty($pending['input_file_path'])) {
+            cleanupStoredUpdateProcessFile($pending['input_file_path']);
+        }
+    }
+
+    unset($_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY]);
+}
+
+function getPendingUpdateInput()
+{
+    return (isset($_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY]) && is_array($_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY]))
+        ? $_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY]
+        : array();
+}
 function getUpdateProcessContext()
 {
     if (isset($_SESSION[UPDATE_PROCESS_SESSION_KEY]) && is_array($_SESSION[UPDATE_PROCESS_SESSION_KEY])) {
@@ -355,9 +427,31 @@ function isAllowedUploadedUpdateFilename($inputName)
     return in_array($extension, array('txt', 'csv'), true);
 }
 
+function storePendingUpdateInput($sourcePath, $inputName, $encoding, &$error = '')
+{
+    clearPendingUpdateInput();
+
+    $storedPath = tempnam(sys_get_temp_dir(), 'upd_encoding_');
+    if ($storedPath === false || !@copy($sourcePath, $storedPath)) {
+        if ($storedPath !== false) {
+            cleanupStoredUpdateProcessFile($storedPath);
+        }
+        $error = 'Could not persist the file for encoding conversion.';
+        return false;
+    }
+
+    $_SESSION[UPDATE_PENDING_INPUT_SESSION_KEY] = array(
+        'input_file_path' => $storedPath,
+        'input_file_name' => sanitizeUpdateProcessFilename($inputName),
+        'encoding' => $encoding,
+    );
+
+    return true;
+}
 function storeUpdateProcessInputFile($sourcePath, $inputName, &$error = '')
 {
     clearUpdateProcessContext();
+    clearPendingUpdateInput();
 
     $storedPath = tempnam(sys_get_temp_dir(), 'upd_proc_');
     if ($storedPath === false) {
@@ -912,7 +1006,7 @@ function normalizeImportTaxonText($taxonText)
     }
 
     $parts = preg_split('/\s+/u', $taxonText);
-    if (count($parts) > 1 && preg_match('/^\p{Lu}/u', $parts[1])) {
+    if (is_array($parts) && count($parts) > 1 && preg_match('/^\p{Lu}/u', $parts[1])) {
         return trim((string)$parts[0]);
     }
 
@@ -989,8 +1083,20 @@ function getSimilarTaxaSuggestions($taxonText)
 {
     global $_OPTIONS;
 
+    static $suggestionCache = array();
+    static $lookupCount = 0;
+
     $taxonText = normalizeImportTaxonText($taxonText);
     if ($taxonText === '' || empty($_OPTIONS['serviceTaxamatch'])) {
+        return array();
+    }
+
+    if (isset($suggestionCache[$taxonText])) {
+        return $suggestionCache[$taxonText];
+    }
+
+    if ($lookupCount >= 3 || (isset($_SERVER['REQUEST_TIME_FLOAT']) && microtime(true) - floatval($_SERVER['REQUEST_TIME_FLOAT']) > 20)) {
+        $suggestionCache[$taxonText] = array();
         return array();
     }
 
@@ -998,6 +1104,7 @@ function getSimilarTaxaSuggestions($taxonText)
     $parser = clsTaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxonText);
     if (empty($taxonParts['genus'])) {
+        $suggestionCache[$taxonText] = array();
         return array();
     }
 
@@ -1010,11 +1117,17 @@ function getSimilarTaxaSuggestions($taxonText)
         (isset($taxonParts['subepithet']) ? $taxonParts['subepithet'] : '')
     );
     if ($searchText === '') {
+        $suggestionCache[$taxonText] = array();
         return array();
     }
 
     $suggestions = array();
+    $lookupCount++;
     $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+    if (method_exists($service, 'setRPCTimeouts')) {
+        $service->setRPCTimeouts(1, 2);
+    }
+
     try {
         $matches = $service->getMatchesService('vienna', $searchText, array('showSyn' => false, 'NearMatch' => false));
         if (isset($matches['result'][0]['searchresult'])) {
@@ -1038,7 +1151,8 @@ function getSimilarTaxaSuggestions($taxonText)
         error_log('TaxaMatch suggestion failed in updateSpecimens.php: ' . $e->getMessage());
     }
 
-    return array_values($suggestions);
+    $suggestionCache[$taxonText] = array_values($suggestions);
+    return $suggestionCache[$taxonText];
 }
 
 
@@ -1694,8 +1808,9 @@ function getDifferingFields(array $importNormalized, array $databaseNormalized)
 }
 
 $preRunPageError = '';
-if (isset($_POST['reset_update_process'])) {
+if (isset($_POST['reset_update_process']) || isset($_POST['cancel_update_input_encoding'])) {
     clearUpdateProcessContext();
+    clearPendingUpdateInput();
     $_POST = array();
     $_FILES = array();
 }
@@ -1717,6 +1832,7 @@ $pageError = $preRunPageError;
 $seenSpecimens = array();
 $changedColumns = array();
 $displayFields = array_keys(getUpdateFieldDefinitions());
+$encodingConfirmation = array();
 
 if ($run === 2) {
     $rows = array();
@@ -1727,7 +1843,22 @@ if ($run === 2) {
     $hasUploadedFile = isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name']);
     $hasDownloadUrl = ($downloadUrl !== '');
 
-    if ($hasUploadedFile) {
+    $hasEncodingConversionRequest = isset($_POST['convert_update_input_encoding']);
+    if (!$hasEncodingConversionRequest) {
+        clearPendingUpdateInput();
+    }
+
+    if ($hasEncodingConversionRequest) {
+        $pendingInput = getPendingUpdateInput();
+        if (empty($pendingInput['input_file_path']) || !is_file($pendingInput['input_file_path'])) {
+            $inputError = 'The file selected for conversion is no longer available. Please upload it again.';
+        } elseif (!convertUpdateImportFileToUtf8($pendingInput['input_file_path'], $pendingInput['encoding'] ?? '', $inputPath, $inputError)) {
+            // The conversion helper supplies the user-facing error message.
+        } else {
+            $inputName = $pendingInput['input_file_name'];
+            $inputCleanupNeeded = true;
+        }
+    } elseif ($hasUploadedFile) {
         $inputPath = $_FILES['userfile']['tmp_name'];
         $inputName = isset($_FILES['userfile']['name']) ? (string)$_FILES['userfile']['name'] : '';
         if (!isAllowedUploadedUpdateFilename($inputName)) {
@@ -1747,17 +1878,38 @@ if ($run === 2) {
     } elseif ($inputPath === '') {
         $pageError = 'No update file was provided.';
     } else {
-        $headerError = '';
-        $rows = loadUploadedUpdateRows($inputPath, true, $displayFields, $headerError);
+        $inputEncoding = detectUpdateImportEncoding($inputPath);
+        if ($inputEncoding === '') {
+            $pageError = 'The file encoding could not be determined. Only UTF-8, Windows-1252 and ISO-8859-1 files are supported.';
+        } elseif ($inputEncoding !== 'UTF-8') {
+            if ($hasEncodingConversionRequest) {
+                $pageError = 'The converted file is still not valid UTF-8.';
+            } else {
+                $pendingError = '';
+                if (!storePendingUpdateInput($inputPath, $inputName, $inputEncoding, $pendingError)) {
+                    $pageError = $pendingError;
+                } else {
+                    $encodingConfirmation = array(
+                        'encoding' => $inputEncoding,
+                        'filename' => sanitizeUpdateProcessFilename($inputName),
+                    );
+                }
+            }
+        } else {
+            $headerError = '';
+            $rows = loadUploadedUpdateRows($inputPath, true, $displayFields, $headerError);
         if ($headerError !== '') {
             $pageError = $headerError;
             clearUpdateProcessContext();
+            clearPendingUpdateInput();
         } elseif (empty($rows)) {
             $pageError = 'The uploaded file could not be read or did not contain any usable data rows.';
             clearUpdateProcessContext();
+            clearPendingUpdateInput();
         } elseif (!storeUpdateProcessInputFile($inputPath, $inputName, $inputError)) {
             $pageError = $inputError;
         } else {
+            clearPendingUpdateInput();
             foreach ($rows as $row) {
                 $statusCodes = $row['statusCodes'];
                 $match = findMatchingSpecimenId($row['specimen_ID']);
@@ -1824,6 +1976,8 @@ if ($run === 2) {
                 $readyRows[] = $rowSummary;
             }
         }
+        }
+
         if ($inputCleanupNeeded && is_file($inputPath)) {
             @unlink($inputPath);
         }
@@ -2106,7 +2260,24 @@ if ($run === 2) {
     <div class="error"><?php echo htmlspecialchars($pageError); ?></div>
 <?php } ?>
 
-<?php if ($run === 1) { ?>
+<?php if (!empty($encodingConfirmation)) { ?>
+    <div class="panel info-panel">
+        <div class="panel-heading">File Encoding</div>
+        <div class="notice form-notice">
+            <p>The file <strong><?php echo htmlspecialchars($encodingConfirmation['filename']); ?></strong> is encoded as <strong><?php echo htmlspecialchars($encodingConfirmation['encoding']); ?></strong>, not UTF-8.</p>
+            <p>Convert the temporary copy to UTF-8 before checking the update data, or cancel this upload.</p>
+        </div>
+        <div class="action-buttons" style="margin-top:18px;">
+            <form action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST">
+                <input type="hidden" name="convert_update_input_encoding" value="1">
+                <input type="submit" value="Convert to UTF-8 and continue" class="button-primary">
+            </form>
+            <form action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST">
+                <input type="submit" name="cancel_update_input_encoding" value="Cancel">
+            </form>
+        </div>
+    </div>
+<?php } elseif ($run === 1) { ?>
     <form enctype="multipart/form-data" action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']); ?>" method="POST" name="f">
         <?php renderUpdateInputForm($downloadUrl); ?>
     </form>
@@ -2594,21 +2765,3 @@ if ($run === 2) {
 </div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

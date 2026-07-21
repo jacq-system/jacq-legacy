@@ -65,6 +65,14 @@ class jsonRPCClient {
 	private $notification = false;
 
 	/**
+	 * Transport timeout settings in seconds.
+	 *
+	 * @var integer
+	 */
+	private $connectTimeout = 10;
+	private $requestTimeout = 20;
+
+	/**
 	 * Takes the connection parameters
 	 *
 	 * @param string $url
@@ -93,6 +101,11 @@ class jsonRPCClient {
 							$this->notification = true;
 	}
 
+
+	public function setRPCTimeouts($connectTimeout, $requestTimeout) {
+		$this->connectTimeout = max(1, intval($connectTimeout));
+		$this->requestTimeout = max(1, intval($requestTimeout));
+	}
 	private function isLocalEnvironment() {
 		$hostHeader = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
 		$normalizedHost = strtolower(preg_replace('/:.*/', '', $hostHeader));
@@ -111,8 +124,8 @@ class jsonRPCClient {
 		curl_setopt($curl, CURLOPT_POSTFIELDS, $request);
 		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-		curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-		curl_setopt($curl, CURLOPT_TIMEOUT, 20);
+		curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, $this->connectTimeout);
+		curl_setopt($curl, CURLOPT_TIMEOUT, $this->requestTimeout);
 		curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, $verifySsl);
 		curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, ($verifySsl) ? 2 : 0);
@@ -133,7 +146,7 @@ class jsonRPCClient {
 				'method' => 'POST',
 				'header' => "Content-type: application/json\r\n",
 				'content' => $request,
-				'timeout' => 20,
+				'timeout' => $this->requestTimeout,
 				'ignore_errors' => true,
 			),
 			'ssl' => array(
