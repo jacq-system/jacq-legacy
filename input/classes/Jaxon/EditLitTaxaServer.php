@@ -5,10 +5,9 @@ namespace Jacq\Jaxon;
 class EditLitTaxaServer extends \Jaxon\CallableClass
 {
     /**
-     * jaxon-function react on a change of the source
+     * react on a change of the source
      *
      * @param array $formData form-values
-     * @return \Jaxon\Response\Response
      */
     public function setSource($formData)
     {

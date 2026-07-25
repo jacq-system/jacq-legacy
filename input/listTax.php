@@ -12,12 +12,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
-$jaxon->setOption('core.request.uri', 'ajax/listTaxServer.php');
-
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateScientificNameLabel");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearScientificNameLabels");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "setAll");
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
+$jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 if (!isset($_SESSION['taxStatus']))     { $_SESSION['taxStatus'] = ""; }
 if (!isset($_SESSION['taxRank']))       { $_SESSION['taxRank'] = ""; }
@@ -95,7 +90,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxExternal']   = "";
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet,common_name, author";
         $_SESSION['taxOrTyp']      = 51;
-	}else if (!empty($_POST['collector']) || !empty($_POST['number']) || !empty($_POST['date'])) {
+	} elseif (!empty($_POST['collector']) || !empty($_POST['number']) || !empty($_POST['date'])) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 4; // list Species, other display
 		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
@@ -112,7 +107,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxExternal']   = isset($_POST['external']) && $_POST['external'] == '1';
         $_SESSION['taxOrder']      = "Sammler, Sammler_2, series, leg_nr, tt.date";
         $_SESSION['taxOrTyp']      = 41;
-    } else if (!empty($_POST['species']) || !empty($_POST['status'])){
+    } elseif (!empty($_POST['species']) || !empty($_POST['status'])){
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 3; // list Species
 		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
@@ -130,7 +125,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxOrder']      = "genus, auth_g, family, epithet, author, epithet1, author1, "
                                    . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
         $_SESSION['taxOrTyp']      = 31;
-    } else if (!empty($_POST['genus'])) {
+    } elseif (!empty($_POST['genus'])) {
 		$_SESSION['taxCommonname'] = "";
         $_SESSION['taxType']       = 2; // list Genus
 		$_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
@@ -164,7 +159,7 @@ if (isset($_POST['search'])) {
         $_SESSION['taxOrder']      = "category, family";
         $_SESSION['taxOrTyp']      = 11;
     }
-} else if (isset($_GET['lfamily'])) {
+} elseif (isset($_GET['lfamily'])) {
     $_SESSION['taxType']       = 1; // list Family
 	$_SESSION['noLiterature']  = false;
     $_SESSION['taxFamily']     = $_GET['lfamily'];
@@ -180,7 +175,7 @@ if (isset($_POST['search'])) {
     $_SESSION['taxExternal']   = "";
     $_SESSION['taxOrder']      = "category, family";
     $_SESSION['taxOrTyp']      = 11;
-} else if (isset($_GET['lgenus'])) {
+} elseif (isset($_GET['lgenus'])) {
     $_SESSION['taxType']       = 2; // list Genus
     $_SESSION['noLiterature']  = isset($_POST['noLiterature']) && $_POST['noLiterature'] == '1';
     $_SESSION['taxFamily']     = ($_SESSION['editFamily']) ? $_SESSION['editFamily'] : "";
@@ -196,7 +191,7 @@ if (isset($_POST['search'])) {
     $_SESSION['taxExternal']   = "";
     $_SESSION['taxOrder']      = "genus, auth_g, family";
     $_SESSION['taxOrTyp']      = 21;
-} else if (isset($_GET['order'])) {
+} elseif (isset($_GET['order'])) {
     if ($_SESSION['taxType'] == 5) { // list Species, other display
 		if ($_GET['order']=="db") {
 			$_SESSION['taxOrder'] = "genus, auth_g, family, epithet,common_name, author";
@@ -213,7 +208,7 @@ if (isset($_POST['search'])) {
 				$_SESSION['taxOrTyp'] = 51;
 			}
 		}
-	} else if ($_SESSION['taxType'] == 4) { // list Species, other display
+	} elseif ($_SESSION['taxType'] == 4) { // list Species, other display
         if ($_GET['order']=="db") {
             $_SESSION['taxOrder'] = "family, genus, epithet, author, epithet1, author1, "
                                   . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
@@ -230,7 +225,7 @@ if (isset($_POST['search'])) {
                 $_SESSION['taxOrTyp'] = 41;
             }
         }
-    } else if ($_SESSION['taxType'] == 3) { // list Species
+    } elseif ($_SESSION['taxType'] == 3) { // list Species
         if ($_GET['order'] == "cs") {
             $_SESSION['taxOrder'] = "epithet, genus, auth_g, family, author, epithet1, author1, "
                                   . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
@@ -239,7 +234,7 @@ if (isset($_POST['search'])) {
             } else {
                 $_SESSION['taxOrTyp'] = 33;
             }
-        } else if ($_GET['order'] == "cf") {
+        } elseif ($_GET['order'] == "cf") {
             $_SESSION['taxOrder'] = "family, genus, auth_g, epithet, author, epithet1, author1, "
                                   . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
             if ($_SESSION['taxOrTyp'] == 32) {
@@ -256,7 +251,7 @@ if (isset($_POST['search'])) {
                 $_SESSION['taxOrTyp'] = 31;
             }
         }
-    } else if ($_SESSION['taxType'] == 2) { // list Genus
+    } elseif ($_SESSION['taxType'] == 2) { // list Genus
         if ($_GET['order'] == "bf") {
             $_SESSION['taxOrder'] = "family, genus, auth_g";
             if ($_SESSION['taxOrTyp'] == 22) {
@@ -1028,9 +1023,9 @@ if ($_SESSION['taxMDLD'] != "") {
     else if ($_SESSION['taxType'] == 3) {  // list Species
 ?>
       <input type="button" class="button" value="make PDF (Scientific Names)" id="btMakeScientificNameLabelPdf" onClick="showPDF('scientificName')">
-      <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="jaxon_clearScientificNameLabels(); return false;">
-      <input type="button" class="button" value="set all" id="btSetAllLabels" onClick="jaxon_setAll(); return false;">
-      <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="jaxon_clearAll(); return false;">
+      <input type="button" class="button" value="clear all Labels" id="btClearScientificNameLabels" onClick="Jacq.Jaxon.ListTaxServer.clearScientificNameLabels(); return false;">
+      <input type="button" class="button" value="set all" id="btSetAllLabels" onClick="Jacq.Jaxon.ListTaxServer.setAll(); return false;">
+      <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="Jacq.Jaxon.ListTaxServer.clearAll(); return false;">
       <p>
 <?php
         $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.nr,
@@ -1139,7 +1134,7 @@ if ($_SESSION['taxMDLD'] != "") {
                    .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . subTaxonItem($row) . "</a></td>";
                 echo "<td class='outCenter'>"
                    .   "<input style='width: 1em;' type='text' id='inpScientificNameLabel_$id' maxlength='2' "
-                   .     "value='" . intval($row['nr']) . "' onChange=\"jaxon_updateScientificNameLabel('$id', $('#inpScientificNameLabel_$id').val());\">"
+                   .     "value='" . intval($row['nr']) . "' onChange=\"Jacq.Jaxon.ListTaxServer.updateScientificNameLabel('$id', $('#inpScientificNameLabel_$id').val());\">"
                    . "</td></tr>\n";
                 $hybrids = getHybrids($row['taxonID']);
                 if (strlen($hybrids) > 0) {
