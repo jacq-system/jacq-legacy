@@ -1,4 +1,4 @@
-#!/usr/bin/php -qC
+#!/usr/bin/php -q
 <?php
 require 'inc/stableIdentifier.php';
 

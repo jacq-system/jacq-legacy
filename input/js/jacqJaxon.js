@@ -31,6 +31,13 @@ Jacq.Jaxon.EditLitTaxaServer.setSource = function() {
         { parameters: arguments }
     );
 };
+Jacq.Jaxon.ListObservationsServer = {};
+Jacq.Jaxon.ListObservationsServer.getUserDate = function() {
+    return jaxon.request(
+        { jxncls: 'Jacq.Jaxon.ListObservationsServer', jxnmthd: 'getUserDate' },
+        { parameters: arguments }
+    );
+};
 
 
 

@@ -8,9 +8,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
-$jaxon->setOption('core.request.uri', 'ajax/listObservationsServer.php');
-
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
+$jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 if (!isset($_SESSION['obsCollection'])) { $_SESSION['obsCollection'] = '';      }
 if (!isset($_SESSION['obsTyp']))        { $_SESSION['obsTyp']        = '';      }
@@ -120,9 +118,9 @@ function makeDropdownUsername()
             FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.log_specimens ls
             WHERE hu.userID = ls.userID
             GROUP BY hu.userID
-            ORDER BY surname, firstname, username";
+            ORDER BY hu.surname, hu.firstname, hu.username";
     $result = dbi_query($sql);
-    echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
+    echo "<select size=\"1\" name=\"userID\" onchange=\"Jacq.Jaxon.ListObservationsServer.getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
