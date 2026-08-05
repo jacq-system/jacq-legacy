@@ -111,6 +111,7 @@ function generateFiles(int $source_id): void
         echo $source_id . ": " . $e->__toString() . "\n";
         $result = false;
     }
+    $countNew = 0;
     if ($result) {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
@@ -137,7 +138,12 @@ function generateFiles(int $source_id): void
                 }
             }
             $filesize = (str_starts_with(mime_content_type($filename), 'text/')) ? 42 : filesize($filename);
-            $url = ($filesize >= 1500) ? "'https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg'" : "NULL";
+            if ($filesize >= 1500) {
+                $url = "'https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg'";
+                $countNew++;
+            } else {
+                $url = "NULL";
+            }
             $dbLink->queryCatch("INSERT INTO gbif_pilot.europeana_images SET
                                   specimen_ID = {$row['specimen_ID']},
                                   filesize    = $filesize,
@@ -160,7 +166,10 @@ function generateFiles(int $source_id): void
         }
     }
     if ($options['verbose']) {
-        echo "---------- $sourceCode ($source_id) finished (" . date(DATE_RFC822) . ") ----------\n";
+        echo "---------- $sourceCode ($source_id) finished "
+           . str_repeat(".", 14 - strlen("$sourceCode ($source_id)"))
+           . (($countNew) ? " $countNew new " : "        ")
+           . "(" . date(DATE_RFC822) . ") ----------\n";
     }
 }
 
