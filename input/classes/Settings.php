@@ -10,7 +10,7 @@ class Settings
 |                    |
 \********************/
 
-private static $instance = null;
+private static ?Settings $instance = null;
 
 /********************\
 |                    |
@@ -23,7 +23,7 @@ private static $instance = null;
  *
  * @return Settings new instance of that class
  */
-public static function Load()
+public static function Load(): Settings
 {
     if (self::$instance == null) {
         self::$instance = new Settings();
@@ -37,7 +37,7 @@ public static function Load()
 |             |
 \*************/
 
-protected $options = array();
+protected array $options = array();
 
 /***************\
 |               |
@@ -64,11 +64,11 @@ protected function __construct()
 /**
  * get a single or a group of settings
  *
- * @param string group options group
- * @param string[optional] $key key within that group (if any)
+ * @param string $group options group
+ * @param string|null $key key within that group (if any)
  * @return mixed single or multi settings
  */
-public function get($group, $key = null)
+public function get(string $group, string $key = null): mixed
 {
     if ($key) {
         return $this->options[$group][$key] ?? null;
@@ -83,7 +83,7 @@ public function get($group, $key = null)
  * @param string $db which database
  * @return array necessary data for db access
  */
-public function getDbAccess($db)
+public function getDbAccess(string $db): array
 {
     $db = strtoupper($db);
     if (isset($this->options['DATABASE'][$db])) {

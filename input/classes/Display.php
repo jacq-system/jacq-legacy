@@ -12,7 +12,7 @@ class Display
 |                    |
 \********************/
 
-private static $instance = null;
+private static ?Display $instance = null;
 
 /********************\
 |                    |
@@ -25,7 +25,7 @@ private static $instance = null;
  *
  * @return Display new instance of that class
  */
-public static function Load()
+public static function Load(): Display
 {
     if (self::$instance == null) {
         self::$instance = new Display();
@@ -59,10 +59,10 @@ protected function __construct () {}
  * returns a formatted protolog-string when given a valid citation-ID
  *
  * @param int $citationID citation-ID
- * @param bool $withID [optional] adds the citationID between brackets at the end (default no)
+ * @param bool $withID adds the citationID between brackets at the end (default no)
  * @return string formatted protolog-string
  */
-public function protolog ($citationID, $withID = false)
+public function protolog (int $citationID, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -94,13 +94,13 @@ public function protolog ($citationID, $withID = false)
             }
 
             return $ret;
-        } else {
-            return "";
         }
     }
     catch (Exception $e) {
-        exit($e->getMessage());
+        error_log("Display.protolog: " . $e->__toString());
     }
+
+    return "";
 }
 
 
@@ -113,7 +113,7 @@ public function protolog ($citationID, $withID = false)
  * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
-public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withID = false)
+public function taxon (int $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -200,8 +200,9 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
         return $ret;
     }
     catch (Exception $e) {
-        exit($e->getMessage());
+        error_log("Display.taxon: " . $e->__toString());
     }
+    return "";
 }
 
 /**
@@ -213,7 +214,7 @@ public function taxon ($taxonID, $withSeperator = false, $withDT = false, $withI
  * @param bool $withID[optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
-public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = false)
+public function taxonWithHybrids (int $taxonID, bool $withSeperator = false, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -230,8 +231,9 @@ public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = fa
         }
     }
     catch (Exception $e) {
-        exit($e->getMessage());
+        error_log("Display.taxonWithHybrids: " . $e->__toString());
     }
+    return "";
 }
 
 /**
@@ -240,7 +242,7 @@ public function taxonWithHybrids ($taxonID, $withSeperator = false, $withID = fa
  * @param int $synonymID synonym-ID
  * @return string formatted synonymy-reference-string
  */
-public function SynonymyReference ($synonymID)
+public function SynonymyReference (int $synonymID): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -268,7 +270,7 @@ public function SynonymyReference ($synonymID)
             }
         }
     } catch (Exception $e) {
-        exit($e->getMessage());
+        error_log("Display.SynonymyReference: " . $e->__toString());
     }
     return "";
 }
