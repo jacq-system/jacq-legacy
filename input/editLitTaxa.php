@@ -1,26 +1,24 @@
 <?php
 session_start();
-require("inc/connect.php");
+require("inc/gatekeeper.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\DbAccess;
+use Jacq\Display;
+use Jacq\Log;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
 $jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
+$db = DbAccess::ConnectTo('INPUT');
+$display = Display::Load();
+
 if (isset($_GET['new'])) {
-    $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
-           FROM tbl_lit l
-            LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
-            LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
-            LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-           WHERE citationID = " . extractID($_GET['ID']);
-    $result = dbi_query($sql);
-    $p_citation = protolog(mysqli_fetch_array($result));
-    $p_citationIndex = extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID']);
+    $p_citation = $display->protolog($p_citationIndex, true);
     $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
     $p_source = "person";
     $p_sourcePers = "Anonymous <39269>";
@@ -28,62 +26,46 @@ if (isset($_GET['new'])) {
     $p_sourceLit = $p_sourceLitIndex = $p_et_al = "";
     $p_timestamp = "";
     $p_user = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
-    $sql = "SELECT lt.lit_tax_ID, lt.citationID, lt.taxonID, lt.acc_taxon_ID, lt.annotations,
-             lt.source, lt.source_citationID, lt.source_person_ID, lt.et_al, lt.timestamp,
-             hu.firstname, hu.surname
-            FROM tbl_lit_taxa lt
-             LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lt.userID = hu.userID
-            WHERE lit_tax_ID = " . extractID($_GET['ID']);
-    $result = dbi_query($sql);
-    if (mysqli_num_rows($result) > 0) {
-        $row = mysqli_fetch_array($result);
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
+    $result = $db->queryCatch("SELECT lt.lit_tax_ID, lt.citationID, lt.taxonID, lt.acc_taxon_ID, lt.annotations,
+                                lt.source, lt.source_citationID, lt.source_person_ID, lt.et_al, lt.timestamp,
+                                hu.firstname, hu.surname
+                               FROM tbl_lit_taxa lt
+                                LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lt.userID = hu.userID
+                               WHERE lit_tax_ID = " . Tools::extractID($_GET['ID']));
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array();
         $p_lit_tax_ID  = $row['lit_tax_ID'];
         $p_annotations = $row['annotations'];
         $p_timestamp   = $row['timestamp'];
         $p_user        = $row['firstname'] . " " . $row['surname'];
 
-        $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
-               FROM tbl_lit l
-                LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
-                LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
-                LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-               WHERE citationID = '" . $row['citationID'] . "'";
-        $result = dbi_query($sql);
-        $p_citation = protolog(mysqli_fetch_array($result));
         $p_citationIndex = $row['citationID'];
+        $p_citation = $display->protolog($p_citationIndex, true);
 
         $p_taxonIndex = $row['taxonID'];
-        $p_taxon = getScientificName($p_taxonIndex);
+        $p_taxon = Tools::getScientificName($p_taxonIndex);
 
         $p_taxonAccIndex = $row['acc_taxon_ID'];
-        $p_taxonAcc = getScientificName($p_taxonAccIndex);
+        $p_taxonAcc = Tools::getScientificName($p_taxonAccIndex);
 
         $p_source = $row['source'];
         if ($p_source == "literature") {
-            $sql = "SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
-                    FROM tbl_lit l
-                     LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
-                     LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
-                     LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-                    WHERE citationID = '" . $row['source_citationID'] . "'";
-            $result = dbi_query($sql);
-            $p_sourceLit = protolog(mysqli_fetch_array($result));
             $p_sourceLitIndex = $row['source_citationID'];
+            $p_sourceLit = $display->protolog($p_sourceLitIndex, true);
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = "";
         } else {
-            $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
-                    FROM tbl_person
-                    WHERE person_ID = '" . $row['source_person_ID'] . "'";
-            $row2 = dbi_query($sql)->fetch_array();
+            $row2 = $db->queryCatch("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
+                                     FROM tbl_person
+                                     WHERE person_ID = '" . $row['source_person_ID'] . "'")
+                       ->fetch_array();
             $p_sourcePers = $row2['p_familyname'] . ", " . $row2['p_firstname']
                           . " (" . $row2['p_birthdate'] . " - " . $row2['p_death'] . ") <" . $row2['person_ID'] . ">";
             $p_sourcePersIndex = $row['source_person_ID'];
             $p_et_al = $row['et_al'];
             $p_sourceLit = $p_sourceLitIndex = "";
         }
-    }
-    else {
+    } else {
         $p_citation = $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
         $p_source = "person";
         $p_sourcePers = "Anonymous <39269>";
@@ -94,8 +76,8 @@ if (isset($_GET['new'])) {
     $annotations = $_POST['annotations'];
     $sqldata = "taxonID = '" . intval($_POST['taxonIndex']) . "',
                 acc_taxon_ID = '" . intval($_POST['taxonAccIndex']) . "',
-                citationID = " . extractID($_POST['citation']) . ",
-                annotations = " . quoteString($annotations) . ",
+                citationID = " . Tools::extractID($_POST['citation']) . ",
+                annotations = " . $db->quoteString($annotations) . ",
                 userID = '" . intval($_SESSION['uid']) . "'";
     if ($_POST['source'] == 'literature') {
         $sqldata .= ", source = 'literature',
@@ -118,11 +100,11 @@ if (isset($_GET['new'])) {
                 $sqldata";
         $updated = 0;
     }
-    $result = dbi_query($sql);
-        $p_lit_tax_ID = (intval($_POST['lit_tax_ID'])) ? intval($_POST['lit_tax_ID']) : dbi_insert_id();
-        logLitTax($p_lit_tax_ID, $updated);
+    $result = $db->queryCatch($sql);
+        $p_lit_tax_ID = (intval($_POST['lit_tax_ID'])) ?: $db->insert_id;
+        Log::litTax($p_lit_tax_ID, $updated);
     if ($result) {
-        echo "<html><head>\n"
+        echo "<html lang='en'><head>\n"
            . "<script language=\"JavaScript\">\n"
            . "  window.opener.document.f.reload.click()\n"
            . "  self.close()\n"
@@ -158,7 +140,7 @@ if (isset($_GET['new'])) {
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - edit Taxa</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -215,7 +197,7 @@ $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"lit_tax_ID\" value=\"$p_lit_tax_ID\">\n";
 $cf->label(7, 0.5, "ID");
-$cf->text(7, 0.5, "&nbsp;" . (($p_lit_tax_ID) ? $p_lit_tax_ID : "new"));
+$cf->text(7, 0.5, "&nbsp;" . (($p_lit_tax_ID) ?: "new"));
 
 echo "<input type=\"hidden\" name=\"timestamp\" value=\"$p_timestamp\">\n";
 echo "<input type=\"hidden\" name=\"user\" value=\"$p_user\">\n";

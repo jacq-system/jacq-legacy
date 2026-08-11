@@ -14,10 +14,10 @@ class EditHybridsServer extends \Jaxon\CallableClass
         $parent2ID = intval($parent2ID);
 
         try {
-            $dbLink  = DbAccess::ConnectTo('INPUT');
+            $db  = DbAccess::ConnectTo('INPUT');
 
-            $row = $dbLink->query("SELECT * FROM tbl_tax_hybrids WHERE parent_1_ID = $parent1ID AND parent_2_ID = $parent2ID")->fetch_assoc();
-            $rowMirror = $dbLink->query("SELECT * FROM tbl_tax_hybrids WHERE parent_2_ID = $parent1ID AND parent_1_ID = $parent2ID")->fetch_assoc();
+            $row = $db->query("SELECT * FROM tbl_tax_hybrids WHERE parent_1_ID = $parent1ID AND parent_2_ID = $parent2ID")->fetch_assoc();
+            $rowMirror = $db->query("SELECT * FROM tbl_tax_hybrids WHERE parent_2_ID = $parent1ID AND parent_1_ID = $parent2ID")->fetch_assoc();
             if (!empty($row['taxon_ID_fk']) && $row['taxon_ID_fk'] != $taxonID) {
                 $text = "<a href='editSpecies.php?sel=<{$row['taxon_ID_fk']}>' target='Species'>Hybrid formula already exists with ID {$row['taxon_ID_fk']}</a>";
                 $alert = true;

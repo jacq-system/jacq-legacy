@@ -21,19 +21,19 @@ class ListTaxServer extends \Jaxon\CallableClass
         $ctr = intval($ctr);
 
         try {
-            $dbLink = DbAccess::ConnectTo('INPUT');
+            $db = DbAccess::ConnectTo('INPUT');
 
             $constraint = "`taxonID` = $id AND `userID` = '" . $_SESSION['uid'] . "'";
-            $result = $dbLink->query("SELECT `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE $constraint");
+            $result = $db->query("SELECT `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE $constraint");
             if ($result->num_rows > 0) {
                 if ($ctr) {
-                    $dbLink->query("UPDATE `tbl_labels_scientificName` SET `nr` = $ctr WHERE $constraint");
+                    $db->query("UPDATE `tbl_labels_scientificName` SET `nr` = $ctr WHERE $constraint");
                 } else {
-                    $dbLink->query("DELETE FROM `tbl_labels_scientificName` WHERE $constraint");
+                    $db->query("DELETE FROM `tbl_labels_scientificName` WHERE $constraint");
                 }
             } else {
                 $uuidMinter = new UuidMinter();
-                $dbLink->query("INSERT INTO `tbl_labels_scientificName` SET
+                $db->query("INSERT INTO `tbl_labels_scientificName` SET
                                  `uuid`    = '" . $uuidMinter->getUUIDfromTaxonID($id) . "',
                                  `taxonID` = $id,
                                  `userID`  = '" . $_SESSION['uid'] . "',
@@ -52,12 +52,12 @@ class ListTaxServer extends \Jaxon\CallableClass
     function clearScientificNameLabels()
     {
         try {
-            $dbLink = DbAccess::ConnectTo('INPUT');
+            $db = DbAccess::ConnectTo('INPUT');
 
-            $result = $dbLink->query("SELECT `taxonID`, `uuid` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
+            $result = $db->query("SELECT `taxonID`, `uuid` FROM `tbl_labels_scientificName` WHERE `userID` = '" . $_SESSION['uid'] . "'");
             while ($row = $result->fetch_array()) {
                 $id = $row['taxonID'];
-                $dbLink->query("DELETE FROM `tbl_labels_scientificName` WHERE `taxonID` = '$id' AND `userID` = '" . $_SESSION['uid'] . "'");
+                $db->query("DELETE FROM `tbl_labels_scientificName` WHERE `taxonID` = '$id' AND `userID` = '" . $_SESSION['uid'] . "'");
                 $this->response->assign("inpScientificNameLabel_$id", 'value', 0);
             }
         } catch (Exception $e) {
@@ -73,20 +73,20 @@ class ListTaxServer extends \Jaxon\CallableClass
     function setAll()
     {
         try {
-            $dbLink = DbAccess::ConnectTo('INPUT');
+            $db = DbAccess::ConnectTo('INPUT');
 
             if ($_SESSION['labelTaxSQL']) {
-                $result = $dbLink->query($_SESSION['labelTaxSQL']);
+                $result = $db->query($_SESSION['labelTaxSQL']);
                 while ($row = $result->fetch_array()) {
                     $id = $row['taxonID'];
 
                     $constraint = "`taxonID` = $id AND `userID` = '" . $_SESSION['uid'] . "'";
-                    $result2 = $dbLink->query("SELECT `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE $constraint");
+                    $result2 = $db->query("SELECT `uuid`, `nr` FROM `tbl_labels_scientificName` WHERE $constraint");
                     if ($result2->num_rows > 0) {
-                        $dbLink->query("UPDATE `tbl_labels_scientificName` SET `nr` = 1 WHERE $constraint");
+                        $db->query("UPDATE `tbl_labels_scientificName` SET `nr` = 1 WHERE $constraint");
                     } else {
                         $uuidMinter = new UuidMinter();
-                        $dbLink->query("INSERT INTO `tbl_labels_scientificName` SET
+                        $db->query("INSERT INTO `tbl_labels_scientificName` SET
                                          `uuid`    = '" . $uuidMinter->getUUIDfromTaxonID($id) . "',
                                          `taxonID` = $id,
                                          `userID`  = '" . $_SESSION['uid'] . "',
@@ -108,14 +108,14 @@ class ListTaxServer extends \Jaxon\CallableClass
     function clearAll()
     {
         try {
-            $dbLink = DbAccess::ConnectTo('INPUT');
+            $db = DbAccess::ConnectTo('INPUT');
 
             if ($_SESSION['labelTaxSQL']) {
-                $result = $dbLink->query($_SESSION['labelTaxSQL']);
+                $result = $db->query($_SESSION['labelTaxSQL']);
                 while ($row = $result->fetch_array()) {
                     $id = intval($row['taxonID']);
                     $this->response->assign("inpScientificNameLabel_$id", 'value', 0);
-                    $dbLink->query("DELETE FROM `tbl_labels_scientificName` WHERE `taxonID` = $id AND `userID` = '" . $_SESSION['uid'] . "'");
+                    $db->query("DELETE FROM `tbl_labels_scientificName` WHERE `taxonID` = $id AND `userID` = '" . $_SESSION['uid'] . "'");
                 }
             }
         } catch (Exception $e) {

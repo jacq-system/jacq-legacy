@@ -13,7 +13,7 @@ if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     }
 }
 
-mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown
+//mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown
 
 $dbLink = new mysqli($_CONFIG['DATABASE']['INPUT']['host'],
                      $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
@@ -72,10 +72,14 @@ function dbi_query($sql, $debug = false)
         error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']}.");
         $res = false;
     } else {
-        $res = $dbLink->query($sql);
-        if (!$res) {
-            // log the error in php error log
-            error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']} SQL = $sql --- Error = " . $dbLink->errno . ": " . $dbLink->error);
+        try {
+            $res = $dbLink->query($sql);
+        } catch (mysqli_sql_exception $e) {
+            $res = false;
+            error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']}\n"
+                . "$query\n"
+                . "--- Error: " . $e->__toString() . "\n"
+                . "In script {$_SERVER['PHP_SELF']}");
             if ($debug) {
                 // and show it additionally if debug is on
                 echo $sql . "<br>\n";

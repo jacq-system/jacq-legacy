@@ -14,7 +14,7 @@ class ListObservationsServer extends \Jaxon\CallableClass
     function getUserDate($id)
     {
         try {
-            $dbLink = DbAccess::ConnectTo('INPUT');
+            $db = DbAccess::ConnectTo('INPUT');
 
             $sql = "SELECT DATE_FORMAT(timestamp,'%Y-%m-%d') as date
                     FROM herbarinput_log.log_specimens ";
@@ -23,7 +23,7 @@ class ListObservationsServer extends \Jaxon\CallableClass
             }
             $sql .= "GROUP BY date
                      ORDER BY date";
-            $result = $dbLink->query($sql);
+            $result = $db->query($sql);
             $selectData = "";
             while ($row = $result->fetch_array()) {
                 $selectData .= "  <option>" . htmlspecialchars($row['date']) . "</option>\n";
