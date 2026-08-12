@@ -275,6 +275,25 @@ public function SynonymyReference (int $synonymID): string
     return "";
 }
 
+/**
+ * returns a formatted sort-string
+ *
+ * @param int $typ type of sort-item, "==$id" for ascending, "==-$id" for descending
+ * @param int $id id of sort-item
+ * @return string formatted sort-string
+ */
+public function sortItem(int $typ, int $id): string
+{
+    if ($typ == $id) {
+        return "&nbsp;&nbsp;v";
+    } else if ($typ == -$id) {
+        return "&nbsp;&nbsp;^";
+    } else {
+        return "&nbsp;&nbsp;";
+    }
+}
+
+
 /***********************\
 |                       |
 |  protected functions  |
