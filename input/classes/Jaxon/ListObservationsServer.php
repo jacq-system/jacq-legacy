@@ -31,7 +31,7 @@ class ListObservationsServer extends \Jaxon\CallableClass
 
             $this->response->assign("user_date", "innerHTML", $selectData);
         } catch (Exception $e) {
-            error_log("ListObservationsServer.getUserDate: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;

@@ -40,7 +40,7 @@ class ListTaxServer extends \Jaxon\CallableClass
                                  `nr`      = $ctr");
             }
         } catch (Exception $e) {
-            error_log("ListTaxServer.updateScientificNameLabel: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;
@@ -61,7 +61,7 @@ class ListTaxServer extends \Jaxon\CallableClass
                 $this->response->assign("inpScientificNameLabel_$id", 'value', 0);
             }
         } catch (Exception $e) {
-            error_log("ListTaxServer.clearScientificNameLabels: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;
@@ -96,7 +96,7 @@ class ListTaxServer extends \Jaxon\CallableClass
                 }
             }
         } catch (Exception $e) {
-            error_log("ListTaxServer.setAll: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;
@@ -119,7 +119,7 @@ class ListTaxServer extends \Jaxon\CallableClass
                 }
             }
         } catch (Exception $e) {
-            error_log("ListTaxServer.clearAll: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;

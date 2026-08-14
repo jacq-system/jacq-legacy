@@ -97,7 +97,7 @@ public function protolog (int $citationID, bool $withID = false): string
         }
     }
     catch (Exception $e) {
-        error_log("Display.protolog: " . $e->__toString());
+        error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
     }
 
     return "";
@@ -200,7 +200,7 @@ public function taxon (int $taxonID, bool $withSeperator = false, bool $withDT =
         return $ret;
     }
     catch (Exception $e) {
-        error_log("Display.taxon: " . $e->__toString());
+        error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
     }
     return "";
 }
@@ -231,7 +231,7 @@ public function taxonWithHybrids (int $taxonID, bool $withSeperator = false, boo
         }
     }
     catch (Exception $e) {
-        error_log("Display.taxonWithHybrids: " . $e->__toString());
+        error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
     }
     return "";
 }
@@ -270,7 +270,7 @@ public function SynonymyReference (int $synonymID): string
             }
         }
     } catch (Exception $e) {
-        error_log("Display.SynonymyReference: " . $e->__toString());
+        error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
     }
     return "";
 }

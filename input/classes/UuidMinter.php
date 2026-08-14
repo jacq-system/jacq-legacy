@@ -60,7 +60,7 @@ class UuidMinter
                 }
             }
         } catch (Exception $e) {
-            error_log("UuidMinter.getUUIDfromTaxonID: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $uuid ?? "";

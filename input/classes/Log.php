@@ -28,7 +28,7 @@ class Log
                          userID             = " . $db->quoteString($_SESSION['uid']) . ",
                          updated            = " . $db->quoteString($updated));
         } catch (Exception $e) {
-            error_log("Log.logTbl_tax_synonymy: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -45,7 +45,7 @@ class Log
                         FROM tbl_collector
                         WHERE SammlerID = $id");
         } catch (Exception $e) {
-            error_log("Log.collector: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -125,7 +125,7 @@ class Log
             }
             $db->query($sql);
         } catch (Exception $e) {
-            error_log("Log.specimen: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -146,7 +146,7 @@ class Log
                              updated            = " . $db->quoteString($updated) . ",
                              timestamp          = NULL");
         } catch (Exception $e) {
-            error_log("Log.specimensTypes: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -165,7 +165,7 @@ class Log
                          updated   = " . $db->quoteString($updated) . ",
                          timestamp = NULL");
         } catch (Exception $e) {
-            error_log("Log.specimensSeries: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -184,7 +184,7 @@ class Log
                          updated             = " . $db->quoteString($updated) . ",
                          timestamp           = NULL");
         } catch (Exception $e) {
-            error_log("Log.authors: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -203,7 +203,7 @@ class Log
                          updated    = " . $db->quoteString($updated) . ",
                          timestamp  = NULL");
         } catch (Exception $e) {
-            error_log("Log.families: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -229,7 +229,7 @@ class Log
                          updated             = " . $db->quoteString($updated) . ",
                          timestamp           = NULL");
         } catch (Exception $e) {
-            error_log("Log.genera: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -251,7 +251,7 @@ class Log
                          updated     = " . $db->quoteString($updated) . ",
                          timestamp   = NULL");
         } catch (Exception $e) {
-            error_log("Log.index: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -286,7 +286,7 @@ class Log
                          updated             = " . $db->quoteString($updated) . ",
                          timestamp           = NULL");
         } catch (Exception $e) {
-            error_log("Log.species: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -312,7 +312,7 @@ class Log
                          updated          = " . $db->quoteString($updated) . ",
                          timestamp        = NULL");
         } catch (Exception $e) {
-            error_log("Log.typecollections: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -349,7 +349,7 @@ class Log
                          updated      = " . $db->quoteString($updated) . ",
                          timestamp    = NULL");
         } catch (Exception $e) {
-            error_log("Log.lit: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -375,7 +375,7 @@ class Log
                          updated           = " . $db->quoteString($updated) . ",
                          timestamp         = NULL");
         } catch (Exception $e) {
-            error_log("Log.litTax: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -394,7 +394,7 @@ class Log
                          updated      = " . $db->quoteString($updated) . ",
                          timestamp    = NULL");
         } catch (Exception $e) {
-            error_log("Log.litAuthors: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -416,7 +416,7 @@ class Log
                          updated         = " . $db->quoteString($updated) . ",
                          timestamp       = NULL");
         } catch (Exception $e) {
-            error_log("Log.litPeriodicals: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 
@@ -434,7 +434,7 @@ class Log
                          updated     = " . $db->quoteString($updated) . ",
                          timestamp   = NULL");
         } catch (Exception $e) {
-            error_log("Log.litPublishers: " . $e->__toString());
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
 }

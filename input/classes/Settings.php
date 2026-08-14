@@ -51,8 +51,10 @@ protected array $options = array();
 protected function __construct()
 {
     include __DIR__ . "/../inc/variables.php";
-    /** @var array $_CONFIG */
     $this->options = $_CONFIG;
+    foreach ($_OPTIONS as $key => $value) {
+        $this->options[$key] = $value;
+    }
 }
 
 /********************\

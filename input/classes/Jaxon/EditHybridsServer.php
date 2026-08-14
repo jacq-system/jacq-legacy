@@ -34,7 +34,7 @@ class EditHybridsServer extends \Jaxon\CallableClass
                 $this->response->script("$(\"[name='submitUpdate']\").css('visibility', '" . (($alert) ? 'hidden' : 'visible') . "');");
             }
         } catch (Exception $e) {
-            error_log("EditHybridsServer.checkParents: " . $e->__toString() . "\n");
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
 
         return $this->response;

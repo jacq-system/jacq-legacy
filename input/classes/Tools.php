@@ -26,7 +26,8 @@ class Tools
 
         try {
             $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
             return '';
         }
 
@@ -62,7 +63,8 @@ class Tools
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
             return '';
         }
 
@@ -123,7 +125,8 @@ class Tools
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
             return false;
         }
 
@@ -158,7 +161,8 @@ class Tools
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
             return false;
         }
 
@@ -197,7 +201,8 @@ class Tools
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception) {
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
             return '';
         }
 

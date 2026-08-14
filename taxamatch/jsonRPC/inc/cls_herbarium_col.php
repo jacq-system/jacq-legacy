@@ -158,10 +158,10 @@ public function getMatches ($searchtext, $withNearMatch = false)
                 }
 
                 // then the order
-                $res = $this->dbLink->query("SELECT order,
-                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', order, 2, 4) AS mdld
+                $res = $this->dbLink->query("SELECT `order`,
+                                              mdld('" . $this->dbLink->real_escape_string($uninomial) . "', `order`, 2, 4) AS mdld
                                              FROM families
-                                             GROUP BY order");
+                                             GROUP BY `order`");
                 /**
                  * do the actual calculation of the distances
                  * and decide if the result should be kept
