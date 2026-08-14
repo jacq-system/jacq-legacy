@@ -26,17 +26,14 @@ function getUnamePw($username, $password)
                         $_CONFIG['DATABASE']['LOG']['readonly']['pass'],
                         $_CONFIG['DATABASE']['LOG']['name']);
     $ident->set_charset('utf8');
-    $hash = $ident->query("SELECT pw FROM tbl_herbardb_users WHERE username = '" . $ident->real_escape_string($username) . "'")->fetch_assoc()['pw'];
+    $hash = $ident->query("SELECT pw FROM tbl_herbardb_users WHERE username = '" . $ident->real_escape_string($username) . "'")->fetch_assoc();
     $ident->close();
 
-    return password_verify(trim($password), $hash);
+    return password_verify(trim($password), $hash['pw'] ?? '');
 }
 
-// Seite anzeigen
 function show_page($text)
 {
-    $username = (isset($_POST['username'])) ? $_POST['username'] : '';
-
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
@@ -63,7 +60,7 @@ function show_page($text)
       </tr>
       <tr>
         <td><font face="Helvetica,Arial,sans-serif">Username:</font></td>
-        <td><input type="text" size="20" name="username" value="<?php echo $username; ?>"></td>
+        <td><input type="text" size="20" name="username" value="<?php echo htmlentities($_POST['username'] ?? ''); ?>"></td>
       </tr>
       <tr>
         <td><font face="Helvetica,Arial,sans-serif">Password:</font></td>
@@ -80,14 +77,11 @@ function show_page($text)
 <?php
 }
 
-//
-// Hauptprogramm
-//
 
 if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
     if (isset($_POST['submit']) && $_POST['submit']) {
-        if ($_POST['username'] && $_POST['password']) {
-            if (getUnamePw(filter_input(INPUT_POST, 'username', FILTER_SANITIZE_STRING), filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING))) {
+        if (!empty($_POST['username']) && !empty($_POST['password'])) {
+            if (getUnamePw($_POST['username'], $_POST['password'])) {
                 mysqli_report(MYSQLI_REPORT_OFF);   // since PHP 8.1 an exception would be thrown if the connection could not be established
                 $dbLink = mysqli_connect($_CONFIG['DATABASE']['INPUT']['host'],
                                          $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
@@ -96,7 +90,7 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 $dbLink->set_charset('utf8');
                 session_regenerate_id();  // prevent session fixation
                 $dbLink->query("UPDATE herbarinput_log.tbl_herbardb_users SET 
-                                 login = NOW() 
+                                 login = NOW()
                                 WHERE username = '" . $dbLink->real_escape_string($_POST['username']) . "'");
                 $row = $dbLink->query("SELECT *
                                        FROM herbarinput_log.tbl_herbardb_users, herbarinput_log.tbl_herbardb_groups

@@ -17,7 +17,7 @@ function makeDropdownSource()
         $data = "  <option value=\"0\">all institutions</option>\n";
 
         // only sources with valid collections can be listed
-        $rows = dbi_query("SELECT m.source_id, m.source_code, m.source_name
+        $rows = dbi_query("SELECT m.source_id, MIN(m.source_code) as source_code, m.source_name
                            FROM herbarinput.`meta` m, herbarinput.tbl_management_collections mc
                            WHERE m.source_id = mc.source_id
                            GROUP BY m.source_id
@@ -42,7 +42,7 @@ function makeDropdownSource()
 }
 
 ?><!DOCTYPE HTML>
-<html>
+<html lang="en">
 <head>
   <title>herbardb - list duplicate herbar numbers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">

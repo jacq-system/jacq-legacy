@@ -38,20 +38,6 @@ if ($options['help'] || (!$source_id && !$options['all'])) {
 // import all neccessary settings
 $settings = Settings::Load();
 $dbt = $settings->get('DATABASE', 'GBIF_PILOT')['name'];
-$tbls = $settings->get('GBIF_TABLES');
-
-// check if source_id is in the list of predefined sources
-if ($source_id) {
-    $sourceIdInList = false;
-    foreach ($tbls as $tbl) {
-        if ($source_id == $tbl['source_id']) {
-            $sourceIdInList = true;
-        }
-    }
-    if (!$sourceIdInList) {
-        die("Error: source not in list\n");
-    }
-}
 
 /* activate reporting */
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
@@ -62,6 +48,22 @@ try {
     $dbLink2 = DbAccess::ConnectTo('INPUT', 3);
 } catch (Exception $e) {
     die($e->getMessage());
+}
+
+$tbls = $dbLink->queryCatch("SELECT * FROM gbif_pilot.export_control")->fetch_all(MYSQLI_ASSOC);
+
+// check if source_id is in the list of predefined sources
+if ($source_id) {
+    $sourceIdInList = false;
+    foreach ($tbls as $tbl) {
+        if ($source_id == $tbl['source_id']) {
+            $sourceIdInList = true;
+            break;
+        }
+    }
+    if (!$sourceIdInList) {
+        die("Error: source not in list\n");
+    }
 }
 
 if (!$options['nometa']) {
@@ -104,7 +106,6 @@ if (!$options['nometa']) {
 }
 
 
-// use $tbls as defined in variables.php
 foreach ($tbls as $tbl) {
     if ($options['all'] || $source_id == $tbl['source_id']) {
         $sourceCode = $dbLink2->queryCatch("SELECT source_code 
@@ -149,7 +150,7 @@ foreach ($tbls as $tbl) {
                  ss.series,
                  md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
                  mc.source_id, mc.collection, mc.coll_gbif_pilot,
-                 ei.filesize
+                 ei.url AS europeana_url
                 FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
                  LEFT JOIN tbl_tax_authors ta   ON ta.authorID   = ts.authorID
@@ -322,8 +323,8 @@ foreach ($tbls as $tbl) {
                 $image_url = "https://api.jacq.org/v1/images/show/" . $row['specimen_ID'] . "?withredirect=1";
 //              $image_url = "https://services.jacq.org/jacq-services/rest/images/show/" . $row['specimen_ID'] . "?withredirect=1";
 //              $image_url = "http://www.jacq.org/image.php?filename=" . $row['specimen_ID'] . "&method=show";
-                if ($tbl['europeana_cache'] && ($row['filesize'] ?? 0) > 1500) {  // use europeana-cache only for images without errors
-                    $thumb_url = "https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg";
+                if ($tbl['use_europeana_cache'] && !empty($row['europeana_url'])) {  // use europeana-cache only for images without errors
+                    $thumb_url = $row['europeana_url'];
 
                 } else {
                     $thumb_url = "https://api.jacq.org/v1/images/europeana/" . $row['specimen_ID'] . "?withredirect=1";
@@ -421,13 +422,13 @@ foreach ($tbls as $tbl) {
             // TODO: add field "Notes" to fill conditionally with tbl_specimens.Bemerkungen if a flag in "meta" is set
             // TODO: add two fields "ncbi_accession" and "material_state" before "Notes"
             $hash = hash('md5', $sql);
-            $unit = $dbLink2->queryCatch("SELECT UnitID, hash FROM $dbt.{$tbl['name']} WHERE UnitIDNumeric = {$row['specimen_ID']}")->fetch_assoc();
+            $unit = $dbLink2->queryCatch("SELECT UnitID, hash FROM $dbt.{$tbl['table_name']} WHERE UnitIDNumeric = {$row['specimen_ID']}")->fetch_assoc();
             if (empty($unit)) {
-                $dbLink2->queryCatch("INSERT INTO $dbt.{$tbl['name']} SET 
+                $dbLink2->queryCatch("INSERT INTO $dbt.{$tbl['table_name']} SET 
                                   hash = '$hash',
                                   $sql");
             } elseif ($unit['hash'] != $hash) {
-                $dbLink2->queryCatch("UPDATE $dbt.{$tbl['name']} SET 
+                $dbLink2->queryCatch("UPDATE $dbt.{$tbl['table_name']} SET 
                                   hash = '$hash',
                                   $sql 
                                  WHERE UnitIDNumeric = {$row['specimen_ID']}");
@@ -435,7 +436,7 @@ foreach ($tbls as $tbl) {
         }
         $result->free();
         $rows = $dbLink1->queryCatch("SELECT gp.UnitIDNumeric
-                                      FROM $dbt.{$tbl['name']} gp
+                                      FROM $dbt.{$tbl['table_name']} gp
                                       WHERE gp.UnitIDNumeric NOT IN 
                                        (
                                        SELECT s.specimen_ID 
@@ -445,7 +446,7 @@ foreach ($tbls as $tbl) {
                                        )")
                         ->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as $row) {
-            $dbLink2->queryCatch("DELETE FROM $dbt.{$tbl['name']} WHERE UnitIDNumeric = {$row['UnitIDNumeric']}");
+            $dbLink2->queryCatch("DELETE FROM $dbt.{$tbl['table_name']} WHERE UnitIDNumeric = {$row['UnitIDNumeric']}");
             if ($options['verbose']) {
                 echo "$sourceCode ({$tbl['source_id']}) deleted {$row['UnitIDNumeric']}\n";
             }
@@ -459,11 +460,10 @@ foreach ($tbls as $tbl) {
 if (!$options['nometa']) {
     // recreate tbl_prj_gbif_pilot_total with data of all gbif-pilot-tables
     $dbLink2->queryCatch("TRUNCATE $dbt.tbl_prj_gbif_pilot_total");
-    // use $tbls as defined in variables.php
     foreach ($tbls as $tbl) {
         $dbLink2->queryCatch("INSERT INTO $dbt.tbl_prj_gbif_pilot_total 
-                          SELECT UnitIDNumeric, UnitID, recordURI, {$tbl['source_id']}, '{$tbl['name']}'
-                          FROM $dbt.{$tbl['name']}");
+                          SELECT UnitIDNumeric, UnitID, recordURI, {$tbl['source_id']}, '{$tbl['table_name']}'
+                          FROM $dbt.{$tbl['table_name']}");
     }
     if ($options['verbose']) {
         echo "---------- tbl_prj_gbif_pilot_total finished (" . date(DATE_RFC822) . ") ----------\n";

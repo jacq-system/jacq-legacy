@@ -207,6 +207,41 @@ function confirmHerbNummerLength(number)
     return confirm("HerbarNr. should have a length of " + specifiedHerbNummerLength + " digits.\nPlease confirm the different length.");
 }
 
+function isValidSpecimenDateFormat(value)
+{
+    value = (value || '').trim();
+    if (value === '') {
+        return true;
+    }
+
+    const year = '(((17|18|19|20)|[12#][0-9#])[0-9#]{2})';
+    const month = '((0|#)[1-9#]|1[012#])';
+    const day = '((#|0)[1-9#]|[12#][0-9#]|3[01#])';
+    const datePattern = new RegExp('^(s\\.d\\.|' + year + '|' + year + '-' + month + '|' + year + '-' + month + '-' + day + ')$', 'i');
+
+    return datePattern.test(value);
+}
+
+function confirmDateFormatWarnings()
+{
+    const warnings = [];
+    if (document.f.Datum && !isValidSpecimenDateFormat(document.f.Datum.value)) {
+        warnings.push('Date from: ' + document.f.Datum.value);
+    }
+    if (document.f.Datum2 && !isValidSpecimenDateFormat(document.f.Datum2.value)) {
+        warnings.push('Date to: ' + document.f.Datum2.value);
+    }
+
+    if (warnings.length === 0) {
+        return true;
+    }
+
+    return confirm(
+        'The following date value(s) do not match YYYY, YYYY-MM, YYYY-MM-DD or s.d.:\n\n' +
+        warnings.join('\n') +
+        '\n\nContinue anyway?'
+    );
+}
 function checkMandatory(outText)
 {
     let missing = 0;
@@ -279,7 +314,7 @@ function doSubmit( p_type )
 
     // If all fields are set, trigger a submit
     if( checkMandatory(1) ) {
-        if (confirmHerbNummerLength(document.f.HerbNummer.value) && confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
+        if (confirmDateFormatWarnings() && confirmHerbNummerLength(document.f.HerbNummer.value) && confirmBoundingBox(0)) {  // check if coordinates are inside country and/or province
             $('#submit_type').val(p_type);
             $('#f').submit();
         }

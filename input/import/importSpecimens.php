@@ -150,6 +150,16 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
                 if ($flag === 'no_taxa' && importStatusHasFlag($status[$i], 'similar_taxa')) {
                     continue;
                 }
+                if ($flag === 'no_province') {
+                    $provinceValue = isset($import[$i][$column]) ? trim((string)$import[$i][$column]) : '';
+                    $nationValue = isset($import[$i][16]) ? trim((string)$import[$i][16]) : '';
+                    if ($provinceValue !== '' && $nationValue !== '') {
+                        addImportExportUniqueValue($payload['errors'][$flag], $provinceValue . ' (' . $nationValue . ')');
+                    } else {
+                        addImportExportUniqueValue($payload['errors'][$flag], $provinceValue);
+                    }
+                    continue;
+                }
                 addImportExportUniqueValue($payload['errors'][$flag], isset($import[$i][$column]) ? $import[$i][$column] : '');
             }
         }

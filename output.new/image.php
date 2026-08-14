@@ -1,4 +1,7 @@
 <?php
+
+use Jacq\DbAccess;
+
 session_start();
 require_once "inc/functions.php";
 require_once 'inc/imageFunctions.php';
@@ -38,17 +41,25 @@ if (!empty($picdetails['url'])) {
             doRedirectDownloadPic($picdetails, $format, 2);
             break;
         case 'europeana':   // NOTE: not supported on non-djatoka servers (yet)
-            if (strtolower(substr($picdetails['requestFileName'], 0, 3)) == 'wu_' && checkPhaidra($picdetails['specimenID'])) {
-                // Phaidra (only WU)
-                $picdetails['imgserver_type'] = 'phaidra';
+            $dbLnk = DbAccess::ConnectTo('OUTPUT');
+            $row = $dbLnk->query("SELECT url FROM gbif_pilot.europeana_images WHERE specimen_ID = '" . $picdetails['specimenID'] . "'")
+                         ->fetch_assoc();
+            if (!empty($row['url'])) {
+                http_response_code(301);
+                header("location: " . $row['url']);
             } else {
-                // Djatoka
-                $picinfo = getPicInfo($picdetails);
-                if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
-                    $picdetails['originalFilename'] = $picinfo['pics'][0];
+                if (strtolower(substr($picdetails['requestFileName'], 0, 3)) == 'wu_' && checkPhaidra($picdetails['specimenID'])) {
+                    // Phaidra (only WU)
+                    $picdetails['imgserver_type'] = 'phaidra';
+                } else {
+                    // Djatoka
+                    $picinfo = getPicInfo($picdetails);
+                    if (!empty($picinfo['pics'][0]) && !in_array($picdetails['originalFilename'], $picinfo['pics']))  {
+                        $picdetails['originalFilename'] = $picinfo['pics'][0];
+                    }
                 }
+                doRedirectDownloadPic($picdetails, $format, 3);
             }
-            doRedirectDownloadPic($picdetails, $format, 3);
             break;
         case 'nhmwthumb':   // NOTE: not supported on legacy image server scripts
             doRedirectDownloadPic($picdetails, $format, 4);

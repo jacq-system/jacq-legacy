@@ -67,8 +67,8 @@ function listDoubleHerbNr($source_id, $collection_id)
               HAVING nr > 1
               ORDER BY m.source_code, mc.collection, nr DESC, s.HerbNummer";
     $result = dbi_query($sql);
+    $data = "<table class='result'><tr><th>Herb.#</th><th>source</th><th>collection</th><th>count</th></tr>\n";
     if ($result->num_rows > 0) {
-        $data = "<table class='result'><tr><th>Herb.#</th><th>source</th><th>collection</th><th>count</th></tr>\n";
         while ($row = $result->fetch_array()) {
             $rows = dbi_query("SELECT s.specimen_ID
                                FROM tbl_specimens s
@@ -79,19 +79,17 @@ function listDoubleHerbNr($source_id, $collection_id)
                    . "<td>" . $row['HerbNummer'] . "</td><td>" . $row['source_code'] . "</td><td>" . $row['collection'] . "</td><td>" . $row['nr'] . "</td>"
                    . "</tr><tr>"
                    . "<td colspan='4' class='links'>"
-                   . "<a href='https://www.jacq.org/index.php?HerbNummer=" . $row['HerbNummer']
-                   . (($source_id) ? "&source_name=" . $row['source_name'] : '')
-                   . (($collection_id) ? "&collection=" . $row['collection'] : '')
+                   . "<a href='https://jacq.org/index.php/database?herbNr=" . urlencode($row['HerbNummer'])
+                   . (($source_id) ? "&institution=" . $row['source_id'] : '')
+                   . (($collection_id) ? "&collection=" . $row['collectionID'] : '')
                    . "' target='_blank'>"
                    . implode(", ", array_column($rows, 'specimen_ID'))
                    . "</a>"
                    . "</td>"
                    . "</tr>\n";
         }
-        $data .= "</table>";
-    } else {
-        $data = '';
     }
+    $data .= "</table>";
 
     $response = new Response();
     $response->assign("list", "innerHTML", $data);

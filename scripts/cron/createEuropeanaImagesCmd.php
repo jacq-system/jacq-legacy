@@ -10,7 +10,7 @@ ini_set("memory_limit", "256M");
 /**
  * process commandline arguments
  */
-$opt = getopt("hvarn", ["help", "verbose", "all", "recheck", "new"], $restIndex);
+$opt = getopt("hvarns:", ["help", "verbose", "all", "recheck", "new", "sid:"], $restIndex);
 
 $options = array(
     'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
@@ -20,30 +20,38 @@ $options = array(
 
     'verbose' => ((isset($opt['v']) || isset($opt['verbose'])) ? ((is_array($opt['v'])) ? 2 : 1) : 0)  // 0, 1 or 2
 );
+$specimen_ID = ((isset($opt['s']) || isset($opt['sid'])) ? intval($opt['s'] ?? $opt['sid']) : 0);  // value
 $remainArgs = array_slice($argv, $restIndex);
 $source_id = (empty(($remainArgs))) ? 0 : intval($remainArgs[0]);
 
-if ($options['help'] || (!$source_id && !$options['all'])) {
+if ($options['help'] || (!$source_id && !$options['all'] && !$specimen_ID)) {
     echo $argv[0] . " [options] [x]   create europeana files [for source-ID x]\n\n"
        . "Options:\n"
-       . "  -h  --help     this explanation\n"
-       . "  -v  --verbose  echo status messages\n"
-       . "  -vv            echo processed filenames also\n"
-       . "  -r  --recheck  recheck all image-files which are smaller than 1500 Bytes\n"
-       . "  -n  --new      only check specimen which changed within the last two weeks\n"
-       . "  -a  --all      use all predefined source-IDs\n\n";
+       . "  -h   --help     this explanation\n"
+       . "  -v   --verbose  echo status messages\n"
+       . "  -vv             echo processed filenames also\n"
+       . "  -r   --recheck  recheck all image-files which are smaller than 1500 Bytes\n"
+       . "  -n   --new      only check specimen which changed within the last two weeks\n"
+       . "  -a   --all      use all predefined source-IDs\n"
+       . "  -s x --sid=x    just check specimen-ID x\n\n";
     die();
 }
 
 // import all neccessary settings
 $settings = Settings::Load();
-$tbls = $settings->get('GBIF_TABLES');
+try {
+    $dbLink  = DbAccess::ConnectTo('INPUT');
+} catch (Exception $e) {
+    echo $e->__toString() . "\n";
+    die();
+}
+$tbls = $dbLink->queryCatch("SELECT * FROM gbif_pilot.export_control")->fetch_all(MYSQLI_ASSOC);
 
 // check if source_id is in the list of predefined sources
 if ($source_id) {
     $sourceIdInList = false;
     foreach ($tbls as $tbl) {
-        if ($source_id == $tbl['source_id'] && $tbl['europeana_get']) {
+        if ($source_id == $tbl['source_id'] && $tbl['use_europeana_cache']) {
             $sourceIdInList = true;
         }
     }
@@ -53,12 +61,15 @@ if ($source_id) {
 }
 
 // generate all Files
+if ($specimen_ID) {
+    generateSingleFile($specimen_ID);
+}
 if ($source_id) {
     generateFiles($source_id);
 } elseif ($options['all']) {
     // use all predefined sources
     foreach ($tbls as $tbl) {
-        if ($tbl['europeana_get']) {
+        if ($tbl['use_europeana_cache']) {
             generateFiles($tbl['source_id']);
         }
     }
@@ -100,13 +111,14 @@ function generateFiles(int $source_id): void
         echo $source_id . ": " . $e->__toString() . "\n";
         $result = false;
     }
+    $countNew = 0;
     if ($result) {
         while ($row = $result->fetch_array()) {
             $filename = $europeana_dir . $sourceCode . '/' . $row['specimen_ID'] . ".jpg";
-            for ($i = 0; $i < 3; $i++) {  // PI needs often longer to react...
+            for ($i = 0; $i < 3; $i++) {  // PI often needs longer to react...
                 $fh = fopen($filename, 'w');
                 $curlOptions = array(
-                    CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}" . "?withredirect=1",
+                    CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/{$row['specimen_ID']}?withredirect=1",
                     CURLOPT_FILE => $fh,
                     CURLOPT_TIMEOUT => 60,
                     CURLOPT_CONNECTTIMEOUT => 10,
@@ -125,24 +137,103 @@ function generateFiles(int $source_id): void
                     break;
                 }
             }
+            $filesize = (str_starts_with(mime_content_type($filename), 'text/')) ? 42 : filesize($filename);
+            if ($filesize >= 1500) {
+                $url = "'https://object.jacq.org/europeana/$sourceCode/{$row['specimen_ID']}.jpg'";
+                $countNew++;
+            } else {
+                $url = "NULL";
+            }
             $dbLink->queryCatch("INSERT INTO gbif_pilot.europeana_images SET
                                   specimen_ID = {$row['specimen_ID']},
-                                  filesize    = " . filesize($filename) . ",
+                                  filesize    = $filesize,
                                   filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
                                   source_id   = $source_id,
-                                  source_code = '$sourceCode'
+                                  source_code = '$sourceCode',
+                                  url         = $url
                                  ON DUPLICATE KEY UPDATE
-                                  filesize    = " . filesize($filename) . ",
+                                  filesize    = $filesize,
                                   filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
                                   source_id   = $source_id,
-                                  source_code = '$sourceCode'");
+                                  source_code = '$sourceCode',
+                                  url         = $url");
             if ($options['verbose'] > 1) {
-                echo "$sourceCode ($source_id): $filename" . ((filesize($filename) < 1500) ? ' empty' : '') . "\n";
+                echo "$sourceCode ($source_id): $filename" . (($filesize < 1500) ? ' empty' : '') . "\n";
+            }
+            if ($source_id == 29) {
+                usleep(500000);   // do not overwhelm the B-server
             }
         }
     }
     if ($options['verbose']) {
-        echo "---------- $sourceCode ($source_id) finished (" . date(DATE_RFC822) . ") ----------\n";
+        echo "---------- $sourceCode ($source_id) finished "
+           . str_repeat(".", 14 - strlen("$sourceCode ($source_id)"))
+           . (($countNew) ? " $countNew new " : "        ")
+           . "(" . date(DATE_RFC822) . ") ----------\n";
+    }
+}
+
+function generateSingleFile(int $specimen_ID): void
+{
+    global $options;
+
+    try {
+        $dbLink  = DbAccess::ConnectTo('INPUT');
+    } catch (Exception $e) {
+        echo $e->__toString() . "\n";
+        die();
+    }
+
+    $settings = Settings::Load();
+    $europeana_dir = $settings->get('EUROPEANA_DIR');
+
+    $row = $dbLink->queryCatch("SELECT m.source_code, m.source_id 
+                                FROM tbl_specimens s
+                                 JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+                                 JOIN meta m ON m.source_id = mc.source_id 
+                                WHERE s.specimen_ID = $specimen_ID")
+                  ->fetch_array();
+    if (empty($row)) {
+        die("wrong specimen-ID\n");
+    }
+    if (!file_exists($europeana_dir . $row['source_code'])) {
+        mkdir($europeana_dir . $row['source_code'], 0755);
+    }
+    $filename = $europeana_dir . $row['source_code'] . '/' . $specimen_ID . ".jpg";
+    $fh = fopen($filename, 'w');
+    $curlOptions = array(
+        CURLOPT_URL => "https://services.jacq.org/jacq-services/rest/images/europeana/$specimen_ID?withredirect=1",
+        CURLOPT_FILE => $fh,
+        CURLOPT_TIMEOUT => 60,
+        CURLOPT_CONNECTTIMEOUT => 10,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_SSL_VERIFYPEER => false,
+    );
+    $curl = curl_init();
+    curl_setopt_array($curl, $curlOptions);
+    $curl_result = curl_exec($curl);
+    if ($curl_result === false && $options['verbose']) {
+        echo "$filename has error " . curl_error($curl) . "\n";
+    }
+    curl_close($curl);
+    fclose($fh);
+    $filesize = (str_starts_with(mime_content_type($filename), 'text/')) ? 42 : filesize($filename);
+    $url = ($filesize >= 1500) ? "'https://object.jacq.org/europeana/{$row['source_code']}/$specimen_ID.jpg'" : "NULL";
+    $dbLink->queryCatch("INSERT INTO gbif_pilot.europeana_images SET
+                          specimen_ID = $specimen_ID,
+                          filesize    = $filesize,
+                          filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                          source_id   = {$row['source_id']},
+                          source_code = '{$row['source_code']}',
+                          url         = $url
+                         ON DUPLICATE KEY UPDATE
+                          filesize    = $filesize,
+                          filectime   = FROM_UNIXTIME(" . filectime($filename) . "),
+                          source_id   = {$row['source_id']},
+                          source_code = '{$row['source_code']}',
+                          url         = $url");
+    if ($options['verbose'] > 1) {
+        echo "{$row['source_code']} ({$row['source_id']}): $filename" . (($filesize < 1500) ? ' empty' : '') . "\n";
     }
 }
 

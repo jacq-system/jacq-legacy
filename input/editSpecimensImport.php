@@ -1078,6 +1078,3 @@ if ($updateBlocked) {
 
 </body>
 </html>
-
-
-

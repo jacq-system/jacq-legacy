@@ -87,6 +87,10 @@ if ($options['renew']) {
              . "&mediaType=StillImage"
             .  "&datasetKey=" . $source['datasetKey'];
         $response = readJsonCurl($url);
+        if (empty($response['results'])) {
+            sleep(10);
+            $response = readJsonCurl($url);
+        }
 
         foreach ($response['results'] as $result) {
             if (empty($result['modified'])) {

@@ -1,16 +1,17 @@
 <?php
 session_start();
-require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
-require("inc/api_functions.php");
+require( "inc/gatekeeper.php");
+require( "inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
+use Jacq\DbAccess;
+use Jacq\Display;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
-$jaxon->setOption('core.request.uri', 'ajax/listObservationsServer.php');
-
-$jaxon->register(Jaxon::CALLABLE_FUNCTION, "getUserDate");
+$jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 if (!isset($_SESSION['obsCollection'])) { $_SESSION['obsCollection'] = '';      }
 if (!isset($_SESSION['obsTyp']))        { $_SESSION['obsTyp']        = '';      }
@@ -23,7 +24,7 @@ if (!isset($_SESSION['obsGeoGeneral'])) { $_SESSION['obsGeoGeneral'] = '';      
 if (!isset($_SESSION['obsGeoRegion']))  { $_SESSION['obsGeoRegion']  = '';      }
 
 $nrSel = isset($_GET['nr']) ? intval($_GET['nr']) : 0;
-$swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
+$swBatch = Tools::checkRight('batch'); // only user with the right "batch" may add Batches
 
 if (isset($_POST['search'])) {
     $_SESSION['obsType'] = 1;
@@ -43,8 +44,8 @@ if (isset($_POST['search'])) {
     $_SESSION['obsProvince']   = $_POST['province'];
     $_SESSION['obsLoc']        = $_POST['loc'];
 
-    $_SESSION['obsTyp']    = (($_POST['typ'] == "only") ? true : false);
-    $_SESSION['obsImages'] = (($_POST['images'] == "only") ? true : false);
+    $_SESSION['obsTyp']    = ($_POST['typ'] == "only");
+    $_SESSION['obsImages'] = ($_POST['images'] == "only");
 
     $_SESSION['obsOrder'] = "genus, te.epithet, ta.author, "
                           . "Sammler, Sammler_2, series, Nummer, alt_number, Datum, "
@@ -100,13 +101,14 @@ if (isset($_POST['search'])) {
     if ($_SESSION['obsOrTyp'] < 0) $_SESSION['obsOrder'] = implode(" DESC, ", explode(", ", $_SESSION['obsOrder'])) . " DESC";
 }
 
-function makeDropdownCollection()
+function makeDropdownCollection(): void
 {
-    $sql =  "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = dbi_query($sql);
+    $db = DbAccess::ConnectTo('INPUT');
+
+    $result = $db->queryCatch("SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection");
     echo "<select size=\"1\" name=\"collection\">\n";
     echo "  <option value=\"0\"></option>\n";
-    while ($row = mysqli_fetch_array($result)) {
+    while ($row = $result->fetch_array()) {
         echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
         if ($_SESSION['obsCollection'] == $row['collectionID']) echo " selected";
         echo ">" . htmlspecialchars($row['collection']) . "</option>\n";
@@ -114,17 +116,18 @@ function makeDropdownCollection()
     echo "  </select>\n";
 }
 
-function makeDropdownUsername()
+function makeDropdownUsername(): void
 {
-    $sql = "SELECT hu.userID, hu.firstname, hu.surname, hu.username
-            FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.log_specimens ls
-            WHERE hu.userID = ls.userID
-            GROUP BY hu.userID
-            ORDER BY surname, firstname, username";
-    $result = dbi_query($sql);
-    echo "<select size=\"1\" name=\"userID\" onchange=\"jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
+    $db = DbAccess::ConnectTo('INPUT');
+
+    $result = $db->queryCatch("SELECT hu.userID, hu.firstname, hu.surname, hu.username
+                               FROM herbarinput_log.tbl_herbardb_users hu, herbarinput_log.log_specimens ls
+                               WHERE hu.userID = ls.userID
+                               GROUP BY hu.userID, hu.surname, hu.firstname, hu.username
+                               ORDER BY hu.surname, hu.firstname, hu.username");
+    echo "<select size=\"1\" name=\"userID\" onchange=\"Jacq.Jaxon.ListObservationsServer.getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)\">\n";
     echo "  <option value=\"0\"></option>";
-    while ($row = mysqli_fetch_array($result)) {
+    while ($row = $result->fetch_array()) {
         echo "  <option value=\"" . htmlspecialchars($row['userID']) . "\"";
         if ($_SESSION['obsUserID'] == $row['userID']) echo " selected";
         echo ">";
@@ -137,14 +140,16 @@ function makeDropdownUsername()
     echo "  </select>\n";
 }
 
-function makeDropdownDate()
+function makeDropdownDate(): void
 {
+    $db = DbAccess::ConnectTo('INPUT');
+
     $sql = "SELECT DATE_FORMAT(timestamp,'%Y-%m-%d') as date
             FROM herbarinput_log.log_specimens ";
     if (intval($_SESSION['obsUserID'])) $sql .= "WHERE userID = '" . intval($_SESSION['obsUserID']) . "' ";
     $sql .= "GROUP BY date
              ORDER BY date";
-    $result = dbi_query($sql);
+    $result = $db->queryCatch($sql);
     $rows = $result->fetch_all(MYSQLI_ASSOC);
     echo "<select size=\"1\" name=\"user_date\" id=\"user_date\">\n";
     foreach ($rows as $row) {
@@ -172,13 +177,13 @@ function collectorItem($row)
         if ($row['series']) $text .= " " . $row['series'];
         if ($row['Nummer']) $text .= " " . $row['Nummer'];
         if ($row['alt_number']) $text .= " " . $row['alt_number'];
-        if (strstr($row['alt_number'], "s.n.")) $text .= " [" . $row['Datum'] . "]";
+        if (str_contains($row['alt_number'], "s.n.")) $text .= " [" . $row['Datum'] . "]";
     }
 
     return $text;
 }
 
-function locationItem($row)
+function locationItem($row): string
 {
     $text = "";
     if (trim($row['nation_engl'])) {
@@ -198,9 +203,9 @@ function locationItem($row)
 
 function collectionItem($coll)
 {
-    if (strpos($coll, "-") !== false) {
+    if (str_contains($coll, "-")) {
         return substr($coll, 0, strpos($coll, "-"));
-    } elseif (strpos($coll, " ") !== false) {
+    } elseif (str_contains($coll, " ")) {
         return substr($coll, 0, strpos($coll, " "));
     } else{
         return($coll);
@@ -215,9 +220,13 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     die();
 }
 
+$db = DbAccess::ConnectTo('INPUT');
+
+$display = Display::Load();
+
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - list Observations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -227,14 +236,14 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
   <script src="js/parameters.php" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
     function check_all() {
-      for (var i=0, n=document.f.elements.length; i<n; i++) {
+      for (let i=0, n=document.f.elements.length; i<n; i++) {
         if (document.f.elements[i].name.substring(0,11)=='batch_spec_') {
           document.f.elements[i].checked = true;
         }
       }
     }
     function osMap(sid) {
-        OSMwindow = window.open('osm_leaflet.php?sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
+        let OSMwindow = window.open('osm_leaflet.php?sid=' + sid, '_blank', 'width=820,height=620,top=50,left=50,resizable,scrollbars');
         OSMwindow.focus();
     }
   </script>
@@ -247,54 +256,57 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
 <tr>
   <td align="right">&nbsp;<b>Collection:</b></td>
     <td><?php makeDropdownCollection(); ?></td>
-  <td align="right">&nbsp;<b>Collection Nr.:</b></td>
-    <td><input type="text" name="number" value="<?php echoSpecial('obsNumber', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Series:</b></td>
-    <td><input type="text" name="series" value="<?php echoSpecial('obsSeries', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_number">Collection Nr.:</label></b></td>
+    <td><input type="text" name="number" id="fm1_number" value="<?php echo htmlspecialchars($_SESSION['obsNumber'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_series">Series:</label></b></td>
+    <td><input type="text" name="series" id="fm1_series" value="<?php echo htmlspecialchars($_SESSION['obsSeries'] ?? ''); ?>"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Family:</b></td>
-    <td><input type="text" name="family" value="<?php echoSpecial('obsFamily', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Taxon:</b></td>
-    <td><input type="text" name="taxon" value="<?php echoSpecial('obsTaxon', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>ident. history</b></td>
-    <td><input type="text" name="taxon_alt" value="<?php echoSpecial('obsTaxonAlt', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_family">Family:</label></b></td>
+    <td><input type="text" name="family" id="fm1_family" value="<?php echo htmlspecialchars($_SESSION['obsFamily'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_taxon">Taxon:</label></b></td>
+    <td><input type="text" name="taxon" id="fm1_taxon" value="<?php echo htmlspecialchars($_SESSION['obsTaxon'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_taxon_alt">ident. history</label></b></td>
+    <td><input type="text" name="taxon_alt" id="fm1_taxon_alt" value="<?php echo htmlspecialchars($_SESSION['obsTaxonAlt'] ?? ''); ?>"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Collector:</b></td>
-    <td><input type="text" name="collector" value="<?php echoSpecial('obsCollector', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Number:</b></td>
-    <td><input type="text" name="numberC" value="<?php echoSpecial('obsNumberC', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Date:</b></td>
-    <td><input type="text" name="date" value="<?php echoSpecial('obsDate', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_collector">Collector:</label></b></td>
+    <td><input type="text" name="collector" id="fm1_collector" value="<?php echo htmlspecialchars($_SESSION['obsCollector'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_numberC">Number:</label></b></td>
+    <td><input type="text" name="numberC" id="fm1_numberC" value="<?php echo htmlspecialchars($_SESSION['obsNumberC'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_date">Date:</label></b></td>
+    <td><input type="text" name="date" id="fm1_date" value="<?php echo htmlspecialchars($_SESSION['obsDate'] ?? ''); ?>"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Continent:</b></td>
+  <td align="right">&nbsp;<b><label for="fm1_geo_general">Continent:</label></b></td>
     <td>
-      <select size="1" name="geo_general">
+      <select size="1" name="geo_general" id="fm1_geo_general">
       <option></option>
       <?php
-        $sql = "SELECT geo_general
-                FROM tbl_geo_region
-                GROUP BY geo_general ORDER BY geo_general";
-        $result = dbi_query($sql);
-        while ($row = mysqli_fetch_array($result)) {
+        $result = $db->queryCatch("SELECT geo_general
+                                   FROM tbl_geo_region
+                                   GROUP BY geo_general 
+                                   ORDER BY geo_general");
+        while ($row = $result->fetch_array()) {
             echo "<option";
-            if ($_SESSION['obsGeoGeneral'] == $row['geo_general']) echo " selected";
+            if ($_SESSION['obsGeoGeneral'] == $row['geo_general']) {
+                echo " selected";
+            }
             echo ">" . $row['geo_general'] . "</option>\n";
         }
       ?>
       </select>
     </td>
-  <td align="right">&nbsp;<b>Region:</b></td>
+  <td align="right">&nbsp;<b><label for="fm1_geo_region">Region:</label></b></td>
     <td>
-      <select size="1" name="geo_region">
+      <select size="1" name="geo_region" id="fm1_geo_region">
       <option></option>
       <?php
-        $sql = "SELECT geo_region
-                FROM tbl_geo_region
-                ORDER BY geo_region";
-        $result = dbi_query($sql);
-        while ($row = mysqli_fetch_array($result)) {
+        $result = $db->queryCatch("SELECT geo_region
+                                   FROM tbl_geo_region
+                                   ORDER BY geo_region");
+        while ($row = $result->fetch_array()) {
             echo "<option";
-            if ($_SESSION['obsGeoRegion'] == $row['geo_region']) echo " selected";
+            if ($_SESSION['obsGeoRegion'] == $row['geo_region']) {
+                echo " selected";
+            }
             echo ">" . $row['geo_region'] . "</option>\n";
         }
       ?>
@@ -302,24 +314,32 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     </td>
   <td colspan="2"></td>
 </tr><tr>
-  <td align="right">&nbsp;<b>Country:</b></td>
-    <td><input type="text" name="country" value="<?php echoSpecial('obsCountry', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>State/Province:</b></td>
-    <td><input type="text" name="province" value="<?php echoSpecial('obsProvince', 'SESSION'); ?>"></td>
-  <td align="right">&nbsp;<b>Loc.:</b></td>
-    <td><input type="text" name="loc" value="<?php echoSpecial('obsLoc', 'SESSION'); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_country">Country:</label></b></td>
+    <td><input type="text" name="country" id="fm1_country" value="<?php echo htmlspecialchars($_SESSION['obsCountry'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_province">State/Province:</label></b></td>
+    <td><input type="text" name="province" id="fm1_province" value="<?php echo htmlspecialchars($_SESSION['obsProvince'] ?? ''); ?>"></td>
+  <td align="right">&nbsp;<b><label for="fm1_loc">Loc.:</label></b></td>
+    <td><input type="text" name="loc" id="fm1_loc" value="<?php echo htmlspecialchars($_SESSION['obsLoc'] ?? ''); ?>"></td>
 </tr><tr>
   <td colspan="2">
-    <input type="radio" name="typ" value="all"<?php if(!$_SESSION['obsTyp']) echo " checked"; ?>>
-    <b>All records</b>
-    <input type="radio" name="typ" value="only"<?php if($_SESSION['obsTyp']) echo " checked"; ?>>
-    <b>Type records only</b>
+    <label>
+      <input type="radio" name="typ" value="all"<?php if(!$_SESSION['obsTyp']) echo " checked"; ?>>
+      <b>All records</b>
+    </label>
+    <label>
+      <input type="radio" name="typ" value="only"<?php if($_SESSION['obsTyp']) echo " checked"; ?>>
+      <b>Type records only</b>
+    </label>
   </td><td colspan="4" align="right">
     <b>Display only records containing images:</b>
-    <input type="radio" name="images" value="only"<?php if($_SESSION['obsImages']) echo " checked"; ?>>
-    <b>Yes</b>
-    <input type="radio" name="images" value="all"<?php if(!$_SESSION['obsImages']) echo " checked"; ?>>
-    <b>No</b>
+    <label>
+      <input type="radio" name="images" value="only"<?php if($_SESSION['obsImages']) echo " checked"; ?>>
+      <b>Yes</b>
+    </label>
+    <label>
+      <input type="radio" name="images" value="all"<?php if(!$_SESSION['obsImages']) echo " checked"; ?>>
+      <b>No</b>
+    </label>
   </td>
 </tr>
 </table>
@@ -335,10 +355,13 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
 </td><td style="width: 3em">&nbsp;</td>
 <?php endif; ?>
 <td>
-  <b>SpecimenID:</b> <input type="text" name="specimen" value="<?php echoSpecial('specimen', 'POST'); ?>">
+  <label>
+    <b>SpecimenID:</b>
+    <input type="text" name="specimen" value="<?php echo htmlspecialchars($_POST['specimen'] ?? ''); ?>">
+  </label>
   <input class="button" type="submit" name="select" value=" Edit ">
 </td>
-<?php if ($_SESSION['editorControl']):    // only editors may check logged in users ?>
+<?php if ($_SESSION['editorControl']):    // only editors may check logged-in users ?>
 <td style="width: 3em">&nbsp;</td><td>
 &nbsp;<b>User:</b>&nbsp;&nbsp;<?php makeDropdownUsername(); ?>
 &nbsp;<b>Date:</b>&nbsp;&nbsp;<?php makeDropdownDate(); ?>
@@ -356,12 +379,11 @@ if ($_SESSION['obsType']==1) {
     if ($swBatch) {
         $batchValue = array();
         $batchText = array();
-        $sql = "SELECT remarks, date_supplied, batchID
-                FROM api.tbl_api_batches
-                WHERE sent = '0'
-                ORDER BY date_supplied DESC";
-        $result = dbi_query($sql);
-        while ($row=mysqli_fetch_array($result)) {
+        $result = $db->queryCatch("SELECT remarks, date_supplied, batchID
+                                   FROM api.tbl_api_batches
+                                   WHERE sent = '0'
+                                   ORDER BY date_supplied DESC");
+        while ($row = $result->fetch_array()) {
             $batchValue[] = $row['batchID'];
             $batchText[] = $row['date_supplied'] . " (" . trim($row['remarks']) . ")";
         }
@@ -369,18 +391,17 @@ if ($_SESSION['obsType']==1) {
             $batch_id = intval($_POST['batch']);
             $idList = array();
             foreach ($_POST as $key => $value) {
-                if (substr($key,0,11) == "batch_spec_" && $value) {
-                    $id = substr($key, 11);
-                    $sql = "INSERT INTO api.tbl_api_specimens SET
-                            specimen_ID = '$id',
-                            batchID_fk = '$batch_id'";
-                    dbi_query($sql);
+                if (str_starts_with($key, "batch_spec_") && $value) {
+                    $id = intval(substr($key, 11));
+                    $db->queryCatch("INSERT INTO api.tbl_api_specimens SET
+                                            specimen_ID = '$id',
+                                            batchID_fk = '$batch_id'");
                     // update or insert into update_tbl_api_units
-                    $res = update_tbl_api_units($id);
-                    update_tbl_api_units_identifications($id);
+                    $res = Api::update_tbl_api_units($id);
+                    Api::update_tbl_api_units_identifications($id);
                     if (!$res) {
                         $error = true;
-                        array_push($idList, $id);
+                        $idList[] = $id;
                     }
                 }
             }
@@ -402,6 +423,7 @@ if ($_SESSION['obsType']==1) {
              n.nation_engl, p.provinz, wg.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
              wg.Coord_W, wg.W_Min, wg.W_Sec, wg.Coord_N, wg.N_Min, wg.N_Sec,
              wg.Coord_S, wg.S_Min, wg.S_Sec, wg.Coord_E, wg.E_Min, wg.E_Sec, wg.ncbi_accession,
+             ts.taxonID,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
              ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
@@ -435,53 +457,53 @@ if ($_SESSION['obsType']==1) {
         $pieces = explode(" ", trim($_SESSION['obsTaxon']));
         $part1 = array_shift($pieces);
         $part2 = array_shift($pieces);
-        $sql .= " AND tg.genus LIKE '" . dbi_escape_string($part1) . "%'";
+        $sql .= " AND tg.genus LIKE '" . $db->real_escape_string($part1) . "%'";
         if ($part2) {
-            $sql .= " AND (te.epithet LIKE '" . dbi_escape_string($part2) . "%' "
-                  .   "OR te1.epithet LIKE '" . dbi_escape_string($part2) . "%' "
-                  .   "OR te2.epithet LIKE '" . dbi_escape_string($part2) . "%' "
-                  .   "OR te3.epithet LIKE '" . dbi_escape_string($part2) . "%')";
+            $sql .= " AND (te.epithet LIKE '" . $db->real_escape_string($part2) . "%' "
+                  .   "OR te1.epithet LIKE '" . $db->real_escape_string($part2) . "%' "
+                  .   "OR te2.epithet LIKE '" . $db->real_escape_string($part2) . "%' "
+                  .   "OR te3.epithet LIKE '" . $db->real_escape_string($part2) . "%')";
         }
     }
     if (trim($_SESSION['obsSeries'])) {
-        $sql .= " AND ss.series LIKE '%" . dbi_escape_string(trim($_SESSION['obsSeries'])) . "%'";
+        $sql .= " AND ss.series LIKE '%" . $db->real_escape_string(trim($_SESSION['obsSeries'])) . "%'";
     }
     if (trim($_SESSION['obsCollection'])) {
-        $sql .= " AND wg.collectionID=" . quoteString(trim($_SESSION['obsCollection']));
+        $sql .= " AND wg.collectionID=" . $db->quoteString(trim($_SESSION['obsCollection']));
     }
     if (trim($_SESSION['obsNumber'])) {
-        $sql .= " AND wg.HerbNummer LIKE '%" . dbi_escape_string(trim($_SESSION['obsNumber'])) . "%'";
+        $sql .= " AND wg.HerbNummer LIKE '%" . $db->real_escape_string(trim($_SESSION['obsNumber'])) . "%'";
     }
     if (trim($_SESSION['obsFamily'])) {
-        $sql .= " AND tf.family LIKE '" . dbi_escape_string(trim($_SESSION['obsFamily'])) . "%'";
+        $sql .= " AND tf.family LIKE '" . $db->real_escape_string(trim($_SESSION['obsFamily'])) . "%'";
     }
     if (trim($_SESSION['obsCollector'])) {
-        $sql .= " AND (c.Sammler LIKE '" . dbi_escape_string(trim($_SESSION['obsCollector'])) . "%' OR
-                       c2.Sammler_2 LIKE '%" . dbi_escape_string(trim($_SESSION['obsCollector'])) . "%')";
+        $sql .= " AND (c.Sammler LIKE '" . $db->real_escape_string(trim($_SESSION['obsCollector'])) . "%' OR
+                       c2.Sammler_2 LIKE '%" . $db->real_escape_string(trim($_SESSION['obsCollector'])) . "%')";
     }
     if (trim($_SESSION['obsNumberC'])) {
-        $sql .= " AND wg.Nummer LIKE '" . dbi_escape_string(trim($_SESSION['obsNumberC'])) . "%'";
+        $sql .= " AND wg.Nummer LIKE '" . $db->real_escape_string(trim($_SESSION['obsNumberC'])) . "%'";
     }
     if (trim($_SESSION['obsDate'])) {
-        $sql .= " AND wg.Datum LIKE '" . dbi_escape_string(trim($_SESSION['obsDate'])) . "%'";
+        $sql .= " AND wg.Datum LIKE '" . $db->real_escape_string(trim($_SESSION['obsDate'])) . "%'";
     }
     if (trim($_SESSION['obsGeoGeneral'])) {
-        $sql .= " AND r.geo_general LIKE '" . dbi_escape_string(trim($_SESSION['obsGeoGeneral'])) . "%'";
+        $sql .= " AND r.geo_general LIKE '" . $db->real_escape_string(trim($_SESSION['obsGeoGeneral'])) . "%'";
     }
     if (trim($_SESSION['obsGeoRegion'])) {
-        $sql .= " AND r.geo_region LIKE '" . dbi_escape_string(trim($_SESSION['obsGeoRegion'])) . "%'";
+        $sql .= " AND r.geo_region LIKE '" . $db->real_escape_string(trim($_SESSION['obsGeoRegion'])) . "%'";
     }
     if (trim($_SESSION['obsCountry'])) {
-        $sql .= " AND n.nation_engl LIKE '" . dbi_escape_string(trim($_SESSION['obsCountry'])) . "%'";
+        $sql .= " AND n.nation_engl LIKE '" . $db->real_escape_string(trim($_SESSION['obsCountry'])) . "%'";
     }
     if (trim($_SESSION['obsProvince'])) {
-        $sql .= " AND p.provinz LIKE '" . dbi_escape_string(trim($_SESSION['obsProvince'])) . "%'";
+        $sql .= " AND p.provinz LIKE '" . $db->real_escape_string(trim($_SESSION['obsProvince'])) . "%'";
     }
     if (trim($_SESSION['obsLoc'])) {
-        $sql .= " AND wg.Fundort LIKE '%" . dbi_escape_string(trim($_SESSION['obsLoc'])) . "%'";
+        $sql .= " AND wg.Fundort LIKE '%" . $db->real_escape_string(trim($_SESSION['obsLoc'])) . "%'";
     }
     if (trim($_SESSION['obsTaxonAlt'])) {
-        $sql .= " AND wg.taxon_alt LIKE '%" . dbi_escape_string(trim($_SESSION['obsTaxonAlt'])) . "%'";
+        $sql .= " AND wg.taxon_alt LIKE '%" . $db->real_escape_string(trim($_SESSION['obsTaxonAlt'])) . "%'";
     }
     if ($_SESSION['obsTyp']) {
         $sql .= " AND wg.typusID != 0";
@@ -492,38 +514,38 @@ if ($_SESSION['obsType']==1) {
 
     $sql .= " ORDER BY " . $_SESSION['obsOrder'];
 
-    $result = dbi_query($sql);
+    $result = $db->queryCatch($sql);
     if (mysqli_num_rows($result) > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['obsOrTyp'], 1) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . $display->sortItem($_SESSION['obsOrTyp'], 1) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['obsOrTyp'], 2) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . $display->sortItem($_SESSION['obsOrTyp'], 2) . "</th>";
         echo "<th class=\"out\">Date</th>";
         echo "<th class=\"out\">X/Y</th>";
         echo "<th class=\"out\">Location</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['obsOrTyp'], 4) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . $display->sortItem($_SESSION['obsOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['obsOrTyp'], 5) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . $display->sortItem($_SESSION['obsOrTyp'], 5) . "</th>";
         if ($swBatch) echo "<th class=\"out\">Batch</th>";
         echo "</tr>\n";
         $nr = 1;
-        while ($row = mysqli_fetch_array($result)) {
+        while ($row = $result->fetch_array()) {
             $linkList[$nr] = $row['specimen_ID'];
 
             if ($row['digital_image_obs']) {
-                $target = getIiifLink($row['specimen_ID']);
+                $target = Tools::getIiifLink($row['specimen_ID']);
                 if ($target) {
                     $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
-                        . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
-                        . "</a>";
+                                  . "<img border='0' height='15' src='webimages/logo-iiif.png' width='15' alt='IIIF'>"
+                                  . "</a>";
                 } else {
                     $digitalImage = "<a href=\"javascript:showImage('" . $row['specimen_ID'] . "')\">"
-                        . "<img border=\"0\" height=\"15\" src=\"webimages/camera.png\" width=\"15\">"
-                        . "</a>";
+                                  . "<img border='0' height='15' src='webimages/camera.png' width='15' alt='show image'>"
+                                  . "</a>";
                 }
             } else {
                 $digitalImage = "";
@@ -549,7 +571,7 @@ if ($_SESSION['obsType']==1) {
 //                                "target=\"_blank\"><img border=\"0\" height=\"15\" src=\"webimages/mapquest.png\" width=\"15\">".
 //                               "</a>".
                         . "<a href='#' onClick='osMap(" . $row['specimen_ID'] . "); return false;'>"
-                        . "<img border='0' height='15' width='15' src='webimages/OpenStreetMap.png'"
+                        . "<img border='0' height='15' width='15' src='webimages/OpenStreetMap.png' alt='show map'>"
                         . "</a>"
                         . "</td>";
             } else {
@@ -560,7 +582,7 @@ if ($_SESSION['obsType']==1) {
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out\">"
                .  "<a href=\"editObservations.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr\">"
-               .  htmlspecialchars(taxonItem($row)) . "</a></td>"
+               .  htmlspecialchars($display->taxon($row['taxonID'])) . "</a></td>"
                . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                . $textLatLon
@@ -570,8 +592,8 @@ if ($_SESSION['obsType']==1) {
                .  htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>";
             if ($swBatch) {
                 echo "<td class=\"out\" style=\"text-align: center\">";
-                $resultDummy = dbi_query("SELECT batchID_fk FROM api.tbl_api_specimens WHERE specimen_ID = '" . $row['specimen_ID'] . "'");
-                if (mysqli_num_rows($resultDummy) > 0) {
+                $resultDummy = $db->queryCatch("SELECT batchID_fk FROM api.tbl_api_specimens WHERE specimen_ID = '" . $row['specimen_ID'] . "'");
+                if ($resultDummy->num_rows > 0) {
                     echo "&radic;";
                 } else {
                     echo "<input type=\"checkbox\" name=\"batch_spec_" . $row['specimen_ID'] . "\">";
@@ -588,14 +610,13 @@ if ($_SESSION['obsType']==1) {
         echo "<b>nothing found!</b>\n";
     }
 } else if ($_SESSION['obsType'] == 2) {
-    $searchDate = dbi_escape_string(trim($_SESSION['obsUserDate']));
-    $sql = "SELECT *
-            FROM herbarinput_log.log_specimens
-            WHERE userID = '" . dbi_escape_string($_SESSION['obsUserID']) . "'
-             AND timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
-            ORDER BY timestamp";
-    $result = dbi_query($sql);
-    if (mysqli_num_rows($result) > 0) {
+    $searchDate = $db->real_escape_string(trim($_SESSION['obsUserDate']));
+    $result = $db->queryCatch("SELECT *
+                               FROM herbarinput_log.log_specimens
+                               WHERE userID = '" . $db->real_escape_string($_SESSION['obsUserID']) . "'
+                                AND timestamp BETWEEN '$searchDate' AND ADDDATE('$searchDate','1')
+                               ORDER BY timestamp");
+    if ($result->num_rows > 0) {
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\">Timestamp</th>";
@@ -603,7 +624,7 @@ if ($_SESSION['obsType']==1) {
         echo "<th class=\"out\">updated</th>";
         echo "</tr>\n";
         $nr = 1;
-        while ($row = mysqli_fetch_array($result)) {
+        while ($row = $result->fetch_array()) {
             $linkList[$nr] = $row['specimenID'];
             echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"
                . "<td class=\"out\">" . htmlspecialchars($row['timestamp']) . "</td>"

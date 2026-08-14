@@ -409,7 +409,7 @@ if ($_SESSION['litType']) {
             }
         } else {
             while ($row = mysqli_fetch_array($result)) {
-                if (!in_array($row['citationID'], $linkList)) {
+                if (!in_array($row['citationID'], $linkList ?? [])) {
                     listContainer($row['citationID']);
                 }
             }

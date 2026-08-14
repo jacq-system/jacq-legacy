@@ -26,12 +26,4 @@ $_CONFIG = [
     ],
 
     'EUROPEANA_DIR' => "", // directory of europeana images
-
-    // which tables are to be filled (table has to exist already)
-    // europeana_cache: use images in $europeana_dir for europeana
-    // europeana_get:   include this source in europeana-checks
-    'GBIF_TABLES' => [
-        ['name' => "tbl_prj_gbif_pilot_wu",   'source_id' =>  '1', 'europeana_cache' => 1, 'europeana_get' => 1],
-        ['name' => "tbl_prj_gbif_pilot_gzu",  'source_id' =>  '4', 'europeana_cache' => 1, 'europeana_get' => 1],
-    ],
 ];
