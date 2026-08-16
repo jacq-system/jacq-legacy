@@ -15,7 +15,10 @@ require("inc/cssf.php");
 <body>
 
 <?php
-if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)) {
+$right_collIns = checkRight('collIns');
+$right_collUpd = checkRight('collUpd');
+
+if (!empty($_POST['submitUpdate']) && ($right_collUpd || $right_collIns)) {
     $sw = true;
     $sql = "SELECT Sammler_2ID, Sammler_2
             FROM tbl_collector_2
@@ -32,20 +35,25 @@ if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x1800) != 0)
         }
     }
     if ($sw) {
+        $sql = "";
         if (intval($_POST['ID'])) {
-            if (($_SESSION['editControl'] & 0x1000) != 0) {
+            if ($right_collUpd) {
                 $sql = "UPDATE tbl_collector_2 SET
                          Sammler_2 = '" . dbi_escape_string($_POST['Sammler_2']) . "'
                         WHERE Sammler_2ID = '" . intval($_POST['ID']) . "'";
-            } else {
-                $sql = "";
             }
         } else {
-            $sql = "INSERT INTO tbl_collector_2 (Sammler_2)
-                     VALUES ('" . dbi_escape_string($_POST['Sammler_2']) . "')";
+            if ($right_collIns) {
+                $sql = "INSERT INTO tbl_collector_2 (Sammler_2)
+                        VALUES ('" . dbi_escape_string($_POST['Sammler_2']) . "')";
+            }
         }
-        $result = dbi_query($sql);
-        $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
+        if ($sql) {
+            $result = dbi_query($sql);
+            $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
+        } else {
+            $id = intval($_POST['ID']);
+        }
 
         echo "<script language=\"JavaScript\">\n";
         echo "  window.opener.document.f.sammler2.value = \"" . addslashes($_POST['Sammler_2']) . " <$id>\";\n";
@@ -76,9 +84,16 @@ $cf->text(10, 0.5, "&nbsp;" . ((!empty($row['Sammler_2ID'])) ? $row['Sammler_2ID
 $cf->label(10, 2, "add. Collector(s)");
 $cf->inputText(10, 2, 25, "Sammler_2", ((!empty($row['Sammler_2'])) ? $row['Sammler_2'] : ""), 250);
 
-if (($_SESSION['editControl'] & 0x1800) != 0) {
-    $text = (!empty($row['Sammler_2ID'])) ? " Update " : " Insert ";
-    $cf->buttonSubmit(2, 7, "submitUpdate", $text);
+if (!empty($row['Sammler_2ID'])) {
+    if ($right_collUpd) {
+        $cf->buttonSubmit(2, 7, "submitUpdate", " Update ");
+    }
+} else {
+    if ($right_collIns) {
+        $cf->buttonSubmit(2, 7, "submitUpdate", " Insert ");
+    }
+}
+if ($right_collIns) {
     $cf->buttonJavaScript(12, 7, " New ", "self.location.href='editCollector2.php?sel=<0>'");
 }
 
