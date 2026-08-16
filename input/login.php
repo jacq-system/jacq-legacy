@@ -122,8 +122,6 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
 										   $row['commonnameUpdate'] * 0x10000+
                                            $row['commonnameInsert'] * 0x20000;
 
-                $_SESSION['linkControl'] = $row['linkTaxon'];
-                $_SESSION['editorControl'] = $row['editor'];
                 $location="Location: menu.php";
                 if (SID) {
                     $location = $location."?".SID;

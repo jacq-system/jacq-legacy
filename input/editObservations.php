@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -247,7 +248,7 @@ if (isset($_GET['sel'])) {
         $p_digital_image_obs = $p_ncbi = "";
         $p_nation = $p_province = "";
         $p_sammler = $p_sammler2 = "";
-        if (!$_SESSION['editorControl']) {  // no editor, so the collectionID is fixed
+        if (!Permission::has('editor')) {  // no editor, so the collectionID is fixed
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '" . $_SESSION['sid'] . "' ORDER BY collectionID ASC";
             $result = dbi_query($sql);
             $row = mysqli_fetch_array($result);
@@ -258,7 +259,7 @@ if (isset($_GET['sel'])) {
     }
     if (isset($_GET['new']) && $_GET['new'] == 1) {
         $p_specimen_ID = "";
-        if (!$_SESSION['editorControl']) {  // no editor, so the collectionID is fixed
+        if (!Permission::has('editor')) {  // no editor, so the collectionID is fixed
             $sql = "SELECT collectionID FROM tbl_management_collections WHERE source_id = '" . $_SESSION['sid'] . "' ORDER BY collectionID ASC";
             $result = dbi_query($sql);
             $row = mysqli_fetch_array($result);
@@ -396,7 +397,7 @@ if (isset($_GET['sel'])) {
       $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID='".intval($p_collection)."'";
       $rowCheck = dbi_query($sqlCheck)->fetch_array();
       // allow write access to database if user is editor or is granted for both old and new collection
-      if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
+      if (Permission::has('editor') || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
           $sqlDummy = "SELECT specimen_ID
                        FROM tbl_specimens, tbl_management_collections
                        WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
@@ -782,7 +783,7 @@ $cf->labelMandatory(54.5, 0, 6, "accessible");
 $cf->checkbox(54.5, 0, "accessible", $p_accessible);
 
 $cf->labelMandatory(9, 2, 8, "Collection");
-if ($_SESSION['editorControl']) {  // Editoren dürfen auf alle collections zugreifen
+if (Permission::has('editor')) {  // Editors have access to all collections
     $cf->dropdown(9, 2, "collection", $p_collection, $collection[0], $collection[1]);
 } else {
     $collectionText = "";
@@ -806,7 +807,7 @@ $cf->dropdown(9, 4, "identstatus", $p_identstatus, $identstatus[0], $identstatus
 //if ($p_ncbi) echo " title=\"$p_ncbi\"";
 //echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
 
-if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
+if (($_SESSION['editControl'] & 0x1) != 0 || Permission::has('linkTaxon')) {
     $cf->labelMandatory(9, 6, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(9, 6, 8, "taxon");

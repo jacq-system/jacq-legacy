@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\Api;
 use Jacq\DbAccess;
 use Jacq\Display;
+use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Jaxon;
 
@@ -24,7 +25,7 @@ if (!isset($_SESSION['obsGeoGeneral'])) { $_SESSION['obsGeoGeneral'] = '';      
 if (!isset($_SESSION['obsGeoRegion']))  { $_SESSION['obsGeoRegion']  = '';      }
 
 $nrSel = isset($_GET['nr']) ? intval($_GET['nr']) : 0;
-$swBatch = Tools::checkRight('batch'); // only user with the right "batch" may add Batches
+$swBatch = Permission::has('batch');  // only user with the right "batch" may add Batches
 
 if (isset($_POST['search'])) {
     $_SESSION['obsType'] = 1;
@@ -361,7 +362,7 @@ $display = Display::Load();
   </label>
   <input class="button" type="submit" name="select" value=" Edit ">
 </td>
-<?php if ($_SESSION['editorControl']):    // only editors may check logged-in users ?>
+<?php if (Permission::has('editor')):    // only editors may check logged-in users ?>
 <td style="width: 3em">&nbsp;</td><td>
 &nbsp;<b>User:</b>&nbsp;&nbsp;<?php makeDropdownUsername(); ?>
 &nbsp;<b>Date:</b>&nbsp;&nbsp;<?php makeDropdownDate(); ?>

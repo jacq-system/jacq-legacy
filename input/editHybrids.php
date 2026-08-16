@@ -5,6 +5,7 @@ require( "inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\DbAccess;
+use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Jaxon;
 
@@ -57,7 +58,7 @@ if (isset($_GET['ID'])) {
               ->fetch_array();
     $newHybrid = empty($row['taxon_ID_fk']);
 
-    if (!empty($_POST['submitUpdate']) && $_SESSION['editorControl']) {
+    if (!empty($_POST['submitUpdate']) && Permission::has('editor')) {
         if (Tools::extractID($p_parent_1) != "NULL" && Tools::extractID($p_parent_2) != "NULL") {   // both parents must be set
             if ($newHybrid) {
                 $sql = "INSERT INTO tbl_tax_hybrids SET
@@ -150,7 +151,7 @@ echo "<div style='position:absolute; left: 8em; top: 10.5em' id='alertbox'></div
 $cf->buttonSubmit(10, 14, "reload", " Reload ");
 $cf->buttonJavaScript(16, 14, " Reset ", "self.location.href='editHybrids.php?ID=$id'");
 
-if ($_SESSION['editorControl']) {
+if (Permission::has('editor')) {
     if ($newHybrid) {
         $cf->buttonSubmit(31, 14, "submitUpdate", " Insert ");
     } else {

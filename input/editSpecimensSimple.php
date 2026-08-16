@@ -4,6 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 $nr = intval($_GET['nr']);
 $linkList = $_SESSION['sLinkList'];
@@ -346,7 +349,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
         // allow write access to database if user is editor or is granted for both old and new collection
-        if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
+        if (Permission::has('editor') || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
             $result = dbi_query($sql);
             $p_specimen_ID = (intval($_POST['specimen_ID'])) ? intval($_POST['specimen_ID']) : dbi_insert_id();
             logSpecimen($p_specimen_ID, $updated);
@@ -710,7 +713,7 @@ $cf->dropdown(9, 4, "identstatus", $p_identstatus, $identstatus[0], $identstatus
 //$cf->label(42,4,"voucher","javascript:editVoucher()");
 //$cf->dropdown(42,4,"voucher",$p_voucher,$voucher[0],$voucher[1]);
 
-if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(9, 6, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(9, 6, 8, "taxon");

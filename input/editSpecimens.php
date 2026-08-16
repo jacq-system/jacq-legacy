@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jacq\Settings;
 
@@ -948,7 +949,7 @@ echo "  <select name=\"voucher\" id=\"voucher\" style=\"width: 100%; max-width: 
 echo "</div>\n";
 
 $y += 2;
-if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(11, $y, 9, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(11, $y, 9, "taxon");

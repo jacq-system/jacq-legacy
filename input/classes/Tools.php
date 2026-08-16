@@ -116,41 +116,6 @@ class Tools
     }
 
     /**
-     * Checks if the given right is available for the current user session.
-     *
-     * @param string $right The name of the right to be checked.
-     * @return bool Returns true if the user has the specified right; otherwise, returns false.
-     */
-    public static function checkRight(string $right): bool
-    {
-        try {
-            $db = DbAccess::ConnectTo('INPUT');
-        } catch (Exception $e) {
-            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
-            return false;
-        }
-
-        if (str_starts_with($right, 'unlock_')) {
-            $result = $db->queryCatch("SELECT `table`
-                                       FROM herbarinput_log.tbl_herbardb_unlock
-                                       WHERE `table` = " . $db->quoteString(substr($right, 7)) . "
-                                        AND groupID = '" . intval($_SESSION['gid']) . "'");
-            return ($result->num_rows > 0);
-        } else {
-            $row = $db->queryCatch("SELECT *
-                                    FROM herbarinput_log.tbl_herbardb_users, herbarinput_log.tbl_herbardb_groups
-                                    WHERE herbarinput_log.tbl_herbardb_users.groupID = herbarinput_log.tbl_herbardb_groups.groupID
-                                     AND userID = '" . intval($_SESSION['uid']) . "'")
-                      ->fetch_array();
-            if (isset($row[$right]) && $row[$right]) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    /**
      * Checks if a row with a given id from a given table is in the state "locked"
      *
      * @param string $table The name of the table to be checked.
