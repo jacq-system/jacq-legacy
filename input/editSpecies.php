@@ -463,11 +463,11 @@ if (mysqli_num_rows($result) > 0) {
 	function listSpecimens(sel) {
       target  = "listSpecimens.php?taxonID=" + encodeURIComponent(sel);
       options = "width=";
-      if (screen.availWidth<990)
+      if (screen.availWidth<1380)
         options += (screen.availWidth - 10) + ",height=";
       else
         options += "990, height=";
-      if (screen.availHeight<710)
+      if (screen.availHeight<810)
         options += (screen.availHeight - 10);
       else
         options += "710";
