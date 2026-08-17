@@ -2,7 +2,6 @@
 session_start();
 require("inc/gatekeeper.php");
 require_once('inc/jsonRPCClient.php');  // for MDLD-JSON service
-
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Settings;
@@ -25,10 +24,26 @@ $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $NOLITERATURE_SQL_STATEMENT="NOT EXISTS ( SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy syncheck where syncheck.taxonID=ts.taxonID and (  ifnull( IF(syncheck.source='literature', syncheck.source_citationID, IF(syncheck.source='person', syncheck.source_person_ID, IF(syncheck.source='service', syncheck.source_serviceID, IF(syncheck.source='specimen', syncheck.source_specimenID,NULL)))),0)<>0))";
 
 
+if (!empty($_GET['taxon_list'])) {
+    $buffer = trim(preg_replace("/[^0-9,]/", "", $_GET['taxon_list']));   // remove all but numbers and comma
+    if (str_contains($buffer, ',')) {   // only react if "taxon_list" contains at least two numbers
+        $_POST['taxon'] = $buffer;
+        $_POST['select'] = 'select';
+    }
+} elseif (!empty($_GET['genus'])) {
+    $_POST['genus'] = $_GET['genus'];
+    $_POST['mdld']  = '';
+    $_POST['search'] = 'search';
+} elseif (!empty($_GET['family'])) {
+    $_POST['family'] = $_GET['family'];
+    $_POST['mdld']  = '';
+    $_POST['search'] = 'search';
+}
 
+// "taxon" contains numbers (one or more)
 if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
     $buffer = trim(preg_replace("/[^0-9,]/", "", $_POST['taxon']));   // remove all but numbers and comma
-	if (str_contains($_POST['taxon'], ',')){
+	if (str_contains($buffer, ',')) {
         $parts = explode(',', $buffer);
         $newparts = array();
         if ($parts) {
@@ -38,7 +53,12 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
                 }
             }
         }
-        $_SESSION['taxon_list'] = implode(',', $newparts);
+        if (!empty($newparts)) {
+            $buffer = implode(',', $newparts);;
+        }
+    }
+    if (str_contains($buffer, ',')){
+        $_SESSION['taxon_list'] = $buffer;
 
         $_SESSION['taxType']       = 3; // list Species
         $_SESSION['taxMDLD']       = "";
@@ -194,7 +214,15 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
             }
         }
     } elseif ($_SESSION['taxType'] == 3) { // list Species
-        if ($_GET['order'] == "cs") {
+        if ($_GET['order'] == "cr") {
+            $_SESSION['taxOrder'] = "tr.rank_hierarchy, genus, auth_g, family, epithet, author, epithet1, author1, "
+                                  . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
+            if ($_SESSION['taxOrTyp'] == 34) {
+                $_SESSION['taxOrTyp'] = -34;
+            } else {
+                $_SESSION['taxOrTyp'] = 34;
+            }
+        } elseif ($_GET['order'] == "cs") {
             $_SESSION['taxOrder'] = "epithet, genus, auth_g, family, author, epithet1, author1, "
                                   . "epithet2, author2, epithet3, author3, epithet4, author4, epithet5, author5";
             if ($_SESSION['taxOrTyp'] == 33) {
@@ -923,7 +951,7 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
       <input type="button" class="button" value="clear all" id="btClearAllLabels" onClick="Jacq.Jaxon.ListTaxServer.clearAll(); return false;">
       <p>
 <?php
-    $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, l.nr,
+    $sql = "SELECT ts.taxonID, ts.statusID, tg.genus, tag.author auth_g, tf.family, tr.rank_abbr, l.nr,
              ta.author, ta1.author author1, ta2.author author2, ta3.author author3, ta4.author author4, ta5.author author5,
              te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3, te4.epithet epithet4, te5.epithet epithet5
             FROM tbl_tax_species ts
@@ -942,14 +970,15 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
              LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
              LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
-             LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID ";
+             LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
+             LEFT JOIN tbl_tax_rank tr ON tr.tax_rankID = ts.tax_rankID ";
 
     if (!empty($_SESSION['taxon_list'])) {
         $sql .= " where ts.taxonID in (" . $db->real_escape_string($_SESSION['taxon_list']) . ")";
     } else {
-        $sql.= (($_SESSION['taxExternal']) ? "WHERE ts.external > 0 " : "WHERE ts.external = 0 ");
+        $sql .= (($_SESSION['taxExternal']) ? "WHERE ts.external > 0 " : "WHERE ts.external = 0 ");
         if ($_SESSION['taxStatus'] != "everything") {
-            if ($_SESSION['taxSpecies']) {
+            if ($_SESSION['taxSpecies'] && $_SESSION['taxSpecies'] != '-') {
                 $sql .= "AND (te.epithet LIKE '" . $db->real_escape_string($_SESSION['taxSpecies']) . "%'
                           OR te1.epithet LIKE '" . $db->real_escape_string($_SESSION['taxSpecies']) . "%'
                           OR te2.epithet LIKE '" . $db->real_escape_string($_SESSION['taxSpecies']) . "%'
@@ -960,11 +989,11 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
                 $sql .= "AND te.epithet IS NULL ";
             }
             if ($_SESSION['taxStatus']) {
-                $sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
+                $sql .= "AND ts.statusID=" . Tools::extractID($_SESSION['taxStatus']) . " ";
             }
         }
         if ($_SESSION['taxRank']) {
-            $sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
+            $sql .= "AND ts.tax_rankID=" . Tools::extractID($_SESSION['taxRank']) . " ";
         }
         if ($_SESSION['noLiterature']) {
             $sql .= " AND ( $NOLITERATURE_SQL_STATEMENT  ) ";
@@ -994,9 +1023,10 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
     if ($result->num_rows > 1000) {
         echo "<b>no more than 1000 results allowed</b>\n";
     } elseif ($result->num_rows > 0) {
-        echo "<table class='out' cellspacing='0'>\n"
+        echo "<b>Total: {$result->num_rows}</b><br><table class='out' cellspacing='0'>\n"
            . "<tr class='out'>"
            . "<th class='out'>ID</th>"
+           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cr'>Tax.Rank</a>" . $display->sortItem($_SESSION['taxOrTyp'], 34) . "</th>"
            . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cf'>Family</a>" . $display->sortItem($_SESSION['taxOrTyp'], 32) . "</th>"
            . "<th class='out'>acc.</th>"
            . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cg'>Genus</a>" . $display->sortItem($_SESSION['taxOrTyp'], 31) . "</th>"
@@ -1012,6 +1042,7 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
             echo "<tr class='" . (($nrSel == $nr) ? "outMark" : "out") . "'>"
                . "<td class='out' style='text-align:right'>"
                .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['taxonID'] . "</a></td>"
+               . "<td style='text-align: center;' class='out'>{$row['rank_abbr']}</td>"
                . "<td class='out'>"
                .   "<a href='editSpecies.php?sel=" . htmlspecialchars("<" . $row['taxonID'] . ">") . "&nr=$nr'>" . $row['family'] . "</a></td>"
                . "<td style='text-align: center;' class='out'>" . (($row['statusID'] == 96) ? "&bull;" : "") . "</td>"
@@ -1031,7 +1062,7 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
                . "</td></tr>\n";
             $hybrids = getHybrids($row['taxonID']);
             if (strlen($hybrids) > 0) {
-                echo "<tr><td class=\"out\" colspan='9'>";
+                echo "<tr><td class=\"out\" colspan='10'>";
                 echo "$hybrids\n";
                 echo "</td></tr>\n";
             }
@@ -1087,11 +1118,11 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
             $sql .= "AND te.epithet IS NULL ";
         }
         if ($_SESSION['taxStatus']) {
-            $sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
+            $sql .= "AND ts.statusID=" . Tools::extractID($_SESSION['taxStatus']) . " ";
         }
     }
     if ($_SESSION['taxRank']) {
-        $sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
+        $sql .= "AND ts.tax_rankID=" . Tools::extractID($_SESSION['taxRank']) . " ";
     }
     if ($_SESSION['taxFamily']) {
         $sql .= "AND family LIKE '" . $db->real_escape_string($_SESSION['taxFamily']) . "%' ";

@@ -4,6 +4,10 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
 
 $get_update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 $get_new    = (isset($_GET['new'])) ? intval($_GET['new']) : 0;
@@ -79,7 +83,7 @@ $blocked = false;
 
 
 if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
-    if (checkRight('use_access')) {
+    if (Permission::has('use_access')) {
         if (intval($_POST['genID'])) {
             // check if user has update rights for the old familyID
             $sql = "SELECT ac.update
@@ -107,17 +111,17 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
         if (mysqli_num_rows($result)==0) $blocked = true; // no access
     }
 
-    if (!checkRight('unlock_tbl_tax_genera') && isLocked('tbl_tax_genera', $_POST['genID'])) $blocked = true;
+    if (!Permission::mayUnlock('tbl_tax_genera') && Tools::isLocked('tbl_tax_genera', intval($_POST['genID']))) $blocked = true;
 
     $familyID = (strlen(trim($_POST['family']))>0) ? $_POST['familyIndex'] : 0;
     if (!$blocked && intval($familyID)) {
         $authorID = (strlen(trim($_POST['author']))>0) ? $_POST['authorIndex'] : 0;
         $taxonID  = (strlen(trim($_POST['taxon']))>0) ? $_POST['taxonIndex'] : 0;
-        if (checkRight('genera')) {
+        if (Permission::has('genera')) {
             $dtid = $_POST['DTID'];
             $dtzid = $_POST['DTZID'];
             $remarks = $_POST['remarks'];
-            if (checkRight('unlock_tbl_tax_genera')) {
+            if (Permission::mayUnlock('tbl_tax_genera')) {
                 $lock = ", locked=".(($_POST['locked']) ? "'1'" : "'0'");
             } else {
                 $lock = "";
@@ -172,7 +176,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
             }
             echo "  self.close()\n";
             echo "</script>\n";
-        } elseif (checkRight('dt')) {
+        } elseif (Permission::has('dt')) {
             if (intval($_POST['genID'])) {
                 $sql = "UPDATE tbl_tax_genera SET
                          DallaTorreIDs = ".quoteString($_POST['DTID']).",
@@ -309,13 +313,17 @@ if ($p_genID) {
              AND genID = '".intval($p_genID)."'";
     $result = dbi_query($sql);
     $row = mysqli_fetch_array($result);
-    $cf->label(8,2,"edit Species","javascript:editSpecies('".$row['taxonID']."')");
+    if (!empty($row['taxonID'])) {
+        $cf->label(8, 2, "edit Species", "javascript:editSpecies('" . $row['taxonID'] . "')");
+    } else {
+        $cf->label(8, 2, "edit Species");
+    }
 }
 
-if (checkRight('unlock_tbl_tax_genera')) {
+if (Permission::mayUnlock('tbl_tax_genera')) {
     $cf->label(32,0.5,"locked");
     $cf->checkbox(32,0.5,"locked",$p_locked);
-} elseif (isLocked('tbl_tax_genera', $p_genID)) {
+} elseif (Tools::isLocked('tbl_tax_genera', $p_genID)) {
     $cf->label(32,0.5,"locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"$p_locked\">\n";
 }
@@ -342,7 +350,7 @@ $cf->textarea(8,21,25,6,"remarks",$p_remarks);
 
 $cf->buttonSubmit(2,34,"reload"," Reload ");
 $cf->buttonReset(10,34," Reset ");
-if (!isLocked('tbl_tax_genera', $p_genID) || checkRight('unlock_tbl_tax_genera')) {
+if (!Tools::isLocked('tbl_tax_genera', $p_genID) || Permission::mayUnlock('tbl_tax_genera')) {
     $text = ($p_genID) ? " Update " : " Insert ";
     $cf->buttonSubmit(20,34,"submitUpdate",$text);
 }

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require("inc/connect.php");
+require("../inc/connect.php");
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -8,7 +8,7 @@ require("inc/connect.php");
 <head>
   <title>herbardb - list missing Types</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="../css/screen.css">
   <style type="text/css">
     th { font-weight: bold; font-size: medium }
     tr { vertical-align: top }
@@ -22,22 +22,22 @@ require("inc/connect.php");
       if (screen.availWidth<990)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
+        options += "1380, height=";
       if (screen.availHeight<710)
         options += (screen.availHeight - 10);
       else
-        options += "710";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
 
       return options;
     }
     function editSpecimens(sel) {
-      target = "editSpecimens.php?sel=" + encodeURIComponent(sel);
+      target = "../editSpecimens.php?sel=" + encodeURIComponent(sel);
       newWindow = window.open(target,"Specimens",getOptions());
       newWindow.focus();
     }
     function editSpecies(sel) {
-      target = "editSpecies.php?sel=" + encodeURIComponent(sel);
+      target = "../editSpecies.php?sel=" + encodeURIComponent(sel);
       newWindow = window.open(target,"Species",getOptions());
       newWindow.focus();
     }

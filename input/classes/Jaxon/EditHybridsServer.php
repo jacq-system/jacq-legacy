@@ -3,6 +3,7 @@
 namespace Jacq\Jaxon;
 
 use Jacq\DbAccess;
+use Jacq\Permission;
 use Exception;
 
 class EditHybridsServer extends \Jaxon\CallableClass
@@ -30,7 +31,7 @@ class EditHybridsServer extends \Jaxon\CallableClass
             }
             $this->response->assign('alertbox', 'innerHTML', $text);
             $this->response->script("$('#alertbox').css('background-color', '" . (($alert) ? 'OrangeRed' : '') . "');");
-            if ($_SESSION['editorControl']) {
+            if (Permission::has('editor')) {
                 $this->response->script("$(\"[name='submitUpdate']\").css('visibility', '" . (($alert) ? 'hidden' : 'visible') . "');");
             }
         } catch (Exception $e) {

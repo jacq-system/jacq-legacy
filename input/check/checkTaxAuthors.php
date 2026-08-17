@@ -6,7 +6,7 @@ require("../inc/connect.php");
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html>
 <head>
-  <title>herbardb - list missing Types</title>
+  <title>herbardb - check Tax Authors</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="../css/screen.css">
   <style type="text/css">
@@ -26,11 +26,11 @@ require("../inc/connect.php");
 </head>
 
 <body>
-<h1>check addtl. Tax. Authors</h1>
+<h1>check Tax. Authors</h1>
 
 <?php
 /**
- * get addtl. Authors
+ * get Authors
  */
 $result = dbi_query("SELECT authorID, author FROM tbl_tax_authors");
 $authorsKnown = array();

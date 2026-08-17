@@ -3,6 +3,7 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -14,7 +15,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "metadataCreateNew");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "metadataSyncLeftToRight");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "metadataSave");
 
-$userHasAccess = checkRight('admin');
+$userHasAccess = Permission::has('admin');
 
 if (!$userHasAccess) {
     ?><!DOCTYPE html>

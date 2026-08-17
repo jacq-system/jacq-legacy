@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 if (isset($_GET['sel'])) {
     $sql = "SELECT *
@@ -64,7 +67,7 @@ if (isset($_GET['sel'])) {
         }
     }
 
-    if ($_POST['submitUpdate'] && checkRight('admin')) {
+    if ($_POST['submitUpdate'] && ('admin')) {
         $result = dbi_query("SHOW COLUMNS FROM herbarinput_log.tbl_herbardb_groups");
         $sqldata = array();
         while ($row = mysqli_fetch_array($result)) {
@@ -151,7 +154,7 @@ foreach ($p_rights as $key => $val) {
 $cf->label(12, $line, "Table unlock", "javascript:openGroupUnlock('$p_groupID')");
 $line += 2;
 
-if (checkRight('admin')) {
+if (Permission::has('admin')) {
     if ($p_groupID) {
         $cf->buttonJavaScript(12, $line, " Reload ", "self.location.href='editGroup.php?sel=" . $p_groupID . "'");
         $cf->buttonSubmit(20, $line, "submitUpdate", " Update ");

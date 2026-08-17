@@ -3,6 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -33,8 +36,8 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-$right_collIns = checkRight('collIns');
-$right_collUpd = checkRight('collUpd');
+$right_collIns = Permission::has('collIns');
+$right_collUpd = Permission::has('collUpd');
 
 if (!empty($_POST['submitUpdate']) && ($right_collUpd || $right_collIns)) {
     $sw = true;

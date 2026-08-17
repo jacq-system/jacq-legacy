@@ -3,6 +3,10 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
 
 $update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 
@@ -20,7 +24,7 @@ $update = (isset($_GET['update'])) ? intval($_GET['update']) : 0;
 <?php
 $blocked = false;
 if (!empty($_POST['submitUpdate'])) {
-    if (checkRight('use_access')) {
+    if (Permission::has('use_access')) {
         if (intval($_POST['genID'])) {
             // check if user has update rights for the old categoryID
             $sql = "SELECT ac.update
@@ -46,10 +50,10 @@ if (!empty($_POST['submitUpdate'])) {
         if (mysqli_num_rows($result) == 0) $blocked = true; // no access
     }
 
-    if (!checkRight('unlock_tbl_tax_families') && isLocked('tbl_tax_families', $_POST['ID'])) $blocked = true;
+    if (!Permission::mayUnlock('tbl_tax_families') && Tools::isLocked('tbl_tax_families', intval($_POST['ID']))) $blocked = true;
 
-    if (checkRight('family') && !$blocked) {
-        if (checkRight('unlock_tbl_tax_families')) {
+    if (Permission::has('family') && !$blocked) {
+        if (Permission::mayUnlock('tbl_tax_families')) {
             $lock = ", locked=" . (($_POST['locked']) ? "'1'" : "'0'");
         } else {
             $lock = "";
@@ -148,10 +152,10 @@ echo "<input type=\"hidden\" name=\"ID\" value=\"" . $p_familyID . "\">\n";
 $cf->label(7, 0.5, "ID");
 $cf->text(7, 0.5, "&nbsp;" . (($p_familyID) ? $p_familyID : "new"));
 
-if (checkRight('unlock_tbl_tax_families')) {
+if (Permission::mayUnlock('tbl_tax_families')) {
     $cf->label(18, 0.5, "locked");
     $cf->checkbox(18, 0.5, "locked", $p_locked);
-} elseif (isLocked('tbl_tax_families', $p_familyID)) {
+} elseif (Tools::isLocked('tbl_tax_families', $p_familyID)) {
     $cf->label(20, 0.5, "locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"$p_locked\">\n";
 }
@@ -161,7 +165,7 @@ $cf->inputText(7, 2, 12, "family", $p_family, 50);
 $cf->label(7, 4, "Category");
 $cf->dropdown(7, 4, "category", $p_category, $category[0], $category[1]);
 
-if (checkRight('family') && (!isLocked('tbl_tax_families', $p_familyID) || checkRight('unlock_tbl_tax_families'))) {
+if (Permission::has('family') && (!Tools::isLocked('tbl_tax_families', $p_familyID) || Permission::mayUnlock('tbl_tax_families'))) {
   $text = ($p_familyID) ? " Update " : " Insert ";
   $cf->buttonSubmit(2, 7, "submitUpdate", $text);
   $cf->buttonJavaScript(12, 7, " New ", "self.location.href='editFamily.php?new=1'");

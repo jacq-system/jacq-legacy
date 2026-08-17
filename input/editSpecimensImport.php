@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -415,7 +416,7 @@ if (isset($_GET['sel'])) {
         $sqlCheck = "SELECT source_id FROM tbl_management_collections WHERE collectionID = '" . intval($p_collection) . "'";
         $rowCheck = dbi_query($sqlCheck)->fetch_array();
         // allow write access to database if user is editor or is granted for both old and new collection
-        if ($_SESSION['editorControl'] || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
+        if (Permission::has('editor') || ($_SESSION['sid'] == $rowCheck['source_id'] && $checkSource)) {
             $sqlDummy = "SELECT specimen_ID
                          FROM tbl_specimens_import, tbl_management_collections
                          WHERE tbl_specimens_import.collectionID = tbl_management_collections.collectionID
@@ -911,7 +912,7 @@ $cf->label(42, $y, "voucher","javascript:editVoucher()");
 $cf->dropdown(42, $y, "voucher", $p_voucher, $voucher[0], $voucher[1]);
 
 $y += 2;
-if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(9, $y, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(9, $y, 8, "taxon");

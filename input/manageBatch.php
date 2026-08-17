@@ -5,16 +5,19 @@ require("inc/cssf.php");
 require("inc/api_functions.php");
 require("inc/clsDbAccess.php");
 require("inc/jacqServletJsonRPCClient.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 //---------- check every input ----------
-if (!checkRight('batch')) { // only user with right "api" can change API
+if (!Permission::has('batch')) { // only user with right "api" can change API
     echo "<html><head></head><body>\n"
        . "<h1>Error</h1>\n"
        . "Access denied\n"
        . "</body></html>\n";
     die();
 }
-if (!checkRight('batchAdmin')) {
+if (!Permission::has('batchAdmin')) {
     $result = dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
     if (mysqli_num_rows($result) == 0) {
         echo "<html><head></head><body>\n"
@@ -38,7 +41,7 @@ function showList($link, $withID=true)
             FROM api.tbl_api_batches
              LEFT JOIN herbarinput.meta ON api.tbl_api_batches.sourceID_fk = herbarinput.meta.source_id
             WHERE sent = '0'";
-    if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
+    if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
     $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
@@ -56,7 +59,7 @@ function showEditFields($date_supplied, $remarks = "", $batchID = 0, $exclude_ta
     if (!$batchID) {
         $pre = "new_";
         $btn = "insert";
-        if (checkRight('batchAdmin')) {
+        if (Permission::has('batchAdmin')) {
             $chooseInstitution = "<select name=\"{$pre}sourceID_fk\" size=\"1\">"
                                . "<option value=\"0\" selected>General use</option>";
             $result = dbi_query("SELECT source_id, source_name FROM herbarinput.meta ORDER BY source_name");
@@ -127,7 +130,7 @@ function showEditFields($date_supplied, $remarks = "", $batchID = 0, $exclude_ta
 </form>
 <?php
 if ($type == 2 && isset($_POST['new_insert']) && $_POST['new_insert']) {
-    if (!checkRight('batchAdmin')) {
+    if (!Permission::has('batchAdmin')) {
         $institutionID = $_SESSION['sid'];
     } else {
         $institutionID = intval($_POST['new_sourceID_fk']);
@@ -152,7 +155,7 @@ if ($type == 2 && isset($_POST['new_insert']) && $_POST['new_insert']) {
 <?php
 if ($type == 4 && $batchID) { // update an unsent batch
     $sql = "UPDATE api.tbl_api_batches SET ";
-    //if (checkRight('batchAdmin')) $sql .= "sourceID_fk = '" . intval($_POST['sourceID_fk']) . "', ";
+    //if (Permission::has('batchAdmin')) $sql .= "sourceID_fk = '" . intval($_POST['sourceID_fk']) . "', ";
     $sql .= " date_supplied = " . quoteString($_POST['date_supplied']) . ",
               remarks = ".quoteString($_POST['remarks']) . ",
               `exclude_tab_obs` = " . (($_POST['exclude_tab_obs']) ? "1" : "0" ) . "
@@ -179,7 +182,7 @@ if ($type == 1 && $batchID) {  // update database
             FROM api.tbl_api_batches
             WHERE (sent = '0' OR sent IS NULL)
              AND batchID = " . quoteString($batchID);
-    if (!checkRight('batchAdmin')) $sql .= " AND sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
+    if (!Permission::has('batchAdmin')) $sql .= " AND sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {  // only unsent batches may be processed
         $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk = " . quoteString($batchID));

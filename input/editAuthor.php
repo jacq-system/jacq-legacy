@@ -3,10 +3,14 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - edit Author</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -16,7 +20,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unlock_tbl_tax_authors') || !isLocked('tbl_tax_authors', $_POST['ID']))) {
+if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::mayUnlock('tbl_tax_authors') || !Tools::isLocked('tbl_tax_authors', intval($_POST['ID'])))) {
     $sw = true;
     $sql = "SELECT authorID, author, external
             FROM tbl_tax_authors
@@ -34,7 +38,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('author') && (checkRight('unloc
     }
     if ($sw) {
         $bpf = trim($_POST['Brummit_Powell_full']);
-        if (checkRight('unlock_tbl_tax_authors')) {
+        if (Permission::mayUnlock('tbl_tax_authors')) {
             $lock = ", locked = " . (($_POST['locked'] ?? 0) ? "'1'" : "'0'");
         } else {
             $lock = "";
@@ -114,14 +118,14 @@ if ($result->num_rows > 0) {
 
 $cf = new CSSF();
 
-echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['authorID']."\">\n";
+echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['authorID'] . "\">\n";
 $cf->label(8, 0.5, "ID");
-$cf->text(8, 0.5, "&nbsp;" . (($row['authorID']) ? $row['authorID'] : "new"));
+$cf->text(8, 0.5, "&nbsp;" . (($row['authorID']) ?: "new"));
 
-if (checkRight('unlock_tbl_tax_authors')) {
+if (Permission::mayUnlock('tbl_tax_authors')) {
     $cf->label(32, 0.5, "locked");
     $cf->checkbox(32, 0.5, "locked", $row['locked']);
-} elseif (isLocked('tbl_tax_authors', $row['authorID'])) {
+} elseif (Tools::isLocked('tbl_tax_authors', $row['authorID'])) {
     $cf->label(34, 0.5, "locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"" . $row['locked'] . "\">\n";
 }
@@ -135,7 +139,7 @@ if ($row['external']) {
     $cf->checkbox(32, 8.5, "external", $row['external']);
 }
 
-if (checkRight('author') && (!isLocked('tbl_tax_authors', $row['authorID']) || checkRight('unlock_tbl_tax_authors'))) {
+if (Permission::has('author') && (!Tools::isLocked('tbl_tax_authors', $row['authorID']) || Permission::mayUnlock('tbl_tax_authors'))) {
     $text = ($row['authorID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(9, 10, "submitUpdate", $text);
     $cf->buttonJavaScript(21, 10, " New ", "self.location.href='editAuthor.php?sel=0&typ=" . $_REQUEST['typ'] . "'");

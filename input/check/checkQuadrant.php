@@ -2,7 +2,7 @@
 session_start();
 ini_set("memory_limit","1G");
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\DbAccess;
 
@@ -147,10 +147,10 @@ function dms($ddd)
             if (screen.availHeight<710)
                 options += (screen.availHeight - 10);
             else
-                options += "710";
+                options += "860";
             options += ", top=10,left=10,scrollbars=yes,resizable=yes";
 
-            target = "editSpecimens.php?sel=" + encodeURIComponent(sel);
+            target = "../editSpecimens.php?sel=" + encodeURIComponent(sel);
             newWindow = window.open(target, "Specimens", options);
             newWindow.focus();
         }

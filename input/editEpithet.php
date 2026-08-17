@@ -2,6 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -15,7 +19,7 @@ require("inc/cssf.php");
 <body>
 
 <?php
-if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlock_tbl_tax_epithets') || !isLocked('tbl_tax_epithets', $_POST['ID']))) {
+if (!empty($_POST['submitUpdate']) && Permission::has('epithet') && (Permission::mayUnlock('tbl_tax_epithets') || !Tools::isLocked('tbl_tax_epithets', intval($_POST['ID'])))) {
     $sql = "SELECT epithetID, epithet, external
             FROM tbl_tax_epithets
             WHERE epithet = " . quoteString($_POST['epithet']) . "
@@ -28,7 +32,7 @@ if (!empty($_POST['submitUpdate']) && checkRight('epithet') && (checkRight('unlo
         echo "</script>\n";
         $id = $_POST['ID'];
     } else {
-        if (checkRight('unlock_tbl_tax_epithets')) {
+        if (Permission::mayUnlock('tbl_tax_epithets')) {
             $lock = ", locked = " . (($_POST['locked'] ?? 0) ? "'1'" : "'0'");
         } else {
             $lock = "";
@@ -95,10 +99,10 @@ echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['epithetID'] . "\">\n"
 $cf->label(7, 0.5, "ID");
 $cf->text(7, 0.5, "&nbsp;" . (($row['epithetID']) ?: "new"));
 
-if (checkRight('unlock_tbl_tax_epithets')) {
+if (Permission::mayUnlock('tbl_tax_epithets')) {
     $cf->label(18, 0.5, "locked");
     $cf->checkbox(18, 0.5, "locked", $row['locked']);
-} elseif (isLocked('tbl_tax_epithets', $row['epithetID'])) {
+} elseif (Tools::isLocked('tbl_tax_epithets', $row['epithetID'])) {
     $cf->label(20, 0.5, "locked");
     echo "<input type=\"hidden\" name=\"locked\" value=\"" . $row['locked'] . "\">\n";
 }
@@ -109,7 +113,7 @@ if ($row['external']) {
     $cf->label(18, 4, "external");
     $cf->checkbox(18, 4, "external", $row['external']);
 }
-if (checkRight('epithet') && (!isLocked('tbl_tax_epithets', $row['epithetID']) || checkRight('unlock_tbl_tax_epithets'))) {
+if (Permission::has('epithet') && (!Tools::isLocked('tbl_tax_epithets', $row['epithetID']) || Permission::mayUnlock('tbl_tax_epithets'))) {
     $text = ($row['epithetID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 6, "submitUpdate",$text);
     $cf->buttonJavaScript(15, 6, " New ", "self.location.href='editEpithet.php?sel=0&typ=" . $_REQUEST['typ'] . "'");

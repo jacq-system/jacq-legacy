@@ -2,8 +2,8 @@
 /**
  * this script checks for missing pictures (both database and harddisk)
  */
-require("inc/init.php");
-require __DIR__ . '/vendor/autoload.php';
+require("../inc/init.php");
+require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Display;
 
@@ -119,24 +119,24 @@ catch (Exception $e) {
 <head>
     <title>herbardb - list synonyms</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="css/screen.css">
+    <link rel="stylesheet" type="text/css" href="../css/screen.css">
     <script type="text/javascript" language="JavaScript">
         function editSpecies(sel) {
-            target = "editSpecies.php?sel=" + encodeURIComponent(sel);
-            options = "width=";
+            let target = "../editSpecies.php?sel=" + encodeURIComponent(sel);
+            let options = "width=";
             if (screen.availWidth < 990) {
                 options += (screen.availWidth - 10) + ",height=";
             } else {
-                options += "990, height=";
+                options += "1380, height=";
             }
             if (screen.availHeight < 710) {
                 options += (screen.availHeight - 10);
             } else {
-                options += "710";
+                options += "860";
             }
             options += ", top=10,left=10,scrollbars=yes,resizable=yes";
 
-            newWindow = window.open(target,"Specimens",options);
+            let newWindow = window.open(target,"Specimens",options);
             newWindow.focus();
         }
     </script>

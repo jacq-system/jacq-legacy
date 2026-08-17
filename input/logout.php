@@ -13,7 +13,5 @@ unset($_SESSION['gid']);
 unset($_SESSION['sid']);
 unset($_SESSION['editFamily']);
 unset($_SESSION['editControl']);
-unset($_SESSION['linkControl']);
-unset($_SESSION['editorControl']);
 
 header("Location: login.php");

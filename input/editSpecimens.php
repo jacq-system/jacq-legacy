@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jacq\Settings;
 
@@ -38,7 +39,7 @@ if (isset($_GET['ptid'])) {
 
 $nr = isset($_GET['nr']) ? intval(filter_input(INPUT_GET, 'nr')) : 0;
 $linkList = $_SESSION['sLinkList'] ?? array();
-$swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" kann Batches aendern
+$swBatch = Permission::has('batch');
 $p_gbif_id = $p_dissco_id = "";
 $p_notes_internal = "";
 
@@ -449,8 +450,8 @@ if (isset($_GET['sel'])) {
                     voucherID = " . makeInt($p_voucher) . ",
                     observation = '0'";
 
-        $isAdminUser = checkRight('admin');
-        $isEditorUser = checkRight('editor');
+        $isAdminUser = Permission::has('admin');
+        $isEditorUser = Permission::has('editor');
         $oldSourceId = null;
 
         if (intval($_POST['specimen_ID'])) {
@@ -639,7 +640,7 @@ if (isset($_GET['sel'])) {
       let oldHerbNumber = <?php echo (is_numeric($p_HerbNummer) && $edit) ? "'$p_HerbNummer'" : 0; ?>;
       let errorEdited = "<?php echo $errorEdited ?? ""; ?>";
       let institutionEditLocked = <?php echo (!empty($p_specimen_ID) && $edit) ? 'true' : 'false'; ?>;
-      let canMoveAcrossInstitutions = <?php echo (checkRight('admin') ? 'true' : 'false'); ?>;
+      let canMoveAcrossInstitutions = <?php echo (Permission::has('admin') ? 'true' : 'false'); ?>;
       let currentSpecimenId = <?php echo intval($p_specimen_ID); ?>;
       let currentListPage = <?php echo intval($_SESSION['sCurrentSpecimenPage'] ?? 0); ?>;
       let linkEditUnsaved = { tracking: false, initial: '' };
@@ -948,7 +949,7 @@ echo "  <select name=\"voucher\" id=\"voucher\" style=\"width: 100%; max-width: 
 echo "</div>\n";
 
 $y += 2;
-if (($_SESSION['editControl'] & 0x1) != 0 || ($_SESSION['linkControl'] & 0x1) != 0) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(11, $y, 9, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(11, $y, 9, "taxon");

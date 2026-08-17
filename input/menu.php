@@ -3,6 +3,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
+
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -93,63 +95,63 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
   <form Action="menu.php" Method="POST">
     <table>
       <tr align="left"><td >
-<?php if (checkRight('btnTax')): ?>
+<?php if (Permission::has('btnTax')): ?>
         <input class="button" type="button" value="Taxonomy" onClick="openWindow('listTax.php','Species')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
-<?php if (checkRight('chorol')): ?>
+<?php if (Permission::has('chorol')): ?>
         <input class="button" type="button" value="Chorology" onClick="openWindow('editChorology.php','Chorology')">
 <?php endif; ?>
       </td></tr>
       <tr align="left"><td>
-<?php if (checkRight('btnLit')): ?>
+<?php if (Permission::has('btnLit')): ?>
         <input class="button" type="button" value="Literature" onClick="openWindow('listLit.php','Literature')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
       <tr align="left"><td>
-<?php if (checkRight('btnSpc')): ?>
+<?php if (Permission::has('btnSpc')): ?>
         <input class="button" type="button" value="Specimens" onClick="openWindow('listSpecimens.php','Specimens')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
-<?php if (checkRight('btnObs')): ?>
+<?php if (Permission::has('btnObs')): ?>
         <input class="button" type="button" value="Observations" onClick="openWindow('listObservations.php','Observations')">
 <?php endif; ?>
       </td></tr>
       <tr align="left"><td>
-<?php if (checkRight('btnImg')): ?>
+<?php if (Permission::has('btnImg')): ?>
         <input class="button" type="button" value="standalone Images" onClick="openWindow('surplusImages.php','surplusImages')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
-<?php if (checkRight('btnImg')): ?>
+<?php if (Permission::has('btnImg')): ?>
         <input class="button" type="button" value="check Djatoka" onClick="openWindow('checkPictures.php','checkPictures')">
 <?php endif; ?>
       </td></tr>
       <tr align="left"><td>
-<?php if (checkRight('btnNom')): ?>
+<?php if (Permission::has('btnNom')): ?>
         <input class="button" type="button" value="Nomenclature" onClick="openWindow('checkNomenclature.php','checkNomenclature')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
       <tr align="left"><td>
-<?php if (checkRight('batch')): ?>
+<?php if (Permission::has('batch')): ?>
         <input class="button" type="button" value="Batches" onclick="openWindow('manageBatch.php','manageBatch')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
-<?php if (checkRight('batch')): ?>
+<?php if (Permission::has('batch')): ?>
         <input class="button" type="button" value="Batches file import" onclick="openWindow('fileImportBatch.php','fileImportBatch')">
 <?php endif; ?>
       </td></tr>
       <tr align="left"><td>
-<?php if (checkRight('btnSpc')): ?>
+<?php if (Permission::has('btnSpc')): ?>
         <input class="button" type="button" value="Labels" onClick="openWindow('listLabel.php','Labels')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
-<?php if (checkRight('btnImport')): ?>
+<?php if (Permission::has('btnImport')): ?>
       <tr align="left"><td>
         <input class="button" type="button" value="Import" onClick="openWindow('listSpecimensImport.php','SpecimensImport')">
       </td><td style="width:20px">&nbsp;</td><td>
       </td></tr>
 <?php endif; ?>
-<?php if (checkRight('admin')): ?>
+<?php if (Permission::has('admin')): ?>
       <tr align="left"><td>
         <input class="button" type="button" value="edit Users" onClick="openWindow('listUsers.php','Users')">
       </td><td style="width:20px">&nbsp;</td><td>
@@ -160,8 +162,8 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
         <input class="button" type="button" value="change password" onclick="changePassword()">
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
 <?php
-$showMakeStblId = checkRight('admin');
-$showMetadataButton = checkRight('admin');
+$showMakeStblId = Permission::has('admin');
+$showMetadataButton = Permission::has('admin');
 if ($showMakeStblId || $showMetadataButton):
 ?>
       <tr align="left"><td>

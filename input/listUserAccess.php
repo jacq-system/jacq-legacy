@@ -1,6 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 if (empty($_GET['sel'])) die();
 
@@ -8,7 +11,7 @@ $userID = intval($_GET['sel']);
 $row = dbi_query("SELECT username FROM herbarinput_log.tbl_herbardb_users WHERE userID = '$userID'")->fetch_array();
 $username = $row['username'];
 
-if (isset($_GET['del']) && intval($_GET['del']) && checkRight('admin')) {
+if (isset($_GET['del']) && intval($_GET['del']) && Permission::has('admin')) {
     $sql = "DELETE FROM herbarinput_log.tbl_herbardb_access
             WHERE ID = '" . intval($_GET['del']) . "'";
     dbi_query($sql);

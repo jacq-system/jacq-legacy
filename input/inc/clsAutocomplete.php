@@ -1046,8 +1046,8 @@ class clsAutocomplete {
      * If the searchstring consists of two parts the first one is used for genus, the second one for species.
      * If the searchstring contains " x ", only hybrids are returned
      *
-     * @param string $value text to search for
-     * @param bool[optional] $noExternals only results for "external=0"(default: false)
+     * @param array $value parsed text to search for (see AjaxParseValue in tools.php)
+     * @param bool $noExternals only results for "external=0"(default: false)
      * @return array data array ready to send to jQuery-autocomplete via json-encode
      */
     public function taxonWithHybridsNew($value, $noExternals = false)
@@ -1112,8 +1112,10 @@ class clsAutocomplete {
                              LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
                              LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
                              LEFT JOIN tbl_tax_genera tg    ON tg.genID      = ts.genID
-                            WHERE ts.taxonID NOT IN (SELECT taxon_ID_fk FROM tbl_tax_hybrids th WHERE th.taxon_ID_fk = ts.taxonID)
+                            WHERE ts.statusID != 1
                              AND ";
+//                            WHERE ts.taxonID NOT IN (SELECT taxon_ID_fk FROM tbl_tax_hybrids th WHERE th.taxon_ID_fk = ts.taxonID)
+//                             AND ";
 
                     $sql .= " tg.genus {$equ} ? ";
                     $param = array($pieces[0]);
