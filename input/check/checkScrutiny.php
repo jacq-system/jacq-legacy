@@ -1,5 +1,4 @@
 <?PHP
-
 session_start();
 require("../inc/connect.php");
 
@@ -12,7 +11,7 @@ $path="../inc/";
 <head>
   <title>scrutiny.Match</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" type="text/css" href="css/screen.css">
+  <link rel="stylesheet" type="text/css" href="../css/screen.css">
   <style type="text/css">
     #logout { position:absolute; top:1em; right:1em; width:5em; }
     #info { position:absolute; top:1em; left:1em }

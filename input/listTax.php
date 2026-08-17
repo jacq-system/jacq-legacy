@@ -1019,7 +1019,6 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
         }
     }
     $sql .= " ORDER BY " . $_SESSION['taxOrder'] . " LIMIT 1001";
-    error_log($sql);
     $_SESSION['labelTaxSQL'] = $sql;
     $result = $db->queryCatch($sql);
     if ($result->num_rows > 1000) {

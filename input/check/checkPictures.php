@@ -1,7 +1,7 @@
 <?php
 session_start();
-require("inc/connect.php");
-require("inc/cssf.php");
+require("../inc/connect.php");
+require("../inc/cssf.php");
 
 $db = clsDbAccess::Connect('INPUT');
 
@@ -11,11 +11,11 @@ $db = clsDbAccess::Connect('INPUT');
 <head>
  <title>herbardb - check djatoka pictures</title>
  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
- <link rel="stylesheet" type="text/css" href="css/screen.css">
- <link rel="stylesheet" type="text/css" href="js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
- <link rel="stylesheet" href="js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
- <link rel="stylesheet" href="js/jquery_autocompleter_freud.css" type="text/css" />
- <link rel="stylesheet" href="js/lib/jQuery/css/pagination.css" type="text/css" />
+ <link rel="stylesheet" type="text/css" href="../css/screen.css">
+ <link rel="stylesheet" type="text/css" href="../js/lib/jQuery/css/south-street/jquery-ui-1.8.14.custom.css">
+ <link rel="stylesheet" href="../js/lib/jQuery/css/blue/style_nhm.css" type="text/css" />
+ <link rel="stylesheet" href="../js/jquery_autocompleter_freud.css" type="text/css" />
+ <link rel="stylesheet" href="../js/lib/jQuery/css/pagination.css" type="text/css" />
  <style type="text/css">
  th { font-weight: bold; font-size: medium }
  tr { vertical-align: top }
@@ -25,12 +25,12 @@ $db = clsDbAccess::Connect('INPUT');
  #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
 
  </style>
- <script src="js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
- <script src="js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
- <script type="text/javascript" src="js/jquery_autocompleter_freud.js"></script>
- <script type="text/javascript" src="js/lib/jQuery/jquery.pagination.js"></script>
- <script src="js/freudLib.js" type="text/javascript"></script>
- <script src="js/parameters.php" type="text/javascript"></script>
+ <script src="../js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
+ <script src="../js/lib/jQuery/jquery-ui.custom.min.js" type="text/javascript"></script>
+ <script type="text/javascript" src="../js/jquery_autocompleter_freud.js"></script>
+ <script type="text/javascript" src="../js/lib/jQuery/jquery.pagination.js"></script>
+ <script src="../js/freudLib.js" type="text/javascript"></script>
+ <script src="../js/parameters.php" type="text/javascript"></script>
 </head>
 
 <?php
@@ -139,7 +139,7 @@ $(function() {
 		tabTemplate: "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
 		add: function( event, ui ) {
 			var tab_content = "Tab " +  + " content.";
-			$( ui.panel ).append( "<div id=\"loadingtabres"+tab_counter +"\" style=\"display: none;\">Loading... <img alt=\"loading...\" src=\"webimages/loader.gif\"></div><div id=\"tab_res"+tab_counter +"\"></div><div style=\"height:30px;margin-top:20px;\" id=\"PaginationTabres"+tab_counter +"\"></div>" );
+			$( ui.panel ).append( "<div id=\"loadingtabres"+tab_counter +"\" style=\"display: none;\">Loading... <img alt=\"loading...\" src=\"../webimages/loader.gif\"></div><div id=\"tab_res"+tab_counter +"\"></div><div style=\"height:30px;margin-top:20px;\" id=\"PaginationTabres"+tab_counter +"\"></div>" );
 
 		},
 		select: function(event, ui) {
@@ -431,7 +431,7 @@ function PostIt(method, params, callback){
  <select size="1" name="serverIP" id="serverIP">
 <?php echo $server; ?>
 </select> &nbsp;<input type="button" name="ImportPictures" id="ImportPictures" value="ImportPictures">&nbsp;<input type="button" name="RescanServer" id="RescanServer" value="Rescan Server"><p>
-<div id="RescanServerLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="RescanServerLoading" style="visibility:hidden">Loading... <img alt="loading..." src="../webimages/loader.gif"></div>
 
 <div id="tabs">
 <ul>
@@ -458,7 +458,7 @@ function PostIt(method, params, callback){
 </td>
 </tr></table>
 
-<div id="LastScanLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="LastScanLoading" style="visibility:hidden">Loading... <img alt="loading..." src="../webimages/loader.gif"></div>
 <div id="lastScan2"></div>
 <div id="lastScan"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationLastScan"></div>
@@ -466,7 +466,7 @@ function PostIt(method, params, callback){
 </form>
 </div>
 <div id="tabs-2">
-<div id="ConsitencyLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="ConsitencyLoading" style="visibility:hidden">Loading... <img alt="loading..." src="../webimages/loader.gif"></div>
 <div id="res_tabs2"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationConsitency"></div>
 
@@ -474,13 +474,13 @@ function PostIt(method, params, callback){
 
 <div id="tabs-3">
 Date: <input type="text" id="datepicker" name="datepicker" size="30"/>&nbsp;<input type="button" name="ListThreads" id="ListThreads" value="List Threads">
-<div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="ThreadsLoading" style="visibility:hidden">Loading... <img alt="loading..." src="../webimages/loader.gif"></div>
 <div id="res_tabs3"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationThreads"></div>
 </div>
 
 <div id="tabs-4">
-<div id="ImagesLoading" style="visibility:hidden">Loading... <img alt="loading..." src="webimages/loader.gif"></div>
+<div id="ImagesLoading" style="visibility:hidden">Loading... <img alt="loading..." src="../webimages/loader.gif"></div>
 <div id="res_tabs4"></div>
 <div style="height:30px;margin-top:20px;" id="PaginationImages"></div>
 </div>
