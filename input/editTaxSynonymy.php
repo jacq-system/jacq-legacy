@@ -6,6 +6,7 @@ require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -139,7 +140,7 @@ if (isset($_GET['new'])) {
         $p_sourcePersIndex = $_POST['sourcePersIndex'];
         $p_sourceService   = "";
     }
-    if (!empty($_POST['submitUpdate']) && checkRight('lit')) {
+    if (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
         if (!empty($_POST['preferred'])) {
             dbi_query("UPDATE tbl_tax_synonymy SET
                         preferred_taxonomy = 0
@@ -311,7 +312,7 @@ $cf->textarea(11, 19, 28, 4, "annotations", $p_annotations);
 $cf->label(11, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIndex>\" target=\"Species");
 $cf->inputJqAutocomplete(11, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
 
-if (checkRight('lit')) {
+if (Permission::has('lit')) {
     $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 31, "reload", " Reload ");
     $cf->buttonReset(10, 31, " Reset ");

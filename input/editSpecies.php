@@ -6,8 +6,9 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jaxon\Jaxon;
 use Jacq\Settings;
+use Jacq\Permission;
+use Jaxon\Jaxon;
 
 $jaxon = jaxon();
 $jaxon->setOption('core.request.uri', 'ajax/editSpeciesServer.php');
@@ -210,7 +211,7 @@ if (isset($_GET['sel'])) {
     $p_statusIndex = (!empty($_POST['statusIndex'])) ? $_POST['statusIndex'] : 96;
 
     if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x1) != 0)) {
-        if (checkRight('use_access')) {
+        if (Permission::has('use_access')) {
             if (intval($_POST['taxonID'])) {
                 // check if user has update rights for the old genID
                 $sql = "SELECT ac.update

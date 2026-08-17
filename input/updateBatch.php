@@ -3,10 +3,13 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/api_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 //---------- check every input ----------
 $lock = false;
-if (!checkRight('batch'))  // only user with right "batch" can change API
+if (!Permission::has('batch'))  // only user with right "batch" can change API
   $lock = true;
 
 if ($_GET['sw']==1) { // delete all unsent batches
@@ -41,7 +44,7 @@ if ($lock) {
   die();
 }
 
-if (!checkRight('batchAdmin')) {  // if group of user is no batch Administrator further checking is necessary
+if (!Permission::has('batchAdmin')) {  // if group of user is no batch Administrator further checking is necessary
   $sql = "SELECT sourceID_fk
           FROM tbl_api_batches
           WHERE ";
@@ -49,7 +52,7 @@ if (!checkRight('batchAdmin')) {  // if group of user is no batch Administrator 
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - edit Batch</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -66,7 +69,7 @@ case 1: // delete all unsent batches
           WHERE batchID=batchID_fk
            AND (sent='0' OR sent IS NULL)
            AND specimen_ID='$id'";
-  if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
+  if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
   $result = dbi_query($sql);
   while ($row=mysqli_fetch_array($result)) {
     $sql = "DELETE FROM api.tbl_api_specimens
@@ -90,7 +93,7 @@ case 2: // edit the entries or insert new ones
           WHERE batchID=batchID_fk
            AND (sent='0' OR sent IS NULL)
            AND specimen_ID='$id'";
-  if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
+  if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
   $result = dbi_query($sql);
   while ($row=mysqli_fetch_array($result)) {
     $bid = 'batch'.$row['api_specimensID'];
@@ -105,7 +108,7 @@ case 2: // edit the entries or insert new ones
   // insert new entry
   if ($batch_id!=-1) {
     $blocked = false;
-    if (!checkRight('batchAdmin')) {
+    if (!Permission::has('batchAdmin')) {
       $sql = "SELECT source_id
               FROM tbl_specimens, tbl_management_collections
               WHERE tbl_specimens.collectionID=tbl_management_collections.collectionID
@@ -135,7 +138,7 @@ case 2: // edit the entries or insert new ones
   break;
 
 case 3: // delete single entry
-  if (!checkRight('batchAdmin')) {
+  if (!Permission::has('batchAdmin')) {
     $sql = "SELECT api_specimensID
             FROM api.tbl_api_specimens, api.tbl_api_batches
             WHERE batchID=batchID_fk
@@ -163,7 +166,7 @@ case 4: // standard
           FROM api.tbl_api_batches
            LEFT JOIN herbarinput.meta ON api.tbl_api_batches.sourceID_fk=herbarinput.meta.source_id
           WHERE sent='0'";
-  if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
+  if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
   $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
   $result = dbi_query($sql);
   while ($row=mysqli_fetch_array($result)) {
@@ -184,7 +187,7 @@ case 4: // standard
           FROM api.tbl_api_specimens, api.tbl_api_batches
           WHERE batchID=batchID_fk
            AND specimen_ID='$id'";
-  if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
+  if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk=".$_SESSION['sid'];  // check right and sourceID
   $result = dbi_query($sql);
   $y = 2;
   while ($row=mysqli_fetch_array($result)) {

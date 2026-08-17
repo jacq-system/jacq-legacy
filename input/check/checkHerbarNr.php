@@ -3,6 +3,7 @@ session_start();
 require("../inc/connect.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -13,7 +14,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "listDoubleHerbNr");
 
 function makeDropdownSource()
 {
-    if (checkRight('admin')) {
+    if (Permission::has('admin')) {
         $data = "  <option value=\"0\">all institutions</option>\n";
 
         // only sources with valid collections can be listed

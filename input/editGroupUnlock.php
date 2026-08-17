@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_groupID = intval($_GET['id']);
@@ -22,7 +25,7 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_accessID = $_POST['accessID'];
     $p_table    = $_POST['table'];
 
-    if ($_POST['submitUpdate'] && checkRight('admin')) {
+    if ($_POST['submitUpdate'] && Permission::has('admin')) {
         $sqldata = "groupID = '" . intval($p_groupID) . "',
                     `table` = " . quoteString($p_table);
         if (intval($p_accessID))  {
@@ -86,7 +89,7 @@ $cf->text(9, 2, "&nbsp;" . (($p_accessID) ? $p_accessID : "<span style=\"backgro
 $cf->label(9, 4, "Table");
 $cf->dropdown(9, 4, "table", $p_table, $table, $table);
 
-if (checkRight('admin')) {
+if (Permission::has('admin')) {
     if ($p_groupID) {
         $cf->buttonJavaScript(12, 14, " Reload ", "self.location.href='editGroupUnlock.php?id=$p_groupID&sel=$p_accessID'");
         $cf->buttonSubmit(20, 14, "submitUpdate", " Update ");

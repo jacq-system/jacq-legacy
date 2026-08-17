@@ -6,6 +6,7 @@ require("inc/api_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -44,7 +45,7 @@ if (!isset($_SESSION['sNotesInternal'])) { $_SESSION['sNotesInternal'] = ''; }
 
 $nrSel = (isset($_GET['nr'])) ? intval($_GET['nr']) : 0;
 $_SESSION['sNr'] = $nrSel;
-$swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
+$swBatch = Permission::has('batch');
 
 if (isset($_GET['page'])) {
     $_SESSION['sCurrentSpecimenPage'] = max(0, intval($_GET['page']));
@@ -164,7 +165,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sBemerkungen'] = "";
     $_SESSION['sNotesInternal'] = "";
 
-    $_SESSION['sUserID'] = (checkRight('specimensHistory')) ? $_POST['userID'] : (($_POST['userID'] != $_SESSION['uid']) ? -1 : $_SESSION['uid']);
+    $_SESSION['sUserID'] = (Permission::has('specimensHistory')) ? $_POST['userID'] : (($_POST['userID'] != $_SESSION['uid']) ? -1 : $_SESSION['uid']);
     $_SESSION['sUserDate'] = $_POST['user_date'] ?? '';
 } else if (isset($_POST['prepareLabels'])) {
     $_SESSION['sType'] = 3;  // change label settings
@@ -278,7 +279,7 @@ function makeDropdownUsername()
     echo "<select size='1' name='userID' onchange='jaxon_getUserDate(document.fm2.userID.options[document.fm2.userID.selectedIndex].value)'>\n"
        . "  <option value='-1'></option>\n";
 
-    if (checkRight('specimensHistory')) {
+    if (Permission::has('specimensHistory')) {
         $sql = "SELECT userID, firstname, surname, username
                 FROM herbarinput_log.tbl_herbardb_users
                 WHERE userID IN
@@ -705,7 +706,7 @@ jaxon_checkTypeLabelMapPdfButton();
   <td colspan="1" align="right">
   </td>
   <td colspan="2" align="right">
-    <?php if (checkRight('specim')): ?>
+    <?php if (Permission::has('specim')): ?>
     <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecimens.php?sel=<0>&new=1'">
     <?php endif; ?>
   </td><td align="right">&nbsp;<b>Coordinates&nbsp;</b></td>
@@ -738,7 +739,7 @@ jaxon_checkTypeLabelMapPdfButton();
 </td><td style="width: 2em">&nbsp;</td><td>
   <b>User&nbsp;</b> <?php makeDropdownUsername(); ?> <?php makeDropdownDate(); ?>
   <input class="button" type="submit" name="selectUser" value=" search ">
-  <?php if (checkRight('specimensHistory')):    // only users with this right may also download the history ?>
+  <?php if (Permission::has('specimensHistory')):    // only users with this right may also download the history ?>
     <input class="button" type="image" onclick="document.location.href='listSpecimensExport.php?select=user&type=xlsx';return false;" name="userXLSX" src="webimages/disk.png" title="download user Labels XLS">
   <?php endif; ?>
 </td>
@@ -757,7 +758,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
                 FROM api.tbl_api_batches
                  LEFT JOIN herbarinput.meta ON api.tbl_api_batches.sourceID_fk = herbarinput.meta.source_id
                 WHERE sent = '0'";
-        if (!checkRight('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
+        if (!Permission::has('batchAdmin')) $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
         $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
         $result = dbi_query($sql);
         while ($row = mysqli_fetch_array($result)) {
@@ -773,7 +774,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
                     $id = substr($key, 11);
 
                     $blocked = false;
-                    if (!checkRight('batchAdmin')) {
+                    if (!Permission::has('batchAdmin')) {
                         $sql = "SELECT source_id
                                 FROM tbl_specimens, tbl_management_collections
                                 WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID

@@ -47,6 +47,8 @@ if (!empty($_POST['rescan']) || !empty($_GET['rescan'])) {
         }
     }
 }
+
+$missing = array();
 $result_missing = $db->queryCatch("SELECT * FROM checkSpecimensStblid ORDER BY source_id, collectionID, count DESC, specimen_ID");
 while ($row_missing = $result_missing->fetch_array()) {
     $missing[$row_missing['source_id']][] = array('specimen_ID'  => $row_missing['specimen_ID'],
@@ -76,7 +78,7 @@ while ($row_collections = $result_collections->fetch_array()) {
         <h3>Check tbl_specimens_stblid against tbl_specimens</h3>
         <p>
         <form action="checkSpecimensStblid.php" method="POST">
-            <input type="submit" name="rescan" value=" Rescan ">
+            <input type="submit" name="rescan" value=" Rescan (very slow) ">
         </form>
         <p>
 <?php

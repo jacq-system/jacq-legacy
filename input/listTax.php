@@ -2,7 +2,6 @@
 session_start();
 require("inc/gatekeeper.php");
 require_once('inc/jsonRPCClient.php');  // for MDLD-JSON service
-
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Settings;
@@ -1024,7 +1023,7 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
     if ($result->num_rows > 1000) {
         echo "<b>no more than 1000 results allowed</b>\n";
     } elseif ($result->num_rows > 0) {
-        echo "<table class='out' cellspacing='0'>\n"
+        echo "<b>Total: {$result->num_rows}</b><br><table class='out' cellspacing='0'>\n"
            . "<tr class='out'>"
            . "<th class='out'>ID</th>"
            . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cr'>Tax.Rank</a>" . $display->sortItem($_SESSION['taxOrTyp'], 34) . "</th>"
