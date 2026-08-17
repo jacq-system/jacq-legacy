@@ -309,7 +309,11 @@ if ($p_genID) {
              AND genID = '".intval($p_genID)."'";
     $result = dbi_query($sql);
     $row = mysqli_fetch_array($result);
-    $cf->label(8,2,"edit Species","javascript:editSpecies('".$row['taxonID']."')");
+    if (!empty($row['taxonID'])) {
+        $cf->label(8, 2, "edit Species", "javascript:editSpecies('" . $row['taxonID'] . "')");
+    } else {
+        $cf->label(8, 2, "edit Species");
+    }
 }
 
 if (checkRight('unlock_tbl_tax_genera')) {
