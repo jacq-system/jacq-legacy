@@ -28,40 +28,49 @@ function updateNomService($taxonID)
             . "</a>";
     }
 
-    $sciname = getScientificName($taxonID, false, false, false);
-    $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $curl_response = curl_exec($curl);
-    curl_close($curl);
-    if ($curl_response !== false) {
-        $res = json_decode($curl_response, true);
-        if (!empty($res['results'])) {
-            foreach ($res['results'] as $result) {
-                if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
-                    if (!empty($result['match']['id'])) {
-                        dbi_query("INSERT INTO tbl_nom_service_names SET 
+    $row = dbi_query("SELECT ts.statusID, th.parent_1_ID, th.parent_2_ID 
+                          FROM tbl_tax_species ts
+                           LEFT JOIN tbl_tax_hybrids th ON th.taxon_ID_fk = ts.taxonID
+                          WHERE taxonID = $taxonID")->fetch_assoc();
+    // only continue if the taxon is a hybrid and the parents are set or if the taxon is not hybrid at all
+    if (($row['statusID'] == 1 && !empty($row['parent_1_ID']) && !empty($row['parent_2_ID'])) || $row['statusID'] != 1) {
+        $sciname = getScientificName($taxonID, false, false, false);
+        $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($curl);
+        curl_close($curl);
+        if ($curl_response !== false) {
+            $res = json_decode($curl_response, true);
+            if (!empty($res['results'])) {
+                foreach ($res['results'] as $result) {
+                    if (empty($result['error']) && !empty($result['serviceID']) && empty($labels[$result['serviceID']])) {
+                        if (!empty($result['match']['id'])) {
+                            dbi_query("INSERT INTO tbl_nom_service_names SET 
                                     taxonID   = $taxonID,
                                     serviceID = " . intval($result['serviceID']) . ",
                                     param1    = '" . dbi_escape_string($result['match']['id']) . "',
                                     auto      = 1");
-                        $row = dbi_query("SELECT name, url_head, serviceID 
+                            $row = dbi_query("SELECT name, url_head, serviceID 
                                           FROM tbl_nom_service 
                                           WHERE serviceID = " . intval($result['serviceID']))
-                               ->fetch_assoc();
-                        if (!empty($row)) {
-                            $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
-                                                       . "<img src='webimages/nomService/serviceID{$row['serviceID']}_logo.png' alt='{$row['name']}' height='30px'>"
-                                                       . "</a>";
-                        }
-                    } elseif (!empty($result['candidates'])) {
-                        dbi_query("INSERT INTO tbl_nom_service_log SET 
+                                ->fetch_assoc();
+                            if (!empty($row)) {
+                                $labels[$row['serviceID']] = "<a href='{$row['url_head']}{$result['match']['id']}' title='{$row['name']}' target='_blank'>"
+                                    . "<img src='webimages/nomService/serviceID{$row['serviceID']}_logo.png' alt='{$row['name']}' height='30px'>"
+                                    . "</a>";
+                            }
+                        } elseif (!empty($result['candidates'])) {
+                            dbi_query("INSERT INTO tbl_nom_service_log SET 
                                     taxonID   = $taxonID,
                                     serviceID = " . intval($result['serviceID']) . ",
                                     error     = '" . dbi_escape_string($sciname) . ": No match but multiple candidates found.'");
+                        }
                     }
                 }
             }
         }
+    } else {
+        $labels = array();
     }
     $response->assign('nomService', 'innerHTML', implode("&nbsp;", $labels));
 
