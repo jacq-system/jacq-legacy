@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/api_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -162,8 +162,8 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
                     dbi_query("INSERT INTO api.tbl_api_specimens SET
                                 specimen_ID = '" . $val['specimenID'] . "',
                                 batchID_fk  = '$batchID'");
-                    update_tbl_api_units($val['specimenID']);
-                    update_tbl_api_units_identifications($val['specimenID']);
+                    Api::update_tbl_api_units(intval($val['specimenID']));
+                    Api::update_tbl_api_units_identifications(intval($val['specimenID']));
                     echo $key . ": " . $val['line'] . " - <" . $val['specimenID'] . "> imported<br>\n";
                 }
             }

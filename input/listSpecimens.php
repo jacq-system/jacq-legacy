@@ -2,10 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require("inc/api_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -771,7 +771,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             $idList = array();
             foreach ($_POST as $key => $value) {
                 if (substr($key, 0, 11) == "batch_spec_" && $value) {
-                    $id = substr($key, 11);
+                    $id = intval(substr($key, 11));
 
                     $blocked = false;
                     if (!Permission::has('batchAdmin')) {
@@ -793,9 +793,9 @@ if ($_SESSION['sType'] == 1) {  // list specimens
                     }
 
                     // update or insert into update_tbl_api_units
-                    $res = update_tbl_api_units($id);
-                    update_tbl_api_units_identifications($id);
-                    garbageCollection($id);
+                    $res = Api::update_tbl_api_units($id);
+                    Api::update_tbl_api_units_identifications($id);
+                    Api::garbageCollection($id);
                     if (!$res) {
                         $error = true;
                         array_push($idList, $id);

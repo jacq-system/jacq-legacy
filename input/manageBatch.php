@@ -2,11 +2,11 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/api_functions.php");
 require("inc/clsDbAccess.php");
 require("inc/jacqServletJsonRPCClient.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -187,8 +187,8 @@ if ($type == 1 && $batchID) {  // update database
     if (mysqli_num_rows($result) > 0) {  // only unsent batches may be processed
         $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk = " . quoteString($batchID));
         while ($row = mysqli_fetch_array($result)) {
-            update_tbl_api_units($row['specimen_ID']);
-            update_tbl_api_units_identifications($row['specimen_ID']);
+            Api::update_tbl_api_units(intval($row['specimen_ID']));
+            Api::update_tbl_api_units_identifications(intval($row['specimen_ID']));
         }
     }
 }
