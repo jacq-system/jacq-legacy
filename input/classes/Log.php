@@ -6,8 +6,10 @@ use Exception;
 
 class Log
 {
-    public static function tbl_tax_synonymy (int $id, int $updated): void
+    public static function tbl_tax_synonymy (int|string $id, int $updated): void
     {
+        $id = intval($id);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -33,8 +35,10 @@ class Log
     }
 
 
-    public static function collector(int $id, int $updated): void
+    public static function collector(int|string $id, int $updated): void
     {
+        $id = intval($id);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -50,8 +54,10 @@ class Log
     }
 
 
-    public static function specimen (int $ID, int $updated): void
+    public static function specimen (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -130,8 +136,10 @@ class Log
     }
 
 
-    public static function specimensTypes (int $ID, int $updated): void
+    public static function specimensTypes (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -151,8 +159,10 @@ class Log
     }
 
 
-    public static function specimensSeries (int $ID, int $updated): void
+    public static function specimensSeries (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -170,8 +180,10 @@ class Log
     }
 
 
-    public static function authors (int $ID, int $updated): void
+    public static function authors (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -189,8 +201,10 @@ class Log
     }
 
 
-    public static function families (int $ID, int $updated): void
+    public static function families (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -208,8 +222,10 @@ class Log
     }
 
 
-    public static function genera (int $ID, int $updated): void
+    public static function genera (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -234,8 +250,10 @@ class Log
     }
 
 
-    public static function index (int $ID, int $updated): void
+    public static function index (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -256,8 +274,10 @@ class Log
     }
 
 
-    public static function species (int $ID, int $updated): void
+    public static function species (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -291,8 +311,10 @@ class Log
     }
 
 
-    public static function typecollections (int $ID, int $updated): void
+    public static function typecollections (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -317,8 +339,10 @@ class Log
     }
 
 
-    public static function lit (int $ID, int $updated): void
+    public static function lit (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -354,8 +378,10 @@ class Log
     }
 
 
-    public static function litTax (int $ID, int $updated): void
+    public static function litTax (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -380,8 +406,10 @@ class Log
     }
 
 
-    public static function litAuthors (int $ID, int $updated): void
+    public static function litAuthors (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -399,8 +427,10 @@ class Log
     }
 
 
-    public static function litPeriodicals (int $ID, int $updated): void
+    public static function litPeriodicals (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -421,8 +451,10 @@ class Log
     }
 
 
-    public static function litPublishers (int $ID, int $updated): void
+    public static function litPublishers (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 

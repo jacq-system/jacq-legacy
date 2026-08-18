@@ -9,13 +9,13 @@ class Tools
     /**
      * Return the scientific name for a given taxon_id
      *
-     * @param int|null $taxon_id Taxon-id to search for
+     * @param int|string|null $taxon_id Taxon-id to search for
      * @param bool $withDT Include dallatorre-id, defaults to no
      * @param bool $withID Include taxon-id, defaults to no
      * @param bool $bAvoidHybridFormula avoid hybrids, defaults to no
      * @return string
      */
-    public static function getScientificName (?int $taxon_id, bool $withDT = false, bool $withID = true, bool $bAvoidHybridFormula = false): string
+    public static function getScientificName (int|string|null $taxon_id, bool $withDT = false, bool $withID = true, bool $bAvoidHybridFormula = false): string
     {
         // wrong call with empty taxon-ID
         if (empty($taxon_id)) {
@@ -23,6 +23,7 @@ class Tools
         }
 
         $bAvoidHybridFormula = intval($bAvoidHybridFormula); // Translation between mysql boolean (tinyint) and php boolean
+        $taxon_id = intval($taxon_id);
 
         try {
             $db = DbAccess::ConnectTo('INPUT');
@@ -56,11 +57,13 @@ class Tools
     /**
      * constructs the link to the image on an IIIF-Server for a specimen if iiif for this source is activated
      *
-     * @param int $specimenID specimen-ID
+     * @param int|string $specimenID specimen-ID
      * @return string link to the image
      */
-    public static function getIiifLink(int $specimenID): string
+    public static function getIiifLink(int|string $specimenID): string
     {
+        $specimenID = intval($specimenID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
         } catch (Exception $e) {
@@ -119,10 +122,10 @@ class Tools
      * Checks if a row with a given id from a given table is in the state "locked"
      *
      * @param string $table The name of the table to be checked.
-     * @param object|int $id The ID of the record to be checked.
+     * @param mixed $id The ID of the record to be checked.
      * @return bool Returns true if the row is locked; otherwise, returns false.
      */
-    public static function isLocked(string $table, object|int $id): bool
+    public static function isLocked(string $table, mixed $id): bool
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
@@ -159,10 +162,10 @@ class Tools
     /**
      * format the unit-ID (HerbNummer) of a specimen according to tbl_labels_numbering
      *
-     * @param int $specimenID Specimen ID
+     * @param int|string $specimenID Specimen ID
      * @return string formatted unit-ID
      */
-    public static function formatUnitID(int $specimenID): string
+    public static function formatUnitID(int|string $specimenID): string
     {
         try {
             $db = DbAccess::ConnectTo('INPUT');
@@ -175,7 +178,7 @@ class Tools
                                         FROM tbl_specimens s
                                          JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                                          JOIN meta m ON m.source_id = mc.source_id
-                                        WHERE s.specimen_ID = $specimenID")
+                                        WHERE s.specimen_ID = " . intval($specimenID))
                           ->fetch_array();
 
         $unitID = $rowSpecimen['source_code'];

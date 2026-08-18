@@ -15,8 +15,10 @@ class UuidMinter
      * @return string generated or fetched uuid
      * @throws Exception
      */
-    public function mint(int|string $type, int $internal_id): string
+    public function mint(int|string $type, int|string $internal_id): string
     {
+        $internal_id = intval($internal_id);
+
         try {
             $db  = DbAccess::ConnectTo('INPUT');
 
@@ -78,11 +80,11 @@ class UuidMinter
     /**
      * Asks the minter for the UUID of a given taxon
      *
-     * @param int $taxonID ID of Taxon to get the UUID for
+     * @param int|string $taxonID ID of Taxon to get the UUID for
      * @return string fetched uuid
      * @throws Exception
      */
-    public function getUUIDfromTaxonID(int $taxonID): string
+    public function getUUIDfromTaxonID(int|string $taxonID): string
     {
         return $this->mint(1, $taxonID);
     }
