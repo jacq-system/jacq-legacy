@@ -4,7 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 
 function makeTaxon($search,$x,$y)
 {
@@ -149,7 +151,7 @@ if (isset($_GET['new'])) {
     $p_annotations        = $_POST['annotations'];
     $p_specimens_types_ID = $_POST['specimens_types_ID'];
 
-    if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x8000) != 0)) {
+    if ($_POST['submitUpdate'] && Permission::has('specimensTypes')) {
         if (extractID($p_taxon) != "NULL" && extractID($p_specimen) != "NULL") {
             $sql_data = "taxonID = " . extractID($p_taxon) . ",
                          specimenID = " . extractID($p_specimen) . ",
@@ -227,7 +229,7 @@ $cf->inputText(7, 12, 10, "typified_date", $p_typified_date, 10);
 $cf->label(7, 14, "annotations");
 $cf->textarea(7, 14, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x8000) != 0) {
+if (Permission::has('specimensTypes')) {
     $text = ($p_specimens_types_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 22, "reload", " Reload ");
     $cf->buttonReset(10, 22, " Reset ");

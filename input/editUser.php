@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 if (isset($_GET['sel'])) {
     $sql = "SELECT *
@@ -42,7 +45,7 @@ if (isset($_GET['sel'])) {
     $p_mobile      = $_POST['mobile'];
     $p_editFamily  = $_POST['editFamily'];
 
-    if (!empty($_POST['submitUpdate']) && checkRight('admin')) {
+    if (!empty($_POST['submitUpdate']) && Permission::has('admin')) {
         $sqldata = "groupID = '"    . intval($p_groupID) . "',
                     source_id = '"  . intval($p_source_id) . "',
                     use_access = '" . (($p_use_access) ? 1 : 0) . "',
@@ -235,7 +238,7 @@ $cf->inputPassword(9, 26, 40, "password_1", 40);
 $cf->label(9, 28, "repeat Password");
 $cf->inputPassword(9, 28, 40, "password_2", 40);
 
-if (checkRight('admin')) {
+if (Permission::has('admin')) {
     if ($p_userID) {
         $cf->buttonJavaScript(12, 40, " Reload ", "self.location.href='editUser.php?sel=" . $p_userID . "'");
         $cf->buttonSubmit(20, 40, "submitUpdate", " Update ");

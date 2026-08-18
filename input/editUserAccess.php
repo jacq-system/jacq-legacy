@@ -3,7 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -37,7 +39,7 @@ if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_genID       = $_POST['genID'];
     $p_update      = $_POST['update'];
 
-    if ($_POST['submitUpdate'] && checkRight('admin')) {
+    if ($_POST['submitUpdate'] && Permission::has('admin')) {
         $sqldata = "userID = '" . intval($p_userID) . "',
                     categoryID = " . ((intval($p_categoryID)) ? "'" . intval($p_categoryID) . "'" : "NULL") . ",
                     familyID = " . ((intval($p_familyID)) ? "'" . intval($p_familyID)."'" : "NULL") . ",
@@ -133,7 +135,7 @@ $cf->dropdown(9, 8, "genID\" id=\"genID", $p_genID, $genus[0], $genus[1]);
 $cf->label(9, 10, "update");
 $cf->checkbox(9, 10, "update", $p_update);
 
-if (checkRight('admin')) {
+if (Permission::has('admin')) {
     if ($p_userID) {
         $cf->buttonJavaScript(12, 14, " Reload ", "self.location.href='editUserAccess.php?id=$p_userID&sel=$p_accessID'");
         $cf->buttonSubmit(20, 14, "submitUpdate", " Update ");

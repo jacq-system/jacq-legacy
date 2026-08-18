@@ -4,6 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 
 if (isset($_GET['new'])) {
@@ -57,7 +60,7 @@ if (isset($_GET['new'])) {
         $p_personIndex = 39269;
         $p_timestamp = $p_user = "";
     }
-} elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
     $annotations = $_POST['annotations'];
     $sqldata = "citationID_fk = " . extractID($_POST['citation']) . ",
                 personID_fk = '" . intval($_POST['personIndex']) . "',
@@ -74,7 +77,7 @@ if (isset($_GET['new'])) {
         $updated = 0;
     }
     $result = dbi_query($sql);
-        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ? intval($_POST['lit_persons_ID']) : dbi_insert_id();
+        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ?: dbi_insert_id();
         logLitTax($p_lit_persons_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
@@ -155,7 +158,7 @@ $cf->inputJqAutocomplete(7, 4, 28, "person", $p_person, $p_personIndex, "index_j
 $cf->label(7, 6, "annotations");
 $cf->textarea(7, 6, 28, 6, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $cf->buttonSubmit(2, 14, "reload", " Reload ");
     $cf->buttonReset(10, 14, " Reset ");
     $cf->buttonSubmit(20, 14, "submitUpdate", ($p_lit_persons_ID) ? " Update " : " Insert ");

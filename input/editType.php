@@ -4,7 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 
 function makeSammler($search, $x, $y, $nr)
 {
@@ -146,7 +148,7 @@ if (isset($_GET['new'])) {
     $p_typecollID       = $_POST['typecollID'];
 }
 
-if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
+if ($_POST['submitUpdate'] && Permission::has('type')) {
     $sqlPart = " taxonID = "          . extractID($_POST['taxon']) . ",
                  SammlerID = "        . extractID($_POST['sammler']) . ",
                  Sammler_2ID = "      . extractID($_POST['sammler2']) . ",
@@ -223,7 +225,7 @@ $cf->inputText(10, 23, 28, "duplicates", $p_duplicates, 250);
 $cf->label(10, 25, "annotations");
 $cf->textarea(10, 25, 28, 4, "annotation", $p_annotation);
 
-if (($_SESSION['editControl'] & 0x400) != 0) {
+if (Permission::has('type')) {
     $text = ($p_typecollID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 34, "reload", " Reload ");
     $cf->buttonReset(10, 34, " Reset ");

@@ -4,6 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -111,7 +114,7 @@ if (isset($_GET['new'])) {
     $p_annotations   = $_POST['annotations'];
     $p_taxindID      = $_POST['taxindID'];
 
-    if (isset($_POST['submitUpdate']) && $_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x200) != 0)) {
+    if (isset($_POST['submitUpdate']) && $_POST['submitUpdate'] && Permission::has('index')) {
         $taxonID    = (strlen(trim($_POST['taxon'])) > 0) ? intval($_POST['taxonIndex']) : 0;
         $citationID = (strlen(trim($_POST['citation'])) > 0) ? intval($_POST['citationIndex']) : 0;
         if ($taxonID && $citationID) {
@@ -183,7 +186,7 @@ $cf->inputText(25, 10, 10, "figures", $p_figures, 50);
 $cf->label(7, 12, "annotations");
 $cf->textarea(7, 12, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x200) != 0) {
+if (Permission::has('index')) {
     $text = ($p_taxindID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 20, "reload", " Reload ");
     $cf->buttonReset(10, 20, " Reset ");

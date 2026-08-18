@@ -8,6 +8,7 @@ use Jacq\DbAccess;
 use Jacq\Display;
 use Jacq\Log;
 use Jacq\Tools;
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -72,7 +73,7 @@ if (isset($_GET['new'])) {
         $p_sourcePersIndex = 39269;
         $p_sourceLit = $p_sourceLitIndex = $p_et_al = $p_timestamp = $p_user = "";
     }
-} elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
     $annotations = $_POST['annotations'];
     $sqldata = "taxonID = '" . intval($_POST['taxonIndex']) . "',
                 acc_taxon_ID = '" . intval($_POST['taxonAccIndex']) . "',
@@ -223,7 +224,7 @@ $cf->checkbox(7, 14, "et_al", $p_et_al);
 $cf->label(7, 16, "annotations");
 $cf->textarea(7, 16, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $text = ($p_lit_tax_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 22, "reload", " Reload ");
     $cf->buttonReset(10, 22, " Reset ");

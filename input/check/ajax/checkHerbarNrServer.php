@@ -3,6 +3,7 @@ session_start();
 require("../../inc/connect.php");
 require __DIR__ . '/../../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -53,7 +54,7 @@ function listDoubleHerbNr($source_id, $collection_id)
             WHERE s.HerbNummer IS NOT NULL
              AND s.HerbNummer != ''
              AND s.HerbNummer != '0' ";
-    if (checkRight('admin')) {
+    if (Permission::has('admin')) {
         if (!empty($source_id)) {
             $sql .= " AND mc.source_id = " . intval($source_id);
         }

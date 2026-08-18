@@ -210,7 +210,7 @@ if (isset($_GET['sel'])) {
     $p_rankIndex   = (!empty($_POST['rankIndex']))   ? $_POST['rankIndex']   : 1;
     $p_statusIndex = (!empty($_POST['statusIndex'])) ? $_POST['statusIndex'] : 96;
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x1) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('species')) {
         if (Permission::has('use_access')) {
             if (intval($_POST['taxonID'])) {
                 // check if user has update rights for the old genID
@@ -835,7 +835,7 @@ $cf->textarea(10, 39, 51, 9.6, "annotation", $p_annotation);
 
 $cf->buttonSubmit(17, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
 
-if (($_SESSION['editControl'] & 0x1) != 0) {
+if (Permission::has('species')) {
     if ($p_taxonID) {
         if ($edit) {
             $cf->buttonJavaScript(23, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");

@@ -1,12 +1,15 @@
 <?php
 session_start();
 require("inc/connect.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 $groupID = intval($_GET['sel']);
 $row = dbi_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID='$groupID'")->fetch_array();
 $groupname = $row['group_name'];
 
-if (isset($_GET['del']) && intval($_GET['del']) && checkRight('admin')) {
+if (isset($_GET['del']) && intval($_GET['del']) && Permission::has('admin')) {
     $sql = "DELETE FROM herbarinput_log.tbl_herbardb_unlock
             WHERE ID = '" . intval($_GET['del']) . "'";
     dbi_query($sql);

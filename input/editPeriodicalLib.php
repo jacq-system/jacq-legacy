@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -46,7 +49,7 @@ if (isset($_GET['new'])) {
     } else {
         $p_signature = $p_bestand = $p_url = $p_lib_period_ID = $p_library = $p_periodical = "";
     }
-} elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x80) != 0)) {
+} elseif ($_POST['submitUpdate'] && Permission::has('litPer')) {
     $signature = $_POST['signature'];
     $bestand   = $_POST['bestand'];
     $url       = $_POST['url'];
@@ -117,7 +120,7 @@ $cf->inputText(7, 8, 28, "bestand", $p_bestand, 255);
 $cf->label(7, 10, "url");
 $cf->textarea(7, 10, 28, 4, "url", $p_url);
 
-if (($_SESSION['editControl'] & 0x80) != 0) {
+if (Permission::has('litPer')) {
     $text = ($p_lib_period_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 18, "reload", " Reload ");
     $cf->buttonReset(10, 18, " Reset ");

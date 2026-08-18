@@ -4,6 +4,11 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
+
 //http://docs.jquery.com/Plugins/Autocomplete/autocomplete#url_or_dataoptions
 $debuger=0;
 
@@ -469,8 +474,8 @@ $(document).ready(function() {
 </script>
 EOF;
 
-$isLocked=isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id']);
-$unlock_tbl_name_applies_to=checkRight('unlock_tbl_name_applies_to');
+$isLocked= Tools::isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id']);
+$unlock_tbl_name_applies_to=Permission::mayUnlock('tbl_name_applies_to');
 $cf = new CSSF();
 $cf->setYRelative(true);
 
@@ -530,19 +535,19 @@ $cf->label(10, 2.5, "annotations");
 $cf->textarea(11, 0, 50,2.5, "annotations", $_dvar['annotations'], "", "", "");
 
 
-if(($_SESSION['editControl'] & 0x20000) != 0){
+if(Permission::has('commonnameInsert')){
 	echo "<input style=\"display:none\" type=\"submit\" name=\"submitInsert\" value=\" Insert New\">";
 }
 
 $cf->buttonJavaScript(17, 4, " Reset ", "document.location.reload(true);");
 
 
-if($_dvar['update'] &&  ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_tbl_name_applies_to || !$isLocked) ){
+if ($_dvar['update'] && Permission::has('commonnameUpdate') && ($unlock_tbl_name_applies_to || !$isLocked)) {
 	$cf->buttonSubmit(22, 0, "submitUpdate", " Update");
 	$cf->buttonSubmit(28, 0, "submitDelete", " Delete");
 }
 
-if(($_SESSION['editControl'] & 0x20000) != 0 ){
+if (Permission::has('commonnameInsert')){
 	$cf->buttonSubmit(33, 0, "submitInsert", " Insert New");
 }
 
@@ -722,15 +727,15 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 	global $dbprefix, $dbLink;
 
     $msg=array();
-	if(!$update && !checkRight('commonnameInsert')) {
+	if(!$update && !Permission::has('commonnameInsert')) {
 		return array("You have no Rights for Insert", 0);
 	}
 
-	if($update && !checkRight('commonnameUpdate')) {
+	if($update && !Permission::has('commonnameUpdate')) {
 		return array("You have no Rights for Update", 0);
 	}
 
-	if ($update && !checkRight('unlock_tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
+	if ($update && !Permission::mayUnlock('tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
 		return array("You have no Rights for Update locked items", );
 	}
 
@@ -869,7 +874,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 	$sql.=", annotations='{$_dvar['annotations']}'"
 		 .", geospecification='{$_dvar['geospecification']}'";
 
-	if(checkRight('unlock_tbl_name_applies_to')){
+	if(Permission::mayUnlock('tbl_name_applies_to')){
 		$sql .= ", locked = '{$_dvar['locked']}'";
 	}
 
@@ -910,7 +915,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 function deleteCommonName($_dvar){
 	global $dbprefix, $dbLink;
 
-	if(!checkRight('admin')){
+	if(!Permission::has('admin')){
 		return array("You have to be admin for deletation",0);
 	}
 

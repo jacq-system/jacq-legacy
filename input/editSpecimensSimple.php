@@ -278,7 +278,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
     }
 
     $updateBlocked = false;
-    if (($_POST['submitUpdate'] || $_POST['submitUpdateNew'] || $_POST['submitUpdateCopy']) && (($_SESSION['editControl'] & 0x2000) != 0)) {
+    if (($_POST['submitUpdate'] || $_POST['submitUpdateNew'] || $_POST['submitUpdateCopy']) && Permission::has('specim')) {
         $sqldata = "HerbNummer = " . quoteString($p_HerbNummer) . ",
                     collectionID = '" . intval($p_collection) . "',
                     identstatusID = " . makeInt($p_identstatus) . ",
@@ -752,7 +752,7 @@ $cf->inputText(49.5, 18, 5.5, "Datum2", $p_Datum2, 25);
 echo "<div style=\"position: absolute; left: 1em; top: 19.75em; width: 54.5em;\"><hr></div>\n";
 
 $cf->labelMandatory(9, 21, 8, "Nation");
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->dropdown(9, 21, "nation\" onchange=\"reload=true; self.document.f.reload.click()", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(9, 21, "nation", $p_nation, $nation[0], $nation[1]);
@@ -809,7 +809,7 @@ echo "<div style=\"position: absolute; left: 1em; top: 22.75em; width: 54.5em;\"
 $cf->label(9, 24, "annotations");
 $cf->textarea(9, 24, 46, 2.6, "Bemerkungen", $p_Bemerkungen);
 
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->buttonSubmit(16, 28, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {

@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\Permission;
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -72,7 +73,7 @@ try {
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
 	echo<<<EOF
 <table><tr><td>
 <input class="cssfbutton" type="button" value=" add new Line " onClick="editTaxSynonymy('<{$id}>',1)">

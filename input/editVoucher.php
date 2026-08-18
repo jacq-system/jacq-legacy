@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -15,7 +18,7 @@ require("inc/cssf.php");
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && ($_SESSION['editControl'] & 0x2000) != 0) {
+if ($_POST['submitUpdate'] && Permission::has('specim')) {
     $sw = true;
     $sql = "SELECT voucherID, voucher ".
            "FROM tbl_specimens_voucher ".
@@ -70,7 +73,7 @@ $cf->text(6, 0.5, "&nbsp;" . (($row['voucherID']) ? $row['voucherID'] : "new"));
 $cf->label(6, 2, "voucher");
 $cf->inputText(6, 2, 25, "voucher", $row['voucher'], 255);
 
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $text = ($row['voucherID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(9, 7, "submitUpdate", $text);
     $cf->buttonJavaScript(21, 7, " New ", "self.location.href='editVoucher.php?sel=0'");

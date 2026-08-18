@@ -6,6 +6,7 @@ require("../inc/herbardb_input_functions.php");
 require("../inc/cssf.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -237,7 +238,7 @@ function editContainer($citationID)
         $ret = "<form id=\"f_iBox\">\n"
              . "<input type=\"hidden\" name=\"citationID\" id=\"citationID\" value=\"$citationIDfiltered\">\n"
              . "<table>\n";
-        if (($_SESSION['editControl'] & 0x20) != 0) {
+        if (Permission::has('lit')) {
             $ret .= "<tr><td colspan=\"4\">"
                   . "<input type=\"submit\" class=\"cssfbutton\" value=\"update\" onClick=\"jaxon_updateContainer(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
@@ -268,7 +269,7 @@ function editContainer($citationID)
                   . "</td><td width='10'></td><td>"
                   . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='citation_$id' id='citation_$id' value='" . htmlspecialchars($protolog) . "'>"
                   . "</td><td align='center'>";
-            if (($_SESSION['editControl'] & 0x20) != 0) {
+            if (Permission::has('lit')) {
                 $ret .= "<img src=\"webimages/remove.png\" title=\"delete entry\" onclick=\"jaxon_deleteContainer('" . $row['tbl_lit_containerID'] . "', '$citationIDfiltered');\">";
             }
             $ret .= "</td></tr>\n";
@@ -297,7 +298,7 @@ function updateContainer($formData)
 
     $citationID = intval($formData['citationID']);
 
-    if ($citationID && ($_SESSION['editControl'] & 0x20) != 0) {
+    if ($citationID && Permission::has('lit')) {
         foreach ($formData as $key => $val) {
             if (substr($key, 0, 9) == 'citation_' && extractID($val) != "NULL") {
                 $containerID = intval(substr($key, 9));
@@ -335,7 +336,7 @@ function deleteContainer($containerID, $citationID)
 
     $containerIDfiltered = intval($containerID);
 
-    if ($containerIDfiltered && ($_SESSION['editControl'] & 0x20) != 0) {
+    if ($containerIDfiltered && Permission::has('lit')) {
         dbi_query("DELETE FROM tbl_lit_container WHERE tbl_lit_containerID = '" . $containerIDfiltered . "'");
     }
 

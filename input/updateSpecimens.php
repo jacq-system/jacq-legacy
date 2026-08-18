@@ -5,6 +5,9 @@ require('inc/log_functions.php');
 require_once('inc/herbardb_input_functions.php');
 require_once('inc/jsonRPCClient.php');
 require_once('inc/clsTaxonTokenizer.php');
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
@@ -1551,7 +1554,7 @@ function fetchExistingSpecimenData($specimenId)
 
 function userCanUpdateSpecimen($specimenId)
 {
-    if (checkRight('admin') || checkRight('editor')) {
+    if (Permission::has('admin') || Permission::has('editor')) {
         return true;
     }
 

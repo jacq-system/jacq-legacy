@@ -3,6 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -16,7 +19,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x100)!=0)) {
+if ($_POST['submitUpdate'] && Permission::has('litPub')) {
   $publisher = $_POST['publisher'];
   if (intval($_POST['ID'])) {
     $sql = "UPDATE tbl_lit_publishers SET ".
@@ -53,7 +56,7 @@ else {
   $cf->label(8,2,"Publisher");
   $cf->textarea(8,2,25,4,"publisher",$row['publisher']);
 
-  if (($_SESSION['editControl'] & 0x100)!=0) {
+  if (Permission::has('litPub')) {
     $text = ($row['publisherID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(9,9,"submitUpdate",$text);
     $cf->buttonJavaScript(21,9," New ","self.location.href='editLitPublisher.php?sel= '");

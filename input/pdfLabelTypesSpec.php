@@ -4,8 +4,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-
 require_once __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 /**
  * Checks if a value exists in a multidimensional array
@@ -162,7 +163,7 @@ function makeText($id, $sub)
             $synonyms = generateSynonymsList($row['synID']);
             if (in_array_multi($row['taxonIDspecimens'], $synonyms)) {
                 $synID = $row['synID'];                 // taxonID in specimen points anywhere in the synonyms-cloud
-            } else if (checkRight('specimensTypes')) {
+            } else if (Permission::has('specimensTypes')) {
                 $synID = $row['taxonIDspecimens'];      // taxonID in specimen points somewhere else, user has right to print this label
             } else {
                 return array('locked' => true);         // user has NOT the right to print this label -> abort

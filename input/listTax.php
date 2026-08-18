@@ -8,6 +8,7 @@ use Jacq\Settings;
 use Jacq\DbAccess;
 use Jacq\Display;
 use Jacq\Tools;
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -818,7 +819,7 @@ if ($result = $db->queryCatch("SELECT rank, tax_rankID FROM tbl_tax_rank ORDER B
 </form>
 
 <table><tr>
-<?php if (($_SESSION['editControl'] & 0x1)!=0): ?>
+<?php if (Permission::has('species')): ?>
 <td>
   <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecies.php'">
 </td><td style="width: 3em">&nbsp;</td>

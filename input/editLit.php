@@ -6,6 +6,7 @@ require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -175,7 +176,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_periodicalIndex = $_POST['periodicalIndex'] ?? "";
     $p_publisherIndex  = $_POST['publisherIndex'] ?? "";
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('lit')) {
         if (intval($_POST['citationID'])) {
             $sql = "UPDATE tbl_lit SET
                      lit_url = " . quoteString($p_url) . ",
@@ -669,7 +670,7 @@ $cf->checkbox(44, 31, "publ", $p_publ);
 $cf->label(53, 31, "signature");
 $cf->inputText(53, 31, 12, "signature", $p_signature, 50);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $cf->buttonSubmit(16, 36, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_citationID) {
         if ($edit) {

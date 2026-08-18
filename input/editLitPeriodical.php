@@ -3,6 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -49,7 +52,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x80) != 0)) {
+if (!empty($_POST['submitUpdate']) && Permission::has('litPer')) {
     $sqldata = "periodical = " . quoteString($_POST['periodical']) . ",
                 periodical_full = " . quoteString($_POST['periodical_full']) . ",
                 tl2_number = " . quoteString($_POST['tl2_number']) . ",
@@ -145,7 +148,7 @@ if (!empty($predecessors)) {
     }
 }
 
-if (($_SESSION['editControl'] & 0x80) != 0) {
+if (Permission::has('litPer')) {
     $text = ($row['periodicalID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(9, $y + 1, "submitUpdate", $text);
     $cf->buttonJavaScript(21, $y + 1, " New ", "self.location.href='editLitPeriodical.php?sel= '");

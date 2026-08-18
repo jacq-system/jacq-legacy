@@ -4,6 +4,7 @@ require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -323,7 +324,7 @@ function editLink($specimenID)
              . "<div id='linkErrors' class='error'></div>\n"
              . "<table style='width:100%; table-layout:auto;'>\n"
              . "<tbody id='linkRows'>\n";
-        if (($_SESSION['editControl'] & 0x2000) != 0) {
+        if (Permission::has('specim')) {
             $ret .= "<tr><td colspan='4'>"
                   . "<input type='submit' class='cssfbutton' value='update' onClick=\"jaxon_updateLink(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
@@ -351,7 +352,7 @@ function editLink($specimenID)
                   . "</td><td style='width:25%; white-space:nowrap;'>"
                   . "<input class='cssftext' style='width: 12em;' type='text' name='linkSpecimen_$id' id='linkSpecimen_$id' value='" . htmlspecialchars($row2['HerbNummer']) . "'>"
                   . "</td><td align='center'>";
-            if (($_SESSION['editControl'] & 0x2000) != 0) {
+            if (Permission::has('specim')) {
                 $ret .= "<input type='hidden' name='linkDelete_$id' id='linkDelete_$id' value='0'>"
                       . "<span class='link-delete-btn' data-target='$id' title='Mark for deletion' style='cursor:pointer; display:inline-block;'><img src='webimages/remove.png' alt='delete'></span>";
             }
@@ -365,13 +366,13 @@ function editLink($specimenID)
               . "</td><td style='width:25%; white-space:nowrap;'>"
               . "<input class='cssftext' style='width: 12em;' type='text' name='linkSpecimen_$templateId' id='linkSpecimen_$templateId' value=''>"
               . "</td><td align='center'>";
-        if (($_SESSION['editControl'] & 0x2000) != 0) {
+        if (Permission::has('specim')) {
             $ret .= "<input type='hidden' name='linkDelete_$templateId' id='linkDelete_$templateId' value='0'>"
                   . "<span class='link-delete-btn' data-target='$templateId' title='Zeile löschen' style='cursor:pointer; display:inline-block;'><img src='webimages/remove.png' alt='delete'></span>";
         }
         $ret .= "</td></tr>\n";
         $ret .= "</tbody></table>\n";
-        if (($_SESSION['editControl'] & 0x2000) != 0) {
+        if (Permission::has('specim')) {
             $ret .= "<div class='link-row-actions' style='margin-top:0.5em;'>"
                   . "<button type='button' id='addLinkRow' class='cssfbutton' style='width:2em;' title='Weitere Verknüpfung hinzufügen'>+</button>"
                   . "</div>\n";
@@ -396,7 +397,7 @@ function updateLink($formData)
 
     $errors = array();
 
-    if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
+    if ($specimenID && Permission::has('specim')) {
         $sourceCodes = array();
         $srcResult = dbi_query("SELECT source_id, source_code FROM herbarinput.meta");
         while ($srcRow = mysqli_fetch_array($srcResult)) {
@@ -494,7 +495,7 @@ function deleteLink($linkID, $specimenID)
 
     $linkID = intval($linkID);
 
-    if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
+    if ($specimenID && Permission::has('specim')) {
         dbi_query("DELETE FROM tbl_specimens_links WHERE specimens_linkID = '" . $linkID . "'");
     }
 
@@ -514,7 +515,7 @@ function editMultiTaxa ($specimenID)
         $ret = "<form id='f_iBox'>\n"
              . "<input type='hidden' name='multiTaxa_specimen_ID' id='multiTaxa_specimen_ID' value='$specimenID'>\n"
              . "<table>\n";
-        if (($_SESSION['editControl'] & 0x2000) != 0) {
+        if (Permission::has('specim')) {
             $ret .= "<tr><td colspan='4'>"
                   . "<input type='submit' class='cssfbutton' value='update' onClick=\"jaxon_updateMultiTaxa(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
@@ -547,7 +548,7 @@ function editMultiTaxa ($specimenID)
                       . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_$id' id='multiTaxaData_$id' "
                       . "value='" . taxon($row) . "'>"
                       . "</td><td align='center'>";
-                if (($_SESSION['editControl'] & 0x2000) != 0) {
+                if (Permission::has('specim')) {
                     $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteMultiTaxa('" . $row['specimens_tax_ID'] . "', '$specimenID');\">";
                 }
                 $ret .= "</td></tr>\n";
@@ -576,7 +577,7 @@ function updateMultiTaxa ($formData)
 
     $specimenID = intval($formData['multiTaxa_specimen_ID']);
 
-    if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
+    if ($specimenID && Permission::has('specim')) {
         foreach ($formData as $key => $val) {
             if (substr($key, 0, 14) == 'multiTaxaData_' && trim($val)) {
                 $specimens_tax_ID = intval(substr($key, 14));
@@ -609,7 +610,7 @@ function deleteMultiTaxa ($specimens_tax_ID, $specimenID)
 
     $specimens_tax_ID = intval($specimens_tax_ID);
 
-    if ($specimenID && ($_SESSION['editControl'] & 0x2000) != 0) {
+    if ($specimenID && Permission::has('specim')) {
         dbi_query("DELETE FROM tbl_specimens_taxa WHERE specimens_tax_ID = '" . $specimens_tax_ID . "'");
     }
 

@@ -3,6 +3,7 @@ session_start();
 require("../inc/connect.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -272,7 +273,7 @@ function metadataUserIsEditor()
         return false;
     }
 
-    if (checkRight('admin')) {
+    if (Permission::has('admin')) {
         return true;
     }
 

@@ -7,6 +7,7 @@ require("inc/api_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -517,7 +518,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     <input class="button" type="submit" name="deleteNow" value="delete <?php echo getImportEntries(false); ?> now">
   </td>
   <td colspan="2" align="right">
-    <?php if (checkRight('specim')): ?>
+    <?php if (Permission::has('specim')): ?>
     <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecimensImport.php?sel=<0>&new=1'">
     <?php endif; ?>
   </td>

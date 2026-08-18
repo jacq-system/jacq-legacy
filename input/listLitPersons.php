@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 $id = intval($_GET['ID']);
 
@@ -48,7 +51,7 @@ $result = dbi_query($sql);
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     echo "<table><tr><td>\n"
        . "<input class=\"cssfbutton\" type=\"button\" value=\" add new Line \" onClick=\"editLitPersons('<$id>',1)\">\n"
        . "</td><td width=\"20\">&nbsp;</td><td>\n"

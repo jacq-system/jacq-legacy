@@ -350,7 +350,7 @@ $display = Display::Load();
 <p>
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm2">
 <table cellspacing="0" cellpadding="0"><tr>
-<?php if (($_SESSION['editControl'] & 0x2000)!=0): ?>
+<?php if (Permission::has('specim')): ?>
 <td>
   <input class="button" type="button" value="new entry" onClick="self.location.href='editObservations.php?sel=<0>&new=1'">
 </td><td style="width: 3em">&nbsp;</td>

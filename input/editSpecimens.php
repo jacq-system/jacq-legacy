@@ -398,7 +398,7 @@ if (isset($_GET['sel'])) {
         $d_E_Sec   = $p_lon_sec;
     }
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x2000) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('specim')) {
         $sqldata = "HerbNummer = " . quoteString($p_HerbNummer) . ",
                     collectionID = '" . intval($p_collection) . "',
                     CollNummer = " . quoteString($p_CollNummer) . ",
@@ -1015,7 +1015,7 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 
 $y += 1.25;
 $cf->label(11, $y, "Country");
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->dropdown(11, $y, "nation\" onchange=\"reload=true; self.document.f.submit();", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
@@ -1099,7 +1099,7 @@ $cf->label(11, $y, "annotations");
 $cf->textarea(11, $y, 54, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     //$cf->buttonSubmit(16, $y, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {

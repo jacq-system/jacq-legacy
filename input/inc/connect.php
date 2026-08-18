@@ -77,9 +77,8 @@ function dbi_query($sql, $debug = false)
         } catch (mysqli_sql_exception $e) {
             $res = false;
             error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']}\n"
-                . "$query\n"
-                . "--- Error: " . $e->__toString() . "\n"
-                . "In script {$_SERVER['PHP_SELF']}");
+                . "$sql\n"
+                . "--- Error: " . $e->__toString());
             if ($debug) {
                 // and show it additionally if debug is on
                 echo $sql . "<br>\n";

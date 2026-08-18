@@ -329,7 +329,7 @@ if (isset($_GET['sel'])) {
         $d_E_Sec   = $p_lon_sec;
     }
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x2000) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('specim')) {
       $sqldata = "collectionID = '" . intval($p_collection) . "',
                   identstatusID = " . makeInt($p_identstatus) . ",
                   checked = " . (($p_checked) ? "'1'" : "'0'") . ",
@@ -807,7 +807,7 @@ $cf->dropdown(9, 4, "identstatus", $p_identstatus, $identstatus[0], $identstatus
 //if ($p_ncbi) echo " title=\"$p_ncbi\"";
 //echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
 
-if (($_SESSION['editControl'] & 0x1) != 0 || Permission::has('linkTaxon')) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(9, 6, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(9, 6, 8, "taxon");
@@ -842,7 +842,7 @@ $cf->label(9, 23.7, "search","javascript:searchCollector2()");
 echo "<div style=\"position: absolute; left: 1em; top: 25.75em; width: 54.5em;\"><hr></div>\n";
 
 $cf->labelMandatory(9, 27, 8, "Country");
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->dropdown(9, 27, "nation\" onchange=\"reload=true; self.document.f.reload.click()", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(9, 27, "nation", $p_nation, $nation[0], $nation[1]);
@@ -902,7 +902,7 @@ $cf->textarea(35, 40.5, 20, 2.6, "habitus", $p_habitus);
 $cf->label(9, 44, "annotations");
 $cf->textarea(9, 44, 46, 2.6, "Bemerkungen", $p_Bemerkungen);
 
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->buttonSubmit(16, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {

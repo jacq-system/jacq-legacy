@@ -2,11 +2,14 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 function displayButtons($type, $id)
 {
     echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
-    if (($_SESSION['editControl'] & 0x200) != 0) {
+    if (Permission::has('index')) {
         echo "<table><tr><td>\n";
         echo "<input class=\"cssfbutton\" type=\"button\" value=\" add new Line \" ".
              "onClick=\"editIndex($type,'<$id>',1)\">\n";

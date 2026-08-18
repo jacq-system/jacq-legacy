@@ -103,24 +103,6 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 $_SESSION['gid']         = $row['groupID'];
                 $_SESSION['sid']         = intval($row['source_id']);
                 $_SESSION['editFamily']  = $row['editFamily'];
-                $_SESSION['editControl'] = $row['species'] +
-                                           $row['author']    *    0x2 +
-                                           $row['epithet']   *    0x4 +
-                                           $row['genera']    *    0x8 +
-                                           $row['family']    *   0x10 +
-                                           $row['lit']       *   0x20 +
-                                           $row['litAuthor'] *   0x40 +
-                                           $row['litPer']    *   0x80 +
-                                           $row['litPub']    *  0x100 +
-                                           $row['index']     *  0x200 +
-                                           $row['type']      *  0x400 +
-                                           $row['collIns']   *  0x800 +
-                                           $row['collUpd']   * 0x1000 +
-                                           $row['specim']    * 0x2000 +
-                                           $row['dt']        * 0x4000 +
-                                           $row['specimensTypes'] * 0x8000+
-										   $row['commonnameUpdate'] * 0x10000+
-                                           $row['commonnameInsert'] * 0x20000;
 
                 $location="Location: menu.php";
                 if (SID) {

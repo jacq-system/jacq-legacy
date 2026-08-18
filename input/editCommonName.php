@@ -4,6 +4,9 @@ require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -136,7 +139,7 @@ echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"common_nameIndex\" id=\"common_nameIndex\" value=\"{$_dvar['common_nameIndex']}\">\n";
 
 $isLocked = isLocked($dbprefix.'tbl_name_commons', $_dvar['common_nameIndex']);
-$unlock_tbl_name_commons = checkRight('unlock_tbl_name_commons');
+$unlock_tbl_name_commons = Permission::mayUnlock('tbl_name_commons');
 
 if ($unlock_tbl_name_commons) {
     $cf->label(11, 1, "locked");
@@ -157,7 +160,7 @@ $cf->label(11, 8, "Transliteration");
 $cf->inputText(12, 8, 50, "transliteration", $_dvar['transliteration'],"0","","\" id=\"new_common_name");
 
 
-if( ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_tbl_name_commons || !$isLocked) ){
+if (Permission::has('commonnameUpdate')  && ($unlock_tbl_name_commons || !$isLocked)) {
 	$cf->buttonSubmit(12, 11, "submitUpdate", " Update");
 }
 
@@ -208,7 +211,7 @@ function UpdateCommonName(&$_dvar)
 {
 	global $dbprefix, $dbLink;
 
-	if (($_SESSION['editControl'] & 0x10000) == 0) {
+	if (Permission::has('commonnameUpdate')) {
 		return array("You have no Rights for Update", 0);
 	}
 

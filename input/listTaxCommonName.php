@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 // BP: for MDLD-JSON service
 require_once('inc/variables.php');
@@ -759,7 +762,7 @@ function selectTaxon(taxonID){
 </form>
 
 <table><tr>
-<?php if (($_SESSION['editControl'] & 0x1)!=0): ?>
+<?php if (Permission::has('species')): ?>
 <td>
   <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecies.php'">
 </td><td style="width: 3em">&nbsp;</td>

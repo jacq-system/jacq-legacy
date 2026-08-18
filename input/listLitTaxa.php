@@ -107,7 +107,7 @@ $result = dbi_query($sql);
 
 echo "<p>\n";
 echo "<form Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"GET\" name=\"f\">\n";
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     echo "<table><tr><td>\n";
     echo "<input class=\"cssfbutton\" type=\"button\" value=\" add new Line \" "
        . "onClick=\"editLitTaxa('<$id>',1)\">\n";

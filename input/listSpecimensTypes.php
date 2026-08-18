@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 $id = intval($_GET['ID']);
 
@@ -127,7 +130,7 @@ echo "</table>\n";
 
 echo "<p>\n";
 echo "<form Action=\"".$_SERVER['PHP_SELF']."\" Method=\"GET\" name=\"f\">\n";
-if (($_SESSION['editControl'] & 0x8000)!=0) {
+if (Permission::has('specimensTypes')) {
   echo "<table><tr><td>\n";
   echo "<input class=\"cssfbutton\" type=\"button\" value=\" add new Line \" ".
        "onClick=\"editSpecimensTypes('<$id>',1)\">\n";
