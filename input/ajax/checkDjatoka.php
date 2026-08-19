@@ -1,11 +1,12 @@
 <?php
+session_start();
+require("../inc/gatekeeper.php");
+require_once("../inc/variables.php");
+require_once("../inc/tools.php");
+require_once('../inc/jacqServletJsonRPCClient.php');
 
 //$_POST=$_GET;
 ob_start();  // intercept all output
-
-
-require_once('../inc/jacqServletJsonRPCClient.php');
-require_once("../inc/init.php");
 
 $checkDjatoka = new checkDjatoka();
 $methodName = (isset($_POST['method'])) ? $_POST['method'] : "";

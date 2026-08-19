@@ -1,7 +1,7 @@
 <?php
 session_start();
-require( "inc/gatekeeper.php");
-require( "inc/cssf.php");
+require("inc/gatekeeper.php");
+require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;

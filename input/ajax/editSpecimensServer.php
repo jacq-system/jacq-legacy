@@ -749,9 +749,10 @@ function updateGgbnIdentifier($specimenID)
         if (!empty($ggbnLinks)) {
             $label = implode("&nbsp;", $ggbnLinks);
         }
-        if (is_array($result) && empty($ggbnLinks)) {
-            error_log("GGBN lookup returned no ggbnId for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
-        }
+//        reduce number of logged errors
+//        if (is_array($result) && empty($ggbnLinks)) {
+//            error_log("GGBN lookup returned no ggbnId for specimen {$specimenID}, stableIdentifier {$stableIdentifier}: " . substr($curlResponse, 0, 500));
+//        }
     }
 
 
