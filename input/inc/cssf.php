@@ -2,6 +2,7 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
+use Jacq\AutocompleteCommonName;
 
 /****************************************************************************
 * Software: CSSF                                                            *
@@ -469,9 +470,9 @@ class CSSF{
 			$res = array();
 			if($val == '' && $index != ''){
 				if (strpos($pi['path'], 'index_jq_autocomplete_commoname.php') !== false){
-					if (method_exists('clsAutocompleteCommonName', $pv['field'])) {
+					if (method_exists('\Jacq\AutocompleteCommonName', $pv['field'])) {
 						if (!isset($GLOBALS['ACFREUD2'])) {
-                            $GLOBALS['ACFREUD2'] = clsAutocompleteCommonName::Load();
+                            $GLOBALS['ACFREUD2'] = AutocompleteCommonName::Load();
                         }
 						$res = call_user_func_array(array($GLOBALS['ACFREUD2'], $pv['field']), array(array('id'=>$index)));
 					}
