@@ -119,6 +119,17 @@ class Tools
     }
 
     /**
+     * replaces \r\n with \n and then \r or \n with <space>
+     *
+     * @param string $text text to scan
+     * @return string result of replacements
+     */
+    public static function replaceNewline(string $text): string
+    {
+        return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
+    }
+
+    /**
      * Checks if a row with a given id from a given table is in the state "locked"
      *
      * @param string $table The name of the table to be checked.

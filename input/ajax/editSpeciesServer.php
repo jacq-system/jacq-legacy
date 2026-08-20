@@ -33,7 +33,7 @@ function updateNomService($taxonID)
                            LEFT JOIN tbl_tax_hybrids th ON th.taxon_ID_fk = ts.taxonID
                           WHERE taxonID = $taxonID")->fetch_assoc();
     // only continue if the taxon is a hybrid and the parents are set or if the taxon is not hybrid at all
-    if (($row['statusID'] == 1 && !empty($row['parent_1_ID']) && !empty($row['parent_2_ID'])) || $row['statusID'] != 1) {
+    if ((($row['statusID'] ?? 0) == 1 && !empty($row['parent_1_ID']) && !empty($row['parent_2_ID'])) || ($row['statusID'] ?? 0) != 1) {
         $sciname = getScientificName($taxonID, false, false, false);
         $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);

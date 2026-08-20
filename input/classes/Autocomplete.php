@@ -1,0 +1,1379 @@
+<?php
+
+namespace Jacq;
+
+use Exception;
+
+class Autocomplete
+{
+/********************\
+|                    |
+|  static variables  |
+|                    |
+\********************/
+
+private static ?Autocomplete $instance = null;
+
+/********************\
+|                    |
+|  static functions  |
+|                    |
+\********************/
+
+/**
+ * instances the class Autocomplete
+ *
+ * @return Autocomplete new instance of that class
+ */
+public static function Load(): Autocomplete
+{
+    if (self::$instance == null) {
+        self::$instance = new Autocomplete();
+    }
+    return self::$instance;
+}
+
+/*************\
+|             |
+|  variables  |
+|             |
+\*************/
+
+
+/***************\
+|               |
+|  constructor  |
+|               |
+\***************/
+
+/**
+ * constructor of the class
+ */
+protected function __construct()
+{
+}
+
+/********************\
+|                    |
+|  public functions  |
+|                    |
+\********************/
+
+/**
+ * helper-function for ajax-calls with parameters
+ *
+ * looks for special patterns in a string or returns the original. Looks for <<foobar> (exact match is desired) or <foobar> (ID is given).
+ * Returns array with 'type' (exact, id or search), 'value' (text between <<> or <> or original $value) and 'original' (original text)
+ *
+ * @param string $value text to parse
+ * @return array result
+ */
+function AjaxParseValue (string $value): array
+{
+    if (preg_match('/<<(?P<exact>.*?)>/', $value, $matches)) {  // group "exact" is returned if <<foobar> is within searchtext
+        $exact = $matches['exact'];
+        return array(
+            'type'     => 'exact',
+            'value'    => $exact,
+            'original' => $value,
+            'exact'    => $exact);  // deprecated
+    }
+
+    if (preg_match('/<(?P<ID>.*?)>/', $value, $matches)) {       // group "id" is returend if <foobar> is within searchtext
+        $ID = $matches['ID'];
+        return array(
+            'type'     => 'id',
+            'value'    => $ID,
+            'original' => $value,
+            'id'       => $ID);  // deprecated
+    }
+
+    // neither exact nor id, so return the original string
+    return array(
+        'type'     => 'search',
+        'value'    => $value,  // no filtering neccessary, all occurrences of "<...>" would have been found already and the first one returned as "id"
+        'original' => $value,
+        'search'   => preg_replace('/<.*>/', '', $value));  // deprecated
+}
+
+/** W
+ * autocomplete a taxonomy author entry field
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0"(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxAuthor(array $value, bool $noExternals = false): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT author, authorID, Brummit_Powell_full
+                FROM tbl_tax_authors
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " authorID = ?");
+            $dbst->execute(array($value['id']));
+        } else {
+            if (isset($value['exact'])) {
+                $value['search'] = $value['exact'];
+                $equ = '=';
+            } else {
+                $value['search'] = $value['search'] . '%';
+                $equ = 'LIKE';
+            }
+            $sql .= "(   author $equ ?
+                      OR Brummit_Powell_full $equ ?)";
+            if ($noExternals) {
+                $sql .=" AND external = 0";
+            }
+            $sql.=" ORDER BY author, Brummit_Powell_full";
+            $dbst = $db->prepare($sql);
+            $dbst->execute(array($value['search'], $value['search']));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+
+            foreach ($rows as $row) {
+                $res = $row['author'];
+                if ($row['Brummit_Powell_full'])
+                    $res .=chr(194) . chr(183) . " [" . Tools::replaceNewline($row['Brummit_Powell_full']) . "]";
+                $results[] = array(
+                    'id' => $row['authorID'],
+                    'label' => $res . " <" . $row['authorID'] . ">",
+                    'value' => $res . " <" . $row['authorID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a taxonomy author entry field
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0"(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function litAuthor(array $value, bool $noExternals = false): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT autor, autorID
+                FROM tbl_lit_authors
+                WHERE ";
+
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " autorID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " autor = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " autor LIKE ?");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $res = $row['autor'];
+                $results[] = array(
+                    'id' => $row['autorID'],
+                    'label' => $res . " <" . $row['autorID'] . ">",
+                    'value' => $res . " <" . $row['autorID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete an author entry field without external entries(external=0)
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxAuthorNoExternals(array $value): array
+{
+    return $this->taxAuthor($value, true);
+}
+
+/** W
+ * autocomplete a collector entry field
+ *
+ * @param array $value text to search for
+ * @param bool $second if true use tbl_collector2(default=false)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function collector(array $value, bool $second = false): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        if ($second) {
+            $sql = "SELECT Sammler_2 AS Sammler, Sammler_2ID AS SammlerID
+                    FROM tbl_collector_2
+                    WHERE ";
+            if (isset($value['id'])) {
+                $dbst = $db->prepare($sql . " Sammler_2ID = ?");
+                $dbst->execute(array($value['id']));
+            } else if (isset($value['exact'])) {
+                $dbst = $db->prepare($sql . " Sammler_2 = ?");
+                $dbst->execute(array($value['exact']));
+            } else {
+                $dbst = $db->prepare($sql . " Sammler_2 LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
+            }
+        } else {
+            $sql = "SELECT Sammler, SammlerID
+                    FROM tbl_collector
+                    WHERE ";
+            if (isset($value['id'])) {
+                $dbst = $db->prepare($sql . " SammlerID = ?");
+                $dbst->execute(array($value['id']));
+            } else if (isset($value['exact'])) {
+                $dbst = $db->prepare($sql . " Sammler = ?");
+                $dbst->execute(array($value['exact']));
+            } else {
+                $dbst = $db->prepare($sql . " Sammler LIKE ?");
+                $dbst->execute(array($value['search'] . '%'));
+            }
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array(
+                    'id' => $row['SammlerID'],
+                    'label' => $row['Sammler'] . " <" . $row['SammlerID'] . ">",
+                    'value' => $row['Sammler'] . " <" . $row['SammlerID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete a second collector entry field(tbl_collector_2)
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function collector2(array $value): array
+{
+    return $this->collector($value, true);
+}
+
+/** W
+ * autocomplete a person entry field
+ * The various parts of a person field are identified and used (if present) as a search criteria
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function person(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death
+                FROM tbl_person
+                WHERE ";
+
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " person_ID = ?");
+            $dbst->execute(array($value['id']));
+        } else {
+            $v = $value['exact'] ?? $value['search'];
+            $pieces = explode(", ", $v, 2);
+            $p_familyname = $pieces[0];
+            if (count($pieces) > 1) {
+                $pieces = explode("(", $pieces[1], 2);
+                $p_firstname = $pieces[0];
+                if (count($pieces) > 1) {
+                    $pieces = explode(" - ", $pieces[1], 2);
+                    $p_birthdate = $pieces[0];
+                    if (count($pieces) > 1) {
+                        $pieces = explode(")", $pieces[1], 2);
+                        $p_death = $pieces[0];
+                    } else {
+                        $p_death = '';
+                    }
+                } else {
+                    $p_birthdate = $p_death = '';
+                }
+            } else {
+                $p_firstname = $p_birthdate = $p_death = '';
+            }
+
+            if (isset($value['exact'])) {
+                $equ = '=';
+            } else {
+                if (!empty($p_familyname)) {
+                    $p_familyname .= '%';
+                }
+                if (!empty($p_firstname)) {
+                    $p_firstname .= '%';
+                }
+                if (!empty($p_birthdate)) {
+                    $p_birthdate .= '%';
+                }
+                if (!empty($p_death)) {
+                    $p_death .= '%';
+                }
+                $equ = 'LIKE';
+            }
+
+            $sql .= " p_familyname $equ ?";
+            $param = array($p_familyname);
+            if ($p_firstname) {
+                $sql .= " AND p_firstname $equ ?";
+                $param[] = $p_firstname;
+            }
+            if ($p_birthdate) {
+                $sql .= " AND p_birthdate $equ ?";
+                $param[] = $p_birthdate;
+            }
+            if ($p_death) {
+                $sql .= " AND p_death $equ ?";
+                $param[] = $p_death;
+            }
+
+            $dbst = $db->prepare($sql . " ORDER BY p_familyname, p_firstname, p_birthdate, p_death");
+            $dbst->execute($param);
+        }
+        //return array('id'	=> 's','label'=> $sql,'value'=> $sql,'color'=> '');
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $text = $row['p_familyname'] . ", " . $row['p_firstname'] . "(" . $row['p_birthdate'] . " - " . $row['p_death'] . ") <" . $row['person_ID'] . ">";
+                $results[] = array(
+                    'id' => $row['person_ID'],
+                    'label' => $text,
+                    'value' => $text,
+                    'color' => ''
+                );
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a citation entry field
+ * If the searchstring has only one part, only the author will be searched
+ * If the searchstring consists of two parts, the first one is used for author, the second one for year, title and periodical
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function citation(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        if (isset($value['id'])) {
+            if ($value['id'] == '' || $value['id'] == '0' || $value['id'] == 0) {
+                return array();
+            }
+            $display = Display::Load();
+
+            $label = $display->protolog($value['id'], true);
+            $results[] = array(
+                'id' => $value['id'],
+                'label' => $label,
+                'value' => "$label <{$value['id']}>",
+                'color' => ''
+            );
+        } else {
+            $v = $value['exact'] ?? $value['search'];
+            $pieces = explode(" ", $v);
+            $autor = $pieces[0];
+            if (!empty($pieces[1]) && (strlen($pieces[1]) > 2 || (strlen($pieces[1]) == 2 && substr($pieces[1], 1, 1) != '.'))) {
+                $second = $pieces[1];
+            } else {
+                $second = '';
+            }
+
+            $sql = "SELECT citationID
+                    FROM tbl_lit l
+                    LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID=l.periodicalID
+                    LEFT JOIN tbl_lit_authors le ON le.autorID=l.editorsID
+                    LEFT JOIN tbl_lit_authors la ON la.autorID=l.autorID
+                    WHERE ";
+            if (isset($value['exact'])) {
+                $equ = '=';
+            } else {
+                if (!empty($autor)) {
+                    $autor .= '%';
+                }
+                if (!empty($second)) {
+                    $second .= '%';
+                }
+                $equ = 'LIKE';
+            }
+
+
+            $sql .= "(   la.autor $equ ?
+                      OR le.autor $equ ?) ";
+            $param = array($autor, $autor);
+
+            if ($second) {
+                $sql.=" AND (l.jahr $equ ?
+                        OR l.titel $equ ?
+                        OR lp.periodical $equ ? )";
+                $param[] = $second;
+                $param[] = $second;
+                $param[] = $second;
+            }
+            $dbst = $db->prepare($sql . " ORDER BY la.autor, jahr, lp.periodical, vol, part, pp");
+            $dbst->execute($param);
+
+            $rows = $dbst->fetchAll();
+            if (count($rows) > 0) {
+                $display = Display::Load();
+                foreach ($rows as $row) {
+                    $results[] = array(
+                        'id' => $row['citationID'],
+                        'label' => $display->protolog($row['citationID'], true),
+                        'value' => $display->protolog($row['citationID'], true),
+                        'color' => ''
+                    );
+                }
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a periodical entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function periodical(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT periodical, periodicalID
+                FROM tbl_lit_periodicals
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " periodicalID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " periodical = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " periodical LIKE ? OR periodical_full LIKE ? ORDER BY periodical");
+            $dbst->execute(array($value['search'] . '%', '%' . $value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array('id' => $row['periodicalID'],
+                    'label' => $row['periodical'] . " <" . $row['periodicalID'] . ">",
+                    'value' => $row['periodical'] . " <" . $row['periodicalID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a periodical entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function bestand(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT DISTINCT bestand
+                FROM tbl_lit
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " bestand = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " bestand = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " bestand LIKE ? ORDER BY bestand");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array(
+                    'id' => $row['bestand'],
+                    'label' => $row['bestand'],
+                    'value' => $row['bestand'],
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete a periodical entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function categories(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT DISTINCT category
+                FROM tbl_lit
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " category = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " category = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " category LIKE ? ORDER BY category");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array(
+                    'id' => $row['category'],
+                    'label' => $row['category'],
+                    'value' => $row['category'],
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a periodical entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function publisher(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT publisher, publisherID
+                FROM tbl_lit_publishers
+                WHERE";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " publisherID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " publisher = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " publisher LIKE ? ORDER BY publisher");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array('id' => $row['publisherID'],
+                    'label' => $row['publisher'] . " <" . $row['publisherID'] . ">",
+                    'value' => $row['publisher'] . " <" . $row['publisherID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a family entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function family(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT family, familyID, category
+                FROM tbl_tax_families tf
+                 LEFT JOIN tbl_tax_systematic_categories tsc ON tsc.categoryID=tf.categoryID
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " familyID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " family = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " family LIKE ? ORDER BY family");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array(
+                    'id' => $row['familyID'],
+                    'label' => $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">",
+                    'value' => $row['family'] . " " . $row['category'] . " <" . $row['familyID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a genus entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function genus(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT tg.genus, tg.genID, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category
+                FROM tbl_tax_genera tg
+                 LEFT JOIN tbl_tax_authors ta                ON ta.authorID   = tg.authorID
+                 LEFT JOIN tbl_tax_families tf               ON tg.familyID   = tf.familyID
+                 LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " tg.genID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " tg.genus = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " tg.genus LIKE ? ORDER BY tg.genus");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $text = $row['genus'] . " " . $row['author'] . " " . $row['family'] . " "
+                    . $row['category'] . " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs']
+                    . " <" . $row['genID'] . ">";
+                $results[] = array('id' => $row['genID'],
+                    'label' => $text,
+                    'value' => $text,
+                    'color' => '');
+            }
+            foreach ($results as $k => $v) {
+                $results[$k]['label'] = preg_replace("/ \s+/", " ", $v['label']);
+                $results[$k]['value'] = preg_replace("/ \s+/", " ", $v['value']);
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete an epithet entry field
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0"(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function epithet(array $value, bool $noExternals = false): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT epithet, epithetID
+                FROM tbl_tax_epithets
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " epithetID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " epithet = ?" . (($noExternals) ? " AND external = 0" : ''));
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " epithet LIKE ?" . (($noExternals) ? " AND external = 0" : '') . " ORDER BY epithet");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array('id' => $row['epithetID'],
+                    'label' => $row['epithet'] . " <" . $row['epithetID'] . ">",
+                    'value' => $row['epithet'] . " <" . $row['epithetID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete an epithet entry field without external entries(external=0)
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function epithetNoExternals(array $value): array
+{
+    return $this->epithet($value, true);
+}
+
+/** W
+ * autocomplete a taxon entry field
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0"(default no)
+ * @param bool $withDT adds the DallaTorre information(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxon2(array $value, bool $noExternals = false, bool $withDT = false): array
+{
+    return $this->taxon($value, $noExternals, $withDT, 2);
+}
+
+/** W
+ * autocomplete a taxon entry field
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0" (default no)
+ * @param bool $withDT adds the DallaTorre information (default no)
+ * @param bool $withID adds the taxonID to the result (default yes))
+ * @param string $extraCondition extra condition to be used with the sql statement (SQL where condition)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxon(array $value, bool $noExternals = false, bool $withDT = false, bool $withID = true, string $extraCondition = ""): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT taxonID, ts.external
+                FROM tbl_tax_species ts
+                 LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " ts.taxonID = ?" . (($noExternals) ? " AND ts.external = 0" : ''));
+            $dbst->execute(array($value['id']));
+        } else {
+            $v = $value['exact'] ?? $value['search'];
+            $pieces1 = explode(chr(194) . chr(183), $v);
+            $pieces = explode(" ", $pieces1[0]);
+
+            if (isset($value['exact'])) {
+                $equ = '=';
+            } else {
+                if (!empty($pieces[0])) {
+                    $pieces[0] .= '%';
+                }
+                if (!empty($pieces[1])) {
+                    $pieces[1] .= '%';
+                }
+                $equ = 'LIKE';
+            }
+
+            $sql .= " tg.genus $equ ? ";
+            $param = array($pieces[0]);
+            if ($noExternals) {
+                $sql .= " AND ts.external = 0 ";
+            }
+            if (!empty($pieces[1])) {
+                $sql .= " AND te0.epithet $equ ? ";
+                $param[] = $pieces[1];
+            } else {
+                $sql .= " AND te0.epithet IS NULL";
+            }
+            // Check if we filter the resulting taxons using some extra condition(s)
+            if(!empty($extraCondition)) {
+                $sql .= $extraCondition;
+            }
+            if (empty($value['exact'])) {
+                $sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+            }
+            $dbst = $db->prepare($sql);
+            $dbst->execute($param);
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            $display = Display::Load();
+            foreach ($rows as $row) {
+                $results[] = array('id' => $row['taxonID'],
+                    'label' => $display->taxon($row['taxonID'], true, $withDT, true),
+                    'value' => $display->taxon($row['taxonID'], true, $withDT, $withID),
+                    'color' => ($row['external']) ? 'red' : '');
+            }
+            foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
+                $results[$k]['label'] = preg_replace("/ \s+/", " ", $v['label']);
+                $results[$k]['value'] = preg_replace("/ \s+/", " ", $v['value']);
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete a taxon entry field without external entries(external=0)
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonNoExternals(array $value): array
+{
+    return $this->taxon($value, true);
+}
+
+/** W
+ * autocomplete a taxon entry field and include the DallaTorre information
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonWithDT(array $value): array
+{
+    return $this->taxon($value, false, true);
+}
+
+/** to be checked...
+ * autocomplete a taxon entry field with hybrid at the end of the list
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species
+ *
+ * @param array $value text to search for
+ * @param bool $noExternals only results for "external=0"(default no)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonWithHybrids(array $value, bool $noExternals = false): array
+{
+    $results = array();
+    try {
+        $display = Display::Load();
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT taxonID, ts.synID, ts.external
+                FROM tbl_tax_species ts
+                 LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                WHERE ";
+
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " taxonID = ?");
+            $dbst->execute(array($value['id']));
+        } else {
+            $v = $value['exact'] ?? $value['search'];
+            $pieces1 = explode(chr(194) . chr(183), $v);
+            $pieces = explode(" ", $pieces1[0]);
+
+            if (isset($value['exact'])) {
+                $equ = '=';
+            } else {
+                if (!empty($pieces[0])) {
+                    $pieces[0] .= '%';
+                }
+                if (!empty($pieces[1])) {
+                    $pieces[1] .= '%';
+                }
+                $equ = 'LIKE';
+            }
+
+            $sql .= " tg.genus $equ ? ";
+            $param = array($pieces[0]);
+            if ($noExternals) {
+                $sql .= " AND ts.external = 0 ";
+            }
+            if (!empty($pieces[1])) {
+                $sql .= " AND te0.epithet $equ ? ";
+                $param[] = $pieces[1];
+            } else {
+                $sql .= " AND te0.epithet IS NULL";
+            }
+            if (empty($value['exact'])) {
+                $sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+            }
+            $dbst = $db->prepare($sql);
+            $dbst->execute($param);
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+
+                $color = '';
+                if(is_numeric($row['synID'])){
+                    $color = 'red';
+                } else if ($row['external']){
+                    $color = 'darkorange'; // see also .taxon_external in screen.css
+                }
+
+                $results[] = array(
+                    'id' => $row['taxonID'],
+                    'label' => $display->taxon($row['taxonID'], true, false, true),
+                    'value' => $display->taxon($row['taxonID'], true, false, true),
+                    'color' => $color,
+                );
+            }
+        }
+        // works up to here
+        // ab hier: muss geprüft werden.
+        if (!isset($value['id'])) {
+
+            // how to test??
+            $sql = "SELECT ts.taxonID, ts.synID
+                    FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                     LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+                     LEFT JOIN tbl_tax_species tsp1 ON tsp1.taxonID = th.parent_1_ID
+                     LEFT JOIN tbl_tax_epithets tep1 ON tep1.epithetID = tsp1.speciesID
+                     LEFT JOIN tbl_tax_genera tgp1 ON tgp1.genID = tsp1.genID
+                     LEFT JOIN tbl_tax_species tsp2 ON tsp2.taxonID = th.parent_2_ID
+                     LEFT JOIN tbl_tax_epithets tep2 ON tep2.epithetID = tsp2.speciesID
+                     LEFT JOIN tbl_tax_genera tgp2 ON tgp2.genID = tsp2.genID
+                     LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+                     LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                     LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                     LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                     LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                     LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                    WHERE th.taxon_ID_fk = ts.taxonID
+                     AND (   tg.genus $equ ?
+                          OR tgp1.genus $equ ?
+                          OR tgp2.genus $equ ? ) ";
+            $param = array($pieces[0], $pieces[0], $pieces[0]);
+
+
+            if ($noExternals) {
+                $sql.=" AND ts.external = 0 ";
+            }
+            if (!empty($pieces[1])) {
+                $sql .= " AND (   tep1.epithet $equ ?
+                               OR tep2.epithet $equ ? )";
+                $param[] = $pieces[1];
+                $param[] = $pieces[1];
+            }
+            $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
+            //$dbst=0;return array(array('id'=>'1','label'=>($dbst?'Y':'N').$sql,'value'=>($dbst?'Y':'N').$sql));
+
+            $dbst = $db->prepare($sql);
+            $dbst->execute($param);
+            $rows = $dbst->fetchAll();
+            if (count($rows) > 0) {
+                foreach ($rows as $row) {
+                    $results[] = array(
+                        'id' => $row['taxonID'],
+                        'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                        'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                        'color' => ($row['synID']) ? 'red' : ''
+                    );
+                }
+            }
+            foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
+                $results[$k]['label'] = preg_replace("/ \s+/", " ", $v['label']);
+                $results[$k]['value'] = preg_replace("/ \s+/", " ", $v['value']);
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/**
+ * autocomplete a taxon entry field with hybrids at the end of the list
+ * If the searchstring has only one part before the separator, only taxa with empty species are presented.
+ * If the searchstring consists of two parts, the first one is used for genus, the second one for species.
+ * If the searchstring contains " x ", only hybrids are returned
+ *
+ * @param array $value parsed text to search for (see AjaxParseValue in tools.php)
+ * @param bool $noExternals only results for "external=0"(default: false)
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function taxonWithHybridsNew(array $value, bool $noExternals = false): array
+{
+    $results = array();
+    try {
+        $display = Display::Load();
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        if ($value['type'] == 'id') {
+            $dbst = $db->prepare("SELECT taxonID, ts.synID, ts.external
+                                  FROM tbl_tax_species ts
+                                  WHERE taxonID = ?");
+            $dbst->execute(array($value['id']));
+            $rows = $dbst->fetchAll();
+            if (!empty($rows)) {
+                $color = '';
+                if (is_numeric($rows[0]['synID'])) {
+                    $color = 'red';
+                } else if ($rows[0]['external']) {
+                    $color = 'darkorange'; // see also .taxon_external in screen.css
+                }
+                $results[] = array(
+                    'id'    => $rows[0]['taxonID'],
+                    'label' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                    'value' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                    'color' => $color,
+                );
+            }
+        } else {
+            if (str_contains($value['value'], " x ")) {
+                // find only hybrids, show nothing else
+                $hybridsOnly = true;
+                $value['value'] = strtr($value['value'], array(" x " => " ")); // strip " x " from search-string
+            } else {
+                // show everything, including hybrids
+                $hybridsOnly = false;
+            }
+            $pieces1 = explode(chr(194) . chr(183), $value['value']);
+            $pieces = explode(" ", $pieces1[0]);
+
+            if ($value['type'] == 'exact') {
+                $equ = '=';
+            } else {
+                if (!empty($pieces[0])) {
+                    $pieces[0] .= '%';
+                }
+                if (!empty($pieces[1])) {
+                    $pieces[1] .= '%';
+                }
+                $equ = 'LIKE';
+            }
+
+            if (!$hybridsOnly) {
+                $sql = "SELECT taxonID, ts.synID, ts.external
+                        FROM tbl_tax_species ts
+                         LEFT JOIN tbl_tax_epithets te0 ON te0.epithetID = ts.speciesID
+                         LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
+                         LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
+                         LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
+                         LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
+                         LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
+                         LEFT JOIN tbl_tax_genera tg    ON tg.genID      = ts.genID
+                        WHERE ts.statusID != 1
+                         AND ";
+//                            WHERE ts.taxonID NOT IN (SELECT taxon_ID_fk FROM tbl_tax_hybrids th WHERE th.taxon_ID_fk = ts.taxonID)
+//                             AND ";
+
+                $sql .= " tg.genus $equ ? ";
+                $param = array($pieces[0]);
+                if ($noExternals) {
+                    $sql .= " AND ts.external = 0 ";
+                }
+                if (!empty($pieces[1])) {
+                    $sql .= " AND te0.epithet $equ ? ";
+                    $param[] = $pieces[1];
+                } else {
+                    $sql .= " AND te0.epithet IS NULL";
+                }
+                $sql .= " ORDER BY tg.genus, te0.epithet, te1.epithet, te2.epithet, te3.epithet, te4.epithet, te5.epithet";
+                $dbst = $db->prepare($sql);
+                $dbst->execute($param);
+                $rows = $dbst->fetchAll();
+
+                foreach ($rows as $row) {
+                    if (is_numeric($row['synID'])) {
+                        $color = 'red';
+                    } else if ($row['external']) {
+                        $color = 'darkorange'; // see also .taxon_external in screen.css
+                    } else {
+                        $color = '';
+                    }
+
+                    $results[] = array(
+                        'id'    => $row['taxonID'],
+                        'label' => $display->taxon($row['taxonID'], true, false, true),
+                        'value' => $display->taxon($row['taxonID'], true, false, true),
+                        'color' => $color
+                    );
+                }
+            }
+
+            $sql1 = "SELECT ts.taxonID, ts.synID, ts.external, herbar_view.GetScientificName(ts.taxonID, 0) as sciName
+                     FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                      LEFT JOIN tbl_tax_species tsp1  ON tsp1.taxonID   = th.parent_1_ID
+                      LEFT JOIN tbl_tax_genera tgp1   ON tgp1.genID     = tsp1.genID
+                      LEFT JOIN tbl_tax_epithets tep1 ON tep1.epithetID = tsp1.speciesID
+                     WHERE th.taxon_ID_fk = ts.taxonID
+                      AND tgp1.genus $equ ? ";
+            $sql2 = "SELECT ts.taxonID, ts.synID, ts.external, herbar_view.GetScientificName(ts.taxonID, 0) as sciName
+                     FROM (tbl_tax_species ts, tbl_tax_hybrids th)
+                      LEFT JOIN tbl_tax_species tsp2  ON tsp2.taxonID   = th.parent_2_ID
+                      LEFT JOIN tbl_tax_genera tgp2   ON tgp2.genID     = tsp2.genID
+                      LEFT JOIN tbl_tax_epithets tep2 ON tep2.epithetID = tsp2.speciesID
+                     WHERE th.taxon_ID_fk = ts.taxonID
+                      AND tgp2.genus $equ ?  ";
+            if ($noExternals) {
+                $sql1 .= " AND ts.external = 0 ";
+                $sql2 .= " AND ts.external = 0 ";
+            }
+            if (!empty($pieces[1])) {
+                $sql1 .= " AND tep1.epithet $equ ? ";
+                $sql2 .= " AND tep2.epithet $equ ? ";
+                $param = array($pieces[0], $pieces[1], $pieces[0], $pieces[1]);
+            } else {
+                $param = array($pieces[0], $pieces[0]);
+            }
+            //$dbst=0;return array(array('id'=>'1','label'=>($dbst?'Y':'N').$sql,'value'=>($dbst?'Y':'N').$sql));
+
+            $dbst = $db->prepare("(" . $sql1 . " ORDER BY sciName) UNION (" . $sql2 . " ORDER BY sciName)");
+            $dbst->execute($param);
+            $rows = $dbst->fetchAll();
+            foreach ($rows as $row) {
+                if (is_numeric($row['synID'])) {
+                    $color = 'red';
+                } else if ($row['external']) {
+                    $color = 'darkorange'; // see also .taxon_external in screen.css
+                } else {
+                    $color = '';
+                }
+
+                $results[] = array(
+                    'id' => $row['taxonID'],
+                    'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                    'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                    'color' => $color
+                );
+            }
+        }
+        foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
+            $results[$k]['label'] = preg_replace("/ \s+/", " ", $v['label']);
+            $results[$k]['value'] = preg_replace("/ \s+/", " ", $v['value']);
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+/** W
+ * autocomplete a series entry field
+ *
+ * @param array $value text to search for
+ * @return array data array ready to send to jQuery-autocomplete via json-encode
+ */
+public function series(array $value): array
+{
+    $results = array();
+    try {
+        $db = PdoAccess::ConnectTo('INPUT');
+
+        $sql = "SELECT series, seriesID
+                FROM tbl_specimens_series
+                WHERE ";
+        if (isset($value['id'])) {
+            $dbst = $db->prepare($sql . " seriesID = ?");
+            $dbst->execute(array($value['id']));
+        } else if (isset($value['exact'])) {
+            $dbst = $db->prepare($sql . " series = ?");
+            $dbst->execute(array($value['exact']));
+        } else {
+            $dbst = $db->prepare($sql . " series LIKE ? ORDER BY series");
+            $dbst->execute(array($value['search'] . '%'));
+        }
+
+        $rows = $dbst->fetchAll();
+        if (count($rows) > 0) {
+            foreach ($rows as $row) {
+                $results[] = array(
+                    'id' => $row['seriesID'],
+                    'label' => $row['series'] . " <" . $row['seriesID'] . ">",
+                    'value' => $row['series'] . " <" . $row['seriesID'] . ">",
+                    'color' => '');
+            }
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    return $results;
+}
+
+    /**
+     * Auto-completer for taxon but limited to a certain citation
+     * @param array $value taxon name to search for
+     * @return array
+     */
+public function taxonCitation(array $value): array
+{
+    $results = array();
+    try {
+        $citationID = intval($_GET['citationID'] ?? 0);
+        $citationIDs = (isset($_GET['includeParents'])) ? $this->findParents($citationID) : array($citationID);
+        $bChild = isset($_GET['child']);
+
+        // Check if a valid citation was passed
+        if ($citationID > 0) {
+            $db = PdoAccess::ConnectTo('INPUT');
+
+            // Find all taxon name IDs for the current citation
+            // but do not use already assigned ones
+            $extraCondition = "
+                AND ts.`taxonID` IN (
+                SELECT ts.`taxonID`
+                FROM `tbl_tax_synonymy` ts"
+                .(($bChild) ? " LEFT JOIN `tbl_tax_classification` tc ON tc.`tax_syn_ID` = ts.`tax_syn_ID`" : "").
+                " WHERE
+                ts.`acc_taxon_ID` IS NULL"
+                .(($bChild) ? " AND tc.`classification_id` IS NULL" : "").
+                " AND
+                ts.`source_citationID` IN ( " . implode(', ', $citationIDs) . " )
+                )
+            ";
+
+            // Do the actual taxon name matching
+            $results = $this->taxon($value,false,false,true,$extraCondition);
+        }
+    } catch (Exception $e) {
+        error_log($e->getMessage());
+    }
+
+    // Return all matching entries
+    return $results;
+}
+
+/***********************\
+|                       |
+|  protected functions  |
+|                       |
+\***********************/
+
+/*********************\
+|                     |
+|  private functions  |
+|                     |
+\*********************/
+
+/**
+ * Find all parent citations for a given citationID
+ * @param int|string $p_citationID ID of citation to look for
+ * @return array list of citation IDs (including the passed one)
+ * @throws Exception
+ */
+private function findParents (int|string $p_citationID): array
+{
+    $p_citationID_filter = intval($p_citationID);
+    $results = array($p_citationID_filter);
+
+    $db = PdoAccess::ConnectTo('INPUT');
+
+    // Find the parent(s) for a citation
+    $dbst = $db->query("SELECT `citation_parent_ID`
+                        FROM `tbl_lit_container`
+                        WHERE `citation_child_ID` = '$p_citationID_filter'");
+    $rows = $dbst->fetchAll();
+
+    // Check if we found something and fetch the results
+    if( count($rows) > 0 ) {
+        foreach( $rows as $row ) {
+            $results = array_merge($results,$this->findParents($row['citation_parent_ID']));
+        }
+    }
+
+    return $results;
+}
+
+/**
+ * to prevent cloning of this singleton
+ *
+ */
+private function __clone()
+{
+}
+
+}

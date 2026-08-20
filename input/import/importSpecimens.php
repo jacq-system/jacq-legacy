@@ -11,6 +11,7 @@ require_once('../inc/jsonRPCClient.php');
 require_once('../inc/clsTaxonTokenizer.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Autocomplete;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Color;
@@ -1721,7 +1722,7 @@ if ($run == 2) {  // file provided
     echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
     echo '<div id="import_errors" class="error">' . "\n";
 
-    $autocomplete = clsAutocomplete::Load();
+    $autocomplete = Autocomplete::Load();
 
     $imported = 0;
     for ($i = 0; $i < count($data); $i++) {

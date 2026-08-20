@@ -1,4 +1,8 @@
 <?php
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Autocomplete;
+
 /****************************************************************************
 * Software: CSSF                                                            *
 * Version:  0.2.0                                                           *
@@ -472,9 +476,9 @@ class CSSF{
 						$res = call_user_func_array(array($GLOBALS['ACFREUD2'], $pv['field']), array(array('id'=>$index)));
 					}
 				} else/*if(strpos($pi['path'],'index_jq_autocomplete.php')!==false)*/{
-					if (method_exists('clsAutocomplete', $pv['field'])){
+					if (method_exists('\Jacq\Autocomplete', $pv['field'])){
 						if (!isset($GLOBALS['ACFREUD1'])) {
-                            $GLOBALS['ACFREUD1'] = clsAutocomplete::Load();
+                            $GLOBALS['ACFREUD1'] = Autocomplete::Load();
                         }
 						$res = call_user_func_array( array($GLOBALS['ACFREUD1'], $pv['field']), array(array('id'=>$index)));
 					}
