@@ -6,6 +6,7 @@ require("../inc/herbardb_input_functions.php");
 require("../inc/cssf.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\PdoAccess;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
@@ -362,7 +363,7 @@ function addClassification($citationID, $number, $order, $child_taxonID, $parent
 
     if( $citationID_f > 0 && $child_taxonID_f > 0 && $parent_taxonID_f > 0 ) {
         // Find the fitting tax_synonymy entry
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("
             SELECT `tax_syn_ID`
             FROM `tbl_tax_synonymy`
@@ -409,7 +410,7 @@ function updateClassification( $p_classification_id, $p_number, $p_order, $p_chi
 
     // check if we have a valid entry to edit
     if( $p_classification_id_f > 0 && $p_parent_taxonID_f > 0 ) {
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("
             UPDATE `tbl_tax_classification`
             SET
@@ -442,7 +443,7 @@ function deleteClassification( $p_classification_id )
     $p_classification_id_f = intval($p_classification_id);
     if( $p_classification_id_f > 0 ) {
         // Find citationID for this entry
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("SELECT ts.`source_citationID`
                             FROM `tbl_tax_synonymy` ts
                             LEFT JOIN `tbl_tax_classification` tc ON tc.`tax_syn_ID` = ts.`tax_syn_ID`
@@ -485,7 +486,7 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
     /**
      * Fetch all existing entries and show them
      */
-    $db = clsDbAccess::Connect('INPUT');
+    $db = PdoAccess::ConnectTo('INPUT');
     $dbst = $db->query("SELECT
                          SQL_CALC_FOUND_ROWS
                          tc.`classification_id`,

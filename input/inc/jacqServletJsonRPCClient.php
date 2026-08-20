@@ -6,6 +6,9 @@
  */
 
 require("jsonRPCClient.php");
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\PdoAccess;
 
 /**
  * Description of jacqServletJsonRPCClient
@@ -37,7 +40,7 @@ class jacqServletJsonRPCClient extends jsonRPCClient {
      * @throws Exception
      */
     public function __construct($imgserver_IP) {
-        $this->db_input = clsDbAccess::Connect('INPUT');
+        $this->db_input = PdoAccess::ConnectTo('INPUT');
 
         $dbst = $this->db_input->query('SELECT * FROM `tbl_img_definition` WHERE `imgserver_IP` = ' . $this->db_input->quote($imgserver_IP));
         $row = $dbst->fetch();

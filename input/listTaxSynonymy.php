@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\PdoAccess;
 use Jacq\Permission;
 
 $id = intval($_GET['ID']);
@@ -50,7 +51,7 @@ if (isset($_GET['order'])) {
 <?php
 
 try {
-	$db = clsDbAccess::Connect('INPUT');
+	$db = PdoAccess::ConnectTo('INPUT');
 
 	$dbst1 = $db->prepare("SELECT taxonID FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon WHERE taxonID=:taxonID");
 	$dbst1->execute(array(":taxonID" => $id));

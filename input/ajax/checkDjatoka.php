@@ -1,9 +1,13 @@
 <?php
+
 session_start();
 require("../inc/gatekeeper.php");
 require_once("../inc/variables.php");
 require_once("../inc/tools.php");
 require_once('../inc/jacqServletJsonRPCClient.php');
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\PdoAccess;
 
 //$_POST=$_GET;
 ob_start();  // intercept all output
@@ -57,22 +61,22 @@ class checkDjatoka {
 
     /**
      * Handler for input database
-     * @return clsDbAccess
+     * @return PdoAccess
      */
     private function getdB() {
         if (!$this->db) {
-            $this->db = clsDbAccess::Connect('INPUT');
+            $this->db = PdoAccess::ConnectTo('INPUT');
         }
         return $this->db;
     }
     
     /**
      * Return a handler for accessing the pictures database
-     * @return clsDbAccess 
+     * @return PdoAccess
      */
     private function getDbPictures() {
         if( !$this->db_pictures ) {
-            $this->db_pictures = clsDbAccess::Connect('PICTURES');
+            $this->db_pictures = PdoAccess::ConnectTo('PICTURES');
         }
         
         return $this->db_pictures;
@@ -144,8 +148,7 @@ ORDER BY source_name
     public function x_ImportImages($params) {
         $serverIP = $params['serverIP'];
         
-        $service = &$this->getService($serverIP);
-        $result = $service->importImages();
+        $result = $this->getService($serverIP)->importImages();
 
         if ($result > 0) {
             $message = "Import was successfully triggered";
@@ -166,8 +169,7 @@ ORDER BY source_name
         $start = $start * $limit;
 
         $end = $start + $limit;
-        $service = &$this->getService($serverIP);
-        $logs = $service->listImportLogs($thread_id);
+        $logs = $this->getService($serverIP)->listImportLogs($thread_id);
         
         $maxc = count($logs);
         $result = "";
@@ -206,8 +208,7 @@ ORDER BY source_name
         $timestamp = strtotime($starttime); // 2011/1/19
         $d = date('d.m.Y H:i', $timestamp);
 
-        $service = &$this->getService($serverIP);
-        $ImportThreads = $service->listThreads($timestamp);
+        $ImportThreads = $this->getService($serverIP)->listThreads($timestamp);
 
         $maxc = count($ImportThreads);
 
@@ -746,10 +747,8 @@ EOF;
         ignore_user_abort(true);
         set_time_limit(0);
 
-        $service = &$this->getService($serverIP);
-
-        $filesArchive = $service->listArchiveImages();
-        $filesDjatoka = $service->listDjatokaImages();
+        $filesArchive = $this->getService($serverIP)->listArchiveImages();
+        $filesDjatoka = $this->getService($serverIP)->listDjatokaImages();
 
         if ($filesArchive == -1 || $filesDjatoka == -1) {
             throw new Exception("Key not accepted {$serverIP}");
@@ -820,8 +819,7 @@ SET
         $identifier = $params['identifier'];
         
         // Fetch reference to service
-        $service = &$this->getService($serverIP);
-        $retVal = $service->forceImport($identifier);
+        $retVal = $this->getService($serverIP)->forceImport($identifier);
         
         // Just return the service response
         return $retVal;

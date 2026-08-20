@@ -2,11 +2,11 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/clsDbAccess.php");
 require("inc/jacqServletJsonRPCClient.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
+use Jacq\PdoAccess;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -209,7 +209,7 @@ showList($_CONFIG['URL']['ACCESS'] . "api/copyWebImages.php?ID=", true);
 showList( $_SERVER['PHP_SELF'] . "?type=5&ID=", true );
 
 if( $type == 5 && $batchID ) {
-    $db = clsDbAccess::Connect('INPUT');
+    $db = PdoAccess::ConnectTo('INPUT');
 
     // Fetch image server information
     $dbstmt = $db->query( '
