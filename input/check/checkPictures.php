@@ -64,11 +64,11 @@ foreach ($dbst as $row) {
 
 $cf = new CSSF();
 $cf->setEcho(false);
-$family='<div style="float:left">'.$cf->inputJqAutocomplete2(0, 0, 20, "family", $_dvar['family'], "index_jq_autocomplete.php?field=family",70,2,'','',0,0,0);
+$family='<div style="float:left">'.$cf->inputJqAutocomplete2(0, 0, 20, "family", $_dvar['family'], "../index_jq_autocomplete.php?field=family",70,2,'','',0,0,0);
 
 echo<<<EOF
 <script>
-var dinit={'serverIP':'{$_dvar['serverIP']}','source_id':'{$_dvar['source_id']}','djatokaAjaxUrl':'ajax/checkDjatoka.php'};
+var dinit={'serverIP':'{$_dvar['serverIP']}','source_id':'{$_dvar['source_id']}','djatokaAjaxUrl':'../ajax/checkDjatoka.php'};
 </script>
 EOF;
 ?>
@@ -90,12 +90,12 @@ function makeOptions() {
 	return options;
 }
 function editSpecimens(sel) {
-	target = "editSpecimens.php?sel=" + encodeURIComponent(sel);
+	target = "../editSpecimens.php?sel=" + encodeURIComponent(sel);
 	MeinFenster = window.open(target,"editSpecies",makeOptions());
 	MeinFenster.focus();
 }
 function editSpecimensSimple(filename) {
-	target = "editSpecimensSimple.php?filename="+encodeURIComponent(filename);
+	target = "../editSpecimensSimple.php?filename="+encodeURIComponent(filename);
 	MeinFenster = window.open(target,"editSpecimensSimple",makeOptions());
 	MeinFenster.focus();
 }
