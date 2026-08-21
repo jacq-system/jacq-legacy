@@ -1035,7 +1035,7 @@ echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; tex
 $y += 2;
 $cf->label(11, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 //$cf->label(35, $y, "**","#\" onclick=\"jaxon_searchGeonamesService(document.f.Bezirk.value);");
-$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);  //TODO: Bezirk seems to be unused???
+$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 100);
 
 $y += 2;
 $cf->label(11, $y, "Altitude");

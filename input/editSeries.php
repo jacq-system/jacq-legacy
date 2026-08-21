@@ -20,19 +20,26 @@ use Jacq\Permission;
 
 <?php
 if (!empty($_POST['submitUpdate']) && Permission::has('specim')) {
-    $sw = true;
-    $sql = "SELECT seriesID, series
-            FROM tbl_specimens_series
-            WHERE series = " . quoteString($_POST['series']) . "
-             AND seriesID != '" . intval($_POST['ID']) . "'";
-    $result = dbi_query($sql);
-    while (($row = mysqli_fetch_array($result)) && $sw) {
-        if ($row['series'] == $_POST['series']) {
-            echo "<script language=\"JavaScript\">\n";
-            echo "alert('Series \"" . $row['series'] . "\" already present with ID " . $row['seriesID'] . "');\n";
-            echo "</script>\n";
-            $id = $_POST['ID'];
-            $sw = false;
+    if (empty($_POST['series'])) {
+        $sw = false;
+        echo "<script language=\"JavaScript\">\n";
+        echo "alert('empty Series are not allowed');\n";
+        echo "</script>\n";
+        $id = $_POST['ID'];
+    } else {
+        $sw = true;
+        $result = dbi_query("SELECT seriesID, series
+                             FROM tbl_specimens_series
+                             WHERE series = " . quoteString($_POST['series']) . "
+                              AND seriesID != '" . intval($_POST['ID']) . "'");
+        while (($row = mysqli_fetch_array($result)) && $sw) {
+            if ($row['series'] == $_POST['series']) {
+                echo "<script language=\"JavaScript\">\n";
+                echo "alert('Series \"" . $row['series'] . "\" already present with ID " . $row['seriesID'] . "');\n";
+                echo "</script>\n";
+                $id = $_POST['ID'];
+                $sw = false;
+            }
         }
     }
     if ($sw) {
@@ -82,7 +89,7 @@ $cf->label(6, 2, "series");
 $cf->inputText(6, 2, 25, "series", ($row['series'] ?? ""), 255);
 
 if (Permission::has('specim')) {
-    $text = ($row['seriesID']) ? " Update " : " Insert ";
+    $text = (!empty($row['seriesID'])) ? " Update " : " Insert ";
     $cf->buttonSubmit(9, 7, "submitUpdate", $text);
     $cf->buttonJavaScript(21, 7, " New ", "self.location.href='editSeries.php?sel=0'");
 }
