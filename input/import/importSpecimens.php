@@ -8,10 +8,10 @@ require("../inc/connect.php");
 require("../inc/log_functions.php");
 require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/jsonRPCClient.php');
-require_once('../inc/clsTaxonTokenizer.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
+use Jacq\TaxonTokenizer;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Color;
@@ -750,7 +750,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
         return $ret;
     }
 
-    $parser = clsTaxonTokenizer::Load();
+    $parser = TaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxon);
 
     $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($taxonParts['genus']));
@@ -1151,7 +1151,7 @@ if ($run == 2) {  // file provided
             $status[$i] .= "no_taxa ";
             $data[$i]['taxonID'] = 0;
 
-            $parser = clsTaxonTokenizer::Load();
+            $parser = TaxonTokenizer::Load();
             $taxonParts = $parser->tokenize($import[$i][4]);
 
             $taxamatch[$i] = array();

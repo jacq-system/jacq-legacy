@@ -4,10 +4,10 @@ require('inc/connect.php');
 require('inc/log_functions.php');
 require_once('inc/herbardb_input_functions.php');
 require_once('inc/jsonRPCClient.php');
-require_once('inc/clsTaxonTokenizer.php');
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\TaxonTokenizer;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
@@ -1013,7 +1013,7 @@ function normalizeImportTaxonText($taxonText)
         return trim((string)$parts[0]);
     }
 
-    $parser = clsTaxonTokenizer::Load();
+    $parser = TaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxonText);
     if (!empty($taxonParts['genus']) && empty($taxonParts['epithet']) && empty($taxonParts['subepithet'])) {
         return trim((string)$taxonParts['genus']);
@@ -1104,7 +1104,7 @@ function getSimilarTaxaSuggestions($taxonText)
     }
 
     $ranks = array('', ' subsp. ', ' var. ', ' subvar. ', ' forma ', ' subforma ');
-    $parser = clsTaxonTokenizer::Load();
+    $parser = TaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxonText);
     if (empty($taxonParts['genus'])) {
         $suggestionCache[$taxonText] = array();

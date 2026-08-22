@@ -46,7 +46,6 @@ Die Datei sollte intern klar in Funktionsbloecke getrennt werden:
 - `require("../inc/log_functions.php")`
 - `require_once("../inc/herbardb_input_functions.php")`
 - `require_once("../inc/jsonRPCClient.php")`
-- `require_once("../inc/clsTaxonTokenizer.php")`
 
 ### 2. Run-Erkennung
 
