@@ -39,7 +39,6 @@ public static function Load(): Autocomplete
 |             |
 \*************/
 
-
 /***************\
 |               |
 |  constructor  |

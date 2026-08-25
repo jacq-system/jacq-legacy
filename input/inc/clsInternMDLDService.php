@@ -36,7 +36,7 @@ class clsInternMDLDService extends jsonRPCClient{
 		if(self::$password!=''){
 			$params[]=$this->makeKey(self::$password);
 		}
-		
+
 		return parent::__call($method,$params);
 	}
 }
