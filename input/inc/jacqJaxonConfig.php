@@ -18,7 +18,7 @@ return [
                 'uri' => 'js',
                 'dir' => 'js',
                 'file' => 'jacqJaxon',
-                'export' => false,
+                'export' => true,
             ],
         ],
     ],
