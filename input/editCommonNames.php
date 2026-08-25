@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\NaturalID;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -291,7 +292,7 @@ $_dvar = array(
 	'annotations'		=> '',
 
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
+	'active_id'	=>	new NaturalID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
 
 	'enableClose'	=> ((isset($_POST['enableClose']) && $_POST['enableClose'] == 1) || (isset($_GET['enableClose']) && $_GET['enableClose'] == 1)) ? 1 : 0
 
