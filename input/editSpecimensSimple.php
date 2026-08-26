@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 
 $nr = intval($_GET['nr']);
 $linkList = $_SESSION['sLinkList'];
@@ -105,7 +106,7 @@ if(isset($_GET['filename'])){
 
 }
 
-if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
+if (isset($_GET['sel']) && Tools::extractID($_GET['sel'])!="NULL") {
     $sql = "SELECT wu.specimen_ID, wu.HerbNummer, wu.identstatusID, wu.checked, wu.accessible,
              wu.taxonID, wu.seriesID, wu.series_number, wu.Nummer, wu.alt_number, wu.Datum, wu.Datum2,
              wu.det, wu.typified, wu.taxon_alt, wu.Bezirk,
@@ -119,7 +120,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
             FROM (tbl_specimens wu, tbl_collector c)
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = wu.Sammler_2ID
             WHERE wu.SammlerID = c.SammlerID
-             AND specimen_ID = " . extractID($_GET['sel']);
+             AND specimen_ID = " . Tools::extractID($_GET['sel']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -284,9 +285,9 @@ if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL") {
                     identstatusID = " . makeInt($p_identstatus) . ",
                     checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                     `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                    taxonID = " . extractID($p_taxon) . ",
-                    SammlerID = " . extractID($p_sammler) . ",
-                    Sammler_2ID = " . extractID($p_sammler2) . ",
+                    taxonID = " . Tools::extractID($p_taxon) . ",
+                    SammlerID = " . Tools::extractID($p_sammler) . ",
+                    Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                     seriesID = " . makeInt($p_series) . ",
                     series_number = " . quoteString($p_series_number) . ",
                     Nummer = " . quoteString($p_Nummer) . ",

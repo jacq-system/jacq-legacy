@@ -72,7 +72,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
 
         $ret = $_POST['author'];
         //  if ($bpf) $ret .= " [".preg_replace("/(\r\n|\r|\n)/","\\n",$bpf)."]";
-        if ($bpf) $ret .= chr(194) . chr(183) . " [" . replaceNewline($bpf) . "]";
+        if ($bpf) $ret .= chr(194) . chr(183) . " [" . Tools::replaceNewline($bpf) . "]";
 
         echo "<script language=\"JavaScript\">\n";
         switch ($_REQUEST['typ']) {

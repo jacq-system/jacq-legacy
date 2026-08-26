@@ -5,6 +5,7 @@ require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -190,11 +191,11 @@ function makeSearchQuery ($formValues)
             $sql .= "AND te.epithet IS NULL ";
         }
         if ($formValues['status']) {
-            $sql .= "AND ts.statusID = " . extractID($formValues['status']) . " ";
+            $sql .= "AND ts.statusID = " . Tools::extractID($formValues['status']) . " ";
         }
     }
     if ($formValues['rank']) {
-        $sql .= "AND ts.tax_rankID = " . extractID($formValues['rank']) . " ";
+        $sql .= "AND ts.tax_rankID = " . Tools::extractID($formValues['rank']) . " ";
     }
     if (!empty($_SESSION['editFamily'])) {
         $sql .= "AND family LIKE '" . dbi_escape_string($_SESSION['editFamily']) . "%' ";

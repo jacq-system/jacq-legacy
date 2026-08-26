@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 
 function makeSammler($search, $x, $y, $nr)
 {
@@ -96,18 +97,18 @@ function makeSammler($search, $x, $y, $nr)
 
 <?php
 if (isset($_GET['new'])) {
-    $p_taxon = getScientificName(extractID($_GET['ID'], true));
+    $p_taxon = getScientificName(Tools::extractID($_GET['ID'], true));
     $p_typusID = 0;
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     $sql ="SELECT typecollID, taxonID, typusID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = tt.Sammler_2ID
            WHERE c.SammlerID = tt.SammlerID
-            AND typecollID = " . extractID($_GET['ID']);
+            AND typecollID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -149,9 +150,9 @@ if (isset($_GET['new'])) {
 }
 
 if ($_POST['submitUpdate'] && Permission::has('type')) {
-    $sqlPart = " taxonID = "          . extractID($_POST['taxon']) . ",
-                 SammlerID = "        . extractID($_POST['sammler']) . ",
-                 Sammler_2ID = "      . extractID($_POST['sammler2']) . ",
+    $sqlPart = " taxonID = "          . Tools::extractID($_POST['taxon']) . ",
+                 SammlerID = "        . Tools::extractID($_POST['sammler']) . ",
+                 Sammler_2ID = "      . Tools::extractID($_POST['sammler2']) . ",
                  typusID = "          . intval($_POST['typusID']) . ",
                  series = "           . quoteString($_POST['series']) . ",
                  leg_nr = "           . quoteString($_POST['leg_nr']) . ",

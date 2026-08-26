@@ -67,7 +67,7 @@ protected function __construct()
  * @param string $value text to parse
  * @return array result
  */
-function AjaxParseValue (string $value): array
+public function AjaxParseValue (string $value): array
 {
     if (preg_match('/<<(?P<exact>.*?)>/', $value, $matches)) {  // group "exact" is returned if <<foobar> is within searchtext
         $exact = $matches['exact'];
@@ -1078,7 +1078,7 @@ public function taxonWithHybrids(array $value, bool $noExternals = false): array
  * If the searchstring consists of two parts, the first one is used for genus, the second one for species.
  * If the searchstring contains " x ", only hybrids are returned
  *
- * @param array $value parsed text to search for (see AjaxParseValue in tools.php)
+ * @param array $value parsed text to search for (see AjaxParseValue)
  * @param bool $noExternals only results for "external=0"(default: false)
  * @return array data array ready to send to jQuery-autocomplete via json-encode
  */

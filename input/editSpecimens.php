@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jacq\Settings;
 
@@ -172,7 +173,7 @@ if( isset($_POST['submit_type']) ) {
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
-    if  (extractID($_GET['sel']) != "NULL") {
+    if  (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT s.specimen_ID, s.HerbNummer, s.CollNummer, s.identstatusID, s.checked, s.accessible,
                  s.taxonID, s.seriesID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2,
                  s.det, s.typified, s.taxon_alt, s.Bezirk,
@@ -189,7 +190,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                  LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-                WHERE specimen_ID = " . extractID($_GET['sel']);
+                WHERE specimen_ID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = mysqli_num_rows($result) > 0;
     } else {
@@ -311,7 +312,7 @@ if (isset($_GET['sel'])) {
     $edit = !empty($_GET['edit']);
     if ($swBatch) {
         // read tbl_api_specimens
-        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
+        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . Tools::extractID(filter_input(INPUT_GET, 'sel')));
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
     }
 } else {
@@ -405,9 +406,9 @@ if (isset($_GET['sel'])) {
                     identstatusID = " . makeInt($p_identstatus) . ",
                     checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                     `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                    taxonID = " . extractID($p_taxon) . ",
-                    SammlerID = " . extractID($p_sammler) . ",
-                    Sammler_2ID = " . extractID($p_sammler2) . ",
+                    taxonID = " . Tools::extractID($p_taxon) . ",
+                    SammlerID = " . Tools::extractID($p_sammler) . ",
+                    Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                     seriesID = " . makeInt($p_series) . ",
                     series_number = " . quoteString($p_series_number) . ",
                     Nummer = " . quoteString($p_Nummer) . ",

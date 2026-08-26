@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -144,7 +145,7 @@ function makeSammler2($search, $nr)
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
-    if (extractID($_GET['sel']) != "NULL") {
+    if (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT s.specimen_ID, s.HerbNummer, s.identstatusID, s.checked, s.accessible,
                  s.taxonID, s.seriesID, s.Nummer, s.alt_number, s.Datum, s.Datum2,
                  s.det, s.taxon_alt, s.Bezirk,
@@ -158,7 +159,7 @@ if (isset($_GET['sel'])) {
                 FROM (tbl_specimens s, tbl_collector c)
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
                 WHERE s.SammlerID = c.SammlerID
-                 AND specimen_ID = " . extractID($_GET['sel']);
+                 AND specimen_ID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = (mysqli_num_rows($result) > 0) ? true : false;
     } else {
@@ -334,9 +335,9 @@ if (isset($_GET['sel'])) {
                   identstatusID = " . makeInt($p_identstatus) . ",
                   checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                   `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                  taxonID = " . extractID($p_taxon) . ",
-                  SammlerID = " . extractID($p_sammler) . ",
-                  Sammler_2ID = " . extractID($p_sammler2) . ",
+                  taxonID = " . Tools::extractID($p_taxon) . ",
+                  SammlerID = " . Tools::extractID($p_sammler) . ",
+                  Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                   seriesID = " . makeInt($p_series) . ",
                   Nummer = " . quoteString($p_Nummer) . ",
                   alt_number = " . quoteString($p_alt_number) . ",

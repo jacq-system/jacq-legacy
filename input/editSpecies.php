@@ -8,6 +8,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\Log;
 use Jacq\Settings;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -52,7 +53,7 @@ function clearExternal($table, $id)
 
 $blocked = false;
 if (isset($_GET['sel'])) {
-    if (extractID($_GET['sel']) != "NULL") {
+    if (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT ts.taxonID, ts.synID, ts.basID, ts.genID, ts.annotation, ts.external,
                  tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tag.author author_g,
                  tf.family, tsc.category, tst.status, tst.statusID, tr.rank, tr.tax_rankID,
@@ -87,7 +88,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                WHERE taxonID = " . extractID($_GET['sel']);
+                WHERE taxonID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = mysqli_num_rows($result) > 0;
     } else {
@@ -102,37 +103,37 @@ if (isset($_GET['sel'])) {
         $p_speciesIndex = intval($row['epithetID']);
         $p_author       = ($row['author']) ? $row['author'] : "";
         $p_authorIndex  = intval($row['authorID']);
-        if ($row['Brummit_Powell_full']) $p_author .= chr(194) . chr(183) . " [" . replaceNewline($row['Brummit_Powell_full']) . "]";
+        if ($row['Brummit_Powell_full']) $p_author .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['Brummit_Powell_full']) . "]";
 
         $p_subspecies      = ($row['epithet1']) ? $row['epithet1'] : "";
         $p_subspeciesIndex = intval($row['epithetID1']);
         $p_subauthor       = ($row['author1']) ? $row['author1'] : "";
         $p_subauthorIndex  = intval($row['authorID1']);
-        if ($row['bpf1']) $p_subauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf1']) . "]";
+        if ($row['bpf1']) $p_subauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf1']) . "]";
 
         $p_variety        = ($row['epithet2']) ? $row['epithet2'] : "";
         $p_varietyIndex   = intval($row['epithetID2']);
         $p_varauthor      = ($row['author2']) ? $row['author2'] : "";
         $p_varauthorIndex = intval($row['authorID2']);
-        if ($row['bpf2']) $p_varauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf2']) . "]";
+        if ($row['bpf2']) $p_varauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf2']) . "]";
 
         $p_subvariety        = ($row['epithet3']) ? $row['epithet3'] : "";
         $p_subvarietyIndex   = intval($row['epithetID3']);
         $p_subvarauthor      = ($row['author3']) ? $row['author3'] : "";
         $p_subvarauthorIndex = intval($row['authorID3']);
-        if ($row['bpf3']) $p_subvarauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf3']) . "]";
+        if ($row['bpf3']) $p_subvarauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf3']) . "]";
 
         $p_forma          = ($row['epithet4']) ? $row['epithet4'] : "";
         $p_formaIndex     = intval($row['epithetID4']);
         $p_forauthor      = ($row['author4']) ? $row['author4'] : "";
         $p_forauthorIndex = intval($row['authorID4']);
-        if ($row['bpf4']) $p_forauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf4']) . "]";
+        if ($row['bpf4']) $p_forauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf4']) . "]";
 
         $p_subforma          = ($row['epithet5']) ? $row['epithet5'] : "";
         $p_subformaIndex     = intval($row['epithetID5']);
         $p_subforauthor      = ($row['author5']) ? $row['author5'] : "";
         $p_subforauthorIndex = intval($row['authorID5']);
-        if ($row['bpf5']) $p_subforauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf5']) . "]";
+        if ($row['bpf5']) $p_subforauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf5']) . "]";
 
         $p_gen         = $row['genus'] . " " . $row['author_g'] . " " . $row['family'] . " "
                        . $row['category'] . " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];

@@ -5,6 +5,7 @@ require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -581,7 +582,7 @@ function updateMultiTaxa ($formData)
         foreach ($formData as $key => $val) {
             if (substr($key, 0, 14) == 'multiTaxaData_' && trim($val)) {
                 $specimens_tax_ID = intval(substr($key, 14));
-                $taxonID = extractID($val);
+                $taxonID = Tools::extractID($val);
                 if ($taxonID != "NULL") {
                     if ($specimens_tax_ID > 0) {
                         $sql = "UPDATE tbl_specimens_taxa SET

@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -47,7 +48,7 @@ use Jacq\Permission;
 if (isset($_GET['new'])) {
     if (intval($_GET['t']) == 1) {
         $p_type = 1;  // taxonID ist die Führungs-ID
-        $p_taxonIndex = intval(extractID($_GET['ID'], true));
+        $p_taxonIndex = intval(Tools::extractID($_GET['ID'], true));
         $p_taxon = getScientificName($p_taxonIndex);
         $p_citation = "";
         $p_citationIndex = 0;
@@ -59,7 +60,7 @@ if (isset($_GET['new'])) {
                LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
                LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-               WHERE citationID = " . extractID($_GET['ID']);
+               WHERE citationID = " . Tools::extractID($_GET['ID']);
         $row = dbi_query($sql)->fetch_array();
         $p_citation = protolog($row);
         $p_citationIndex = intval($row['citationID']);
@@ -67,7 +68,7 @@ if (isset($_GET['new'])) {
         $p_taxonIndex = 0;
     }
     $p_paginae = $p_figures = $p_annotations = $p_taxindID = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     if (intval($_GET['t']) == 1) {
         $p_type = 1;  // taxonID ist die F�hrungs-ID
     } else {
@@ -76,7 +77,7 @@ if (isset($_GET['new'])) {
 
     $sql ="SELECT taxindID, taxonID, citationID, paginae, figures, annotations
            FROM tbl_tax_index
-           WHERE taxindID = " . extractID($_GET['ID']);
+           WHERE taxindID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);

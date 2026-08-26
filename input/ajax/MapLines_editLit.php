@@ -13,9 +13,9 @@ foreach($_GET as $k=>$v){
 }
 
 class MapLines_editLit extends MapLines{
-	var $pagination=10;
+	public $pagination=10;
 
-	function taxon1($row,$t=0){
+	public function taxon1($row,$t=0){
 		if($row['taxonID'.$t]==0)return '0 ';
 		$withSeperator=false;
 		$ret = $row['genus'.$t];
@@ -31,7 +31,7 @@ class MapLines_editLit extends MapLines{
 		return $ret;
 	}
 
-    function RemoveMapLine($params) {
+    public function RemoveMapLine($params) {
         // make parameters save
         $citid = intval($params['citationID']);
         $taxonID = intval($params['leftID']);
@@ -77,7 +77,7 @@ class MapLines_editLit extends MapLines{
         return $res;
     }
 
-    function LoadMapLines($params){
+    public function LoadMapLines($params){
 		$citid=$params['citationID'];
 
 
@@ -93,8 +93,8 @@ class MapLines_editLit extends MapLines{
 		// Switch Search
 		// species...
 		if(isset($params['speciesSearch']) && strlen($params['speciesSearch'])>0){
-			$params['speciesSearch']=trim(removeID($params['speciesSearch']));
-			$params['genusSearch']=trim(removeID($params['genusSearch']));
+			$params['speciesSearch']=trim($this->removeID($params['speciesSearch']));
+			$params['genusSearch']=trim($this->removeID($params['genusSearch']));
 
 			$pieces=explode(chr(194) . chr(183), $params['speciesSearch']);
 			$v=explode(" ",$pieces[0]);
@@ -154,7 +154,7 @@ AND(
 ";
 		//mdld
 		}else if(isset($params['mdldSearch']) && strlen($params['mdldSearch'])>0){
-			$params['mdldSearch']=strtolower(trim(removeID($params['mdldSearch'])));
+			$params['mdldSearch']=strtolower(trim($this->removeID($params['mdldSearch'])));
 
 			global $_OPTIONS;
 			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
@@ -340,7 +340,7 @@ WHERE
 	}
 
 	// Save new pairs...
-	function SaveMapLines($params)
+	public function SaveMapLines($params)
     {
         global $dbLink;
 
@@ -404,6 +404,22 @@ VALUES
 		}
 		return $res;
 	}
+
+    /**
+     * remove the ID from a string if present and returns the remaining part. ID must be enclosed in "<>" brackets and be positioned at the end
+     *
+     * @param string $item string to parse
+     * @return string string with removed ID (if any)
+     */
+    private function removeID ($item)
+    {
+        $pos = strrpos($item, ' <');
+        if ($pos !== false) {
+            return substr($item, 0, $pos);
+        } else {
+            return $item;
+        }
+    }
 }
 
 

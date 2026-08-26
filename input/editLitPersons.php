@@ -7,7 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
-
+use Jacq\Tools;
 
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -15,18 +15,18 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-           WHERE citationID = " . extractID($_GET['ID']);
+           WHERE citationID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $p_citation = protolog(mysqli_fetch_array($result));
-    $p_citationIndex = extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID']);
     $p_person = $p_annotations = $p_lit_persons_ID = $p_personIndex = "";
     $p_timestamp = "";
     $p_user = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT lp.lit_persons_ID, lp.citationID_fk, lp.personID_fk, lp.annotations, lp.timestamp, hu.firstname, hu.surname
             FROM tbl_lit_persons lp
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lp.userID = hu.userID
-            WHERE lit_persons_ID = " . extractID($_GET['ID']);
+            WHERE lit_persons_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -62,7 +62,7 @@ if (isset($_GET['new'])) {
     }
 } elseif (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
     $annotations = $_POST['annotations'];
-    $sqldata = "citationID_fk = " . extractID($_POST['citation']) . ",
+    $sqldata = "citationID_fk = " . Tools::extractID($_POST['citation']) . ",
                 personID_fk = '" . intval($_POST['personIndex']) . "',
                 annotations = " . quoteString($annotations) . ",
                 userID = '" . intval($_SESSION['uid']) . "'";

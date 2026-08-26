@@ -6,6 +6,7 @@ require_once('../inc/mapLines.php');
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Log;
+use Jacq\Tools;
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;
@@ -34,7 +35,7 @@ function taxon1($row,$t=0){
 
 // todo: check ab hier...
 if(isset($_POST['function']) ){
-	$p_citationID=extractID($_POST['sel']);
+	$p_citationID= Tools::extractID($_POST['sel']);
 
 	// RemoveTaxSynLines
 	if($_POST['function']=='RemoveMapLine'){

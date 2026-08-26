@@ -5,10 +5,11 @@ require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
-if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL")
-  $db_specimen_ID = extractID($_GET['sel']);
+if (isset($_GET['sel']) && Tools::extractID($_GET['sel'])!="NULL")
+  $db_specimen_ID = Tools::extractID($_GET['sel']);
 elseif (intval($_POST['specimen_ID']))
   $db_specimen_ID = "'".intval($_POST['specimen_ID'])."'";
 else

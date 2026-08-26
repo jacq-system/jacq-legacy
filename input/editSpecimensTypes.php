@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 
 function makeTaxon($search,$x,$y)
 {
@@ -104,17 +105,17 @@ if (isset($_GET['new'])) {
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = wg.seriesID
              LEFT JOIN tbl_collector c ON c.SammlerID = wg.SammlerID
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = wg.Sammler_2ID
-            WHERE specimen_ID = " . extractID($_GET['ID']);
+            WHERE specimen_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $p_specimen = makeCollector(mysqli_fetch_array($result));
     $p_taxon = "";
     $p_typus = 7;
     $p_annotations = $p_specimens_types_ID = $p_typified_by = $p_typified_date = "";
     $p_taxonIndex = 0;
-} elseif (extractID($_GET['ID'] ?? "") !== "NULL") {
+} elseif (Tools::extractID($_GET['ID'] ?? "") !== "NULL") {
     $sql ="SELECT specimens_types_ID, taxonID, specimenID, typusID, annotations, typified_by_Person, typified_Date
            FROM tbl_specimens_types
-           WHERE specimens_types_ID = " . extractID($_GET['ID']);
+           WHERE specimens_types_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -152,9 +153,9 @@ if (isset($_GET['new'])) {
     $p_specimens_types_ID = $_POST['specimens_types_ID'];
 
     if ($_POST['submitUpdate'] && Permission::has('specimensTypes')) {
-        if (extractID($p_taxon) != "NULL" && extractID($p_specimen) != "NULL") {
-            $sql_data = "taxonID = " . extractID($p_taxon) . ",
-                         specimenID = " . extractID($p_specimen) . ",
+        if (Tools::extractID($p_taxon) != "NULL" && Tools::extractID($p_specimen) != "NULL") {
+            $sql_data = "taxonID = " . Tools::extractID($p_taxon) . ",
+                         specimenID = " . Tools::extractID($p_specimen) . ",
                          typusID = " . makeInt($p_typus) . ",
                          typified_by_Person = '" . dbi_escape_string($p_typified_by) . "',
                          typified_Date = '" . dbi_escape_string($p_typified_date) . "',

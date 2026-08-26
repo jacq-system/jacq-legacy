@@ -1,7 +1,5 @@
 <?php
 session_start();
-require_once('../inc/tools.php');
-require_once('../inc/variables.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\PdoAccess;

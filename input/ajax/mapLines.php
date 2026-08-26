@@ -6,7 +6,7 @@ class MapLines{
 	
 	}*/
 	
-	function execFunction($function, $params){
+	public function execFunction($function, $params){
 
 		if(method_exists($this,$function)){
 			#try {
@@ -26,7 +26,7 @@ class MapLines{
 
 	}
 
-	function getMapLines($p,$emptyRightIsZero=false, $onlyRightCollumn=false){
+	public function getMapLines($p,$emptyRightIsZero=false, $onlyRightCollumn=false){
 		$new=array();
 		foreach($_POST as $k=>$v){
 			if(preg_match('/acmap_r_(\d+)Index/', $k, $matches)==1){

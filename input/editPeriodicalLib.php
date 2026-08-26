@@ -5,6 +5,7 @@ require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -27,16 +28,16 @@ use Jacq\Permission;
 if (isset($_GET['new'])) {
     $sql = "SELECT periodical, periodicalID
             FROM tbl_lit_periodicals
-            WHERE periodicalID = " . extractID($_GET['ID']);
+            WHERE periodicalID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $row = mysqli_fetch_array($result);
     $p_periodical = $row['periodical'] . " <" . $row['periodicalID'] . ">";
     $p_library = $p_signature = $p_bestand = $p_url = $p_lib_period_ID = "";
-} elseif (extractID($_GET['ID']) !== "NULL") {
+} elseif (Tools::extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT lib_period_ID, signature, bestand, url, library_ID, periodical, tbl_lit_lib_period.periodicalID
             FROM tbl_lit_lib_period, tbl_lit_periodicals
             WHERE tbl_lit_lib_period.periodicalID = tbl_lit_periodicals.periodicalID
-             AND lib_period_ID = " . extractID($_GET['ID']);
+             AND lib_period_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result)>0) {
         $row = mysqli_fetch_array($result);
@@ -55,7 +56,7 @@ if (isset($_GET['new'])) {
     $url       = $_POST['url'];
     if (intval($_POST['lib_period_ID'])) {
         $sql = "UPDATE tbl_lit_lib_period SET
-                 periodicalID = " . extractID($_POST['periodical']) . ",
+                 periodicalID = " . Tools::extractID($_POST['periodical']) . ",
                  library_ID = " . intval($_POST['library']) . ",
                  signature = " . quoteString($signature) . ",
                  bestand = " . quoteString($bestand) . ",
@@ -63,7 +64,7 @@ if (isset($_GET['new'])) {
                 WHERE lib_period_ID = " . intval($_POST['lib_period_ID']);
     } else {
         $sql = "INSERT INTO tbl_lit_lib_period SET
-                 periodicalID = " . extractID($_POST['periodical']).",
+                 periodicalID = " . Tools::extractID($_POST['periodical']).",
                  library_ID = " . intval($_POST['library']).",
                  signature = " . quoteString($signature).",
                  bestand = " . quoteString($bestand).",

@@ -16,30 +16,30 @@
  * @param string $value text to parse
  * @return array result
  */
-function AjaxParseValue ($value)
-{
-	if (preg_match('/\<\<(?P<exact>.*?)\>/', $value, $matches)) {  // group "exact" is returned, if <<foobar> is within searchtext
-		$exact = $matches['exact'];
-        return array('type'     => 'exact',
-                     'value'    => $exact,
-                     'original' => $value,
-                     'exact'    => $exact);  // deprecated
-	}
-
-	if (preg_match('/\<(?P<ID>.*?)\>/', $value, $matches)) {       // group "id" is returend, if <foobar> is within searchtext
-		$ID = $matches['ID'];
-        return array('type'     => 'id',
-                     'value'    => $ID,
-                     'original' => $value,
-                     'id'       => $ID);  // deprecated
-	}
-
-    // neither exact nor id, so return the original string
-    return array('type'     => 'search',
-                 'value'    => $value,  // no filtering neccessary, all occurrences of "<...>" would have been found already and the first one returned as "id"
-                 'original' => $value,
-                 'search'   => preg_replace('/\<.*\>/', '', $value));  // deprecated
-}
+//function AjaxParseValue ($value)
+//{
+//	if (preg_match('/\<\<(?P<exact>.*?)\>/', $value, $matches)) {  // group "exact" is returned, if <<foobar> is within searchtext
+//		$exact = $matches['exact'];
+//        return array('type'     => 'exact',
+//                     'value'    => $exact,
+//                     'original' => $value,
+//                     'exact'    => $exact);  // deprecated
+//	}
+//
+//	if (preg_match('/\<(?P<ID>.*?)\>/', $value, $matches)) {       // group "id" is returend, if <foobar> is within searchtext
+//		$ID = $matches['ID'];
+//        return array('type'     => 'id',
+//                     'value'    => $ID,
+//                     'original' => $value,
+//                     'id'       => $ID);  // deprecated
+//	}
+//
+//    // neither exact nor id, so return the original string
+//    return array('type'     => 'search',
+//                 'value'    => $value,  // no filtering neccessary, all occurrences of "<...>" would have been found already and the first one returned as "id"
+//                 'original' => $value,
+//                 'search'   => preg_replace('/\<.*\>/', '', $value));  // deprecated
+//}
 
 
 /**
@@ -49,24 +49,24 @@ function AjaxParseValue ($value)
  * @param boolean[optional] $bNoQuotes return plain ID without quotes
  * @return string ID enclosed in single quotes or the string "NULL" (without quotes)
  */
-function extractID ($text, $bNoQuotes = false)
-{
-    $pos1 = strrpos($text, "<");
-    $pos2 = strpos($text, ">", $pos1);
-    if ($pos1 !== false && $pos2 !== false) {
-        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
-            if ($bNoQuotes) {
-                return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
-            } else {
-                return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
-            }
-        } else {
-            return "NULL"; // no ID found
-        }
-    } else {
-        return "NULL"; // no ID found
-    }
-}
+//function extractID ($text, $bNoQuotes = false)
+//{
+//    $pos1 = strrpos($text, "<");
+//    $pos2 = strpos($text, ">", $pos1);
+//    if ($pos1 !== false && $pos2 !== false) {
+//        if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
+//            if ($bNoQuotes) {
+//                return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
+//            } else {
+//                return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+//            }
+//        } else {
+//            return "NULL"; // no ID found
+//        }
+//    } else {
+//        return "NULL"; // no ID found
+//    }
+//}
 
 
 /**
@@ -75,10 +75,10 @@ function extractID ($text, $bNoQuotes = false)
  * @param string $text text to scan
  * @return string result of replacements
  */
-function replaceNewline($text)
-{
-	return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
-}
+//function replaceNewline($text)
+//{
+//	return strtr(str_replace("\r\n", "\n", $text), "\r\n", "  ");  //replaces \r\n with \n and then \r or \n with <space>
+//}
 
 /**
  * remove the ID from a string if present and returns the remaining part. ID must be enclosed in "<>" brackets and be positioned at the end
@@ -86,15 +86,15 @@ function replaceNewline($text)
  * @param string $item string to parse
  * @return string string with removed ID (if any)
  */
-function removeID ($item)
-{
-    $pos = strrpos($item, ' <');
-    if ($pos !== false) {
-        return substr($item, 0, $pos);
-    } else {
-        return $item;
-    }
-}
+//function removeID ($item)
+//{
+//    $pos = strrpos($item, ' <');
+//    if ($pos !== false) {
+//        return substr($item, 0, $pos);
+//    } else {
+//        return $item;
+//    }
+//}
 
 
 
@@ -107,14 +107,14 @@ function removeID ($item)
  * @param bool[optional] $withStrip use strip_tags (default=no)
  * @return mixed cleaned data
  */
-function cleanData ($post, $withStrip = false)
-{
-    if ($withStrip) {
-        return htmlentities(strip_tags($post), ENT_QUOTES, 'UTF-8');
-    } else {
-        return htmlentities($post, ENT_QUOTES, 'UTF-8');
-    }
-}
+//function cleanData ($post, $withStrip = false)
+//{
+//    if ($withStrip) {
+//        return htmlentities(strip_tags($post), ENT_QUOTES, 'UTF-8');
+//    } else {
+//        return htmlentities($post, ENT_QUOTES, 'UTF-8');
+//    }
+//}
 
 
 /**

@@ -76,7 +76,7 @@ protected function __construct()
  * @param string $value text to parse
  * @return array result
  */
-function AjaxParseValue (string $value): array
+public function AjaxParseValue (string $value): array
 {
     if (preg_match('/<<(?P<exact>.*?)>/', $value, $matches)) {  // group "exact" is returned if <<foobar> is within searchtext
         $exact = $matches['exact'];

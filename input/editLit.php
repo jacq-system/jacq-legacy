@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -96,7 +97,7 @@ function parsePp ($pp)
 
 // main program
 
-if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
+if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
     $sql = "SELECT tl.citationID, tl.jahr, tl.code, tl.titel, tl.suptitel, tl.vol,
              tl.part, tl.pp, tl.verlagsort, tl.keywords, tl.annotation, tl.additions,
              tl.bestand, tl.signature, tl.publ, tl.category, tl.lit_url, tl.hideScientificNameAuthors,
@@ -107,7 +108,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
              LEFT JOIN tbl_lit_authors te ON te.autorID = tl.editorsID
              LEFT JOIN tbl_lit_periodicals tpe ON tpe.periodicalID = tl.periodicalID
              LEFT JOIN tbl_lit_publishers tpu ON tpu.publisherID = tl.publisherID
-            WHERE citationID = " . extractID($_GET['sel']);
+            WHERE citationID = " . Tools::extractID($_GET['sel']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);

@@ -6,6 +6,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -142,7 +143,7 @@ function makeSammler2($search, $nr)
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
-    if  (extractID($_GET['sel']) != "NULL") {
+    if  (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT si.specimen_ID, si.HerbNummer, si.CollNummer, si.identstatusID, si.checked, si.accessible,
                  si.taxonID, si.seriesID, si.series_number, si.Nummer, si.alt_number, si.Datum, si.Datum2,
                  si.det, si.typified, si.taxon_alt, si.Bezirk,
@@ -158,7 +159,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_management_collections mc ON mc.collectionID = si.collectionID
                  LEFT JOIN tbl_collector c ON c.SammlerID = si.SammlerID
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = si.Sammler_2ID
-                WHERE specimen_ID = " . extractID($_GET['sel']);
+                WHERE specimen_ID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = (mysqli_num_rows($result)>0) ? true : false;
     } else {
@@ -345,9 +346,9 @@ if (isset($_GET['sel'])) {
                     identstatusID = " . makeInt($p_identstatus) . ",
                     checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                     `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                    taxonID = " . extractID($p_taxon) . ",
-                    SammlerID = " . extractID($p_sammler) . ",
-                    Sammler_2ID = " . extractID($p_sammler2) . ",
+                    taxonID = " . Tools::extractID($p_taxon) . ",
+                    SammlerID = " . Tools::extractID($p_sammler) . ",
+                    Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                     seriesID = " . makeInt($p_series) . ",
                     series_number = " . quoteString($p_series_number) . ",
                     Nummer = " . quoteString($p_Nummer) . ",

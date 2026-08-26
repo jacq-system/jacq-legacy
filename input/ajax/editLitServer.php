@@ -8,6 +8,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\PdoAccess;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -132,7 +133,7 @@ function listLib($periodical)
 
     $text = "<tr class=\"out\"><td class=\"out\" colspan=\"4\">no entries</td></tr>\n";
 
-    //$id = extractID($periodical['periodical']);
+    //$id = Jacq\Tools::extractID($periodical['periodical']);
 	$id = intval($periodical['periodicalIndex']);
 
     if ($id!='NULL') {
@@ -301,15 +302,15 @@ function updateContainer($formData)
 
     if ($citationID && Permission::has('lit')) {
         foreach ($formData as $key => $val) {
-            if (substr($key, 0, 9) == 'citation_' && extractID($val) != "NULL") {
+            if (substr($key, 0, 9) == 'citation_' && Tools::extractID($val) != "NULL") {
                 $containerID = intval(substr($key, 9));
-                if ($citationID != extractID($val)) {
+                if ($citationID != Tools::extractID($val)) {
                     if (!empty($formData['isChild_' . $containerID])) {
-                        $sqldata = "citation_parent_ID = " . extractID($val) . ",
+                        $sqldata = "citation_parent_ID = " . Tools::extractID($val) . ",
                                     citation_child_ID  = '" . $citationID . "'";
                     } else {
                         $sqldata = "citation_parent_ID = '" . $citationID . "',
-                                    citation_child_ID  = " . extractID($val) . "";
+                                    citation_child_ID  = " . Tools::extractID($val) . "";
                     }
                     if ($containerID > 0) {
                         $sql = "UPDATE tbl_lit_container SET

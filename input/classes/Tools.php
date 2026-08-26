@@ -1,4 +1,11 @@
 <?php
+/**
+ * tools and general functions
+ *
+ * Here come tools, functions and everything which is generally needed
+ * @author Johannes Schachner <joschach@ap4net.at>
+ * @version 14.07.2010, 26.08.2026
+ */
 
 namespace Jacq;
 
