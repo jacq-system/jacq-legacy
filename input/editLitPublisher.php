@@ -2,9 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -33,7 +33,7 @@ if ($_POST['submitUpdate'] && Permission::has('litPub')) {
   }
   $result = dbi_query($sql);
   $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
-  logLitPublishers($id,$updated);
+  Log::litPublishers($id,$updated);
 
   echo "<script language=\"JavaScript\">\n";
   echo "  window.opener.document.f.publisher.value = \"".addslashes($publisher)." <$id>\";\n";

@@ -2,10 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -232,7 +232,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $result = dbi_query($sql);
         if ($result) {
             $p_citationID = (intval($_POST['citationID'])) ?: dbi_insert_id();
-            logLit($p_citationID, $updated);
+            Log::lit($p_citationID, $updated);
         } else {
             $p_citationID = (intval($_POST['citationID'])) ?: 0;
         }

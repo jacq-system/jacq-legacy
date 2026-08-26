@@ -2,10 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 
@@ -78,7 +78,7 @@ if (isset($_GET['new'])) {
     }
     $result = dbi_query($sql);
         $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ?: dbi_insert_id();
-        logLitTax($p_lit_persons_ID, $updated);
+        Log::litTax($p_lit_persons_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
            . "<script language=\"JavaScript\">\n"

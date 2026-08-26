@@ -5,12 +5,12 @@ const INCERTAE_SEDIS_IMPORT = 3449;
 session_start();
 set_time_limit(0);
 require("../inc/connect.php");
-require("../inc/log_functions.php");
 require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/jsonRPCClient.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
+use Jacq\Log;
 use Jacq\TaxonTokenizer;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -799,7 +799,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
                         external = 1,
                         externalID = " . quoteString($externalID));
             $authorID = dbi_insert_id();
-            logAuthors($authorID, 0);
+            Log::authors($authorID, 0);
         }
     } else {
         $authorID = null;
@@ -836,7 +836,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
                         external = 1,
                         externalID = " . quoteString($externalID));
             $subauthorID = dbi_insert_id();
-            logAuthors($subauthorID, 0);
+            Log::authors($subauthorID, 0);
         }
     } else {
         $subauthorID = null;
@@ -874,7 +874,7 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
     }
     dbi_query($sql);
     $ret['taxonID'] = dbi_insert_id();
-    logSpecies($ret['taxonID'], 0);
+    Log::species($ret['taxonID'], 0);
 
     dbi_query("UPDATE tbl_external_import_content SET
                 externalID = $externalID,

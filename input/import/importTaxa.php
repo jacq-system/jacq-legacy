@@ -1,8 +1,10 @@
 <?php
 session_start();
 require("../inc/connect.php");
-require("../inc/log_functions.php");
 require_once('../inc/jsonRPCClient.php');
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Log;
 
 $authorMayBeEmpty = !empty($_POST['authorEmpty']);
 
@@ -638,7 +640,7 @@ if ($type==1 && !$blocked) {  // file uploaded
             $result2 = dbi_query($sql2);
             if ($result2) {
                 $taxonID = dbi_insert_id();
-                logSpecies($taxonID, 0);
+                Log::species($taxonID, 0);
                 if (intval($_POST['service'])) {
                     $sqlService = "INSERT IGNORE INTO tbl_nom_service_names SET
                                     taxonID = '$taxonID',

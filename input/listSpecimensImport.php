@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -67,7 +67,7 @@ if (isset($_POST['importNow']) && $_POST['importNow']) {
             $sql .= "observation = '0'";
             dbi_query($sql);
             $specimen_ID = dbi_insert_id();
-            logSpecimen($specimen_ID, 0);
+            Log::specimen($specimen_ID, 0);
             dbi_query("UPDATE tbl_external_import_content SET
                        specimen_ID = $specimen_ID,
                        pending = 0

@@ -2,9 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -67,7 +67,7 @@ if (!empty($_POST['submitUpdate'])) {
                          $lock
                         WHERE familyID = '" . intval($_POST['ID']) . "'";
                 $result = dbi_query($sql);
-                logFamilies($id, 1);
+                Log::families($id, 1);
             }
         } else {
             $sql = "INSERT INTO tbl_tax_families SET
@@ -77,7 +77,7 @@ if (!empty($_POST['submitUpdate'])) {
             $result = dbi_query($sql);
             if ($result) {
                 $id = dbi_insert_id();
-                logFamilies($id,0);
+                Log::families($id,0);
             } else {
                 $id = 0;
             }

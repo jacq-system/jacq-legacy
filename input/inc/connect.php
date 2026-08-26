@@ -75,7 +75,7 @@ function dbi_query($sql, $debug = false)
             $res = $dbLink->query($sql);
         } catch (mysqli_sql_exception $e) {
             $res = false;
-            error_log("SEVERE SQL-ERROR IN SCRIPT. USER-ID = {$_SESSION['uid']}\n"
+            error_log("SEVERE SQL-ERROR IN SCRIPT {$_SERVER['PHP_SELF']}. USER-ID = {$_SESSION['uid']}\n"
                 . "$sql\n"
                 . "--- Error: " . $e->__toString());
             if ($debug) {

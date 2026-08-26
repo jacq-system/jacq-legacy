@@ -2,10 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -182,7 +182,7 @@ if (isset($_GET['new'])) {
         $result = dbi_query($sql);
         if ($result) {
             $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ?: dbi_insert_id();
-            logTbl_tax_synonymy($p_tax_syn_ID, $updated);
+            Log::tbl_tax_synonymy($p_tax_syn_ID, $updated);
             echo "<html><head>\n"
                     . "<script language=\"JavaScript\">\n"
                     . "  window.opener.document.f.reload.click()\n"

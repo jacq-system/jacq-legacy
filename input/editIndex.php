@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -135,7 +135,7 @@ if (isset($_GET['new'])) {
             $result = dbi_query($sql);
             if ($result) {
                 $id = (intval($p_taxindID)) ?: dbi_insert_id();
-                logIndex($id, $updated);
+                Log::index($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"

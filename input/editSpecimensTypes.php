@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 function makeTaxon($search,$x,$y)
@@ -171,7 +171,7 @@ if (isset($_GET['new'])) {
             $result = dbi_query($sql);
             if ($result) {
                 $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
-                logSpecimensTypes($id, $updated);
+                Log::specimensTypes($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"

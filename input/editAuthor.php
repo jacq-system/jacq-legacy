@@ -2,9 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -54,7 +54,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
                          $lock
                         WHERE authorID = " . intval($_POST['ID']);
                 $result = dbi_query($sql);
-                logAuthors($id, 1);
+                Log::authors($id, 1);
             }
         } else {
             $sql = "INSERT INTO tbl_tax_authors SET
@@ -64,7 +64,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
             $result = dbi_query($sql);
             if ($result) {
                 $id = dbi_insert_id();
-                logAuthors($id, 0);
+                Log::authors($id, 0);
             } else {
                 $id = 0;
             }

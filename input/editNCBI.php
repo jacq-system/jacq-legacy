@@ -2,9 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -25,7 +25,7 @@ if ($_POST['submitUpdate'] && intval($_POST['ID']) && Permission::has('specim'))
          "WHERE specimen_ID=".intval($_POST['ID']);
   $result = dbi_query($sql);
   $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
-  logSpecimen($id,1);
+  Log::specimen($id,1);
 
   echo "<script language=\"JavaScript\">\n";
   echo "  self.close()\n";

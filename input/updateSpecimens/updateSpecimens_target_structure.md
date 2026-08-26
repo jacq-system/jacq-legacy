@@ -43,7 +43,6 @@ Die Datei sollte intern klar in Funktionsbloecke getrennt werden:
 
 - `session_start()`
 - `require("../inc/connect.php")`
-- `require("../inc/log_functions.php")`
 - `require_once("../inc/herbardb_input_functions.php")`
 - `require_once("../inc/jsonRPCClient.php")`
 
@@ -190,7 +189,7 @@ Run 3 sollte nicht jede Zeile blind komplett ueberschreiben. Besser:
 3. pro Zeile aktuelle DB-Daten erneut laden
 4. Rechtepruefung und Dublettenpruefung analog zu `editSpecimens.php`
 5. nur geaenderte Felder in `UPDATE tbl_specimens SET ...` aufnehmen
-6. vor dem Update `logSpecimen($specimen_ID, 1)` ausfuehren
+6. vor dem Update `Jacq\Log::specimen($specimen_ID, 1)` ausfuehren
 
 Empfohlene Helfer:
 
@@ -220,7 +219,7 @@ Folgende Logik sollte direkt oder nach kleiner Extraktion wiederverwendet werden
 - Collector-, Series-, Type-, Nation- und Province-Aufloesung
 - Dublettenpruefung fuer `HerbNummer`
 - Rechte- und Source-Pruefung aus `editSpecimens.php`
-- Logging ueber `logSpecimen(...)`
+- Logging ueber `Jacq\Log::specimen(...)`
 
 Nicht direkt uebernehmen:
 

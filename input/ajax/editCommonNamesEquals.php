@@ -2,8 +2,10 @@
 session_start();
 require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
-require_once('../inc/log_functions.php');
 require_once('../inc/mapLines.php');
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Log;
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;
@@ -44,7 +46,7 @@ if(isset($_POST['function']) ){
 		$sql2 = "SELECT tax_syn_ID FROM herbarinput.tbl_tax_synonymy WHERE source_citationID={$citid} and source='literature' and taxonID ='{$taxonID}' and acc_taxon_ID='{$acc_taxon_ID}' LIMIT 1";
 		$result2 = dbi_query($sql2);
 		if($result2 && $row2 = mysqli_fetch_array($result2)){
-			logTbl_tax_synonymy($row2['tax_syn_ID'],2);
+            Log::tbl_tax_synonymy($row2['tax_syn_ID'],2);
 			$sql3 = "DELETE FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID='{$row2['tax_syn_ID']}' LIMIT 1";
 			$res3 = dbi_query($sql3);
 			if($res3){
@@ -340,7 +342,7 @@ VALUES
 						$result2 = dbi_query($sql2);
 						if($result2){
 							$tax_syn_ID = dbi_insert_id();
-							logTbl_tax_synonymy($tax_syn_ID,0);
+                            Log::tbl_tax_synonymy($tax_syn_ID,0);
 							continue;
 						}
 					}

@@ -2,7 +2,6 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;

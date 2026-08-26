@@ -2,8 +2,10 @@
 session_start();
 require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
-require_once('../inc/log_functions.php');
 require_once('mapLines.php');
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Log;
 
 //debug
 foreach($_GET as $k=>$v){
@@ -61,7 +63,7 @@ class MapLines_editLit extends MapLines{
             }
             // if not, delete entry
             else {
-                logTbl_tax_synonymy($tax_syn_ID, 2);
+                Log::tbl_tax_synonymy($tax_syn_ID, 2);
                 $sql3 = "DELETE FROM `herbarinput`.`tbl_tax_synonymy` WHERE `tax_syn_ID` = {$tax_syn_ID}";
                 $res3 = dbi_query($sql3);
                 if ($res3) {
@@ -377,7 +379,7 @@ VALUES
 							$result2 = dbi_query($sql2);
 							if($result2){
 								$tax_syn_ID = dbi_insert_id();
-								logTbl_tax_synonymy($tax_syn_ID,0);
+								Log::tbl_tax_synonymy($tax_syn_ID,0);
 								$successx[]=array($x,$taxonID,$acctaxonID);
 								continue;
 							}else{

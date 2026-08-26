@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -417,7 +417,7 @@ if (isset($_GET['sel'])) {
           else {
               $result = dbi_query($sql);
               $p_specimen_ID = (intval($_POST['specimen_ID'])) ? intval($_POST['specimen_ID']) : dbi_insert_id();
-              logSpecimen($p_specimen_ID, $updated);
+              Log::specimen($p_specimen_ID, $updated);
 
               if ($_POST['submitUpdateNew']) {
                   $location="Location: editObservations.php?sel=<0>&new=1";

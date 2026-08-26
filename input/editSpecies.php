@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Settings;
 use Jacq\Permission;
 use Jaxon\Jaxon;
@@ -271,7 +271,7 @@ if (isset($_GET['sel'])) {
                              external = "            . (($p_external) ? 1 : 0) . "
                             WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
                     $result = dbi_query($sql);
-                    logSpecies($p_taxonID,1);
+                    Log::species($p_taxonID,1);
                     if (!$p_external) {
                         // check any used epitheta and authors and make them internal if still external
                         clearExternal('epithets', $p_speciesIndex);
@@ -311,7 +311,7 @@ if (isset($_GET['sel'])) {
                 $result = dbi_query($sql);
                 if ($result) {
                     $p_taxonID = dbi_insert_id();
-                    logSpecies($p_taxonID, 0);
+                    Log::species($p_taxonID, 0);
                 } else {
                     $taxonID = 0;
                 }

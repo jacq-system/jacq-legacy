@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 function makeSammler($search, $x, $y, $nr)
@@ -169,7 +169,7 @@ if ($_POST['submitUpdate'] && Permission::has('type')) {
     }
     if ($result) {
         $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
-        logTypecollections($id,$updated);
+        Log::typecollections($id,$updated);
         echo "<script>\n"
            . "  window.opener.document.f.reload.click()\n"
            . "  self.close()\n"

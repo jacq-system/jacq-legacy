@@ -1,10 +1,10 @@
 <?php
-
-use Jacq\DbAccess;
-use Jacq\Settings;
-
 require_once( 'tools.php' );
 require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\DbAccess;
+use Jacq\Log;
+use Jacq\Settings;
 
 /**
  * Return scientific name for a given taxon_id
@@ -276,7 +276,7 @@ function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_acce
     $result = dbi_query($sql);
     if ($result) {
         $id = dbi_insert_id();
-        logGenera($id, 0);
+        Log::genera($id, 0);
     } else {
         $id = 0;
     }

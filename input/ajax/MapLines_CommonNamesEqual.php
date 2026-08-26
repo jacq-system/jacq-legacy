@@ -2,11 +2,11 @@
 session_start();
 require_once('../inc/connect.php');
 require_once('../inc/cssf.php');
-require_once('../inc/log_functions.php');
 require_once('mapLines.php');
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\InternMDLDService;
+use Jacq\Log;
 
 foreach($_GET as $k=>$v){
 	$params[$k]=$v;
@@ -25,7 +25,7 @@ class MapLines_editLit extends MapLines{
 
 	function RemoveMapLine($params){
 
-		logTbl_name_names_equals($params['leftID'],$params['rightID'],2);
+		Log::tbl_name_names_equals($params['leftID'],$params['rightID'],2);
 		$sql = "DELETE FROM {$this->dbprefix}tbl_name_names_equals WHERE tbl_name_names_name_id='{$params['leftID']}' and tbl_name_names_name_id1='{$params['rightID']}' LIMIT 1";
 		$res = dbi_query($sql);
 		$res=array('success'=>$res);
@@ -224,7 +224,7 @@ VALUES
 					$sql2 = $sql." ('{$id1}','{$id2}') ";
 					$result2 = dbi_query($sql2);
 					if($result2){
-						logTbl_name_names_equals($id1,$id2,0);
+						Log::tbl_name_names_equals($id1, $id2, 0);
 						$successx[]=array($x,$id1,$id2);
 						continue;
 					}else{

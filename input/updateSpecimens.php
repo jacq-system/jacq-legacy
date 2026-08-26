@@ -1,11 +1,11 @@
 <?php
 session_start();
 require('inc/connect.php');
-require('inc/log_functions.php');
 require_once('inc/herbardb_input_functions.php');
 require_once('inc/jsonRPCClient.php');
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 use Jacq\TaxonTokenizer;
 
@@ -1635,7 +1635,7 @@ function updateSpecimenRow($specimenId, array $selectedData)
     $sql = 'UPDATE tbl_specimens SET ' . implode(', ', $assignments) . " WHERE specimen_ID = '" . intval($specimenId) . "'";
 
     $dbLink->begin_transaction();
-    logSpecimen($specimenId, 1);
+    Log::specimen($specimenId, 1);
     $result = dbi_query($sql);
     if (!$result) {
         $message = $dbLink->errno . ': ' . $dbLink->error;

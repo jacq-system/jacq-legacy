@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\NaturalID;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -836,7 +836,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		dbi_query("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
 
 		// log it
-		logCommonNamesCommonName($_dvar['common_nameIndex'],0);
+		Log::commonNamesCommonName($_dvar['common_nameIndex'],0);
 	}
 
 	// ENTITY
@@ -885,7 +885,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		$sql="UPDATE {$dbprefix}tbl_name_applies_to SET {$sql} WHERE {$where} ";
 		if(dbi_query($sql)){
 			// Log it
-			logCommonNamesAppliesTo($_dvar['active_id'],1,$old);
+			Log::commonNamesAppliesTo($_dvar['active_id'],1,$old);
 			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully updated");
 		}
@@ -894,7 +894,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		$sql="INSERT INTO {$dbprefix}tbl_name_applies_to SET {$sql}";
 		if(dbi_query($sql)){
 			// Log it
-			logCommonNamesAppliesTo($_dvar['active_id'],0);
+			Log::commonNamesAppliesTo($_dvar['active_id'],0);
 			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully inserted");
 		}

@@ -2,9 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Log;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -56,7 +56,7 @@ if ($_POST['submitUpdate'] && Permission::has('litAuthor')) {
         $result = dbi_query($sql);
         if ($result) {
             $id = ($id) ?: dbi_insert_id();
-            logLitAuthors($id, $updated);
+            Log::litAuthors($id, $updated);
             echo "<script language=\"JavaScript\">\n";
             if ($_REQUEST['typ'] == "a") {
                 echo "  window.opener.document.f.autorIndex.value = $id;\n";
