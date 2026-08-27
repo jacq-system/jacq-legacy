@@ -1,7 +1,6 @@
 <?PHP
 session_start();
 require_once('../inc/connect.php');
-require_once('../inc/cssf.php');
 require_once('../inc/mapLines.php');
 require __DIR__ . '/../vendor/autoload.php';
 

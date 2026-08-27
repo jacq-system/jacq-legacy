@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 
@@ -39,7 +39,7 @@ else {
   $result = dbi_query($sql);
   $row = mysqli_fetch_array($result);
 
-  $cf = new CSSF();
+  $cf = new Cssf();
 
   echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['specimen_ID']."\">\n";
   $cf->label(7,0.5,"ID");

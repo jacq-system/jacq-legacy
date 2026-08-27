@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 
@@ -115,7 +115,7 @@ do {
     }
 } while ($found);
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['periodicalID'] . "\">\n";
 $cf->label(8, 1, "ID");

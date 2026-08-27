@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 
 if (isset($_GET['sel'])) {
@@ -133,7 +133,7 @@ while ($row = mysqli_fetch_array($result)) {
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"groupID\" value=\"$p_groupID\">\n";
 $cf->label(12, 0.5, "groupID");

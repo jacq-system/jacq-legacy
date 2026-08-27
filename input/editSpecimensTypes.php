@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -204,7 +204,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"specimens_types_ID\" value=\"" . htmlspecialchars($p_specimens_types_ID) . "\">\n";
 $cf->label(7, 0.5, "ID");

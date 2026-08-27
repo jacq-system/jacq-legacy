@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -101,7 +101,7 @@ if ($result = dbi_query($sql)) {
     }
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"lib_period_ID\" value=\"$p_lib_period_ID\">\n";
 $cf->label(7, 0.5, "ID");

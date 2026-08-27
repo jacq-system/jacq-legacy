@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
+use Jacq\Cssf;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -177,7 +177,7 @@ case 4: // standard
 
   echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
-  $cf = new CSSF();
+  $cf = new Cssf();
 
   echo "<input type=\"hidden\" name=\"ID\" value=\"$id\">\n";
   $cf->label(8,0.5,"ID");

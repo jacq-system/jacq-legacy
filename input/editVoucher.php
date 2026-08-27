@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -65,7 +65,7 @@ $sql = "SELECT voucherID, voucher
 $result = dbi_query($sql);
 $row = mysqli_fetch_array($result);
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['voucherID'] . "\">\n";
 $cf->label(6, 0.5, "ID");

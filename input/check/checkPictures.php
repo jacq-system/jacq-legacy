@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("../inc/connect.php");
-require("../inc/cssf.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\PdoAccess;
 
 $db = PdoAccess::ConnectTo('INPUT');
@@ -65,7 +65,7 @@ foreach ($dbst as $row) {
    $server.=">{$row['imgserver_IP']}</option>\n";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->setEcho(false);
 $family='<div style="float:left">'.$cf->inputJqAutocomplete2(0, 0, 20, "family", $_dvar['family'], "../index_jq_autocomplete.php?field=family",70,2,'','',0,0,0);
 

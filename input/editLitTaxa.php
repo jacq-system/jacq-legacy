@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/gatekeeper.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\DbAccess;
 use Jacq\Display;
 use Jacq\Log;
@@ -193,7 +193,7 @@ if (isset($_GET['new'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"lit_tax_ID\" value=\"$p_lit_tax_ID\">\n";

@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -149,7 +149,7 @@ if (isset($_GET['new'])) {
     $p_typecollID       = $_POST['typecollID'];
 }
 
-if ($_POST['submitUpdate'] && Permission::has('type')) {
+if (!empty($_POST['submitUpdate']) && Permission::has('type')) {
     $sqlPart = " taxonID = "          . Tools::extractID($_POST['taxon']) . ",
                  SammlerID = "        . Tools::extractID($_POST['sammler']) . ",
                  Sammler_2ID = "      . Tools::extractID($_POST['sammler2']) . ",
@@ -198,7 +198,7 @@ if ($result && mysqli_num_rows($result) > 0) {
 
 <?php
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"typecollID\" value=\"$p_typecollID\">\n";
 $cf->label(10, 0.5, "ID");

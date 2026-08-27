@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
@@ -506,7 +506,7 @@ if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
 
 
 <?PHP
-$cf = new CSSF();
+$cf = new Cssf();
 
 $display = Display::Load();
 $title="Taxon Synonymy<br>".$display->protolog($p_citationID);

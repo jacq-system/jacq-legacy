@@ -3,9 +3,9 @@ session_start();
 error_reporting(0);
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-require("../inc/cssf.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\PdoAccess;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -530,7 +530,7 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
 
     // Create output and send it back
     ob_start();
-    $cf = new CSSF();
+    $cf = new Cssf();
     $cf->tabindex = 1000;
     foreach( $rows as $index => $row ) {
         $classification_id = $row['classification_id'];

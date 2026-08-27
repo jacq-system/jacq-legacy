@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\NaturalID;
 use Jacq\Permission;
@@ -477,7 +477,7 @@ EOF;
 
 $isLocked= Tools::isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id']);
 $unlock_tbl_name_applies_to=Permission::mayUnlock('tbl_name_applies_to');
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->setYRelative(true);
 
 

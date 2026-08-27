@@ -1,10 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -117,7 +116,7 @@ if ($result = dbi_query($sql)) {
     }
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"userID\" value=\"$p_userID\">\n";
 echo "<input type=\"hidden\" name=\"accessID\" value=\"$p_accessID\">\n";

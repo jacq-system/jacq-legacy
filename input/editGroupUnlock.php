@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
@@ -77,7 +77,7 @@ $table[] = 'tbl_name_applies_to';
 $table[] = 'tbl_name_commons';
 
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"groupID\" value=\"$p_groupID\">\n";
 echo "<input type=\"hidden\" name=\"accessID\" value=\"$p_accessID\">\n";

@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -296,7 +296,7 @@ if ($get_new) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>?update=<?php echo $get_update; ?>" Method="POST" name="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"genID\" value=\"$p_genID\">\n";
 $cf->label(8,0.5,"ID");

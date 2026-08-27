@@ -21,7 +21,6 @@ $texts[$ctr] = "Hybrids with empty epithet and no parents (empty tbl_tax_hybrids
 $ctr++;
 $rows[$ctr] = $db->queryCatch("SELECT herbar_view.GetScientificName(ts.taxonID, 0) as scientificName, ts.taxonID
                                FROM tbl_tax_species ts
-                                LEFT JOIN tbl_tax_hybrids th ON th.taxon_ID_fk = ts.taxonID 
                                WHERE ts.statusID = 1
                                 AND (   ts.speciesID IS NOT NULL 
                                      OR ts.subspeciesID IS NOT NULL 
@@ -29,10 +28,10 @@ $rows[$ctr] = $db->queryCatch("SELECT herbar_view.GetScientificName(ts.taxonID, 
                                      OR ts.subvarietyID IS NOT NULL 
                                      OR ts.formaID IS NOT NULL 
                                      OR ts.subformaID IS NOT NULL)
-                                AND th.taxon_ID_fk IS NULL
+                                AND ts.synID IS NULL
                                ORDER BY scientificName")
                  ->fetch_all(MYSQLI_ASSOC);
-$texts[$ctr] = "Hybrids with any populated epithet and no parents (empty tbl_tax_hybrids) (" . count($rows[$ctr]) . ")";
+$texts[$ctr] = "Hybrids with any populated epithet and empty accepted Taxon (" . count($rows[$ctr]) . ")";
 
 $ctr++;
 $rows[$ctr] = $db->queryCatch("SELECT herbar_view.GetScientificName(ts.taxonID, 0) as scientificName, ts.taxonID

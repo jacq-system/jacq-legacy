@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 
@@ -133,7 +133,7 @@ if ($msg['result'] == "0") {
 	$msgs = " Success:<br>{$msg['result']} ";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 //editCommonNamesEquals.php
 echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"common_nameIndex\" id=\"common_nameIndex\" value=\"{$_dvar['common_nameIndex']}\">\n";

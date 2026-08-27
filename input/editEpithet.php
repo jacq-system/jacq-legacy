@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -93,7 +93,7 @@ if ($result->num_rows > 0) {
     $row = array('epithet' => '', 'epithetID' => '', 'locked' => 0, 'external' => 0);
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['epithetID'] . "\">\n";
 $cf->label(7, 0.5, "ID");

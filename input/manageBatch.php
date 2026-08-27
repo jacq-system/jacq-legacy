@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/jacqServletJsonRPCClient.php");
 require __DIR__ . '/vendor/autoload.php';
 

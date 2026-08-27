@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
@@ -543,7 +543,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <div style="text-align:right;">
     <b>Assign Taxon:</b>
     <?php
-      $cf = new CSSF();
+      $cf = new Cssf();
       $cf->inputJqAutocomplete(NULL, NULL, 50, "taxon", NULL, NULL, "index_jq_autocomplete.php?field=taxonWithHybrids", 520, 2, '', "", FALSE, FALSE, "display_inline");
     ?>
     <button type="submit" name="taxon_action_do" value="1" >Apply to checked entries</button>

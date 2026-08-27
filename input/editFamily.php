@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -146,7 +146,7 @@ if ($blocked) {
 
 echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "?update=$update\" Method=\"POST\">\n";
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $p_familyID . "\">\n";
 $cf->label(7, 0.5, "ID");

@@ -1,7 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -24,7 +26,7 @@ require("inc/cssf.php");
 <?php
 echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 $cf->label(15,2,"search add. Collector(s)");
 $cf->inputText(15,2,25,"sammler2",($_POST['sammler2'] ?? ''),120);

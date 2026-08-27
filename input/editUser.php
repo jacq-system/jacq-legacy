@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 
 if (isset($_GET['sel'])) {
@@ -205,7 +205,7 @@ if ($result = dbi_query($sql)) {
     }
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"userID\" value=\"$p_userID\">\n";
 $cf->label(9, 0.5, "userID");
