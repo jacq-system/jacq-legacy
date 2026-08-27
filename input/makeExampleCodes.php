@@ -1,7 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once 'inc/stableIdentifierFunctions.php';
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\StableIdentifier;
 
 $specimenIDs = array();
 
@@ -38,7 +40,7 @@ foreach ($specimenIDs as $specimenID) {
                              collection   = '" . $row['collection']   . "',
                              HerbNummer   = '" . $row['HerbNummer']   . "',
                              Barcode      = '" . formatUnitID($specimenID)        . "',
-                             QRCode       = '" . getStableIdentifier($specimenID) . "'");
+                             QRCode       = '" . StableIdentifier::get($specimenID) . "'");
         }
     }
 }
