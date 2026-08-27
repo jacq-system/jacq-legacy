@@ -4,6 +4,7 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\StableIdentifier;
+use Jacq\Tools;
 
 $specimenIDs = array();
 
@@ -39,7 +40,7 @@ foreach ($specimenIDs as $specimenID) {
                              collectionID = "  . $row['collectionID'] . ",
                              collection   = '" . $row['collection']   . "',
                              HerbNummer   = '" . $row['HerbNummer']   . "',
-                             Barcode      = '" . formatUnitID($specimenID)        . "',
+                             Barcode      = '" . Tools::formatUnitID($specimenID)        . "',
                              QRCode       = '" . StableIdentifier::get($specimenID) . "'");
         }
     }

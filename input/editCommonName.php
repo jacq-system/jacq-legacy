@@ -7,6 +7,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -138,7 +139,7 @@ $cf = new Cssf();
 echo "<input type=\"hidden\" name=\"action\" id=\"action\" value=\"\">\n";
 echo "<input type=\"hidden\" name=\"common_nameIndex\" id=\"common_nameIndex\" value=\"{$_dvar['common_nameIndex']}\">\n";
 
-$isLocked = isLocked($dbprefix.'tbl_name_commons', $_dvar['common_nameIndex']);
+$isLocked = Tools::isLocked($dbprefix.'tbl_name_commons', $_dvar['common_nameIndex']);
 $unlock_tbl_name_commons = Permission::mayUnlock('tbl_name_commons');
 
 if ($unlock_tbl_name_commons) {

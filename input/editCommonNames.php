@@ -736,7 +736,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		return array("You have no Rights for Update", 0);
 	}
 
-	if ($update && !Permission::mayUnlock('tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
+	if ($update && !Permission::mayUnlock('tbl_name_applies_to') && Tools::isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
 		return array("You have no Rights for Update locked items", );
 	}
 
@@ -1131,4 +1131,30 @@ WHERE
 	$result = dbi_query($sql);
 	return protolog(mysqli_fetch_assoc($result));
 }
+
+// $mode=1 => from Post to escaped mysql
+// $mode=2 => for formulars from escaped mysql
+// $mode=3 => for formulars from not escaped mysql
+function doQuotes(&$obj, $mode)
+{
+    global $dbLink;
+
+    if (!is_array($obj)) {
+        $obj = array($obj);
+    }
+    foreach ($obj as &$val) {
+        if (is_array($val)) {
+            doQuotes($val, $mode);
+        } else if (is_scalar($val)) {
+            if ($mode == 1) {
+                $val = $dbLink->real_escape_string(htmlspecialchars_decode($val));
+            } else if($mode == 2) {
+                $val = stripslashes(htmlspecialchars($val, ENT_COMPAT, "UTF-8", 1));
+            } else if($mode == 3) {
+                $val = htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
+            }
+        }
+    }
+}
+
 ?>
