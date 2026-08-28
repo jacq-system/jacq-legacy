@@ -1,5 +1,5 @@
 <?php
-require_once( 'tools.php' );
+//require_once( 'tools.php' );
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\DbAccess;

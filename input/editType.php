@@ -98,12 +98,11 @@ function makeSammler($search, $x, $y, $nr)
 <?php
 if (isset($_GET['new'])) {
     $p_taxon = getScientificName(Tools::extractID($_GET['ID'], true));
-    $p_typusID = 0;
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
 } elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
-    $sql ="SELECT typecollID, taxonID, typusID, series, leg_nr, alternate_number, date, duplicates, annotation,
+    $sql ="SELECT typecollID, taxonID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = tt.Sammler_2ID
@@ -113,7 +112,6 @@ if (isset($_GET['new'])) {
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
         $p_typecollID       = $row['typecollID'];
-        $p_typusID          = $row['typusID'];
         $p_series           = $row['series'];
         $p_leg_nr           = $row['leg_nr'];
         $p_alternate_number = $row['alternate_number'];
@@ -129,13 +127,11 @@ if (isset($_GET['new'])) {
         $p_taxon = getScientificName($row['taxonID']);
     } else {
         $p_taxon = $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
-        $p_typusID = 0;
         $p_typecollID = $p_sammler = $p_sammler2 ="";
         $p_sammlerIndex = $p_sammler2Index = 0;
     }
 } else {
     $p_taxon            = $_POST['taxon'];
-    $p_typusID          = $_POST['typusID'];
     $p_series           = $_POST['series'];
     $p_leg_nr           = $_POST['leg_nr'];
     $p_alternate_number = $_POST['alternate_number'];
@@ -153,7 +149,6 @@ if (!empty($_POST['submitUpdate']) && Permission::has('type')) {
     $sqlPart = " taxonID = "          . Tools::extractID($_POST['taxon']) . ",
                  SammlerID = "        . Tools::extractID($_POST['sammler']) . ",
                  Sammler_2ID = "      . Tools::extractID($_POST['sammler2']) . ",
-                 typusID = "          . intval($_POST['typusID']) . ",
                  series = "           . quoteString($_POST['series']) . ",
                  leg_nr = "           . quoteString($_POST['leg_nr']) . ",
                  alternate_number = " . quoteString($_POST['alternate_number']) . ",
@@ -180,16 +175,6 @@ if (!empty($_POST['submitUpdate']) && Permission::has('type')) {
         echo "<script type='text/javascript' language='JavaScript'>\n"
            . '  alert("' . $dbLink->errno . ': ' . $dbLink->error . '");' . "\n"
            . "</script>\n";
-    }
-}
-
-unset($typus);
-$typus[0][] = 0; $typus[1][] = "";
-$result = dbi_query("SELECT typusID, typus, typus_engl FROM tbl_typi ORDER BY typus");
-if ($result && mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_array($result)) {
-        $typus[0][] = $row['typusID'];
-        $typus[1][] = $row['typus'] . " (" . $row['typus_engl'] . ")";
     }
 }
 ?>

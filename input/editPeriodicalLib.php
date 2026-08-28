@@ -33,7 +33,7 @@ if (isset($_GET['new'])) {
     $row = mysqli_fetch_array($result);
     $p_periodical = $row['periodical'] . " <" . $row['periodicalID'] . ">";
     $p_library = $p_signature = $p_bestand = $p_url = $p_lib_period_ID = "";
-} elseif (Tools::extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT lib_period_ID, signature, bestand, url, library_ID, periodical, tbl_lit_lib_period.periodicalID
             FROM tbl_lit_lib_period, tbl_lit_periodicals
             WHERE tbl_lit_lib_period.periodicalID = tbl_lit_periodicals.periodicalID
@@ -76,6 +76,7 @@ if (isset($_GET['new'])) {
            . "  window.opener.document.f.reload.click()\n"
            . "  self.close()\n"
            . "</script>\n";
+        die();
     }
 } else {
     $p_periodical    = $_POST['periodical'];

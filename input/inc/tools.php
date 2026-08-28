@@ -122,24 +122,24 @@
  *
  * @param string $class_name name of class and of file
  */
-function jacq_autoload($class_name)
-{
-    if (preg_match('|^\w+$|', $class_name)) {
-        $class_name = basename($class_name);
-        if (substr($class_name, 0, 1) == 'x') {
-            $path = 'ajax/modules/' . $class_name . '.php';
-        } else {
-            $path = 'inc/' . $class_name . '.php';
-        }
-
-        if (file_exists($path)) {
-            include($path);
-        } elseif (file_exists('../' . $path)) {
-            include('../' . $path);
-        } else {
-            return false;
-        }
-    }
-}
-
-spl_autoload_register('jacq_autoload');
+//function jacq_autoload($class_name)
+//{
+//    if (preg_match('|^\w+$|', $class_name)) {
+//        $class_name = basename($class_name);
+//        if (substr($class_name, 0, 1) == 'x') {
+//            $path = 'ajax/modules/' . $class_name . '.php';
+//        } else {
+//            $path = 'inc/' . $class_name . '.php';
+//        }
+//
+//        if (file_exists($path)) {
+//            include($path);
+//        } elseif (file_exists('../' . $path)) {
+//            include('../' . $path);
+//        } else {
+//            return false;
+//        }
+//    }
+//}
+//
+//spl_autoload_register('jacq_autoload');

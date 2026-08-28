@@ -6,6 +6,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Log;
 use Jacq\Tools;
+use org\jsonrpcphp\JsonRPCClient;
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;
@@ -128,7 +129,7 @@ AND(
 ";
 		//mdld
 		}else if(isset($_POST['mdldSearch']) && strlen($_POST['mdldSearch'])>0){
-			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+			$service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
 				$matches = $service->getMatchesService('vienna',$_POST['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 

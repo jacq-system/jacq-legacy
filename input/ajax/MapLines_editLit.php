@@ -5,6 +5,7 @@ require_once('mapLines.php');
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Log;
+use org\jsonrpcphp\JsonRPCClient;
 
 //debug
 foreach($_GET as $k=>$v){
@@ -156,7 +157,7 @@ AND(
 			$params['mdldSearch']=strtolower(trim($this->removeID($params['mdldSearch'])));
 
 			global $_OPTIONS;
-			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+			$service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
 				$matches = $service->getMatchesService('vienna',$params['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 

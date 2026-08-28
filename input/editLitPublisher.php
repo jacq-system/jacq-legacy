@@ -19,7 +19,7 @@ use Jacq\Permission;
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && Permission::has('litPub')) {
+if (!empty($_POST['submitUpdate']) && Permission::has('litPub')) {
   $publisher = $_POST['publisher'];
   if (intval($_POST['ID'])) {
     $sql = "UPDATE tbl_lit_publishers SET ".
@@ -35,18 +35,23 @@ if ($_POST['submitUpdate'] && Permission::has('litPub')) {
   $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
   Log::litPublishers($id,$updated);
 
-  echo "<script language=\"JavaScript\">\n";
-  echo "  window.opener.document.f.publisher.value = \"".addslashes($publisher)." <$id>\";\n";
-  echo "  window.opener.document.f.reload.click()\n";
-  echo "  self.close()\n";
-  echo "</script>\n";
+  echo "<script language=\"JavaScript\">\n"
+     . "  window.opener.document.f.reload.click()\n"
+     . "  self.close()\n"
+     . "</script>\n";
 }
 else {
   echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
-  $pieces = explode("<",$HTTP_GET_VARS['sel']);
-  $pieces = explode(">",$pieces[1]);
-  $row = dbi_query("SELECT publisherID, publisher FROM tbl_lit_publishers WHERE publisherID = '" . dbi_escape_string($pieces[0]) . "'")->fetch_array();
+  $row = array('publisherID' => 0, 'publisher' => '');
+  if (!empty($_GET['sel'])) {
+      $pieces = explode("<", $_GET['sel']);
+      $pieces = explode(">", $pieces[1]);
+      $publisherID = intval($pieces[0]);
+      if ($publisherID) {
+          $row = dbi_query("SELECT publisherID, publisher FROM tbl_lit_publishers WHERE publisherID = $publisherID")->fetch_array();
+      }
+  }
 
   $cf = new Cssf();
 

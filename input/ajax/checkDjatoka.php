@@ -1,9 +1,8 @@
 <?php
-
 session_start();
 require("../inc/gatekeeper.php");
-require_once("../inc/variables.php");
-require_once("../inc/tools.php");
+//require_once("../inc/variables.php");
+//require_once("../inc/tools.php");
 require_once('../inc/jacqServletJsonRPCClient.php');
 require __DIR__ . '/../vendor/autoload.php';
 

@@ -19,7 +19,7 @@ use Jacq\Permission;
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && Permission::has('litAuthor')) {
+if (!empty($_POST['submitUpdate']) && Permission::has('litAuthor')) {
     $id = intval($_POST['ID']);
     $autor = $_POST['autor'];
     $autorsystbot = $_POST['autorsystbot'];
@@ -75,7 +75,7 @@ if ($_POST['submitUpdate'] && Permission::has('litAuthor')) {
                     . "</script>\n";
         }
     }
-} elseif ($_POST['submitUpdate'] && Permission::has('litAuthor')) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('litAuthor')) {
     $id = 0;
     $autor = $autorsystbot = "";
 } else {

@@ -108,15 +108,20 @@ class Tools
      * extracts an ID from a string. ID must be enclosed in "<>" brackets and be positioned at the end
      *
      * @param string $text string to extract ID from
-     * @return string ID enclosed in single quotes or the string "NULL" (without quotes)
+     * @param bool $bNoQuotes return plain ID without quotes
+     * @return string ID enclosed in single quotes (according to $bNoQuotes) or the string "NULL" (without quotes)
      */
-    public static function extractID (string $text): string
+    public static function extractID (string $text, bool $bNoQuotes = false): string
     {
         $pos1 = strrpos($text, "<");
         $pos2 = strpos($text, ">", $pos1);
         if ($pos1 !== false && $pos2 !== false) {
             if (intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1))) {
-                return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+                if ($bNoQuotes) {
+                    return intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1));
+                } else {
+                    return "'" . intval(substr($text, $pos1 + 1, $pos2 - $pos1 - 1)) . "'";
+                }
             } else {
                 return "NULL"; // no ID found
             }

@@ -1,6 +1,6 @@
 <?php
 require_once( 'variables.php' );
-require_once( 'tools.php' );
+//require_once( 'tools.php' );
 
 
 if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {

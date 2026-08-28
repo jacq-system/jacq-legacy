@@ -18,7 +18,7 @@ $db = DbAccess::ConnectTo('INPUT');
 $display = Display::Load();
 
 if (isset($_GET['new'])) {
-    $p_citationIndex = Tools::extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID'], true);
     $p_citation = $display->protolog($p_citationIndex, true);
     $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
     $p_source = "person";

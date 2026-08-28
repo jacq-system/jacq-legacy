@@ -450,14 +450,14 @@ if (mysqli_num_rows($result) > 0) {
     function listTypeSpecimens(sel) {
       target  = "listTypeSpecimens.php?ID=" + encodeURIComponent(sel);
       options = "width=";
-      if (screen.availWidth<990)
+      if (screen.availWidth<1380)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
-      if (screen.availHeight<710)
+        options += "1380, height=";
+      if (screen.availHeight<860)
         options += (screen.availHeight - 10);
       else
-        options += "710";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
       MeinFenster = window.open(target,"Specimens",options);
       MeinFenster.focus();
@@ -468,11 +468,11 @@ if (mysqli_num_rows($result) > 0) {
       if (screen.availWidth<1380)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
-      if (screen.availHeight<810)
+        options += "1380, height=";
+      if (screen.availHeight<860)
         options += (screen.availHeight - 10);
       else
-        options += "710";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
       MeinFenster = window.open(target,"Specimens",options);
       MeinFenster.focus();
