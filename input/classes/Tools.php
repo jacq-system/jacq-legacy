@@ -92,7 +92,7 @@ class Tools
             $curl_response = curl_exec($ch);
             if ($curl_response !== false) {
                 $curl_result = json_decode($curl_response, true);
-                $manifest = $curl_result['uri'];
+                $manifest = $curl_result['uri'] ?? "";
             } else {
                 $manifest = "";
             }

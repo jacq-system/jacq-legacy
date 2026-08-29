@@ -59,7 +59,8 @@ if (!empty($_POST['submitUpdate']) && Permission::has('specim')) {
 
         if ($result) {
             echo "<script language=\"JavaScript\">\n"
-               . "  window.opener.document.f.reload.click()\n"
+               . "  window.opener.document.f.series.value = \"" . htmlspecialchars($_POST['series']) . " <$id>\";\n"
+//               . "  window.opener.document.f.reload.click()\n"
                . "  self.close()\n"
                . "</script>\n"
                . "</body>\n</html>\n";

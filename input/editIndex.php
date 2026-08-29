@@ -70,9 +70,9 @@ if (isset($_GET['new'])) {
     $p_paginae = $p_figures = $p_annotations = $p_taxindID = "";
 } elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     if (intval($_GET['t']) == 1) {
-        $p_type = 1;  // taxonID ist die F�hrungs-ID
+        $p_type = 1;  // taxonID is the leading ID
     } else {
-        $p_type = 2;  // citationID ist die F�hrungs-ID
+        $p_type = 2;  // citationID is the leading ID
     }
 
     $sql ="SELECT taxindID, taxonID, citationID, paginae, figures, annotations

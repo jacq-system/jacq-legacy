@@ -18,7 +18,7 @@ use Jacq\Permission;
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && Permission::has('specim')) {
+if (!empty($_POST['submitUpdate']) && Permission::has('specim')) {
     $sw = true;
     $sql = "SELECT voucherID, voucher ".
            "FROM tbl_specimens_voucher ".
@@ -46,7 +46,6 @@ if ($_POST['submitUpdate'] && Permission::has('specim')) {
         $result = dbi_query($sql);
 
         echo "<script language=\"JavaScript\">\n"
-           . "  window.opener.document.f.reload.click()\n"
            . "  self.close()\n"
            . "</script>\n"
            . "</body>\n</html>\n";
@@ -64,17 +63,19 @@ $sql = "SELECT voucherID, voucher
         WHERE voucherID = '" . dbi_escape_string($id) . "'";
 $result = dbi_query($sql);
 $row = mysqli_fetch_array($result);
+$voucherID = $row['voucherID'] ?? 0;
+$voucher = $row['voucher'] ?? "";
 
 $cf = new Cssf();
 
-echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['voucherID'] . "\">\n";
+echo "<input type=\"hidden\" name=\"ID\" value=\"$voucherID\">\n";
 $cf->label(6, 0.5, "ID");
-$cf->text(6, 0.5, "&nbsp;" . (($row['voucherID']) ? $row['voucherID'] : "new"));
+$cf->text(6, 0.5, "&nbsp;" . (($voucherID) ?: "new"));
 $cf->label(6, 2, "voucher");
-$cf->inputText(6, 2, 25, "voucher", $row['voucher'], 255);
+$cf->inputText(6, 2, 25, "voucher", $voucher, 255);
 
 if (Permission::has('specim')) {
-    $text = ($row['voucherID']) ? " Update " : " Insert ";
+    $text = ($voucherID) ? " Update " : " Insert ";
     $cf->buttonSubmit(9, 7, "submitUpdate", $text);
     $cf->buttonJavaScript(21, 7, " New ", "self.location.href='editVoucher.php?sel=0'");
 }

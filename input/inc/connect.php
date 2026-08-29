@@ -41,7 +41,7 @@ function dbi_query($sql, $debug = false)
     }
 
     if (empty($sql)) {
-        error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']}.");
+        error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']} IN SCRIPT {$_SERVER['PHP_SELF']}.");
         $res = false;
     } else {
         try {

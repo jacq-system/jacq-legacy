@@ -19,7 +19,7 @@ use Jacq\Permission;
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && intval($_POST['ID']) && Permission::has('specim')) {
+if (!empty($_POST['submitUpdate']) && intval($_POST['ID']) && Permission::has('specim')) {
   $sql = "UPDATE tbl_specimens ".
          "SET ncbi_accession='".dbi_escape_string($_POST['ncbi'])."' ".
          "WHERE specimen_ID=".intval($_POST['ID']);

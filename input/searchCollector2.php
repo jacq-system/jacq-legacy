@@ -15,7 +15,6 @@ use Jacq\Cssf;
   <script language="JavaScript">
     function sendCollector(sel) {
       window.opener.document.f.sammler2.value = sel;
-      window.opener.document.f.reload.click();
       self.close();
     }
   </script>
