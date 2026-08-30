@@ -4,8 +4,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-
 require_once __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Tools;
 
 function makeText($id)
 {
@@ -16,7 +17,7 @@ function makeText($id)
              AND s.specimen_ID = '$id'";
     $row = dbi_query($sql)->fetch_array();
 
-    $text['UnitID'] = formatUnitID($row['specimen_ID']);   // needs connect.php
+    $text['UnitID'] = Tools::formatUnitID($row['specimen_ID']);   // needs connect.php
     $text['abbr'] = $row['source_abbr_engl'];
     $text['Herbarium'] = 'Herbarium ' . $row['source_code'];
 
@@ -36,6 +37,41 @@ function makePreText($sourceID, $number)
 
     return $text;
 }
+
+/**
+ * format the given unit-ID according to tbl_labels_numbering for a given source-ID
+ *
+ * @param integer $sourceID source ID
+ * @param integer $number treat $number as HerbNummer to format
+ * @return string formatted unit-ID
+ */
+function formatPreUnitID($sourceID, $number)
+{
+    $sql = "SELECT source_code
+            FROM herbarinput.meta
+            WHERE source_id = '" . intval($sourceID) . "'";
+    $row = dbi_query($sql)->fetch_array();
+
+    $unitID = $row['source_code'];
+
+    $sql = "SELECT digits
+            FROM tbl_labels_numbering
+            WHERE replace_char IS NULL
+             AND collectionID_fk IS NULL
+             AND sourceID_fk = '" . intval($sourceID) . "'";
+    $result = dbi_query($sql);
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_array();
+        $digits = $row['digits'];
+    } else {
+        $digits = 7;
+    }
+
+    $unitID .= sprintf("%0{$digits}d", $number);
+
+    return $unitID;
+}
+
 
 class LABEL extends TCPDF
 {

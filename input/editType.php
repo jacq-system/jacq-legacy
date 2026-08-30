@@ -1,10 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\Tools;
 
 function makeSammler($search, $x, $y, $nr)
 {
@@ -94,23 +97,21 @@ function makeSammler($search, $x, $y, $nr)
 
 <?php
 if (isset($_GET['new'])) {
-    $p_taxon = getScientificName(extractID($_GET['ID'], true));
-    $p_typusID = 0;
+    $p_taxon = getScientificName(Tools::extractID($_GET['ID'], true));
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
-    $sql ="SELECT typecollID, taxonID, typusID, series, leg_nr, alternate_number, date, duplicates, annotation,
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
+    $sql ="SELECT typecollID, taxonID, series, leg_nr, alternate_number, date, duplicates, annotation,
             tt.SammlerID, Sammler, tt.Sammler_2ID, Sammler_2
            FROM (tbl_tax_typecollections tt, tbl_collector c)
             LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = tt.Sammler_2ID
            WHERE c.SammlerID = tt.SammlerID
-            AND typecollID = " . extractID($_GET['ID']);
+            AND typecollID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
         $p_typecollID       = $row['typecollID'];
-        $p_typusID          = $row['typusID'];
         $p_series           = $row['series'];
         $p_leg_nr           = $row['leg_nr'];
         $p_alternate_number = $row['alternate_number'];
@@ -126,13 +127,11 @@ if (isset($_GET['new'])) {
         $p_taxon = getScientificName($row['taxonID']);
     } else {
         $p_taxon = $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
-        $p_typusID = 0;
         $p_typecollID = $p_sammler = $p_sammler2 ="";
         $p_sammlerIndex = $p_sammler2Index = 0;
     }
 } else {
     $p_taxon            = $_POST['taxon'];
-    $p_typusID          = $_POST['typusID'];
     $p_series           = $_POST['series'];
     $p_leg_nr           = $_POST['leg_nr'];
     $p_alternate_number = $_POST['alternate_number'];
@@ -146,11 +145,10 @@ if (isset($_GET['new'])) {
     $p_typecollID       = $_POST['typecollID'];
 }
 
-if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
-    $sqlPart = " taxonID = "          . extractID($_POST['taxon']) . ",
-                 SammlerID = "        . extractID($_POST['sammler']) . ",
-                 Sammler_2ID = "      . extractID($_POST['sammler2']) . ",
-                 typusID = "          . intval($_POST['typusID']) . ",
+if (!empty($_POST['submitUpdate']) && Permission::has('type')) {
+    $sqlPart = " taxonID = "          . Tools::extractID($_POST['taxon']) . ",
+                 SammlerID = "        . Tools::extractID($_POST['sammler']) . ",
+                 Sammler_2ID = "      . Tools::extractID($_POST['sammler2']) . ",
                  series = "           . quoteString($_POST['series']) . ",
                  leg_nr = "           . quoteString($_POST['leg_nr']) . ",
                  alternate_number = " . quoteString($_POST['alternate_number']) . ",
@@ -167,7 +165,7 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
     }
     if ($result) {
         $id = ($_POST['typecollID']) ? intval($_POST['typecollID']) : dbi_insert_id();
-        logTypecollections($id,$updated);
+        Log::typecollections($id,$updated);
         echo "<script>\n"
            . "  window.opener.document.f.reload.click()\n"
            . "  self.close()\n"
@@ -179,23 +177,13 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x400) != 0)) {
            . "</script>\n";
     }
 }
-
-unset($typus);
-$typus[0][] = 0; $typus[1][] = "";
-$result = dbi_query("SELECT typusID, typus, typus_engl FROM tbl_typi ORDER BY typus");
-if ($result && mysqli_num_rows($result) > 0) {
-    while ($row = mysqli_fetch_array($result)) {
-        $typus[0][] = $row['typusID'];
-        $typus[1][] = $row['typus'] . " (" . $row['typus_engl'] . ")";
-    }
-}
 ?>
 
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
 
 <?php
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"typecollID\" value=\"$p_typecollID\">\n";
 $cf->label(10, 0.5, "ID");
@@ -223,7 +211,7 @@ $cf->inputText(10, 23, 28, "duplicates", $p_duplicates, 250);
 $cf->label(10, 25, "annotations");
 $cf->textarea(10, 25, 28, 4, "annotation", $p_annotation);
 
-if (($_SESSION['editControl'] & 0x400) != 0) {
+if (Permission::has('type')) {
     $text = ($p_typecollID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 34, "reload", " Reload ");
     $cf->buttonReset(10, 34, " Reset ");

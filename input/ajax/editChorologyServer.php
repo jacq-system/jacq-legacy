@@ -4,6 +4,8 @@ require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -189,11 +191,11 @@ function makeSearchQuery ($formValues)
             $sql .= "AND te.epithet IS NULL ";
         }
         if ($formValues['status']) {
-            $sql .= "AND ts.statusID = " . extractID($formValues['status']) . " ";
+            $sql .= "AND ts.statusID = " . Tools::extractID($formValues['status']) . " ";
         }
     }
     if ($formValues['rank']) {
-        $sql .= "AND ts.tax_rankID = " . extractID($formValues['rank']) . " ";
+        $sql .= "AND ts.tax_rankID = " . Tools::extractID($formValues['rank']) . " ";
     }
     if (!empty($_SESSION['editFamily'])) {
         $sql .= "AND family LIKE '" . dbi_escape_string($_SESSION['editFamily']) . "%' ";
@@ -443,7 +445,7 @@ function editDistribution ($formValues)
                 $provinces = getProvincesCode($formValues['projectNation']);
 
                 $ret = '';
-                if (checkRight('chorol')) {
+                if (Permission::has('chorol')) {
                     $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateDistribution(jaxon.getFormValues('f')); return false;\">";
                 }
                 $ret .= "<input class='button' type='submit' name='editChorology' value=' edit chorology ' onclick=\"jaxon_editChorology(jaxon.getFormValues('f')); return false;\">"
@@ -496,7 +498,7 @@ function editDistribution ($formValues)
                           . "</tr>\n";
                 }
                 $ret .= "</table>\n";
-                if (checkRight('chorol')) {
+                if (Permission::has('chorol')) {
                     $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateDistribution(jaxon.getFormValues('f')); return false;\">";
                 }
             } else {
@@ -532,7 +534,7 @@ function updateDistribution($formValues)
 
     ob_start();  // intercept all output
 
-    if (checkRight('chorol')) {
+    if (Permission::has('chorol')) {
         $provinces = getProvincesCode($formValues['projectNation']);
         $provinces[0] = '';
         foreach ($formValues['ID'] as $taxonID) {
@@ -608,7 +610,7 @@ function editChorology($formValues)
                 $provinces = getProvincesCode($formValues['projectNation']);
 
                 $ret = '';
-                if (checkRight('chorol')) {
+                if (Permission::has('chorol')) {
                     $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateChorology(jaxon.getFormValues('f')); return false;\">";
                 }
                 $ret .= "<input class='button' type='submit' name='editDistribution' value=' edit distribution ' onclick=\"jaxon_editDistribution(jaxon.getFormValues('f')); return false;\">"
@@ -645,7 +647,7 @@ function editChorology($formValues)
                           . "</td>" . $retC;
                 }
                 $ret .= "</table>\n";
-                if (checkRight('chorol')) {
+                if (Permission::has('chorol')) {
                     $ret .= "<input class='button' type='submit' name='update' value=' update ' onclick=\"jaxon_updateChorology(jaxon.getFormValues('f')); return false;\">";
                 }
             } else {
@@ -681,7 +683,7 @@ function updateChorology($formValues)
 
     ob_start();  // intercept all output
 
-    if (checkRight('chorol')) {
+    if (Permission::has('chorol')) {
         $provinces = getProvincesCode($formValues['projectNation']);
         $provinces[0] = '';
         foreach ($formValues['ID'] as $taxonID) {

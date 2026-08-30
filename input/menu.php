@@ -123,12 +123,12 @@ $userdata = mysqli_fetch_array(dbi_query($sql));
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td>
 <?php if (Permission::has('btnImg')): ?>
-        <input class="button" type="button" value="check Djatoka" onClick="openWindow('checkPictures.php','checkPictures')">
+        <input class="button" type="button" value="check Djatoka" onClick="openWindow('check/checkPictures.php','checkPictures')">
 <?php endif; ?>
       </td></tr>
       <tr align="left"><td>
 <?php if (Permission::has('btnNom')): ?>
-        <input class="button" type="button" value="Nomenclature" onClick="openWindow('checkNomenclature.php','checkNomenclature')">
+        <input class="button" type="button" value="Nomenclature" onClick="openWindow('check/checkNomenclature.php','checkNomenclature')">
 <?php endif; ?>
       </td><td style="width:20px">&nbsp;</td><td></td></tr>
       <tr align="left"><td>

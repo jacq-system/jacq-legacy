@@ -2,10 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require("inc/api_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -245,8 +244,7 @@ function makeDropdownInstitution()
     echo "<select size=\"1\" name=\"collection\">\n";
     echo "  <option value=\"0\"></option>\n";
 
-    $sql = "SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code";
-    $result = dbi_query($sql);
+    $result = dbi_query("SELECT source_id, source_code FROM herbarinput.meta ORDER BY source_code");
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"-" . htmlspecialchars($row['source_id']) . "\"";
         if (-intval($_SESSION['wuCollection']) == $row['source_id']) {
@@ -263,8 +261,7 @@ function makeDropdownCollection()
     echo "<select size=\"1\" name=\"collection\">\n";
     echo "  <option value=\"0\"></option>\n";
 
-    $sql = "SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection";
-    $result = dbi_query($sql);
+    $result = dbi_query("SELECT collectionID, collection FROM tbl_management_collections ORDER BY collection");
     while ($row = mysqli_fetch_array($result)) {
         echo "  <option value=\"" . htmlspecialchars($row['collectionID']) . "\"";
         if ($_SESSION['wuCollection'] == $row['collectionID']) echo " selected";
@@ -280,12 +277,11 @@ function makeDropdownUsername()
        . "  <option value='-1'></option>\n";
 
     if (Permission::has('specimensHistory')) {
-        $sql = "SELECT userID, firstname, surname, username
-                FROM herbarinput_log.tbl_herbardb_users
-                WHERE userID IN
-                 (SELECT userID FROM herbarinput_log.log_specimens GROUP BY userID)
-                ORDER BY surname, firstname, username";
-        $result = dbi_query($sql);
+        $result = dbi_query("SELECT userID, firstname, surname, username
+                             FROM herbarinput_log.tbl_herbardb_users
+                             WHERE userID IN
+                              (SELECT userID FROM herbarinput_log.log_specimens GROUP BY userID)
+                             ORDER BY surname, firstname, username");
         echo "  <option value='0'" . (($_SESSION['sUserID'] == 0) ? " selected" : '') . ">--- all users ---</option>\n";
     } else {
         $result = dbi_query("SELECT userID, firstname, surname, username FROM herbarinput_log.tbl_herbardb_users WHERE userID = {$_SESSION['uid']}");
@@ -393,11 +389,10 @@ function collectionItem($coll)
 
 function getImportEntries($checked)
 {
-    $sql = "SELECT specimen_ID
-            FROM tbl_specimens_import
-            WHERE userID = '" . intval($_SESSION['uid']) . "'
-             AND " . (($checked) ? "checked > 0" : "checked = 0");
-    $result = dbi_query($sql);
+    $result = dbi_query("SELECT specimen_ID
+                         FROM tbl_specimens_import
+                         WHERE userID = '" . intval($_SESSION['uid']) . "'
+                          AND " . (($checked) ? "checked > 0" : "checked = 0"));
 
     return mysqli_num_rows($result);
 }
@@ -623,10 +618,9 @@ jaxon_checkTypeLabelMapPdfButton();
       <select size="1" name="geo_general">
       <option></option>
       <?php
-        $sql = "SELECT geo_general
-                FROM tbl_geo_region
-                GROUP BY geo_general ORDER BY geo_general";
-        $result = dbi_query($sql);
+        $result = dbi_query("SELECT geo_general
+                             FROM tbl_geo_region
+                             GROUP BY geo_general ORDER BY geo_general");
         while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['sGeoGeneral'] == $row['geo_general']) echo " selected";
@@ -640,10 +634,9 @@ jaxon_checkTypeLabelMapPdfButton();
       <select size="1" name="geo_region">
       <option></option>
       <?php
-        $sql = "SELECT geo_region
-                FROM tbl_geo_region
-                ORDER BY geo_region";
-        $result = dbi_query($sql);
+        $result = dbi_query("SELECT geo_region
+                             FROM tbl_geo_region
+                             ORDER BY geo_region");
         while ($row=mysqli_fetch_array($result)) {
             echo "<option";
             if ($_SESSION['sGeoRegion'] == $row['geo_region']) echo " selected";
@@ -771,31 +764,29 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             $idList = array();
             foreach ($_POST as $key => $value) {
                 if (substr($key, 0, 11) == "batch_spec_" && $value) {
-                    $id = substr($key, 11);
+                    $id = intval(substr($key, 11));
 
                     $blocked = false;
                     if (!Permission::has('batchAdmin')) {
-                        $sql = "SELECT source_id
-                                FROM tbl_specimens, tbl_management_collections
-                                WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
-                                 AND specimen_ID = '$id'";
-                        $row = dbi_query($sql)->fetch_array();
+                        $row = dbi_query("SELECT source_id
+                                          FROM tbl_specimens, tbl_management_collections
+                                          WHERE tbl_specimens.collectionID = tbl_management_collections.collectionID
+                                           AND specimen_ID = '$id'")->fetch_array();
                         if ($row['source_id'] != $_SESSION['sid']) {
                             $blocked = true;
                         }
                     }
 
                     if (!$blocked) {
-                        $sql = "INSERT INTO api.tbl_api_specimens SET
-                                 specimen_ID = '$id',
-                                 batchID_fk = '$batch_id'";
-                        dbi_query($sql);
+                        dbi_query("INSERT INTO api.tbl_api_specimens SET
+                                    specimen_ID = '$id',
+                                    batchID_fk = '$batch_id'");
                     }
 
                     // update or insert into update_tbl_api_units
-                    $res = update_tbl_api_units($id);
-                    update_tbl_api_units_identifications($id);
-                    garbageCollection($id);
+                    $res = Api::update_tbl_api_units($id);
+                    Api::update_tbl_api_units_identifications($id);
+                    Api::garbageCollection($id);
                     if (!$res) {
                         $error = true;
                         array_push($idList, $id);

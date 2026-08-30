@@ -1,8 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once 'inc/stableIdentifierFunctions.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
+use Jacq\StableIdentifier;
 
 $stblid = "";
 $specimen_id = intval(filter_input(INPUT_POST, 'specimen_ID', FILTER_SANITIZE_NUMBER_INT));
@@ -14,9 +15,9 @@ if ($specimen_id) { // did we get a valid specimen-ID?
     if ($result_specimen && $result_specimen->num_rows > 0) { // we've found a valid source_id and collectionID
         $row_specimen = $result_specimen->fetch_array();
 
-        $stblid = makeStableIdentifier($row_specimen['source_id'],
-                                       array('specimen_ID' => intval(filter_input(INPUT_POST, $primaryKey, FILTER_SANITIZE_NUMBER_INT))),
-                                       $row_specimen['collectionID']);
+        $stblid = StableIdentifier::make($row_specimen['source_id'],
+                                         array('specimen_ID' => $specimen_id),
+                                         $row_specimen['collectionID']);
     }
 }
 

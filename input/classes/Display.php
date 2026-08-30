@@ -58,11 +58,11 @@ protected function __construct () {}
 /**
  * returns a formatted protolog-string when given a valid citation-ID
  *
- * @param int $citationID citation-ID
+ * @param int|string $citationID citation-ID
  * @param bool $withID adds the citationID between brackets at the end (default no)
  * @return string formatted protolog-string
  */
-public function protolog (int $citationID, bool $withID = false): string
+public function protolog (int|string $citationID, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -107,13 +107,13 @@ public function protolog (int $citationID, bool $withID = false): string
 /**
  * returns a formatted taxon-string when given a valid taxon-ID
  *
- * @param int $taxonID taxon-ID
+ * @param int|string $taxonID taxon-ID
  * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
  * @param bool $withDT [optional] adds the DallaTorre information (default no)
  * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
-public function taxon (int $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
+public function taxon (int|string $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -209,12 +209,12 @@ public function taxon (int $taxonID, bool $withSeperator = false, bool $withDT =
  * returns either a formatted hybrid-taxon-string (if taxon is a hybrid)
  * or a normal taxon-string (if taxon isn't a hybrid) when given a taxon-ID
  *
- * @param int $taxonID taxon-ID
+ * @param int|string $taxonID taxon-ID
  * @param bool $withSeperator [optional] adds a seperator after genus and epithet (default no)
- * @param bool $withID[optional] adds the taxonID between brackets at the end (default no)
+ * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
  * @return string formatted taxon-string
  */
-public function taxonWithHybrids (int $taxonID, bool $withSeperator = false, bool $withID = false): string
+public function taxonWithHybrids (int|string $taxonID, bool $withSeperator = false, bool $withID = false): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -239,10 +239,10 @@ public function taxonWithHybrids (int $taxonID, bool $withSeperator = false, boo
 /**
  * returns a formatted synonymy-reference-string when given a valid synonym-ID
  *
- * @param int $synonymID synonym-ID
+ * @param int|string $synonymID synonym-ID
  * @return string formatted synonymy-reference-string
  */
-public function SynonymyReference (int $synonymID): string
+public function SynonymyReference (int|string $synonymID): string
 {
     try {
         $db = PdoAccess::ConnectTo('INPUT');
@@ -278,11 +278,11 @@ public function SynonymyReference (int $synonymID): string
 /**
  * returns a formatted sort-string
  *
- * @param int $typ type of sort-item, "==$id" for ascending, "==-$id" for descending
- * @param int $id id of sort-item
+ * @param int|string $typ type of sort-item, "==$id" for ascending, "==-$id" for descending
+ * @param int|string $id id of sort-item
  * @return string formatted sort-string
  */
-public function sortItem(int $typ, int $id): string
+public function sortItem(int|string $typ, int|string $id): string
 {
     if ($typ == $id) {
         return "&nbsp;&nbsp;v";

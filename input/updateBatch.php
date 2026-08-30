@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/api_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
+use Jacq\Cssf;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -79,7 +79,7 @@ case 1: // delete all unsent batches
   }
 
   // garbage collection: if tbl_api_specimens is empty -> delete tbl_api_units and tbl_api_units_identifications
-  garbageCollection($id);
+  Api::garbageCollection($id);
 
   echo "<script language=\"JavaScript\">\n".
        "  self.close();\n".
@@ -127,9 +127,9 @@ case 2: // edit the entries or insert new ones
   }
 
   // update or insert into update_tbl_api_units
-  $result = update_tbl_api_units($id);
-  update_tbl_api_units_identifications($id);
-  garbageCollection($id);
+  $result = Api::update_tbl_api_units($id);
+  Api::update_tbl_api_units_identifications($id);
+  Api::garbageCollection($id);
   if ($result) {
     echo "<script language=\"JavaScript\">\n".
          "  self.close();\n".
@@ -151,7 +151,7 @@ case 3: // delete single entry
     $lock = false;
   if (!$lock) {   // user may delete
     dbi_query("DELETE FROM api.tbl_api_specimens WHERE api_specimensID='$del_id'");
-    garbageCollection($id);
+    Api::garbageCollection($id);
   }
   // no break, type 3 acts like type 4 after deleting the single entry
 
@@ -177,7 +177,7 @@ case 4: // standard
 
   echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
-  $cf = new CSSF();
+  $cf = new Cssf();
 
   echo "<input type=\"hidden\" name=\"ID\" value=\"$id\">\n";
   $cf->label(8,0.5,"ID");

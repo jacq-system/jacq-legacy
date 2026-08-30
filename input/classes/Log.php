@@ -6,12 +6,14 @@ use Exception;
 
 class Log
 {
-    public static function tbl_tax_synonymy (int $id, int $updated): void
+    public static function tbl_tax_synonymy (int|string $id, int $updated): void
     {
+        $id = intval($id);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
-            $row = $db->query("SELECT * FROM herbarinput.tbl_tax_synonymy where tax_syn_ID ='$id' limit 1")->fetch_array();
+            $row = $db->query("SELECT * FROM herbarinput.tbl_tax_synonymy WHERE tax_syn_ID ='$id' limit 1")->fetch_array();
             $db->query("INSERT INTO herbarinput_log.log_tbl_tax_synonymy SET
                          tax_syn_ID         = " . $db->quoteString($row['tax_syn_ID']) . ",
                          taxonID            = " . $db->quoteString($row['taxonID']) . ",
@@ -33,8 +35,10 @@ class Log
     }
 
 
-    public static function collector(int $id, int $updated): void
+    public static function collector(int|string $id, int $updated): void
     {
+        $id = intval($id);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -50,8 +54,10 @@ class Log
     }
 
 
-    public static function specimen (int $ID, int $updated): void
+    public static function specimen (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -130,8 +136,10 @@ class Log
     }
 
 
-    public static function specimensTypes (int $ID, int $updated): void
+    public static function specimensTypes (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -151,8 +159,10 @@ class Log
     }
 
 
-    public static function specimensSeries (int $ID, int $updated): void
+    public static function specimensSeries (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -170,8 +180,10 @@ class Log
     }
 
 
-    public static function authors (int $ID, int $updated): void
+    public static function authors (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -189,8 +201,10 @@ class Log
     }
 
 
-    public static function families (int $ID, int $updated): void
+    public static function families (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -208,8 +222,10 @@ class Log
     }
 
 
-    public static function genera (int $ID, int $updated): void
+    public static function genera (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -234,8 +250,10 @@ class Log
     }
 
 
-    public static function index (int $ID, int $updated): void
+    public static function index (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -256,8 +274,10 @@ class Log
     }
 
 
-    public static function species (int $ID, int $updated): void
+    public static function species (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -291,8 +311,10 @@ class Log
     }
 
 
-    public static function typecollections (int $ID, int $updated): void
+    public static function typecollections (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -317,8 +339,10 @@ class Log
     }
 
 
-    public static function lit (int $ID, int $updated): void
+    public static function lit (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -354,8 +378,10 @@ class Log
     }
 
 
-    public static function litTax (int $ID, int $updated): void
+    public static function litTax (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -380,8 +406,10 @@ class Log
     }
 
 
-    public static function litAuthors (int $ID, int $updated): void
+    public static function litAuthors (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -399,8 +427,10 @@ class Log
     }
 
 
-    public static function litPeriodicals (int $ID, int $updated): void
+    public static function litPeriodicals (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -421,8 +451,10 @@ class Log
     }
 
 
-    public static function litPublishers (int $ID, int $updated): void
+    public static function litPublishers (int|string $ID, int $updated): void
     {
+        $ID = intval($ID);
+
         try {
             $db = DbAccess::ConnectTo('INPUT');
 
@@ -437,4 +469,94 @@ class Log
             error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
         }
     }
+
+
+    public static function namesCommonName (int|string $id, int $updated): void
+    {
+        $id = intval($id);
+
+        try {
+            $db = DbAccess::ConnectTo('INPUT');
+
+            $row = $db->query("SELECT * FROM herbar_names.tbl_name_names WHERE name_id='$id'")->fetch_array();
+            $db->query("INSERT INTO herbarinput_log.log_commonnames_tbl_names SET
+                         name_id            = " . $db->quoteString($row['name_id']) . ",
+                         transliteration_id = " . $db->quoteString($row['transliteration_id']) . ",
+                         userID             = " . $db->quoteString($_SESSION['uid']) . ",
+                         updated            = " . $db->quoteString($updated) . ",
+                         timestamp          = NULL");
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
+        }
+    }
+
+
+    public static function tbl_name_names_equals (int|string $id1, int|string $id2, int $updated): void
+    {
+        $id1 = intval($id1);
+        $id2 = intval($id2);
+
+        try {
+            $db = DbAccess::ConnectTo('INPUT');
+
+            $row = $db->query("SELECT * FROM herbar_names.tbl_name_names_equals WHERE tbl_name_names_name_id='$id1' and tbl_name_names_name_id1='$id2'")->fetch_array();
+            $db->query("INSERT INTO herbarinput_log.log_commonnames_tbl_name_names_equals SET
+                         tbl_name_names_name_id  = " . $db->quoteString($row['tbl_name_names_name_id']) . ",
+                         tbl_name_names_name_id1 = " . $db->quoteString($row['tbl_name_names_name_id1']) . ",
+                         userID                  = " . $db->quoteString($_SESSION['uid']) . ",
+                         updated                 = " . $db->quoteString($updated) . ",
+                         timestamp               = NULL");
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
+        }
+    }
+
+
+    public static function commonNamesCommonName (int|string $id, int $updated): void
+    {
+        $id = intval($id);
+
+        try {
+            $db = DbAccess::ConnectTo('INPUT');
+
+            $row = $db->query("SELECT * FROM herbar_names.tbl_name_commons WHERE common_id = '$id'")->fetch_array();
+            $db->query("INSERT INTO herbarinput_log.log_commonnames_tbl_name_commons SET
+                         common_id   = " . $db->quoteString($row['common_id']) . ",
+                         common_name = " . $db->quoteString($row['common_name']) . ",
+                         locked      = " . $db->quoteString($row['locked']) . ",
+                         userID      = " . $db->quoteString($_SESSION['uid']) . ",
+                         updated     = " . $db->quoteString($updated) . ",
+                         timestamp   = NULL");
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
+        }
+    }
+
+
+    public static function commonNamesAppliesTo (NaturalID $id, int $updated, string $old = ''): void
+    {
+        try {
+            $db = DbAccess::ConnectTo('INPUT');
+
+            $row = $db->query("SELECT * FROM herbar_names.tbl_name_applies_to WHERE " . $id->getWhere())->fetch_array();
+            $db->query("INSERT INTO herbarinput_log.log_commonnames_tbl_name_applies_to SET
+                         geonameId        = " . $db->quoteString($row['geonameId']) . ",
+                         language_id      = " . $db->quoteString($row['language_id']) . ",
+                         period_id        = " . $db->quoteString($row['period_id']) . ",
+                         entity_id        = " . $db->quoteString($row['entity_id']) . ",
+                         reference_id     = " . $db->quoteString($row['reference_id']) . ",
+                         name_id          = " . $db->quoteString($row['name_id']) . ",
+                         tribe_id         = " . $db->quoteString($row['tribe_id']) . ",
+                         geospecification = " . $db->quoteString($row['geospecification']) . ",
+                         annotations      = " . $db->quoteString($row['annotations']) . ",
+                         locked           = " . $db->quoteString($row['locked']) . ",
+                         oldid            = " . $db->quoteString($old) . ",
+                         userID           = " . $db->quoteString($_SESSION['uid']) . ",
+                         updated          = " . $db->quoteString($updated) . ",
+                         timestamp        = NULL");
+        } catch (Exception $e) {
+            error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
+        }
+    }
+
 }

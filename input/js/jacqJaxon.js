@@ -17,6 +17,31 @@ jaxon.config.responseType = "JSON";
 
 Jacq = {};
 Jacq.Jaxon = {};
+Jacq.Jaxon.ListTaxServer = {};
+Jacq.Jaxon.ListTaxServer.updateScientificNameLabel = function() {
+    return jaxon.request(
+        { jxncls: 'Jacq.Jaxon.ListTaxServer', jxnmthd: 'updateScientificNameLabel' },
+        { parameters: arguments }
+    );
+};
+Jacq.Jaxon.ListTaxServer.clearScientificNameLabels = function() {
+    return jaxon.request(
+        { jxncls: 'Jacq.Jaxon.ListTaxServer', jxnmthd: 'clearScientificNameLabels' },
+        { parameters: arguments }
+    );
+};
+Jacq.Jaxon.ListTaxServer.setAll = function() {
+    return jaxon.request(
+        { jxncls: 'Jacq.Jaxon.ListTaxServer', jxnmthd: 'setAll' },
+        { parameters: arguments }
+    );
+};
+Jacq.Jaxon.ListTaxServer.clearAll = function() {
+    return jaxon.request(
+        { jxncls: 'Jacq.Jaxon.ListTaxServer', jxnmthd: 'clearAll' },
+        { parameters: arguments }
+    );
+};
 Jacq.Jaxon.EditHybridsServer = {};
 Jacq.Jaxon.EditHybridsServer.checkParents = function() {
     return jaxon.request(

@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -79,7 +79,7 @@ $sql = "SELECT Sammler_2, Sammler_2ID FROM tbl_collector_2 WHERE Sammler_2ID='" 
 $result = dbi_query($sql);
 $row = mysqli_fetch_array($result);
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . ((!empty($row['Sammler_2ID'])) ? $row['Sammler_2ID'] : 0) . "\">\n";
 $cf->label(10, 0.5, "ID");

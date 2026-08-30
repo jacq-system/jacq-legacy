@@ -3,9 +3,12 @@ session_start();
 error_reporting(0);
 require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
-require("../inc/cssf.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\PdoAccess;
+use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -130,7 +133,7 @@ function listLib($periodical)
 
     $text = "<tr class=\"out\"><td class=\"out\" colspan=\"4\">no entries</td></tr>\n";
 
-    //$id = extractID($periodical['periodical']);
+    //$id = Jacq\Tools::extractID($periodical['periodical']);
 	$id = intval($periodical['periodicalIndex']);
 
     if ($id!='NULL') {
@@ -237,7 +240,7 @@ function editContainer($citationID)
         $ret = "<form id=\"f_iBox\">\n"
              . "<input type=\"hidden\" name=\"citationID\" id=\"citationID\" value=\"$citationIDfiltered\">\n"
              . "<table>\n";
-        if (($_SESSION['editControl'] & 0x20) != 0) {
+        if (Permission::has('lit')) {
             $ret .= "<tr><td colspan=\"4\">"
                   . "<input type=\"submit\" class=\"cssfbutton\" value=\"update\" onClick=\"jaxon_updateContainer(jaxon.getFormValues('f_iBox')); return false;\">"
                   . "</td></tr>\n";
@@ -268,7 +271,7 @@ function editContainer($citationID)
                   . "</td><td width='10'></td><td>"
                   . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='citation_$id' id='citation_$id' value='" . htmlspecialchars($protolog) . "'>"
                   . "</td><td align='center'>";
-            if (($_SESSION['editControl'] & 0x20) != 0) {
+            if (Permission::has('lit')) {
                 $ret .= "<img src=\"webimages/remove.png\" title=\"delete entry\" onclick=\"jaxon_deleteContainer('" . $row['tbl_lit_containerID'] . "', '$citationIDfiltered');\">";
             }
             $ret .= "</td></tr>\n";
@@ -297,17 +300,17 @@ function updateContainer($formData)
 
     $citationID = intval($formData['citationID']);
 
-    if ($citationID && ($_SESSION['editControl'] & 0x20) != 0) {
+    if ($citationID && Permission::has('lit')) {
         foreach ($formData as $key => $val) {
-            if (substr($key, 0, 9) == 'citation_' && extractID($val) != "NULL") {
+            if (substr($key, 0, 9) == 'citation_' && Tools::extractID($val) != "NULL") {
                 $containerID = intval(substr($key, 9));
-                if ($citationID != extractID($val)) {
+                if ($citationID != Tools::extractID($val)) {
                     if (!empty($formData['isChild_' . $containerID])) {
-                        $sqldata = "citation_parent_ID = " . extractID($val) . ",
+                        $sqldata = "citation_parent_ID = " . Tools::extractID($val) . ",
                                     citation_child_ID  = '" . $citationID . "'";
                     } else {
                         $sqldata = "citation_parent_ID = '" . $citationID . "',
-                                    citation_child_ID  = " . extractID($val) . "";
+                                    citation_child_ID  = " . Tools::extractID($val) . "";
                     }
                     if ($containerID > 0) {
                         $sql = "UPDATE tbl_lit_container SET
@@ -335,7 +338,7 @@ function deleteContainer($containerID, $citationID)
 
     $containerIDfiltered = intval($containerID);
 
-    if ($containerIDfiltered && ($_SESSION['editControl'] & 0x20) != 0) {
+    if ($containerIDfiltered && Permission::has('lit')) {
         dbi_query("DELETE FROM tbl_lit_container WHERE tbl_lit_containerID = '" . $containerIDfiltered . "'");
     }
 
@@ -361,7 +364,7 @@ function addClassification($citationID, $number, $order, $child_taxonID, $parent
 
     if( $citationID_f > 0 && $child_taxonID_f > 0 && $parent_taxonID_f > 0 ) {
         // Find the fitting tax_synonymy entry
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("
             SELECT `tax_syn_ID`
             FROM `tbl_tax_synonymy`
@@ -408,7 +411,7 @@ function updateClassification( $p_classification_id, $p_number, $p_order, $p_chi
 
     // check if we have a valid entry to edit
     if( $p_classification_id_f > 0 && $p_parent_taxonID_f > 0 ) {
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("
             UPDATE `tbl_tax_classification`
             SET
@@ -441,7 +444,7 @@ function deleteClassification( $p_classification_id )
     $p_classification_id_f = intval($p_classification_id);
     if( $p_classification_id_f > 0 ) {
         // Find citationID for this entry
-        $db = clsDbAccess::Connect('INPUT');
+        $db = PdoAccess::ConnectTo('INPUT');
         $dbst = $db->query("SELECT ts.`source_citationID`
                             FROM `tbl_tax_synonymy` ts
                             LEFT JOIN `tbl_tax_classification` tc ON tc.`tax_syn_ID` = ts.`tax_syn_ID`
@@ -484,7 +487,7 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
     /**
      * Fetch all existing entries and show them
      */
-    $db = clsDbAccess::Connect('INPUT');
+    $db = PdoAccess::ConnectTo('INPUT');
     $dbst = $db->query("SELECT
                          SQL_CALC_FOUND_ROWS
                          tc.`classification_id`,
@@ -527,7 +530,7 @@ function listClassifications( $p_citationID, $page, $bInitialize, $p_search_taxo
 
     // Create output and send it back
     ob_start();
-    $cf = new CSSF();
+    $cf = new Cssf();
     $cf->tabindex = 1000;
     foreach( $rows as $index => $row ) {
         $classification_id = $row['classification_id'];

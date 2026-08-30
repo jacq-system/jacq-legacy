@@ -149,7 +149,7 @@ foreach ($tbls as $tbl) {
                  gn.nation_engl, gn.iso_alpha_3_code, gn.iso_alpha_2_code, gp.provinz,
                  ss.series,
                  md.copyright, md.ipr, md.rights_url,md.multimedia_object_format,
-                 mc.source_id, mc.collection, mc.coll_gbif_pilot,
+                 mc.source_id, mc.collection, mc.coll_gbif_pilot, mc.KindOfUnit, mc.Preparation,
                  ei.url AS europeana_url
                 FROM (tbl_specimens s, tbl_collector c, tbl_tax_species ts, tbl_tax_rank ttr, tbl_management_collections mc)
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
@@ -257,15 +257,19 @@ foreach ($tbls as $tbl) {
             } elseif ($row['Sammler_2']) {
                 $GatheringAgentsText .= " & " . $row['Sammler_2'];
             }
+            $alt_number_formatted = trim(str_replace('s.n.', '', $row['alt_number'])); // remove "s.n.", trim but apart from that leave the rest unchanged
             if ($row['series_number']) {
                 if ($row['Nummer']) {
                     $GatheringAgentsText .= " " . $row['Nummer'];
                 }
+//                if ($row['alt_number']) {
+//                    $GatheringAgentsText .= " " . $row['alt_number'];
+//                }
+//                if (str_contains($row['alt_number'], "s.n.")) {
+//                    $GatheringAgentsText .= " [" . $row['Datum'] . "]";
+//                }
                 if ($row['alt_number']) {
-                    $GatheringAgentsText .= " " . $row['alt_number'];
-                }
-                if (str_contains($row['alt_number'], "s.n.")) {
-                    $GatheringAgentsText .= " [" . $row['Datum'] . "]";
+                    $GatheringAgentsText .= " " . $alt_number_formatted;
                 }
                 if ($row['series']) {
                     $GatheringAgentsText .= " " . $row['series'];
@@ -278,11 +282,14 @@ foreach ($tbls as $tbl) {
                 if ($row['Nummer']) {
                     $GatheringAgentsText .= " " . $row['Nummer'];
                 }
+//                if ($row['alt_number']) {
+//                    $GatheringAgentsText .= " " . $row['alt_number'];
+//                }
+//                if (str_contains($row['alt_number'], "s.n.")) {
+//                    $GatheringAgentsText .= " [" . $row['Datum'] . "]";
+//                }
                 if ($row['alt_number']) {
-                    $GatheringAgentsText .= " " . $row['alt_number'];
-                }
-                if (str_contains($row['alt_number'], "s.n.")) {
-                    $GatheringAgentsText .= " [" . $row['Datum'] . "]";
+                    $GatheringAgentsText .= " " . $alt_number_formatted;
                 }
             }
 
@@ -404,6 +411,8 @@ foreach ($tbls as $tbl) {
                  IdentificationHistory    = " . $dbLink2->quoteString(substr($row['taxon_alt'], 0, 255)) . ",
                  IdentificationDate       = " . $dbLink2->quoteString($IdentificationDate) . ",
                  NamedCollection          = " . $dbLink2->quoteString($row['coll_gbif_pilot']) . ",
+                 KindOfUnit               = " . $dbLink2->quoteString($row['KindOfUnit']) . ",
+                 Preparation              = " . $dbLink2->quoteString($row['Preparation']) . ",
                  UnitIDNumeric            = {$row['specimen_ID']},
                  UnitDescription          = " . $dbLink2->quoteString($row['Bemerkungen']) . ",
                  source_id_fk             = {$row['source_id']},

@@ -6,62 +6,96 @@ require_once('../inc/connect.php');
 error_reporting(E_ALL);
 class internMDLDService {
 
-	function getSQLResults($sql){
-		$sc=false;
-		$res=array();
-		if(!is_array($sql)){
-			$sql=array($sql);
-			$sc=true;
-		}
-		foreach($sql as $k=>$v){
-			$resdb=dbi_query($v);
-			if($resdb){
-				while($row=mysqli_fetch_assoc($resdb)){
-					$res[$k][]=$row;
-				}
-			}
-		}
-		if($sc && isset($res[0]) ){
-			return $res[0];
-		}
-		return $res;
-	}
+    // unsafe, do not use
+//	function getSQLResults($sql){
+//		$sc=false;
+//		$res=array();
+//		if(!is_array($sql)){
+//			$sql=array($sql);
+//			$sc=true;
+//		}
+//		foreach($sql as $k=>$v){
+//			$resdb=dbi_query($v);
+//			if($resdb){
+//				while($row=mysqli_fetch_assoc($resdb)){
+//					$res[$k][]=$row;
+//				}
+//			}
+//		}
+//		if($sc && isset($res[0]) ){
+//			return $res[0];
+//		}
+//		return $res;
+//	}
+
+    function getMDLDcommonnames($uninomial, $lenlim)
+    {
+        global $dbLink;
+
+        // MDLD Search for commonnames.
+        $limit = 4;
+        $block_limit = 2;
+        $res=array();
+        $uninomial = $dbLink->real_escape_string($uninomial);
+        $lenlim = intval($lenlim);
+
+        $sql="SELECT com.common_id as 'i'
+              FROM
+               herbar_names.tbl_name_names nam
+               LEFT JOIN herbar_names.tbl_name_commons com ON com.common_id = nam.name_id
+               LEFT JOIN herbar_names.tbl_name_transliterations translit ON translit.transliteration_id = nam.transliteration_id
+              WHERE
+              (
+                   mdld('$uninomial', com.common_name, $block_limit, $limit) <  LEAST(CHAR_LENGTH(com.common_name) / 2, $lenlim)
+                OR mdld('$uninomial', translit.name, $block_limit, $limit) <  LEAST(CHAR_LENGTH(translit.name) / 2, $lenlim)
+              )
+              LIMIT 1000";
+        $resdb = dbi_query($sql);
+        if($resdb){
+            while ($row = mysqli_fetch_assoc($resdb)){
+                $res[] = $row;
+            }
+        }
+        return $res;
+    }
 
 
-
-	function check_checkScrutiny($author, $year){
+	function check_checkScrutiny($author, $year)
+    {
+        global $dbLink;
 
 		if(($valid=jsonRPCServerCustom::checkSecuredRequest())!==true)return $valid;
 
 		$parts_auth=preg_split ('/-|\s|,|&|;|(\.[\w]+)/',$author,20,PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 
-		$len=mb_strlen($author,"UTF-8");
+        $authorFiltered = $dbLink->real_escape_string($author);
+		$len=mb_strlen($authorFiltered,"UTF-8");
 		$checks="";
 		$checks.="IF($len <= CHAR_LENGTH(a.autor)+1 and $len >= CHAR_LENGTH(a.autor)-1 ,2,0) as check_a_1_2, \n";
-		$checks.="IF(a.autor='{$author}',2,0) as check_a_2_2,\n";
-		$checks.="IF( mdld('{$author}',a.autor, 3, 4)<4,2,0) as check_a_3_2,\n";
+		$checks.="IF(a.autor='{$authorFiltered}',2,0) as check_a_2_2,\n";
+		$checks.="IF( mdld('{$authorFiltered}',a.autor, 3, 4)<4,2,0) as check_a_3_2,\n";
 
-		//echo $author;
 		$where="";
 		$where1="";
 		$where2="";
 
 		$x=0;
 		foreach($parts_auth as $apart){
+            $apartFiltered = $dbLink->real_escape_string($apart);
 			if(strpos($apart,".")===false && strlen($apart)>4){
 
-				$where1.=" and a.autor LIKE '%{$apart}%'";
-				$checks.="IF(INSTR(a.autor,'{$apart}' )>0 ,1,0) as check_a_4{$x}_1,\n";
+				$where1.=" and a.autor LIKE '%{$apartFiltered}%'";
+				$checks.="IF(INSTR(a.autor,'{$apartFiltered}' )>0 ,1,0) as check_a_4{$x}_1,\n";
 
 			}else{
 
-				$where2.=" or  a.autor LIKE '%{$apart}%'";
-				$checks.="IF(INSTR(a.autor,'{$apart}' )>0 ,1,0) as check_a_5{$x}_1,\n";
+				$where2.=" or  a.autor LIKE '%{$apartFiltered}%'";
+				$checks.="IF(INSTR(a.autor,'{$apartFiltered}' )>0 ,1,0) as check_a_5{$x}_1,\n";
 			}
 			$x++;
 		}
 
-		$where=" mdld('{$author}',a.autor, 3, 4)<4 or ( 1=1 {$where1} and ( 1=0 {$where} {$where2} )) ";
+		$where=" mdld('{$authorFiltered}',a.autor, 3, 4)<4 or ( 1=1 {$where1} and ( 1=0 {$where} {$where2} )) ";
 
 
 		$years="";
@@ -70,8 +104,9 @@ class internMDLDService {
 
 		$x=0;
 		foreach($parts_year as $ypart){
-			$years.=" and lit.jahr like '%{$ypart}%'";
-			$checks.="IF(INSTR(lit.jahr,'{$ypart}' )>0 ,5,0) as  check_l_1{$x}_5,\n";
+            $ypartFiltered = $dbLink->real_escape_string($ypart);
+			$years.=" and lit.jahr like '%{$ypartFiltered}%'";
+			$checks.="IF(INSTR(lit.jahr,'{$ypartFiltered}' )>0 ,5,0) as  check_l_1{$x}_5,\n";
 			$x++;
 		}
 

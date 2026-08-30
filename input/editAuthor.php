@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -54,7 +54,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
                          $lock
                         WHERE authorID = " . intval($_POST['ID']);
                 $result = dbi_query($sql);
-                logAuthors($id, 1);
+                Log::authors($id, 1);
             }
         } else {
             $sql = "INSERT INTO tbl_tax_authors SET
@@ -64,7 +64,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
             $result = dbi_query($sql);
             if ($result) {
                 $id = dbi_insert_id();
-                logAuthors($id, 0);
+                Log::authors($id, 0);
             } else {
                 $id = 0;
             }
@@ -72,7 +72,7 @@ if (!empty($_POST['submitUpdate']) && Permission::has('author') && (Permission::
 
         $ret = $_POST['author'];
         //  if ($bpf) $ret .= " [".preg_replace("/(\r\n|\r|\n)/","\\n",$bpf)."]";
-        if ($bpf) $ret .= chr(194) . chr(183) . " [" . replaceNewline($bpf) . "]";
+        if ($bpf) $ret .= chr(194) . chr(183) . " [" . Tools::replaceNewline($bpf) . "]";
 
         echo "<script language=\"JavaScript\">\n";
         switch ($_REQUEST['typ']) {
@@ -116,7 +116,7 @@ if ($result->num_rows > 0) {
     $row = array('authorID' => '', 'author' => '', 'Brummit_Powell_full' => '', 'locked' => 0, 'external' =>0);
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $row['authorID'] . "\">\n";
 $cf->label(8, 0.5, "ID");

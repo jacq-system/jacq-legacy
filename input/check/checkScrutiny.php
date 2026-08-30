@@ -1,7 +1,9 @@
 <?PHP
 session_start();
 require("../inc/connect.php");
+require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\InternMDLDService;
 
 $path="../inc/";
 //$path="../develop/input/inc/";
@@ -362,7 +364,7 @@ EOF;
 			$parts2[$k]="<span class='highl'>{$pp2}</span>";
 		}
 
-		$service = clsInternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
+		$service = InternMDLDService::Load($_OPTIONS['internMDLDService']['url'],$_OPTIONS['internMDLDService']['password']);
 
 		try {
 			$res = $service->check_checkScrutiny($author, $year);

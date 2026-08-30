@@ -1,13 +1,14 @@
 <?php
 session_start();
 require("inc/gatekeeper.php");
-require("inc/cssf.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\DbAccess;
 use Jacq\Display;
 use Jacq\Log;
 use Jacq\Tools;
+use Jacq\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -17,7 +18,7 @@ $db = DbAccess::ConnectTo('INPUT');
 $display = Display::Load();
 
 if (isset($_GET['new'])) {
-    $p_citationIndex = Tools::extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID'], true);
     $p_citation = $display->protolog($p_citationIndex, true);
     $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
     $p_source = "person";
@@ -72,7 +73,7 @@ if (isset($_GET['new'])) {
         $p_sourcePersIndex = 39269;
         $p_sourceLit = $p_sourceLitIndex = $p_et_al = $p_timestamp = $p_user = "";
     }
-} elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
     $annotations = $_POST['annotations'];
     $sqldata = "taxonID = '" . intval($_POST['taxonIndex']) . "',
                 acc_taxon_ID = '" . intval($_POST['taxonAccIndex']) . "',
@@ -192,7 +193,7 @@ if (isset($_GET['new'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"lit_tax_ID\" value=\"$p_lit_tax_ID\">\n";
@@ -223,7 +224,7 @@ $cf->checkbox(7, 14, "et_al", $p_et_al);
 $cf->label(7, 16, "annotations");
 $cf->textarea(7, 16, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $text = ($p_lit_tax_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 22, "reload", " Reload ");
     $cf->buttonReset(10, 22, " Reset ");

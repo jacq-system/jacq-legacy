@@ -1,11 +1,11 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -142,7 +142,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                              $lock
                             WHERE genID = '$id'";
                     $result = dbi_query($sql);
-                    logGenera($id,1);
+                    Log::genera($id,1);
                 }
             } else {
                 $genus_name = $_POST['genus'] ?? '';
@@ -185,7 +185,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                         WHERE genID = ".intval($_POST['genID']);
                 $result = dbi_query($sql);
                 $id = intval($_POST['genID']);
-                logGenera($id,1);
+                Log::genera($id,1);
             }
 
             $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category
@@ -296,7 +296,7 @@ if ($get_new) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>?update=<?php echo $get_update; ?>" Method="POST" name="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"genID\" value=\"$p_genID\">\n";
 $cf->label(8,0.5,"ID");

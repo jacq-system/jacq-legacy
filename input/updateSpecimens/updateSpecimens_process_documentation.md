@@ -65,7 +65,7 @@ Wichtige Schritte:
 - erneutes Laden des aktuellen DB-Zustands pro Specimen
 - Rechtepruefung ueber `userCanUpdateSpecimen(...)`
 - Erzeugung eines differenziellen `UPDATE`
-- Logging des Vorzustands ueber `logSpecimen($specimenId, 1)`
+- Logging des Vorzustands ueber `Jacq\Log::specimen($specimenId, 1)`
 - Speichern eines Abschluss-Reports im Session-Kontext
 
 Im Abschlussbildschirm werden angezeigt:
@@ -151,7 +151,7 @@ Ablauf:
 Vor jedem echten Update:
 
 - `begin_transaction()`
-- `logSpecimen(..., 1)`
+- `Jacq\Log::specimen(..., 1)`
 - `UPDATE tbl_specimens ...`
 - `commit()` bzw. `rollback()`
 

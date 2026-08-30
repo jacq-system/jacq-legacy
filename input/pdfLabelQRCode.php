@@ -5,9 +5,10 @@ ini_set("max_execution_time","3600");
 session_start();
 require("inc/connect.php");
 require("inc/pdf_functions.php");
-require_once 'inc/stableIdentifierFunctions.php';
 
 require_once __DIR__ . '/vendor/autoload.php';
+
+use Jacq\StableIdentifier;
 
 /**
  * if a HerbNumber starts with the source-code of the institution, leave it there, otherwise add it
@@ -45,7 +46,7 @@ function makeText($id)
     $text['Herbarium']  = $row['QR_code_header'];
     $text['Collection'] = ($row['collection']) ? 'Herbarium ' . $row['collection'] : "";
     $text['UnitID']     = makeUnitID($row['HerbNummer'], $row['SourceInstitutionID']);
-    $text['StblID']     = getStableIdentifier($row['specimen_ID']);
+    $text['StblID']     = StableIdentifier::get($row['specimen_ID']);
 
     return $text;
 }
@@ -67,7 +68,7 @@ function makePreText($sourceID, $collectionID, $number)
     $text['Collection'] = (!empty($row_coll['collection'])) ? 'Herbarium ' . $row_coll['collection'] : "";
 
     $text['UnitID'] = makeUnitID($number, $row_source['SourceInstitutionID']);
-    $text['StblID'] = makeStableIdentifier($sourceID, array(), $collectionID, $number);
+    $text['StblID'] = StableIdentifier::make($sourceID, array(), $collectionID, $number);
 
     return $text;
 }

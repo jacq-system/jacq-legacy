@@ -1,33 +1,29 @@
 <?php
 session_start();
-require_once('../inc/tools.php');
-require_once('../inc/variables.php');
+require_once __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\PdoAccess;
 
 if (empty($_SESSION['username']) || empty($_SESSION['uid'])) {
     die('Connection failed');
 }
 
-$settings = clsSettings::Load();
-// connect to the database or stop on any connect error
+// connect to the database or stop on any connection error
 try {
-    $db = new PDO('mysql:host=' . $settings->getSettings('DB', 'INPUT', 'HOST') . ';dbname=' . $settings->getSettings('DB', 'INPUT', 'NAME'),
-                  $_CONFIG['DATABASE']['INPUT']['readonly']['user'],
-                  $_CONFIG['DATABASE']['INPUT']['readonly']['pass'],
-                  array(PDO::MYSQL_ATTR_INIT_COMMAND => "SET character set utf8"));
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $db = PdoAccess::ConnectTo('INPUT');
 }
-catch (PDOException $e) {
+catch (Exception $e) {
     echo 'Connection failed: ' . $e->getMessage();
     exit();
 }
 
-function parseAuthors ($text)
+function parseAuthors ($text): array
 {
     $text = trim($text);
-    while ($text[0] == '(') {
-        $text = substr($text, 1);
+    while (str_starts_with($text, '(')) {
+        $text = mb_substr($text, 1);
     }
-    $parts = preg_split('/) |, | & | ex | in /', trim($text));  // split() is depricated as of PHP 5.3.0
+    $parts = preg_split('/\) |, | & | ex | in /', trim($text));  // split() is depricated as of PHP 5.3.0
 
     $authors = array();
     $skip = false;
@@ -52,7 +48,7 @@ function parseAuthors ($text)
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
-<html>
+<html lang="en">
 <head>
   <title>herbardb - list unknown authors</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -66,18 +62,18 @@ function parseAuthors ($text)
   </style>
   <script type="text/javascript" language="JavaScript">
     function editAuthor(sel) {
-      target = "../editAuthor.php?sel=" + encodeURIComponent(sel);
-      MeinFenster = window.open(target,"editAuthor","width=500,height=200,top=50,left=50,scrollbars=yes,resizable=yes");
+      let target = "../editAuthor.php?sel=" + encodeURIComponent(sel);
+      let MeinFenster = window.open(target,"editAuthor","width=500,height=200,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function editGenera(sel) {
-      target = "../editGenera.php?sel=" + encodeURIComponent(sel);
-      MeinFenster = window.open(target,"editGenera","width=600,height=500,top=50,left=50,scrollbars=yes,resizable=yes");
+      let target = "../editGenera.php?sel=" + encodeURIComponent(sel);
+      let MeinFenster = window.open(target,"editGenera","width=600,height=500,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
     function editSpecies(sel) {
-      target = "../editSpecies.php?sel=<" + encodeURIComponent(sel) + ">";
-      MeinFenster = window.open(target,"editSpecies","width=990,height=710,top=50,left=50,scrollbars=yes,resizable=yes");
+      let target = "../editSpecies.php?sel=<" + encodeURIComponent(sel) + ">";
+      let MeinFenster = window.open(target,"editSpecies","width=990,height=710,top=50,left=50,scrollbars=yes,resizable=yes");
       MeinFenster.focus();
     }
   </script>

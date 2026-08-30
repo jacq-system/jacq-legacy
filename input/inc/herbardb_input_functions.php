@@ -1,21 +1,21 @@
 <?php
+//require_once( 'tools.php' );
+require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\DbAccess;
+use Jacq\Log;
 use Jacq\Settings;
-
-require_once( 'tools.php' );
-require __DIR__ . '/../vendor/autoload.php';
 
 /**
  * Return scientific name for a given taxon_id
  *
- * @param int|null $taxon_id Taxon-id to search for
+ * @param int|string|null $taxon_id Taxon-id to search for
  * @param bool $withDT Include dallatorre-id, defaults to no
  * @param bool $withID Include taxon-id, defaults to no
  * @param bool $p_bAvoidHybridFormula avoid hybrids, defaults to no
  * @return string
  */
-function getScientificName (?int $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
+function getScientificName (int|string|null $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
 {
     // wrong call with empty taxon-ID
     if (empty($taxon_id)) {
@@ -79,7 +79,7 @@ function getIiifLink(int $specimenID): string
         $curl_response = curl_exec($ch);
         if ($curl_response !== false) {
             $curl_result = json_decode($curl_response, true);
-            $manifest = $curl_result['uri'];
+            $manifest = $curl_result['uri'] ?? "";
         } else {
             $manifest = "";
         }
@@ -276,7 +276,7 @@ function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_acce
     $result = dbi_query($sql);
     if ($result) {
         $id = dbi_insert_id();
-        logGenera($id, 0);
+        Log::genera($id, 0);
     } else {
         $id = 0;
     }

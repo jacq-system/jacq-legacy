@@ -1,9 +1,15 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\NaturalID;
+use Jacq\Permission;
+use Jacq\Tools;
+
 //http://docs.jquery.com/Plugins/Autocomplete/autocomplete#url_or_dataoptions
 $debuger=0;
 
@@ -286,7 +292,7 @@ $_dvar = array(
 	'annotations'		=> '',
 
 	'locked'			=> '1',
-	'active_id'	=>	new natID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
+	'active_id'	=>	new NaturalID(array('entity_id', 'name_id', 'geonameId', 'language_id', 'period_id', 'reference_id', 'tribe_id')),
 
 	'enableClose'	=> ((isset($_POST['enableClose']) && $_POST['enableClose'] == 1) || (isset($_GET['enableClose']) && $_GET['enableClose'] == 1)) ? 1 : 0
 
@@ -469,9 +475,9 @@ $(document).ready(function() {
 </script>
 EOF;
 
-$isLocked=isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id']);
-$unlock_tbl_name_applies_to=checkRight('unlock_tbl_name_applies_to');
-$cf = new CSSF();
+$isLocked= Tools::isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id']);
+$unlock_tbl_name_applies_to=Permission::mayUnlock('tbl_name_applies_to');
+$cf = new Cssf();
 $cf->setYRelative(true);
 
 
@@ -530,19 +536,19 @@ $cf->label(10, 2.5, "annotations");
 $cf->textarea(11, 0, 50,2.5, "annotations", $_dvar['annotations'], "", "", "");
 
 
-if(($_SESSION['editControl'] & 0x20000) != 0){
+if(Permission::has('commonnameInsert')){
 	echo "<input style=\"display:none\" type=\"submit\" name=\"submitInsert\" value=\" Insert New\">";
 }
 
 $cf->buttonJavaScript(17, 4, " Reset ", "document.location.reload(true);");
 
 
-if($_dvar['update'] &&  ($_SESSION['editControl'] & 0x10000) != 0  && ($unlock_tbl_name_applies_to || !$isLocked) ){
+if ($_dvar['update'] && Permission::has('commonnameUpdate') && ($unlock_tbl_name_applies_to || !$isLocked)) {
 	$cf->buttonSubmit(22, 0, "submitUpdate", " Update");
 	$cf->buttonSubmit(28, 0, "submitDelete", " Delete");
 }
 
-if(($_SESSION['editControl'] & 0x20000) != 0 ){
+if (Permission::has('commonnameInsert')){
 	$cf->buttonSubmit(33, 0, "submitInsert", " Insert New");
 }
 
@@ -722,15 +728,15 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 	global $dbprefix, $dbLink;
 
     $msg=array();
-	if(!$update && !checkRight('commonnameInsert')) {
+	if(!$update && !Permission::has('commonnameInsert')) {
 		return array("You have no Rights for Insert", 0);
 	}
 
-	if($update && !checkRight('commonnameUpdate')) {
+	if($update && !Permission::has('commonnameUpdate')) {
 		return array("You have no Rights for Update", 0);
 	}
 
-	if ($update && !checkRight('unlock_tbl_name_applies_to') && isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
+	if ($update && !Permission::mayUnlock('tbl_name_applies_to') && Tools::isLocked($dbprefix.'tbl_name_applies_to', $_dvar['active_id'])) {
 		return array("You have no Rights for Update locked items", );
 	}
 
@@ -830,7 +836,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		dbi_query("INSERT INTO {$dbprefix}tbl_name_commons (common_id, common_name,locked) VALUES ('{$_dvar['common_nameIndex']}','{$_dvar['common_name']}','1')");
 
 		// log it
-		logCommonNamesCommonName($_dvar['common_nameIndex'],0);
+		Log::commonNamesCommonName($_dvar['common_nameIndex'],0);
 	}
 
 	// ENTITY
@@ -869,7 +875,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 	$sql.=", annotations='{$_dvar['annotations']}'"
 		 .", geospecification='{$_dvar['geospecification']}'";
 
-	if(checkRight('unlock_tbl_name_applies_to')){
+	if(Permission::mayUnlock('tbl_name_applies_to')){
 		$sql .= ", locked = '{$_dvar['locked']}'";
 	}
 
@@ -879,7 +885,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		$sql="UPDATE {$dbprefix}tbl_name_applies_to SET {$sql} WHERE {$where} ";
 		if(dbi_query($sql)){
 			// Log it
-			logCommonNamesAppliesTo($_dvar['active_id'],1,$old);
+			Log::commonNamesAppliesTo($_dvar['active_id'],1,$old);
 			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully updated");
 		}
@@ -888,7 +894,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 		$sql="INSERT INTO {$dbprefix}tbl_name_applies_to SET {$sql}";
 		if(dbi_query($sql)){
 			// Log it
-			logCommonNamesAppliesTo($_dvar['active_id'],0);
+			Log::commonNamesAppliesTo($_dvar['active_id'],0);
 			$_POST['ACREALUPDATE']=1;
 			return array(0,"Successfully inserted");
 		}
@@ -910,7 +916,7 @@ function InsertUpdateCommonName(&$_dvar, $update = false)
 function deleteCommonName($_dvar){
 	global $dbprefix, $dbLink;
 
-	if(!checkRight('admin')){
+	if(!Permission::has('admin')){
 		return array("You have to be admin for deletation",0);
 	}
 
@@ -1125,4 +1131,30 @@ WHERE
 	$result = dbi_query($sql);
 	return protolog(mysqli_fetch_assoc($result));
 }
+
+// $mode=1 => from Post to escaped mysql
+// $mode=2 => for formulars from escaped mysql
+// $mode=3 => for formulars from not escaped mysql
+function doQuotes(&$obj, $mode)
+{
+    global $dbLink;
+
+    if (!is_array($obj)) {
+        $obj = array($obj);
+    }
+    foreach ($obj as &$val) {
+        if (is_array($val)) {
+            doQuotes($val, $mode);
+        } else if (is_scalar($val)) {
+            if ($mode == 1) {
+                $val = $dbLink->real_escape_string(htmlspecialchars_decode($val));
+            } else if($mode == 2) {
+                $val = stripslashes(htmlspecialchars($val, ENT_COMPAT, "UTF-8", 1));
+            } else if($mode == 3) {
+                $val = htmlspecialchars($val, ENT_COMPAT, "UTF-8",1);
+            }
+        }
+    }
+}
+
 ?>

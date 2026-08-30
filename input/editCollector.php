@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
@@ -90,7 +90,7 @@ if (!empty($_POST['submitUpdate']) && ($right_collUpd || $right_collIns)) {
         if ($sql) {
             $result = dbi_query($sql);
             $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
-            logCollector($id, $updated);
+            Log::collector($id, $updated);
         } else {
             $id = intval($_POST['ID']);
         }
@@ -118,7 +118,7 @@ $sql = "SELECT Sammler, SammlerID, HUH_ID, VIAF_ID, WIKIDATA_ID, ORCID, Bloodhou
 $result = dbi_query($sql);
 $row = mysqli_fetch_array($result);
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"".($row['SammlerID'] ?? '')."\">\n";
 $cf->label(7,0.5,"ID");

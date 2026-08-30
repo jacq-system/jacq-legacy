@@ -1,7 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
 
 $error = "";
 if (!empty($_POST['submitUpdate'])) {
@@ -58,7 +60,7 @@ if (!empty($_POST['submitUpdate'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
 <?php
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 if ($error) {
     $cf->text(1, 4, '<span style="font-weight:bold; font-size:large; color: red;">' . $error . '</span>');

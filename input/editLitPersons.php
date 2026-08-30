@@ -1,10 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\Tools;
 
 if (isset($_GET['new'])) {
     $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical, vol, part, jahr, pp
@@ -12,18 +15,18 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
             LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-           WHERE citationID = " . extractID($_GET['ID']);
+           WHERE citationID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $p_citation = protolog(mysqli_fetch_array($result));
-    $p_citationIndex = extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID']);
     $p_person = $p_annotations = $p_lit_persons_ID = $p_personIndex = "";
     $p_timestamp = "";
     $p_user = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT lp.lit_persons_ID, lp.citationID_fk, lp.personID_fk, lp.annotations, lp.timestamp, hu.firstname, hu.surname
             FROM tbl_lit_persons lp
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON lp.userID = hu.userID
-            WHERE lit_persons_ID = " . extractID($_GET['ID']);
+            WHERE lit_persons_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -57,9 +60,9 @@ if (isset($_GET['new'])) {
         $p_personIndex = 39269;
         $p_timestamp = $p_user = "";
     }
-} elseif (!empty($_POST['submitUpdate']) && (($_SESSION['editControl'] & 0x20) != 0)) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('lit')) {
     $annotations = $_POST['annotations'];
-    $sqldata = "citationID_fk = " . extractID($_POST['citation']) . ",
+    $sqldata = "citationID_fk = " . Tools::extractID($_POST['citation']) . ",
                 personID_fk = '" . intval($_POST['personIndex']) . "',
                 annotations = " . quoteString($annotations) . ",
                 userID = '" . intval($_SESSION['uid']) . "'";
@@ -74,8 +77,8 @@ if (isset($_GET['new'])) {
         $updated = 0;
     }
     $result = dbi_query($sql);
-        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ? intval($_POST['lit_persons_ID']) : dbi_insert_id();
-        logLitTax($p_lit_persons_ID, $updated);
+        $p_lit_persons_ID = (intval($_POST['lit_persons_ID'])) ?: dbi_insert_id();
+        Log::litTax($p_lit_persons_ID, $updated);
     if ($result) {
         echo "<html><head>\n"
            . "<script language=\"JavaScript\">\n"
@@ -133,7 +136,7 @@ if (isset($_GET['new'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f" id="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"lit_persons_ID\" value=\"$p_lit_persons_ID\">\n";
@@ -155,7 +158,7 @@ $cf->inputJqAutocomplete(7, 4, 28, "person", $p_person, $p_personIndex, "index_j
 $cf->label(7, 6, "annotations");
 $cf->textarea(7, 6, 28, 6, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $cf->buttonSubmit(2, 14, "reload", " Reload ");
     $cf->buttonReset(10, 14, " Reset ");
     $cf->buttonSubmit(20, 14, "submitUpdate", ($p_lit_persons_ID) ? " Update " : " Insert ");

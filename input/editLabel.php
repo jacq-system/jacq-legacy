@@ -1,15 +1,15 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
-if (isset($_GET['sel']) && extractID($_GET['sel'])!="NULL")
-  $db_specimen_ID = extractID($_GET['sel']);
+if (isset($_GET['sel']) && Tools::extractID($_GET['sel'])!="NULL")
+  $db_specimen_ID = Tools::extractID($_GET['sel']);
 elseif (intval($_POST['specimen_ID']))
   $db_specimen_ID = "'".intval($_POST['specimen_ID'])."'";
 else
@@ -206,7 +206,7 @@ if ($nr) {
   echo "</div>\n";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"specimen_ID\" value=\"$p_specimen_ID\">\n";
 echo "<input type=\"hidden\" name=\"ncbi\" value=\"$p_ncbi\">\n";

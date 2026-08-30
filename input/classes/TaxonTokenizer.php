@@ -8,13 +8,9 @@
  * @since 21.09.2009
  */
 
-/**
- * Biological Namestring parser singleton
- *
- * @package clsTaxonTokenizer
- * @subpackage classes
- */
-class clsTaxonTokenizer
+namespace Jacq;
+
+class TaxonTokenizer
 {
 /********************\
 |                    |
@@ -22,8 +18,7 @@ class clsTaxonTokenizer
 |                    |
 \********************/
 
-private static $instance = null;
-
+private static ?TaxonTokenizer $instance = null;
 
 /********************\
 |                    |
@@ -32,18 +27,17 @@ private static $instance = null;
 \********************/
 
 /**
- * instances the class clsTaxonTokenizer
+ * instances the class TaxonTokenizer
  *
- * @return clsTaxonTokenizer new instance of that class
+ * @return TaxonTokenizer new instance of that class
  */
-public static function Load()
+public static function Load(): TaxonTokenizer
 {
     if (self::$instance == null) {
-        self::$instance = new clsTaxonTokenizer();
+        self::$instance = new TaxonTokenizer();
     }
     return self::$instance;
 }
-
 
 /*************\
 |             |
@@ -55,17 +49,16 @@ public static function Load()
  * strings that should be ignored by parsing/atomizing functions
  * suffice genus or connect genus and epithet
  */
-private $taxonExclude = array('aff', 'aff.', 'cf', 'cf.', 'cv', 'cv.', 'agg', 'agg.', 'sect', 'sect.', 'ser', 'ser.', 'grex');
+private array $taxonExclude = array('aff', 'aff.', 'cf', 'cf.', 'cv', 'cv.', 'agg', 'agg.', 'sect', 'sect.', 'ser', 'ser.', 'grex');
 
 /**
  * strings of rank are recognized as seperators between species- and infraspecific-epithet
  */
-private $taxonRankTokens = array('1a' => 'subsp.',  '1b' => 'subsp',
-                                 '2a' => 'var.',    '2b' => 'var',
-                                 '3a' => 'subvar.', '3b' => 'subvar',
-                                 '4a' => 'forma',
-                                 '5a' => 'subf.',   '5b' => 'subf',   '5c' => 'subforma');  // forma may be f.
-
+private array $taxonRankTokens = array('1a' => 'subsp.', '1b' => 'subsp',
+                                       '2a' => 'var.', '2b' => 'var',
+                                       '3a' => 'subvar.', '3b' => 'subvar',
+                                       '4a' => 'forma',
+                                       '5a' => 'subf.', '5b' => 'subf', '5c' => 'subforma');  // forma may be f.
 
 /***************\
 |               |
@@ -73,8 +66,9 @@ private $taxonRankTokens = array('1a' => 'subsp.',  '1b' => 'subsp',
 |               |
 \***************/
 
-protected function __construct () {}
-
+protected function __construct()
+{
+}
 
 /*******************\
 |                   |
@@ -88,7 +82,7 @@ protected function __construct () {}
  * @param string $taxon taxon string to parse
  * @return array parts of the parsed string
  */
-public function tokenize($taxon)
+public function tokenize(string $taxon): array
 {
     $result = array('genus'      => '',
                     'subgenus'   => '',
@@ -104,32 +98,46 @@ public function tokenize($taxon)
     $pos = 0;
 
     // check for any noise at the beginning of the taxon
-    if ($this->_isEqual($atoms[$pos]['sub'], $this->taxonExclude) !== false) $pos++;
-    if ($pos >= $maxatoms) return $result;
+    if ($this->_isEqual($atoms[$pos]['sub'], $this->taxonExclude) !== false) {
+        $pos++;
+    }
+    if ($pos >= $maxatoms) {
+        return $result;
+    }
 
     // get the genus
     $result['genus'] = $atoms[$pos++]['sub'];
-    if ($pos >= $maxatoms) return $result;
+    if ($pos >= $maxatoms) {
+        return $result;
+    }
 
     // check for any noise between genus and epithet
-    if ($this->_isEqual($atoms[$pos]['sub'], $this->taxonExclude) !== false) $pos++;
-    if ($pos >= $maxatoms) return $result;
+    if ($this->_isEqual($atoms[$pos]['sub'], $this->taxonExclude) !== false) {
+        $pos++;
+    }
+    if ($pos >= $maxatoms) {
+        return $result;
+    }
 
     // get the subgenus (if it exists)
-    if (substr($atoms[$pos]['sub'], 0, 1) == '(' && substr($atoms[$pos]['sub'], -1, 1) == ')') {
+    if (str_starts_with($atoms[$pos]['sub'], '(') && str_ends_with($atoms[$pos]['sub'], ')')) {
         $result['subgenus'] = substr($atoms[$pos]['sub'], 1, strlen($atoms[$pos]['sub']) - 2);
         $pos++;
-        if ($pos >= $maxatoms) return $result;
+        if ($pos >= $maxatoms) {
+            return $result;
+        }
     }
 
     // get the epithet
     $result['epithet'] = $atoms[$pos++]['sub'];
-    if ($pos >= $maxatoms) return $result;
+    if ($pos >= $maxatoms) {
+        return $result;
+    }
 
     $sub = $this->_findInAtomizedArray($atoms, $this->taxonRankTokens);
     if ($sub) {
         $result['rank'] = intval($sub['key']);
-        $subpos  = $sub['pos'];
+        $subpos = $sub['pos'];
     } else {
         $result['rank'] = 0;
         $subpos = $maxatoms;
@@ -141,7 +149,9 @@ public function tokenize($taxon)
         $result['author'] = '';
         $result['rank'] = 1;
         $result['subepithet'] = $atoms[$pos++]['sub'];
-        if ($pos >= $maxatoms) return $result;
+        if ($pos >= $maxatoms) {
+            return $result;
+        }
 
         // subauthor auslesen
         while ($pos < $maxatoms) {
@@ -154,15 +164,21 @@ public function tokenize($taxon)
             $result['author'] .= $atoms[$pos++]['sub'] . ' ';
         }
         $result['author'] = trim($result['author']);
-        if ($pos >= $maxatoms) return $result;
+        if ($pos >= $maxatoms) {
+            return $result;
+        }
 
         if ($result['rank']) {
             $pos = $subpos + 1;
-            if ($pos >= $maxatoms) return $result;
+            if ($pos >= $maxatoms) {
+                return $result;
+            }
 
             // get the subepithet
             $result['subepithet'] = $atoms[$pos++]['sub'];
-            if ($pos >= $maxatoms) return $result;
+            if ($pos >= $maxatoms) {
+                return $result;
+            }
 
             // subauthor auslesen
             while ($pos < $maxatoms) {
@@ -175,13 +191,11 @@ public function tokenize($taxon)
     return $result;
 }
 
-
 /***********************\
 |                       |
 |  protected functions  |
 |                       |
 \***********************/
-
 
 /*********************\
 |                     |
@@ -189,15 +203,12 @@ public function tokenize($taxon)
 |                     |
 \*********************/
 
-private function __clone () {}
-
-
 /**
- * localises a delimiter within a string and returns the positions
+ * localizes a delimiter within a string and returns the positions
  *
- * Localises a delimiter within a string. Returns the positions of the
+ * Localizes a delimiter within a string. Returns the positions of the
  * first character after the delimiter, the number of characters to the
- * next delimiter or to the end of the string and the substring. Skips
+ * next delimiter or to the end of the string, and the substring. Skips
  * delimiters at the beginning (if desired) and at the end of the string.
  *
  * @param string $string string to atomize
@@ -205,9 +216,11 @@ private function __clone () {}
  * @param bool $trim skip delimiters at the beginning
  * @return array {'pos','len','sub'} of the atomized string
  */
-private function _atomizeString($string, $delimiter, $trim = true)
+private function _atomizeString(string $string, string $delimiter, bool $trim = true): array
 {
-    if (strlen($string) == 0) return array(array('pos' => 0, 'len' => 0, 'sub' => ''));
+    if (strlen($string) == 0) {
+        return array(array('pos' => 0, 'len' => 0, 'sub' => ''));
+    }
 
     $result = array();
     $pos1 = 0;
@@ -234,7 +247,6 @@ private function _atomizeString($string, $delimiter, $trim = true)
     return $result;
 }
 
-
 /**
  * checks if a given text is equal with one item of an array
  *
@@ -245,15 +257,16 @@ private function _atomizeString($string, $delimiter, $trim = true)
  * @param array $needle items to compare
  * @return mixed|bool key of found match or false
  */
-private function _isEqual($text, $needle)
+private function _isEqual(string $text, array $needle): mixed
 {
     foreach ($needle as $key => $val) {
-        if ($text == $val) return $key;
+        if ($text == $val) {
+            return $key;
+        }
     }
 
     return false;
 }
-
 
 /**
  * compares a stack of needles with an array and returns the first match
@@ -266,15 +279,25 @@ private function _isEqual($text, $needle)
  * @param array $needle stack of needles to search for
  * @return array|bool found match {'pos','key'} or false
  */
-private function _findInAtomizedArray($haystack, $needle)
+private function _findInAtomizedArray(array $haystack, array $needle): bool|array
 {
     foreach ($haystack as $hayKey => $hayVal) {
         foreach ($needle as $neeKey => $neeVal) {
-            if ($neeVal == $hayVal['sub']) return array('pos' => $hayKey, 'key' => $neeKey);
+            if ($neeVal == $hayVal['sub']) {
+                return array('pos' => $hayKey, 'key' => $neeKey);
+            }
         }
     }
 
     return false;
+}
+
+/**
+ * to prevent cloning of this singleton
+ *
+ */
+private function __clone()
+{
 }
 
 }

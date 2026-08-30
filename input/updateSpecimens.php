@@ -1,10 +1,13 @@
 <?php
 session_start();
 require('inc/connect.php');
-require('inc/log_functions.php');
 require_once('inc/herbardb_input_functions.php');
 require_once('inc/jsonRPCClient.php');
-require_once('inc/clsTaxonTokenizer.php');
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\TaxonTokenizer;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
@@ -1010,7 +1013,7 @@ function normalizeImportTaxonText($taxonText)
         return trim((string)$parts[0]);
     }
 
-    $parser = clsTaxonTokenizer::Load();
+    $parser = TaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxonText);
     if (!empty($taxonParts['genus']) && empty($taxonParts['epithet']) && empty($taxonParts['subepithet'])) {
         return trim((string)$taxonParts['genus']);
@@ -1101,7 +1104,7 @@ function getSimilarTaxaSuggestions($taxonText)
     }
 
     $ranks = array('', ' subsp. ', ' var. ', ' subvar. ', ' forma ', ' subforma ');
-    $parser = clsTaxonTokenizer::Load();
+    $parser = TaxonTokenizer::Load();
     $taxonParts = $parser->tokenize($taxonText);
     if (empty($taxonParts['genus'])) {
         $suggestionCache[$taxonText] = array();
@@ -1551,7 +1554,7 @@ function fetchExistingSpecimenData($specimenId)
 
 function userCanUpdateSpecimen($specimenId)
 {
-    if (checkRight('admin') || checkRight('editor')) {
+    if (Permission::has('admin') || Permission::has('editor')) {
         return true;
     }
 
@@ -1632,7 +1635,7 @@ function updateSpecimenRow($specimenId, array $selectedData)
     $sql = 'UPDATE tbl_specimens SET ' . implode(', ', $assignments) . " WHERE specimen_ID = '" . intval($specimenId) . "'";
 
     $dbLink->begin_transaction();
-    logSpecimen($specimenId, 1);
+    Log::specimen($specimenId, 1);
     $result = dbi_query($sql);
     if (!$result) {
         $message = $dbLink->errno . ': ' . $dbLink->error;

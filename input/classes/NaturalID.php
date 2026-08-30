@@ -1,28 +1,30 @@
 <?php
 
-// Natural ID
-class natID {
+namespace Jacq;
 
-    public $map;
-    public $natID = array();
-    public $token = ':';
+// Natural ID
+class NaturalID
+{
+    public array $map;
+    public array $natID = array();
+    public string $token = ':';
 
     function __construct($map = array())
     {
 		$this->map = array_flip($map);
 	}
 
-	function setNatID($natID)
+	function setNatID($natID): void
     {
 		$this->natID = array();
-		foreach($natID as $id => $val){
+		foreach ($natID as $id => $val){
 			if (isset($this->map[$id])){
 				$this->natID[$id] = $val;
 			}
 		}
 	}
 
-	function setNatIDFromString($natID)
+	function setNatIDFromString($natID): void
     {
 		$order = array_flip($this->map);
 		$natIDparts = explode($this->token, $natID);
@@ -32,7 +34,7 @@ class natID {
 		}
 	}
 
-    function toString($natID = array())
+    function toString($natID = array()): string
     {
     	$order = array_flip($this->map);
     	$str='';
@@ -49,7 +51,7 @@ class natID {
     	return substr($str, 1);
     }
 
-	function checkID($natID = array())
+	function checkID($natID = array()): bool
     {
 		$order = array_flip($this->map);
         if (count($natID) == 0) {
@@ -66,7 +68,7 @@ class natID {
 		return true;
 	}
 
-	function getWhere($natID = array(), $alias = '')
+	function getWhere($natID = array(), $alias = ''): false|string
     {
 		$where = '';
         if (count($natID) == 0) {
@@ -76,19 +78,19 @@ class natID {
             return false;
         }
 		foreach($natID as $col=>$val){
-			$where .= " AND {$alias}{$col} = '{$val}'";
+			$where .= " AND $alias$col = '$val'";
 		}
 		return substr($where, 4);
 	}
 
-	function getIDFields($natID = array(), $alias = '')
+	function getIDFields($natID = array(), $alias = ''): string
     {
 		$insert = '';
         if (count($natID) == 0) {
             $natID = $this->natID;
         }
 		foreach($natID as $col => $val){
-			$insert .= " {$alias}{$col} = '{$val}',";
+			$insert .= " $alias$col = '$val',";
 		}
 
 		return substr($insert, 0, -1);

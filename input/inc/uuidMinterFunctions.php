@@ -3,6 +3,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Settings;
 
+// depricated and unused
+
 /**
  * Return a single entry of a single result row
  *

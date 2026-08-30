@@ -1,10 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\Tools;
 
 function makeTaxon($search,$x,$y)
 {
@@ -102,17 +105,17 @@ if (isset($_GET['new'])) {
              LEFT JOIN tbl_specimens_series ss ON ss.seriesID = wg.seriesID
              LEFT JOIN tbl_collector c ON c.SammlerID = wg.SammlerID
              LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = wg.Sammler_2ID
-            WHERE specimen_ID = " . extractID($_GET['ID']);
+            WHERE specimen_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $p_specimen = makeCollector(mysqli_fetch_array($result));
     $p_taxon = "";
     $p_typus = 7;
     $p_annotations = $p_specimens_types_ID = $p_typified_by = $p_typified_date = "";
     $p_taxonIndex = 0;
-} elseif (extractID($_GET['ID'] ?? "") !== "NULL") {
+} elseif (Tools::extractID($_GET['ID'] ?? "") !== "NULL") {
     $sql ="SELECT specimens_types_ID, taxonID, specimenID, typusID, annotations, typified_by_Person, typified_Date
            FROM tbl_specimens_types
-           WHERE specimens_types_ID = " . extractID($_GET['ID']);
+           WHERE specimens_types_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -149,10 +152,10 @@ if (isset($_GET['new'])) {
     $p_annotations        = $_POST['annotations'];
     $p_specimens_types_ID = $_POST['specimens_types_ID'];
 
-    if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x8000) != 0)) {
-        if (extractID($p_taxon) != "NULL" && extractID($p_specimen) != "NULL") {
-            $sql_data = "taxonID = " . extractID($p_taxon) . ",
-                         specimenID = " . extractID($p_specimen) . ",
+    if ($_POST['submitUpdate'] && Permission::has('specimensTypes')) {
+        if (Tools::extractID($p_taxon) != "NULL" && Tools::extractID($p_specimen) != "NULL") {
+            $sql_data = "taxonID = " . Tools::extractID($p_taxon) . ",
+                         specimenID = " . Tools::extractID($p_specimen) . ",
                          typusID = " . makeInt($p_typus) . ",
                          typified_by_Person = '" . dbi_escape_string($p_typified_by) . "',
                          typified_Date = '" . dbi_escape_string($p_typified_date) . "',
@@ -169,7 +172,7 @@ if (isset($_GET['new'])) {
             $result = dbi_query($sql);
             if ($result) {
                 $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
-                logSpecimensTypes($id, $updated);
+                Log::specimensTypes($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"
@@ -201,7 +204,7 @@ if ($result && mysqli_num_rows($result) > 0) {
     }
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"specimens_types_ID\" value=\"" . htmlspecialchars($p_specimens_types_ID) . "\">\n";
 $cf->label(7, 0.5, "ID");
@@ -227,7 +230,7 @@ $cf->inputText(7, 12, 10, "typified_date", $p_typified_date, 10);
 $cf->label(7, 14, "annotations");
 $cf->textarea(7, 14, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x8000) != 0) {
+if (Permission::has('specimensTypes')) {
     $text = ($p_specimens_types_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 22, "reload", " Reload ");
     $cf->buttonReset(10, 22, " Reset ");

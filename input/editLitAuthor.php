@@ -1,8 +1,11 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -16,7 +19,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40) != 0)) {
+if (!empty($_POST['submitUpdate']) && Permission::has('litAuthor')) {
     $id = intval($_POST['ID']);
     $autor = $_POST['autor'];
     $autorsystbot = $_POST['autorsystbot'];
@@ -53,7 +56,7 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40) != 0)) {
         $result = dbi_query($sql);
         if ($result) {
             $id = ($id) ?: dbi_insert_id();
-            logLitAuthors($id, $updated);
+            Log::litAuthors($id, $updated);
             echo "<script language=\"JavaScript\">\n";
             if ($_REQUEST['typ'] == "a") {
                 echo "  window.opener.document.f.autorIndex.value = $id;\n";
@@ -72,7 +75,7 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40) != 0)) {
                     . "</script>\n";
         }
     }
-} elseif ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40) != 0)) {
+} elseif (!empty($_POST['submitUpdate']) && Permission::has('litAuthor')) {
     $id = 0;
     $autor = $autorsystbot = "";
 } else {
@@ -94,7 +97,7 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x40) != 0)) {
 
 echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\n";
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"ID\" value=\"" . $id . "\">\n";
 $cf->label(8,0.5,"ID");
@@ -104,7 +107,7 @@ $cf->inputText(8,2,25,"autor", $autor,255);
 $cf->label(8,4,"Autorsystbot");
 $cf->textarea(8,4,25,4,"autorsystbot", $autorsystbot);
 
-if (($_SESSION['editControl'] & 0x40) != 0) {
+if (Permission::has('litAuthor')) {
     $cf->buttonSubmit(9,10,"submitUpdate", (($id) ? " Update " : " Insert "));
     $cf->buttonSubmit(21,10,"submitNew", " New ");
 }

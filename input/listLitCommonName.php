@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -309,7 +312,7 @@ function selectCitationID(citationID){
 </form>
 
 <table><tr>
-<?php if (($_SESSION['editControl'] & 0x20) != 0): ?>
+<?php if (Permission::has('lit')): ?>
 <td>
   <input class="button" type="button" value="new entry" onClick="self.location.href='editLit.php'">
 </td><td style="width: 3em">&nbsp;</td>

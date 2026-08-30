@@ -3,13 +3,14 @@ session_start();
 require("../inc/connect.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 use GuzzleHttp\Client;
 
 function init()
 {
-    $allServers = checkRight("admin");
+    $allServers = Permission::has("admin");
 
     $selectData = "<select size='1' id='collection' onchange=\"jaxon_showLatestUpdate(jaxon.$('collection').value)\">\n"
                 . "  <option value='0'></option>\n";

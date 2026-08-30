@@ -1,8 +1,11 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -16,7 +19,7 @@ require("inc/log_functions.php");
 <body>
 
 <?php
-if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x100)!=0)) {
+if (!empty($_POST['submitUpdate']) && Permission::has('litPub')) {
   $publisher = $_POST['publisher'];
   if (intval($_POST['ID'])) {
     $sql = "UPDATE tbl_lit_publishers SET ".
@@ -30,22 +33,27 @@ if ($_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x100)!=0)) {
   }
   $result = dbi_query($sql);
   $id = ($_POST['ID']) ? intval($_POST['ID']) : dbi_insert_id();
-  logLitPublishers($id,$updated);
+  Log::litPublishers($id,$updated);
 
-  echo "<script language=\"JavaScript\">\n";
-  echo "  window.opener.document.f.publisher.value = \"".addslashes($publisher)." <$id>\";\n";
-  echo "  window.opener.document.f.reload.click()\n";
-  echo "  self.close()\n";
-  echo "</script>\n";
+  echo "<script language=\"JavaScript\">\n"
+     . "  window.opener.document.f.reload.click()\n"
+     . "  self.close()\n"
+     . "</script>\n";
 }
 else {
   echo "<form name=\"f\" Action=\"".$_SERVER['PHP_SELF']."\" Method=\"POST\">\n";
 
-  $pieces = explode("<",$HTTP_GET_VARS['sel']);
-  $pieces = explode(">",$pieces[1]);
-  $row = dbi_query("SELECT publisherID, publisher FROM tbl_lit_publishers WHERE publisherID = '" . dbi_escape_string($pieces[0]) . "'")->fetch_array();
+  $row = array('publisherID' => 0, 'publisher' => '');
+  if (!empty($_GET['sel'])) {
+      $pieces = explode("<", $_GET['sel']);
+      $pieces = explode(">", $pieces[1]);
+      $publisherID = intval($pieces[0]);
+      if ($publisherID) {
+          $row = dbi_query("SELECT publisherID, publisher FROM tbl_lit_publishers WHERE publisherID = $publisherID")->fetch_array();
+      }
+  }
 
-  $cf = new CSSF();
+  $cf = new Cssf();
 
   echo "<input type=\"hidden\" name=\"ID\" value=\"".$row['publisherID']."\">\n";
   $cf->label(8,0.5,"ID");
@@ -53,7 +61,7 @@ else {
   $cf->label(8,2,"Publisher");
   $cf->textarea(8,2,25,4,"publisher",$row['publisher']);
 
-  if (($_SESSION['editControl'] & 0x100)!=0) {
+  if (Permission::has('litPub')) {
     $text = ($row['publisherID']) ? " Update " : " Insert ";
     $cf->buttonSubmit(9,9,"submitUpdate",$text);
     $cf->buttonJavaScript(21,9," New ","self.location.href='editLitPublisher.php?sel= '");

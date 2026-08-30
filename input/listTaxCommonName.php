@@ -2,6 +2,10 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
+use Jacq\Tools;
 
 // BP: for MDLD-JSON service
 require_once('inc/variables.php');
@@ -759,7 +763,7 @@ function selectTaxon(taxonID){
 </form>
 
 <table><tr>
-<?php if (($_SESSION['editControl'] & 0x1)!=0): ?>
+<?php if (Permission::has('species')): ?>
 <td>
   <input class="button" type="button" value="new entry" onClick="self.location.href='editSpecies.php'">
 </td><td style="width: 3em">&nbsp;</td>
@@ -971,11 +975,11 @@ FROM
                 $sql .= "AND te.epithet IS NULL ";
             }
             if ($_SESSION['taxStatus']) {
-                $sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
+                $sql .= "AND ts.statusID=" . Tools::extractID($_SESSION['taxStatus']) . " ";
             }
         }
         if ($_SESSION['taxRank']) {
-            $sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
+            $sql .= "AND ts.tax_rankID=" . Tools::extractID($_SESSION['taxRank']) . " ";
         }
         if ($_SESSION['taxFamily']) {
             $sql .= "AND family LIKE '" . dbi_escape_string($_SESSION['taxFamily']) . "%' ";
@@ -1100,11 +1104,11 @@ FROM
                 $sql .= "AND te.epithet IS NULL ";
             }
             if ($_SESSION['taxStatus']) {
-                $sql .= "AND ts.statusID=" . extractID($_SESSION['taxStatus']) . " ";
+                $sql .= "AND ts.statusID=" . Tools::extractID($_SESSION['taxStatus']) . " ";
             }
         }
         if ($_SESSION['taxRank']) {
-            $sql .= "AND ts.tax_rankID=" . extractID($_SESSION['taxRank']) . " ";
+            $sql .= "AND ts.tax_rankID=" . Tools::extractID($_SESSION['taxRank']) . " ";
         }
         if ($_SESSION['taxFamily']) {
             $sql .= "AND family LIKE '" . dbi_escape_string($_SESSION['taxFamily']) . "%' ";

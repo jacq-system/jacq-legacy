@@ -1,9 +1,9 @@
 <?php
 session_start();
-require( "inc/gatekeeper.php");
-require( "inc/cssf.php");
+require("inc/gatekeeper.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\DbAccess;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -134,7 +134,7 @@ if (isset($_GET['ID'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type='hidden' id='ID' name='ID' value='$id'>\n";
 $cf->label(8, 0.5, "taxonID");

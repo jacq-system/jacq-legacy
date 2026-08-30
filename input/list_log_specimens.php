@@ -1,6 +1,9 @@
 <?php
 session_start();
 require("inc/connect.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Permission;
 
 if (empty($_GET['sel'])) die();
 
@@ -74,7 +77,7 @@ $sql = "SELECT ls.*, hu.firstname, hu.surname
         WHERE ls.specimenID = '" . $specimenId . "'
         ORDER BY ls.timestamp, ls.log_specimensID";
 $result = dbi_query($sql);
-$hasRight = checkRight('specimensHistory');
+$hasRight = Permission::has('specimensHistory');
 
 $previousEvent = null;
 $stateRows = array();

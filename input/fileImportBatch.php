@@ -1,17 +1,20 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/api_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Api;
+use Jacq\Permission;
 
 //---------- check every input ----------
-if (!checkRight('batch')) {                 // only user with right "api" can change API
+if (!Permission::has('batch')) {                 // only user with right "api" can change API
     echo "<html><head></head><body>\n"
        . "<h1>Error</h1>\n"
        . "Access denied\n"
        . "</body></html>\n";
     die();
 }
-if (!checkRight('batchAdmin')) {
+if (!Permission::has('batchAdmin')) {
     $result = dbi_query("SELECT source_name FROM herbarinput.meta WHERE source_id = " . $_SESSION['sid']);
     if (mysqli_num_rows($result) == 0) {
         echo "<html><head></head><body>\n"
@@ -49,7 +52,7 @@ $batchID = (isset($_POST['batch'])) ? intval($_POST['batch']) : 0;
             FROM api.tbl_api_batches
              LEFT JOIN herbarinput.meta ON api.tbl_api_batches.sourceID_fk = herbarinput.meta.source_id
             WHERE sent = '0'";
-    if (!checkRight('batchAdmin')) {
+    if (!Permission::has('batchAdmin')) {
         $sql .= " AND api.tbl_api_batches.sourceID_fk = " . $_SESSION['sid'];  // check right and sourceID
     }
     $sql .= " ORDER BY source_code, batchnumber, date_supplied DESC";
@@ -159,8 +162,8 @@ if (isset($_POST['insertIntoBatch']) && isset($_FILES['importfile']['tmp_name'])
                     dbi_query("INSERT INTO api.tbl_api_specimens SET
                                 specimen_ID = '" . $val['specimenID'] . "',
                                 batchID_fk  = '$batchID'");
-                    update_tbl_api_units($val['specimenID']);
-                    update_tbl_api_units_identifications($val['specimenID']);
+                    Api::update_tbl_api_units(intval($val['specimenID']));
+                    Api::update_tbl_api_units_identifications(intval($val['specimenID']));
                     echo $key . ": " . $val['line'] . " - <" . $val['specimenID'] . "> imported<br>\n";
                 }
             }

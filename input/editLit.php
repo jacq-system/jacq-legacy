@@ -1,11 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
 use Jacq\Display;
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -95,7 +97,7 @@ function parsePp ($pp)
 
 // main program
 
-if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
+if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
     $sql = "SELECT tl.citationID, tl.jahr, tl.code, tl.titel, tl.suptitel, tl.vol,
              tl.part, tl.pp, tl.verlagsort, tl.keywords, tl.annotation, tl.additions,
              tl.bestand, tl.signature, tl.publ, tl.category, tl.lit_url, tl.hideScientificNameAuthors,
@@ -106,7 +108,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
              LEFT JOIN tbl_lit_authors te ON te.autorID = tl.editorsID
              LEFT JOIN tbl_lit_periodicals tpe ON tpe.periodicalID = tl.periodicalID
              LEFT JOIN tbl_lit_publishers tpu ON tpu.publisherID = tl.publisherID
-            WHERE citationID = " . extractID($_GET['sel']);
+            WHERE citationID = " . Tools::extractID($_GET['sel']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -175,7 +177,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
     $p_periodicalIndex = $_POST['periodicalIndex'] ?? "";
     $p_publisherIndex  = $_POST['publisherIndex'] ?? "";
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x20) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('lit')) {
         if (intval($_POST['citationID'])) {
             $sql = "UPDATE tbl_lit SET
                      lit_url = " . quoteString($p_url) . ",
@@ -231,7 +233,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
         $result = dbi_query($sql);
         if ($result) {
             $p_citationID = (intval($_POST['citationID'])) ?: dbi_insert_id();
-            logLit($p_citationID, $updated);
+            Log::lit($p_citationID, $updated);
         } else {
             $p_citationID = (intval($_POST['citationID'])) ?: 0;
         }
@@ -504,7 +506,7 @@ if (isset($_GET['sel']) && extractID($_GET['sel']) != "NULL") {
 
 
 <?PHP
-$cf = new CSSF();
+$cf = new Cssf();
 
 $display = Display::Load();
 $title="Taxon Synonymy<br>".$display->protolog($p_citationID);
@@ -669,7 +671,7 @@ $cf->checkbox(44, 31, "publ", $p_publ);
 $cf->label(53, 31, "signature");
 $cf->inputText(53, 31, 12, "signature", $p_signature, 50);
 
-if (($_SESSION['editControl'] & 0x20) != 0) {
+if (Permission::has('lit')) {
     $cf->buttonSubmit(16, 36, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_citationID) {
         if ($edit) {

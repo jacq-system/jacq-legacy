@@ -1,13 +1,14 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Settings;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -52,7 +53,7 @@ function clearExternal($table, $id)
 
 $blocked = false;
 if (isset($_GET['sel'])) {
-    if (extractID($_GET['sel']) != "NULL") {
+    if (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT ts.taxonID, ts.synID, ts.basID, ts.genID, ts.annotation, ts.external,
                  tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, tag.author author_g,
                  tf.family, tsc.category, tst.status, tst.statusID, tr.rank, tr.tax_rankID,
@@ -87,7 +88,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_tax_authors tag ON tag.authorID = tg.authorID
                  LEFT JOIN tbl_tax_families tf ON tf.familyID = tg.familyID
                  LEFT JOIN tbl_tax_systematic_categories tsc ON tf.categoryID = tsc.categoryID
-                WHERE taxonID = " . extractID($_GET['sel']);
+                WHERE taxonID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = mysqli_num_rows($result) > 0;
     } else {
@@ -102,37 +103,37 @@ if (isset($_GET['sel'])) {
         $p_speciesIndex = intval($row['epithetID']);
         $p_author       = ($row['author']) ? $row['author'] : "";
         $p_authorIndex  = intval($row['authorID']);
-        if ($row['Brummit_Powell_full']) $p_author .= chr(194) . chr(183) . " [" . replaceNewline($row['Brummit_Powell_full']) . "]";
+        if ($row['Brummit_Powell_full']) $p_author .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['Brummit_Powell_full']) . "]";
 
         $p_subspecies      = ($row['epithet1']) ? $row['epithet1'] : "";
         $p_subspeciesIndex = intval($row['epithetID1']);
         $p_subauthor       = ($row['author1']) ? $row['author1'] : "";
         $p_subauthorIndex  = intval($row['authorID1']);
-        if ($row['bpf1']) $p_subauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf1']) . "]";
+        if ($row['bpf1']) $p_subauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf1']) . "]";
 
         $p_variety        = ($row['epithet2']) ? $row['epithet2'] : "";
         $p_varietyIndex   = intval($row['epithetID2']);
         $p_varauthor      = ($row['author2']) ? $row['author2'] : "";
         $p_varauthorIndex = intval($row['authorID2']);
-        if ($row['bpf2']) $p_varauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf2']) . "]";
+        if ($row['bpf2']) $p_varauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf2']) . "]";
 
         $p_subvariety        = ($row['epithet3']) ? $row['epithet3'] : "";
         $p_subvarietyIndex   = intval($row['epithetID3']);
         $p_subvarauthor      = ($row['author3']) ? $row['author3'] : "";
         $p_subvarauthorIndex = intval($row['authorID3']);
-        if ($row['bpf3']) $p_subvarauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf3']) . "]";
+        if ($row['bpf3']) $p_subvarauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf3']) . "]";
 
         $p_forma          = ($row['epithet4']) ? $row['epithet4'] : "";
         $p_formaIndex     = intval($row['epithetID4']);
         $p_forauthor      = ($row['author4']) ? $row['author4'] : "";
         $p_forauthorIndex = intval($row['authorID4']);
-        if ($row['bpf4']) $p_forauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf4']) . "]";
+        if ($row['bpf4']) $p_forauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf4']) . "]";
 
         $p_subforma          = ($row['epithet5']) ? $row['epithet5'] : "";
         $p_subformaIndex     = intval($row['epithetID5']);
         $p_subforauthor      = ($row['author5']) ? $row['author5'] : "";
         $p_subforauthorIndex = intval($row['authorID5']);
-        if ($row['bpf5']) $p_subforauthor .= chr(194) . chr(183) . " [" . replaceNewline($row['bpf5']) . "]";
+        if ($row['bpf5']) $p_subforauthor .= chr(194) . chr(183) . " [" . Tools::replaceNewline($row['bpf5']) . "]";
 
         $p_gen         = $row['genus'] . " " . $row['author_g'] . " " . $row['family'] . " "
                        . $row['category'] . " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
@@ -210,7 +211,7 @@ if (isset($_GET['sel'])) {
     $p_rankIndex   = (!empty($_POST['rankIndex']))   ? $_POST['rankIndex']   : 1;
     $p_statusIndex = (!empty($_POST['statusIndex'])) ? $_POST['statusIndex'] : 96;
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x1) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('species')) {
         if (Permission::has('use_access')) {
             if (intval($_POST['taxonID'])) {
                 // check if user has update rights for the old genID
@@ -271,7 +272,7 @@ if (isset($_GET['sel'])) {
                              external = "            . (($p_external) ? 1 : 0) . "
                             WHERE taxonID = '" . intval($_POST['taxonID']) . "'";
                     $result = dbi_query($sql);
-                    logSpecies($p_taxonID,1);
+                    Log::species($p_taxonID,1);
                     if (!$p_external) {
                         // check any used epitheta and authors and make them internal if still external
                         clearExternal('epithets', $p_speciesIndex);
@@ -311,7 +312,7 @@ if (isset($_GET['sel'])) {
                 $result = dbi_query($sql);
                 if ($result) {
                     $p_taxonID = dbi_insert_id();
-                    logSpecies($p_taxonID, 0);
+                    Log::species($p_taxonID, 0);
                 } else {
                     $taxonID = 0;
                 }
@@ -449,14 +450,14 @@ if (mysqli_num_rows($result) > 0) {
     function listTypeSpecimens(sel) {
       target  = "listTypeSpecimens.php?ID=" + encodeURIComponent(sel);
       options = "width=";
-      if (screen.availWidth<990)
+      if (screen.availWidth<1380)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
-      if (screen.availHeight<710)
+        options += "1380, height=";
+      if (screen.availHeight<860)
         options += (screen.availHeight - 10);
       else
-        options += "710";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
       MeinFenster = window.open(target,"Specimens",options);
       MeinFenster.focus();
@@ -467,11 +468,11 @@ if (mysqli_num_rows($result) > 0) {
       if (screen.availWidth<1380)
         options += (screen.availWidth - 10) + ",height=";
       else
-        options += "990, height=";
-      if (screen.availHeight<810)
+        options += "1380, height=";
+      if (screen.availHeight<860)
         options += (screen.availHeight - 10);
       else
-        options += "710";
+        options += "860";
       options += ", top=10,left=10,scrollbars=yes,resizable=yes";
       MeinFenster = window.open(target,"Specimens",options);
       MeinFenster.focus();
@@ -712,7 +713,7 @@ if ($nr) {
     echo "</div>\n";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"taxonID\" value=\"$p_taxonID\">\n";
 if ($p_taxonID) {
@@ -835,7 +836,7 @@ $cf->textarea(10, 39, 51, 9.6, "annotation", $p_annotation);
 
 $cf->buttonSubmit(17, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
 
-if (($_SESSION['editControl'] & 0x1) != 0) {
+if (Permission::has('species')) {
     if ($p_taxonID) {
         if ($edit) {
             $cf->buttonJavaScript(23, 50, " Reset ", "self.location.href='editSpecies.php?sel=<" . $p_taxonID . ">&edit=1'");

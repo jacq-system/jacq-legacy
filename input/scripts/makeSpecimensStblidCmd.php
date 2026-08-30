@@ -1,7 +1,9 @@
 #!/usr/bin/php -qC
 <?php
 require_once __DIR__ . '/../inc/variables.php';
-require_once __DIR__ . '/../inc/stableIdentifierFunctions.php';
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\StableIdentifier;
 
 ini_set("max_execution_time","3600");
 
@@ -98,7 +100,7 @@ if (!$check_source_id) {
                                    AND mc.`source_id` = $check_source_id");
 }
 while ($row_specimen = $result_specimen->fetch_array()) {
-    $stblid = makeStableIdentifier($row_specimen['source_id'], array('specimen_ID' => $row_specimen['specimen_ID']), $row_specimen['collectionID']);
+    $stblid = StableIdentifier::make($row_specimen['source_id'], array('specimen_ID' => $row_specimen['specimen_ID']), $row_specimen['collectionID']);
     if ($stblid) {
         $result_test_stblId = dbi_query("SELECT id, specimen_ID FROM tbl_specimens_stblid WHERE stableIdentifier = '$stblid'");
         if ($result_test_stblId->num_rows == 0) {

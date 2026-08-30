@@ -1,12 +1,11 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/api_functions.php");
-require("inc/clsDbAccess.php");
 require("inc/jacqServletJsonRPCClient.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Api;
+use Jacq\PdoAccess;
 use Jacq\Permission;
 
 //---------- check every input ----------
@@ -187,8 +186,8 @@ if ($type == 1 && $batchID) {  // update database
     if (mysqli_num_rows($result) > 0) {  // only unsent batches may be processed
         $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE batchID_fk = " . quoteString($batchID));
         while ($row = mysqli_fetch_array($result)) {
-            update_tbl_api_units($row['specimen_ID']);
-            update_tbl_api_units_identifications($row['specimen_ID']);
+            Api::update_tbl_api_units(intval($row['specimen_ID']));
+            Api::update_tbl_api_units_identifications(intval($row['specimen_ID']));
         }
     }
 }
@@ -209,7 +208,7 @@ showList($_CONFIG['URL']['ACCESS'] . "api/copyWebImages.php?ID=", true);
 showList( $_SERVER['PHP_SELF'] . "?type=5&ID=", true );
 
 if( $type == 5 && $batchID ) {
-    $db = clsDbAccess::Connect('INPUT');
+    $db = PdoAccess::ConnectTo('INPUT');
 
     // Fetch image server information
     $dbstmt = $db->query( '

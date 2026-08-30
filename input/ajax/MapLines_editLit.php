@@ -1,9 +1,11 @@
 <?PHP
 session_start();
 require_once('../inc/connect.php');
-require_once('../inc/cssf.php');
-require_once('../inc/log_functions.php');
 require_once('mapLines.php');
+require __DIR__ . '/../vendor/autoload.php';
+
+use Jacq\Log;
+use org\jsonrpcphp\JsonRPCClient;
 
 //debug
 foreach($_GET as $k=>$v){
@@ -11,9 +13,9 @@ foreach($_GET as $k=>$v){
 }
 
 class MapLines_editLit extends MapLines{
-	var $pagination=10;
+	public $pagination=10;
 
-	function taxon1($row,$t=0){
+	public function taxon1($row,$t=0){
 		if($row['taxonID'.$t]==0)return '0 ';
 		$withSeperator=false;
 		$ret = $row['genus'.$t];
@@ -29,7 +31,7 @@ class MapLines_editLit extends MapLines{
 		return $ret;
 	}
 
-    function RemoveMapLine($params) {
+    public function RemoveMapLine($params) {
         // make parameters save
         $citid = intval($params['citationID']);
         $taxonID = intval($params['leftID']);
@@ -61,7 +63,7 @@ class MapLines_editLit extends MapLines{
             }
             // if not, delete entry
             else {
-                logTbl_tax_synonymy($tax_syn_ID, 2);
+                Log::tbl_tax_synonymy($tax_syn_ID, 2);
                 $sql3 = "DELETE FROM `herbarinput`.`tbl_tax_synonymy` WHERE `tax_syn_ID` = {$tax_syn_ID}";
                 $res3 = dbi_query($sql3);
                 if ($res3) {
@@ -75,7 +77,7 @@ class MapLines_editLit extends MapLines{
         return $res;
     }
 
-    function LoadMapLines($params){
+    public function LoadMapLines($params){
 		$citid=$params['citationID'];
 
 
@@ -91,8 +93,8 @@ class MapLines_editLit extends MapLines{
 		// Switch Search
 		// species...
 		if(isset($params['speciesSearch']) && strlen($params['speciesSearch'])>0){
-			$params['speciesSearch']=trim(removeID($params['speciesSearch']));
-			$params['genusSearch']=trim(removeID($params['genusSearch']));
+			$params['speciesSearch']=trim($this->removeID($params['speciesSearch']));
+			$params['genusSearch']=trim($this->removeID($params['genusSearch']));
 
 			$pieces=explode(chr(194) . chr(183), $params['speciesSearch']);
 			$v=explode(" ",$pieces[0]);
@@ -152,10 +154,10 @@ AND(
 ";
 		//mdld
 		}else if(isset($params['mdldSearch']) && strlen($params['mdldSearch'])>0){
-			$params['mdldSearch']=strtolower(trim(removeID($params['mdldSearch'])));
+			$params['mdldSearch']=strtolower(trim($this->removeID($params['mdldSearch'])));
 
 			global $_OPTIONS;
-			$service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+			$service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
 			try {
 				$matches = $service->getMatchesService('vienna',$params['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 
@@ -338,7 +340,7 @@ WHERE
 	}
 
 	// Save new pairs...
-	function SaveMapLines($params)
+	public function SaveMapLines($params)
     {
         global $dbLink;
 
@@ -377,7 +379,7 @@ VALUES
 							$result2 = dbi_query($sql2);
 							if($result2){
 								$tax_syn_ID = dbi_insert_id();
-								logTbl_tax_synonymy($tax_syn_ID,0);
+								Log::tbl_tax_synonymy($tax_syn_ID,0);
 								$successx[]=array($x,$taxonID,$acctaxonID);
 								continue;
 							}else{
@@ -402,6 +404,22 @@ VALUES
 		}
 		return $res;
 	}
+
+    /**
+     * remove the ID from a string if present and returns the remaining part. ID must be enclosed in "<>" brackets and be positioned at the end
+     *
+     * @param string $item string to parse
+     * @return string string with removed ID (if any)
+     */
+    private function removeID ($item)
+    {
+        $pos = strrpos($item, ' <');
+        if ($pos !== false) {
+            return substr($item, 0, $pos);
+        } else {
+            return $item;
+        }
+    }
 }
 
 

@@ -3,7 +3,9 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-if (!checkRight('admin')) {
+use Jacq\Permission;
+
+if (!Permission::has('admin')) {
     die("You don't have the right to do that.");
 }
 ?><!DOCTYPE html>

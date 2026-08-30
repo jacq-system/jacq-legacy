@@ -1,9 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Cssf;
+use Jacq\Log;
+use Jacq\Permission;
+use Jacq\Tools;
 
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
@@ -44,7 +48,7 @@ require("inc/log_functions.php");
 if (isset($_GET['new'])) {
     if (intval($_GET['t']) == 1) {
         $p_type = 1;  // taxonID ist die Führungs-ID
-        $p_taxonIndex = intval(extractID($_GET['ID'], true));
+        $p_taxonIndex = intval(Tools::extractID($_GET['ID'], true));
         $p_taxon = getScientificName($p_taxonIndex);
         $p_citation = "";
         $p_citationIndex = 0;
@@ -56,7 +60,7 @@ if (isset($_GET['new'])) {
                LEFT JOIN tbl_lit_periodicals lp ON lp.periodicalID = l.periodicalID
                LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
-               WHERE citationID = " . extractID($_GET['ID']);
+               WHERE citationID = " . Tools::extractID($_GET['ID']);
         $row = dbi_query($sql)->fetch_array();
         $p_citation = protolog($row);
         $p_citationIndex = intval($row['citationID']);
@@ -64,16 +68,16 @@ if (isset($_GET['new'])) {
         $p_taxonIndex = 0;
     }
     $p_paginae = $p_figures = $p_annotations = $p_taxindID = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     if (intval($_GET['t']) == 1) {
-        $p_type = 1;  // taxonID ist die F�hrungs-ID
+        $p_type = 1;  // taxonID is the leading ID
     } else {
-        $p_type = 2;  // citationID ist die F�hrungs-ID
+        $p_type = 2;  // citationID is the leading ID
     }
 
     $sql ="SELECT taxindID, taxonID, citationID, paginae, figures, annotations
            FROM tbl_tax_index
-           WHERE taxindID = " . extractID($_GET['ID']);
+           WHERE taxindID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -111,7 +115,7 @@ if (isset($_GET['new'])) {
     $p_annotations   = $_POST['annotations'];
     $p_taxindID      = $_POST['taxindID'];
 
-    if (isset($_POST['submitUpdate']) && $_POST['submitUpdate'] && (($_SESSION['editControl'] & 0x200) != 0)) {
+    if (isset($_POST['submitUpdate']) && $_POST['submitUpdate'] && Permission::has('index')) {
         $taxonID    = (strlen(trim($_POST['taxon'])) > 0) ? intval($_POST['taxonIndex']) : 0;
         $citationID = (strlen(trim($_POST['citation'])) > 0) ? intval($_POST['citationIndex']) : 0;
         if ($taxonID && $citationID) {
@@ -132,7 +136,7 @@ if (isset($_GET['new'])) {
             $result = dbi_query($sql);
             if ($result) {
                 $id = (intval($p_taxindID)) ?: dbi_insert_id();
-                logIndex($id, $updated);
+                Log::index($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"
@@ -155,7 +159,7 @@ if (isset($_GET['new'])) {
 <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST" name="f">
 
 <?php
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"taxindID\" value=\"$p_taxindID\">\n";
 echo "<input type=\"hidden\" name=\"type\" value=\"$p_type\">\n";
@@ -183,7 +187,7 @@ $cf->inputText(25, 10, 10, "figures", $p_figures, 50);
 $cf->label(7, 12, "annotations");
 $cf->textarea(7, 12, 28, 4, "annotations", $p_annotations);
 
-if (($_SESSION['editControl'] & 0x200) != 0) {
+if (Permission::has('index')) {
     $text = ($p_taxindID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 20, "reload", " Reload ");
     $cf->buttonReset(10, 20, " Reset ");

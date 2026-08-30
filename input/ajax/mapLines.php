@@ -1,16 +1,18 @@
 <?PHP
 
+use Jacq\DbAccess;
+
 class MapLines{
 	// 
 	/*function __construct(){
 	
 	}*/
 	
-	function execFunction($function, $params){
+	public function execFunction($function, $params){
 
 		if(method_exists($this,$function)){
 			#try {
-				doQuotes($params,1);
+				$this->doQuotes($params);
 				$res=call_user_func_array(array($this,$function),array($params));
 			#}catch (Exception $e) {
 			#	$out =  "Fehler " . nl2br($e);
@@ -26,7 +28,7 @@ class MapLines{
 
 	}
 
-	function getMapLines($p,$emptyRightIsZero=false, $onlyRightCollumn=false){
+	public function getMapLines($p,$emptyRightIsZero=false, $onlyRightCollumn=false){
 		$new=array();
 		foreach($_POST as $k=>$v){
 			if(preg_match('/acmap_r_(\d+)Index/', $k, $matches)==1){
@@ -58,5 +60,26 @@ class MapLines{
 		}
 		return $new;
 	}
+
+	// from Post to escaped mysql
+	private function doQuotes(&$obj): void
+    {
+		try {
+			$dbLink = DbAccess::ConnectTo('INPUT');
+		} catch (Exception $e) {
+			error_log("SEVERE SQL-ERROR IN CLASS. USER-ID = {$_SESSION['uid']}\n" . $e->__toString());
+		}
+
+		if (!is_array($obj)) {
+			$obj = array($obj);
+		}
+		foreach ($obj as &$val) {
+			if (is_array($val)) {
+				$this->doQuotes($val);
+			} else if (is_scalar($val)) {
+				$val = $dbLink->real_escape_string(htmlspecialchars_decode($val));
+			}
+		}
+	}
+
 }
-?>

@@ -33,7 +33,7 @@ if ($scanIPNI) {
         while (!feof($handle)) {
             $buffer = fgets($handle, 4096);
             $parts = explode('%', $buffer);
-            if (strpos($parts[6], '-') !== false) {
+            if (str_contains($parts[6], '-')) {
                 $dates = explode('-', $parts[6]);
                 if (strlen(trim($dates[0])) > 0) {
                     $date1 = trim($dates[0]);
@@ -94,7 +94,7 @@ if ($scanIPNI) {
 }
 
 if ($scanTblPerson) {
-    dbi_query('DELETE FROM tbl_person_alternative');
+    dbi_query('TRUNCATE tbl_person_alternative');
     $result = dbi_query("SELECT person_ID, p_firstname, p_familyname FROM tbl_person");
     while ($row = mysqli_fetch_array($result)) {
         $alternative = $row['p_familyname'];
@@ -103,13 +103,13 @@ if ($scanTblPerson) {
             $parts = explode(' ', $text);
             foreach ($parts as $k => $v) {
                 if (strpos($v, '-') !== false) {
-                    $subparts = explode('-', $part);
+                    $subparts = explode('-', $v);
                     foreach ($subparts as $subk => $subv) {
-                        $subparts[$subk] = substr($subv, 0, 1) . '.';
+                        $subparts[$subk] = mb_substr($subv, 0, 1) . '.';
                     }
                     $parts[$k] = implode('-', $subparts);
                 } elseif ($v != 'des' && $v != 'van' && $v != 'der' && $v != 'de' && $v != 'von') {
-                    $parts[$k] = substr($v, 0, 1) . '.';
+                    $parts[$k] = mb_substr($v, 0, 1) . '.';
                 }
             }
             $alternative .= ", " . implode(' ', $parts);

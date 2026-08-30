@@ -1,12 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
-require("inc/log_functions.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -20,7 +21,7 @@ if (isset($_GET['new'])) {
              author, author1, author2, author3, author4, author5,
              epithet,epithet1,epithet2,epithet3,epithet4,epithet5
             FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-            WHERE taxonID = " . extractID($_GET['ID']);
+            WHERE taxonID = " . Tools::extractID($_GET['ID']);
     $p_taxon = taxon(dbi_query($sql)->fetch_array());
     $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
     $p_preferred = 0;
@@ -34,13 +35,13 @@ if (isset($_GET['new'])) {
     $p_ref_date = "";
     $p_source_specimen = "";
     $p_source_specimenIndex = "";
-} elseif (isset($_GET['ID']) && extractID($_GET['ID']) !== "NULL") {
+} elseif (isset($_GET['ID']) && Tools::extractID($_GET['ID']) !== "NULL") {
     $sql = "SELECT ts.tax_syn_ID, ts.taxonID, ts.acc_taxon_ID, ts.annotations, ts.preferred_taxonomy,
              ts.source, ts.source_citationID, ts.source_person_ID, ts.source_serviceID, ts.ref_date, ts.source_specimenID, ts.timestamp,
              hu.firstname, hu.surname
             FROM tbl_tax_synonymy ts
              LEFT JOIN herbarinput_log.tbl_herbardb_users hu ON ts.userID = hu.userID
-            WHERE tax_syn_ID = " . extractID($_GET['ID']);
+            WHERE tax_syn_ID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
@@ -144,9 +145,9 @@ if (isset($_GET['new'])) {
         if (!empty($_POST['preferred'])) {
             dbi_query("UPDATE tbl_tax_synonymy SET
                         preferred_taxonomy = 0
-                       WHERE taxonID = " . extractID($_POST['taxon']));
+                       WHERE taxonID = " . Tools::extractID($_POST['taxon']));
         }
-        $sqldata = "taxonID = "            . extractID($_POST['taxon']) . ",
+        $sqldata = "taxonID = "            . Tools::extractID($_POST['taxon']) . ",
                     acc_taxon_ID = "       . ((intval($_POST['taxonAccIndex']) == 0 || strlen($_POST['taxonAcc']) == 0 || $_POST['taxonAcc'] == '0' || $_POST['taxonAcc'] == chr(183) . ' <>') ? 'NULL' : "'" . intval($_POST['taxonAccIndex']) . "'") . ",
                     preferred_taxonomy = " . ((!empty($_POST['preferred'])) ? 1 : 0) . ",
                     annotations = "        . quoteString($_POST['annotations']) . ",
@@ -182,7 +183,7 @@ if (isset($_GET['new'])) {
         $result = dbi_query($sql);
         if ($result) {
             $p_tax_syn_ID = (intval($_POST['tax_syn_ID'])) ?: dbi_insert_id();
-            logTbl_tax_synonymy($p_tax_syn_ID, $updated);
+            Log::tbl_tax_synonymy($p_tax_syn_ID, $updated);
             echo "<html><head>\n"
                     . "<script language=\"JavaScript\">\n"
                     . "  window.opener.document.f.reload.click()\n"
@@ -275,7 +276,7 @@ if ($result = dbi_query($sql)) {
 }
 
 
-$cf = new CSSF();
+$cf = new Cssf();
 $cf->nameIsID = true;
 
 echo "<input type=\"hidden\" name=\"tax_syn_ID\" value=\"$p_tax_syn_ID\">\n";

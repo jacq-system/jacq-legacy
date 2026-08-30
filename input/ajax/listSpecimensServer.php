@@ -7,6 +7,7 @@
 require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/variables.php');
 
+use Jacq\Permission;
 use Jaxon\Response\Response;
 
 /**
@@ -31,7 +32,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $response = new Response();
 
     $start = $page * $itemsPerPage;
-    $swBatch = (checkRight('batch')) ? true : false; // nur user mit Recht "batch" können Batches hinzufügen
+    $swBatch = Permission::has('batch'); // only user with the permission "batch" may add batches
     $nrSel = (isset($_SESSION['sNr'])) ? intval($_SESSION['sNr']) : 0;
 
     $sql_names =  " s.specimen_ID, tg.genus, s.digital_image,

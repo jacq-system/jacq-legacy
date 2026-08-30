@@ -1,17 +1,18 @@
 <?php
+session_start();
 /**
  * this script checks for missing pictures (both database and harddisk)
  */
-require("../inc/init.php");
+require("../inc/gatekeeper.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\PdoAccess;
 
 $display = Display::Load();
 
 try {
-    /* @var $db clsDbAccess */
-    $db = clsDbAccess::Connect('INPUT');
+    $db = PdoAccess::ConnectTo('INPUT');
 
     $cntSyn = 0;
     $dbst = $db->query("SELECT taxonID, synID
@@ -149,9 +150,9 @@ catch (Exception $e) {
 <h1>Status acc but synID set (<?php echo $cntAccError; ?>):</h1>
 <?php echo $accError; ?>
 
-<!--<h1>missing "preferred taxonomy" with multiple acc. taxa (<?php echo $cntMissingMulti; ?>)</h1>-->
+<!--<h1>missing "preferred taxonomy" with multiple acc. taxa (<?php //echo $cntMissingMulti; ?>)</h1>-->
 
-<!--<h1>missing "preferred taxonomy" with only one acc. taxa (<?php echo $cntMissingSingle; ?>)</h1>-->
+<!--<h1>missing "preferred taxonomy" with only one acc. taxa (<?php //echo $cntMissingSingle; ?>)</h1>-->
 
 </body>
 </html>

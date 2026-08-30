@@ -7,7 +7,7 @@ class jsonRPCServerCustom extends jsonRPCServer{
 	private static $password=false;
 	private static $key=false;
 	
-	private function checkKey($key,$password){
+	private static function checkKey($key,$password){
 		$salt=substr($key,0,5);
 		$key=substr($key,5);
 		

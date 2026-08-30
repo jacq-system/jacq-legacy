@@ -1,12 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -144,7 +145,7 @@ function makeSammler2($search, $nr)
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
-    if (extractID($_GET['sel']) != "NULL") {
+    if (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT s.specimen_ID, s.HerbNummer, s.identstatusID, s.checked, s.accessible,
                  s.taxonID, s.seriesID, s.Nummer, s.alt_number, s.Datum, s.Datum2,
                  s.det, s.taxon_alt, s.Bezirk,
@@ -158,7 +159,7 @@ if (isset($_GET['sel'])) {
                 FROM (tbl_specimens s, tbl_collector c)
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
                 WHERE s.SammlerID = c.SammlerID
-                 AND specimen_ID = " . extractID($_GET['sel']);
+                 AND specimen_ID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = (mysqli_num_rows($result) > 0) ? true : false;
     } else {
@@ -329,14 +330,14 @@ if (isset($_GET['sel'])) {
         $d_E_Sec   = $p_lon_sec;
     }
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x2000) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('specim')) {
       $sqldata = "collectionID = '" . intval($p_collection) . "',
                   identstatusID = " . makeInt($p_identstatus) . ",
                   checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                   `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                  taxonID = " . extractID($p_taxon) . ",
-                  SammlerID = " . extractID($p_sammler) . ",
-                  Sammler_2ID = " . extractID($p_sammler2) . ",
+                  taxonID = " . Tools::extractID($p_taxon) . ",
+                  SammlerID = " . Tools::extractID($p_sammler) . ",
+                  Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                   seriesID = " . makeInt($p_series) . ",
                   Nummer = " . quoteString($p_Nummer) . ",
                   alt_number = " . quoteString($p_alt_number) . ",
@@ -417,7 +418,7 @@ if (isset($_GET['sel'])) {
           else {
               $result = dbi_query($sql);
               $p_specimen_ID = (intval($_POST['specimen_ID'])) ? intval($_POST['specimen_ID']) : dbi_insert_id();
-              logSpecimen($p_specimen_ID, $updated);
+              Log::specimen($p_specimen_ID, $updated);
 
               if ($_POST['submitUpdateNew']) {
                   $location="Location: editObservations.php?sel=<0>&new=1";
@@ -749,7 +750,7 @@ if ($nr) {
     echo "</div>\n";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"specimen_ID\" value=\"$p_specimen_ID\">\n";
 echo "<input type=\"hidden\" name=\"ncbi\" value=\"$p_ncbi\">\n";
@@ -807,7 +808,7 @@ $cf->dropdown(9, 4, "identstatus", $p_identstatus, $identstatus[0], $identstatus
 //if ($p_ncbi) echo " title=\"$p_ncbi\"";
 //echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
 
-if (($_SESSION['editControl'] & 0x1) != 0 || Permission::has('linkTaxon')) {
+if (Permission::has('species') || Permission::has('linkTaxon')) {
     $cf->labelMandatory(9, 6, 8, "taxon", "javascript:editSpecies(document.f.taxon)");
 } else {
     $cf->labelMandatory(9, 6, 8, "taxon");
@@ -842,7 +843,7 @@ $cf->label(9, 23.7, "search","javascript:searchCollector2()");
 echo "<div style=\"position: absolute; left: 1em; top: 25.75em; width: 54.5em;\"><hr></div>\n";
 
 $cf->labelMandatory(9, 27, 8, "Country");
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->dropdown(9, 27, "nation\" onchange=\"reload=true; self.document.f.reload.click()", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(9, 27, "nation", $p_nation, $nation[0], $nation[1]);
@@ -902,7 +903,7 @@ $cf->textarea(35, 40.5, 20, 2.6, "habitus", $p_habitus);
 $cf->label(9, 44, "annotations");
 $cf->textarea(9, 44, 46, 2.6, "Bemerkungen", $p_Bemerkungen);
 
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->buttonSubmit(16, 50, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {

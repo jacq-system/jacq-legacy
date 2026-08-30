@@ -3,9 +3,9 @@ error_reporting(0);
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
-require("inc/stableIdentifierFunctions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\StableIdentifier;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -620,7 +620,7 @@ while ($rowSpecimen = mysqli_fetch_array($resultSpecimens)) {
         ((substr($rowSpecimen['habitus'], 0, 1) == '=') ? " " : "") . $rowSpecimen['habitus'],          // to prevent a starting "=" (would be interpreted as a formula)
         $rowSpecimen['aktualdatum'],
         $rowSpecimen['eingabedatum'],
-        getStableIdentifier($rowSpecimen['specimen_ID'])
+        StableIdentifier::get($rowSpecimen['specimen_ID'])
             ), null, 'A' . $i);
 
 

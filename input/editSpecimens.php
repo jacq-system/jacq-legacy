@@ -1,12 +1,13 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/cssf.php");
 require("inc/herbardb_input_functions.php");
-require("inc/log_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Cssf;
+use Jacq\Log;
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jacq\Settings;
 
@@ -172,7 +173,7 @@ if( isset($_POST['submit_type']) ) {
 
 $updateBlocked = false;
 if (isset($_GET['sel'])) {
-    if  (extractID($_GET['sel']) != "NULL") {
+    if  (Tools::extractID($_GET['sel']) != "NULL") {
         $sql = "SELECT s.specimen_ID, s.HerbNummer, s.CollNummer, s.identstatusID, s.checked, s.accessible,
                  s.taxonID, s.seriesID, s.series_number, s.Nummer, s.alt_number, s.Datum, s.Datum2,
                  s.det, s.typified, s.taxon_alt, s.Bezirk,
@@ -189,7 +190,7 @@ if (isset($_GET['sel'])) {
                  LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
                  LEFT JOIN tbl_collector c ON c.SammlerID = s.SammlerID
                  LEFT JOIN tbl_collector_2 c2 ON c2.Sammler_2ID = s.Sammler_2ID
-                WHERE specimen_ID = " . extractID($_GET['sel']);
+                WHERE specimen_ID = " . Tools::extractID($_GET['sel']);
         $result = dbi_query($sql);
         $resultValid = mysqli_num_rows($result) > 0;
     } else {
@@ -311,7 +312,7 @@ if (isset($_GET['sel'])) {
     $edit = !empty($_GET['edit']);
     if ($swBatch) {
         // read tbl_api_specimens
-        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . extractID(filter_input(INPUT_GET, 'sel')));
+        $result = dbi_query("SELECT specimen_ID FROM api.tbl_api_specimens WHERE specimen_ID = " . Tools::extractID(filter_input(INPUT_GET, 'sel')));
         $p_batch = (mysqli_num_rows($result)>0) ? 1 : 0;
     }
 } else {
@@ -398,16 +399,16 @@ if (isset($_GET['sel'])) {
         $d_E_Sec   = $p_lon_sec;
     }
 
-    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && (($_SESSION['editControl'] & 0x2000) != 0)) {
+    if ((!empty($_POST['submitUpdate']) || !empty($_POST['submitUpdateNew']) || !empty($_POST['submitUpdateCopy'])) && Permission::has('specim')) {
         $sqldata = "HerbNummer = " . quoteString($p_HerbNummer) . ",
                     collectionID = '" . intval($p_collection) . "',
                     CollNummer = " . quoteString($p_CollNummer) . ",
                     identstatusID = " . makeInt($p_identstatus) . ",
                     checked = " . (($p_checked) ? "'1'" : "'0'") . ",
                     `accessible` = " . (($p_accessible) ? "'1'" : "'0'") . ",
-                    taxonID = " . extractID($p_taxon) . ",
-                    SammlerID = " . extractID($p_sammler) . ",
-                    Sammler_2ID = " . extractID($p_sammler2) . ",
+                    taxonID = " . Tools::extractID($p_taxon) . ",
+                    SammlerID = " . Tools::extractID($p_sammler) . ",
+                    Sammler_2ID = " . Tools::extractID($p_sammler2) . ",
                     seriesID = " . makeInt($p_series) . ",
                     series_number = " . quoteString($p_series_number) . ",
                     Nummer = " . quoteString($p_Nummer) . ",
@@ -508,7 +509,7 @@ if (isset($_GET['sel'])) {
                 if ($updated) {
                     $p_specimen_ID = intval($_POST['specimen_ID']);
                     $dbLink->begin_transaction();
-                    logSpecimen($p_specimen_ID, $updated);
+                    Log::specimen($p_specimen_ID, $updated);
                     $result = dbi_query($sql);
                     if (!$result) {
                         $errorEdited = $dbLink->errno . ": " . $dbLink->error;
@@ -520,7 +521,7 @@ if (isset($_GET['sel'])) {
                     $result = dbi_query($sql);
                     if ($result) {
                         $p_specimen_ID = dbi_insert_id();
-                        logSpecimen($p_specimen_ID, $updated);
+                        Log::specimen($p_specimen_ID, $updated);
                     } else {
                         $errorEdited = $dbLink->errno . ": " . $dbLink->error;
                     }
@@ -804,7 +805,7 @@ if ($nr) {
     echo "</div>\n";
 }
 
-$cf = new CSSF();
+$cf = new Cssf();
 
 echo "<input type=\"hidden\" name=\"specimen_ID\" value=\"$p_specimen_ID\">\n";
 echo "<input type=\"hidden\" name=\"ncbi\" value=\"$p_ncbi\">\n";
@@ -1015,7 +1016,7 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 
 $y += 1.25;
 $cf->label(11, $y, "Country");
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     $cf->dropdown(11, $y, "nation\" onchange=\"reload=true; self.document.f.submit();", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
@@ -1035,7 +1036,7 @@ echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; tex
 $y += 2;
 $cf->label(11, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
 //$cf->label(35, $y, "**","#\" onclick=\"jaxon_searchGeonamesService(document.f.Bezirk.value);");
-$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 255);  //TODO: Bezirk seems to be unused???
+$cf->inputText(11, $y, 20, "Bezirk", $p_Bezirk, 100);
 
 $y += 2;
 $cf->label(11, $y, "Altitude");
@@ -1099,7 +1100,7 @@ $cf->label(11, $y, "annotations");
 $cf->textarea(11, $y, 54, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
-if (($_SESSION['editControl'] & 0x2000) != 0) {
+if (Permission::has('specim')) {
     //$cf->buttonSubmit(16, $y, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {

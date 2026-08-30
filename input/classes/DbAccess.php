@@ -92,7 +92,7 @@ protected function __construct($db)
 public function queryCatch(string $query, int $result_mode = MYSQLI_STORE_RESULT): bool|mysqli_result
 {
     if (empty($query)) {
-        error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']}.");
+        error_log("EMPTY SQL QUERY FROM USER-ID {$_SESSION['uid']} IN SCRIPT {$_SERVER['PHP_SELF']}.");
         $result = false;
     } else {
         try {
