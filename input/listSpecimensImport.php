@@ -425,23 +425,23 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
     </td>
     <td id="drpInstitutionCollection"><?php ($_SESSION['wuCollection'] > 0) ? makeDropdownCollection() : makeDropdownInstitution(); ?></td>
   <td align="right">&nbsp;<b>Herbar Nr.:</b></td>
-    <td><input type="text" name="number" value="<?php echoSpecial('siNumber', 'SESSION'); ?>"></td>
+    <td><input type="text" name="number" value="<?php echo htmlspecialchars($_SESSION['siNumber'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Series:</b></td>
-    <td><input type="text" name="series" value="<?php echoSpecial('siSeries', 'SESSION'); ?>"></td>
+    <td><input type="text" name="series" value="<?php echo htmlspecialchars($_SESSION['siSeries'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Family:</b></td>
-    <td><input type="text" name="family" value="<?php echoSpecial('siFamily', 'SESSION'); ?>"></td>
+    <td><input type="text" name="family" value="<?php echo htmlspecialchars($_SESSION['siFamily'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Taxon:</b></td>
-    <td><input type="text" name="taxon" value="<?php echoSpecial('siTaxon', 'SESSION'); ?>"></td>
+    <td><input type="text" name="taxon" value="<?php echo htmlspecialchars($_SESSION['siTaxon'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>ident. history</b></td>
-    <td><input type="text" name="taxon_alt" value="<?php echoSpecial('siTaxonAlt', 'SESSION'); ?>"></td>
+    <td><input type="text" name="taxon_alt" value="<?php echo htmlspecialchars($_SESSION['siTaxonAlt'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Collector:</b></td>
-    <td><input type="text" name="collector" value="<?php echoSpecial('siCollector', 'SESSION'); ?>"></td>
+    <td><input type="text" name="collector" value="<?php echo htmlspecialchars($_SESSION['siCollector'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Number:</b></td>
-    <td><input type="text" name="numberC" value="<?php echoSpecial('siNumberC', 'SESSION'); ?>"></td>
+    <td><input type="text" name="numberC" value="<?php echo htmlspecialchars($_SESSION['siNumberC'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Date:</b></td>
-    <td><input type="text" name="date" value="<?php echoSpecial('siDate', 'SESSION'); ?>"></td>
+    <td><input type="text" name="date" value="<?php echo htmlspecialchars($_SESSION['siDate'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Continent:</b></td>
     <td>
@@ -478,14 +478,14 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
       </select>
     </td>
   <td align="right">&nbsp;<b>Loc.:</b></td>
-    <td><input type="text" name="loc" value="<?php echoSpecial('siLoc', 'SESSION'); ?>"></td>
+    <td><input type="text" name="loc" value="<?php echo htmlspecialchars($_SESSION['siLoc'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Country:</b></td>
-    <td><input type="text" name="country" value="<?php echoSpecial('siCountry', 'SESSION'); ?>"></td>
+    <td><input type="text" name="country" value="<?php echo htmlspecialchars($_SESSION['siCountry'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>State/Province:</b></td>
-    <td><input type="text" name="province" value="<?php echoSpecial('siProvince', 'SESSION'); ?>"></td>
+    <td><input type="text" name="province" value="<?php echo htmlspecialchars($_SESSION['siProvince'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Annotation:</b></td>
-    <td><input type="text" name="annotations" value="<?php echoSpecial('siBemerkungen', 'SESSION'); ?>"></td>
+    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['siBemerkungen'] ?? ''); ?>"></td>
 </tr><tr>
     <td colspan="2">
         <input type="radio" name="typ" value="all"<?php if(!$_SESSION['siTyp']) echo " checked"; ?>>
