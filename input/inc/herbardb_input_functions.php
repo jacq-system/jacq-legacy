@@ -257,28 +257,28 @@ function subTaxonItem($row)
  * @param $lock
  * @return int the id of the created genus or 0 in case of an error
  */
-function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks,
-                     $lock = '', $external = 0, $externalID = NULL)
-{
-    $sql = "INSERT INTO tbl_tax_genera SET
-                         genus = "               . quoteString($genus_name) . ",
-                         authorID = "            . makeInt($authorID) . ",
-                         DallaTorreIDs = "       . quoteString($dtid) . ",
-                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
-                         hybrid = "              . (($is_hybrid) ? "'X'" : "NULL") . ",
-                         accepted = "            . (($is_accepted) ? "'1'" : "'0'") . ",
-                         familyID = "            . makeInt($familyID) . ",".
-                         (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .
-                         "external = "           . quoteString($external) . ",
-                         externalID = "          . quoteString($externalID) . ",
-                         remarks = "             . quoteString($remarks) . "
-                         $lock";
-    $result = dbi_query($sql);
-    if ($result) {
-        $id = dbi_insert_id();
-        Log::genera($id, 0);
-    } else {
-        $id = 0;
-    }
-    return $id;
-}
+//function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks,
+//                     $lock = '', $external = 0, $externalID = NULL)
+//{
+//    $sql = "INSERT INTO tbl_tax_genera SET
+//                         genus = "               . quoteString($genus_name) . ",
+//                         authorID = "            . makeInt($authorID) . ",
+//                         DallaTorreIDs = "       . quoteString($dtid) . ",
+//                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
+//                         hybrid = "              . (($is_hybrid) ? "'X'" : "NULL") . ",
+//                         accepted = "            . (($is_accepted) ? "'1'" : "'0'") . ",
+//                         familyID = "            . makeInt($familyID) . ",".
+//                         (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .
+//                         "external = "           . quoteString($external) . ",
+//                         externalID = "          . quoteString($externalID) . ",
+//                         remarks = "             . quoteString($remarks) . "
+//                         $lock";
+//    $result = dbi_query($sql);
+//    if ($result) {
+//        $id = dbi_insert_id();
+//        Log::genera($id, 0);
+//    } else {
+//        $id = 0;
+//    }
+//    return $id;
+//}

@@ -757,7 +757,17 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
     if (mysqli_num_rows($result) == 0) {
         if($insert_new_genera){
             // add nevertheles
-            $genID = insertGenus($taxonParts['genus'], NULL, NULL, NULL, FALSE, TRUE, INCERTAE_SEDIS_IMPORT, NULL, NULL);
+            $sql = "INSERT INTO tbl_tax_genera SET
+                         genus = "    . quoteString($taxonParts['genus']) . ",
+                         accepted = 1,
+                         familyID = " . makeInt(INCERTAE_SEDIS_IMPORT);
+            $result = dbi_query($sql);
+            if ($result) {
+                $genID = dbi_insert_id();
+                Log::genera($genID, 0);
+            } else {
+                $genID = 0;
+            }
         } else {
             // genus not found -> abort
             $ret['error'] = 'genus not found';

@@ -122,7 +122,7 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
             $dtzid = $_POST['DTZID'];
             $remarks = $_POST['remarks'];
             if (Permission::mayUnlock('tbl_tax_genera')) {
-                $lock = ", locked=".(($_POST['locked']) ? "'1'" : "'0'");
+                $lock = ", locked=".((!empty($_POST['locked'])) ? "1" : "0");
             } else {
                 $lock = "";
             }
@@ -148,7 +148,24 @@ if (isset($_POST['submitUpdate']) && $_POST['submitUpdate']) {
                 $genus_name = $_POST['genus'] ?? '';
                 $is_hybrid = $_POST['hybrid'] ?? 0;
                 $is_accepted = $_POST['accepted'] ?? 0;
-                $id = insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks, $lock);
+                $sql = "INSERT INTO tbl_tax_genera SET
+                         genus = "               . quoteString($genus_name) . ",
+                         authorID = "            . makeInt($authorID) . ",
+                         DallaTorreIDs = "       . quoteString($dtid) . ",
+                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
+                         hybrid = "              . (($is_hybrid) ? "'X'" : "NULL") . ",
+                         accepted = "            . (($is_accepted) ? "'1'" : "'0'") . ",
+                         familyID = "            . makeInt($familyID).",
+                         fk_taxonID = "          . makeInt($taxonID).",
+                         remarks = "             . quoteString($remarks) . "
+                         $lock";
+                $result = dbi_query($sql);
+                if ($result) {
+                    $id = dbi_insert_id();
+                    Log::genera($id, 0);
+                } else {
+                    $id = 0;
+                }
             }
 
             $sql = "SELECT tg.genus, tg.DallaTorreIDs, tg.DallaTorreZusatzIDs, ta.author, tf.family, tsc.category
