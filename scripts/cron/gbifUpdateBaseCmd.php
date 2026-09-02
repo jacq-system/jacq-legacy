@@ -13,12 +13,13 @@ ini_set("memory_limit", "256M");
 /**
  * process commandline arguments
  */
-$opt = getopt("hnva", ["help", "nometa", "verbose", "all"], $restIndex);
+$opt = getopt("hniva", ["help", "nometa", "ignore", "verbose", "all"], $restIndex);
 
 $options = array(
     'help'    => (isset($opt['h']) || isset($opt['help']) || $argc == 1), // bool
     'all'     => (isset($opt['a']) || isset($opt['all'])),                // bool
     'nometa'  => (isset($opt['n']) || isset($opt['nometa'])),             // bool
+    'ignore'  => (isset($opt['i']) || isset($opt['ignore'])),             // bool
 
     'verbose' => ((isset($opt['v']) || isset($opt['verbose'])) ? ((is_array($opt['v'])) ? 2 : 1) : 0)  // 0, 1 or 2
 );
@@ -30,6 +31,7 @@ if ($options['help'] || (!$source_id && !$options['all'])) {
         . "Options:\n"
         . "  -h  --help     this explanation\n"
         . "  -n  --nometa   don't recreate metadata, tbl_specimens_types_mv and tbl_prj_gbif_pilot_total\n"
+        . "  -i  --ignore   ignore hash and rewrite all database rows\n"
         . "  -v  --verbose  echo status messages\n"
         . "  -a  --all      use all predefined source-IDs\n\n";
     die();
@@ -436,7 +438,7 @@ foreach ($tbls as $tbl) {
                 $dbLink2->queryCatch("INSERT INTO $dbt.{$tbl['table_name']} SET 
                                   hash = '$hash',
                                   $sql");
-            } elseif ($unit['hash'] != $hash) {
+            } elseif ($unit['hash'] != $hash || $options['ignore']) { 
                 $dbLink2->queryCatch("UPDATE $dbt.{$tbl['table_name']} SET 
                                   hash = '$hash',
                                   $sql 
