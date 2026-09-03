@@ -211,7 +211,6 @@ if (strlen($sql_correct) > 65) {
     $dbLnk->query(substr($sql_correct, 0, -2));
 }
 
-ksort($answers['askService']);
 //$types = array('error', 'unknownNationID', 'noCountry', 'otherCountry');
 $types = array('error'      => "have transmission errors",
                'unknown'    => "have unknown Nation-IDs",
@@ -233,6 +232,7 @@ foreach ($types as $type => $text) {
         if ($type != 'askService') {
             echo "<tr><td style='text-align: right'>" . count($answers[$type]) . "</td><td><a href='#$type'>$text</a></td></tr>\n";
         } else {
+            ksort($answers['askService']);
             $count = 0;
             foreach ($answers['askService'] as $answerNation) {
                 $count += count($answerNation);
