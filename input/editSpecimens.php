@@ -339,8 +339,8 @@ if (isset($_GET['sel'])) {
     $p_exactness         = $_POST['exactness'] ?? "";
     $p_altitude_min      = (isset($_POST['altitude_min']) && $_POST['altitude_min'] !== "") ? intval($_POST['altitude_min']) : "";           // integers only
     $p_altitude_max      = (isset($_POST['altitude_max']) && $_POST['altitude_max'] !== "") ? intval($_POST['altitude_max']) : "";           // integers only
-    $p_Fundort           = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort2'] : $_POST['Fundort1'];
-    $p_Fundort_engl      = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort1'] : $_POST['Fundort2'];
+    $p_Fundort           = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort2'] : ($_POST['Fundort1'] ?? '');
+    $p_Fundort_engl      = (!empty($_POST['toggleLanguage'])) ? $_POST['Fundort1'] : ($_POST['Fundort2'] ?? '');
     $p_habitat           = $_POST['habitat'] ?? "";
     $p_habitus           = $_POST['habitus'] ?? "";
     $p_Bemerkungen       = $_POST['Bemerkungen'] ?? "";
@@ -554,7 +554,7 @@ if (isset($_GET['sel'])) {
         $edit = false;
     } else {
         $edit = (!empty($_POST['edit'])) ? true : false;
-        $p_specimen_ID = $_POST['specimen_ID'];
+        $p_specimen_ID = $_POST['specimen_ID'] ?? 0;
     }
 }
 

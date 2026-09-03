@@ -188,7 +188,7 @@ function item($offset, $row, $short, $sign="=")
 <body>
 
 <?php
-for ($i = 1; $i <= $idList[0]; $i++) {
+for ($i = 1; $i <= ($idList[0] ?? 0); $i++) {
     $id = $idList[$i];
     $order = " ORDER BY genus, epithet, author, epithet1, author1, epithet2, author2, epithet3, author3";
 
