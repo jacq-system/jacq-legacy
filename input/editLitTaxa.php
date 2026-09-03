@@ -15,11 +15,10 @@ $jaxon = jaxon();
 $jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
 
 $db = DbAccess::ConnectTo('INPUT');
-$display = Display::Load();
 
 if (isset($_GET['new'])) {
     $p_citationIndex = Tools::extractID($_GET['ID'], true);
-    $p_citation = $display->protolog($p_citationIndex, true);
+    $p_citation = Display::protolog($p_citationIndex, true);
     $p_taxon = $p_taxonAcc = $p_annotations = $p_lit_tax_ID = $p_taxonIndex = $p_taxonAccIndex = "";
     $p_source = "person";
     $p_sourcePers = "Anonymous <39269>";
@@ -42,7 +41,7 @@ if (isset($_GET['new'])) {
         $p_user        = $row['firstname'] . " " . $row['surname'];
 
         $p_citationIndex = $row['citationID'];
-        $p_citation = $display->protolog($p_citationIndex, true);
+        $p_citation = Display::protolog($p_citationIndex, true);
 
         $p_taxonIndex = $row['taxonID'];
         $p_taxon = Tools::getScientificName($p_taxonIndex);
@@ -53,7 +52,7 @@ if (isset($_GET['new'])) {
         $p_source = $row['source'];
         if ($p_source == "literature") {
             $p_sourceLitIndex = $row['source_citationID'];
-            $p_sourceLit = $display->protolog($p_sourceLitIndex, true);
+            $p_sourceLit = Display::protolog($p_sourceLitIndex, true);
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = "";
         } else {
             $row2 = $db->queryCatch("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death

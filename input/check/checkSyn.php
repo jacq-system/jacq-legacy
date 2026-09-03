@@ -9,8 +9,6 @@ require __DIR__ . '/../vendor/autoload.php';
 use Jacq\Display;
 use Jacq\PdoAccess;
 
-$display = Display::Load();
-
 try {
     $db = PdoAccess::ConnectTo('INPUT');
 
@@ -50,7 +48,7 @@ try {
                          AND ts.synID NOT IN ( SELECT tsy.acc_taxon_ID FROM tbl_tax_synonymy tsy WHERE tsy.taxonID = ts.taxonID )
                         ORDER BY tg.genus, te.epithet");
     foreach ($dbst as $row) {
-        $mismatch .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . $display->taxonWithHybrids($row['taxonID']) . "</a><br>\n";
+        $mismatch .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . Display::taxonWithHybrids($row['taxonID']) . "</a><br>\n";
         $cntMismatch++;
     }
 
@@ -71,7 +69,7 @@ try {
                          AND ts.synID IS NOT NULL
                         ORDER BY tg.genus, te.epithet");
     foreach ($dbst as $row) {
-        $accError .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . $display->taxonWithHybrids($row['taxonID']) . "</a><br>\n";
+        $accError .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . Display::taxonWithHybrids($row['taxonID']) . "</a><br>\n";
         $cntAccError++;
     }
 }
@@ -100,10 +98,10 @@ try {
         $rows = $dbst2->fetchAll();
         if (count($rows) == 0) {
             if ($row['cnt'] > 1) {
-                $missingMulti .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . $display->taxonWithHybrids($row['taxonID']) . "</a><br>\n";
+                $missingMulti .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . Display::taxonWithHybrids($row['taxonID']) . "</a><br>\n";
                 $cntMissingMulti++;
             } else {
-                $missingSingle .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . $display->taxonWithHybrids($row['taxonID']) . "</a><br>\n";
+                $missingSingle .= "<a href=\"javascript:editSpecies('<" . $row['taxonID'] . ">')\">" . Display::taxonWithHybrids($row['taxonID']) . "</a><br>\n";
                 $cntMissingSingle++;
             }
         }

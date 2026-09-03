@@ -15,43 +15,43 @@ use Jacq\Settings;
  * @param bool $p_bAvoidHybridFormula avoid hybrids, defaults to no
  * @return string
  */
-function getScientificName (int|string|null $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
-{
-    // wrong call with empty taxon-ID
-    if (empty($taxon_id)) {
-        return '';
-    }
-
-    // Translation between mysql boolean (tinyint) and php boolean
-    if( $p_bAvoidHybridFormula ) {
-        $p_bAvoidHybridFormula = 1;
-    } else {
-        $p_bAvoidHybridFormula = 0;
-    }
-
-    // Use stored procedure in order to fetch the scientific name
-    $row = dbi_query("SELECT `herbar_view`.GetScientificName( $taxon_id, $p_bAvoidHybridFormula ) AS 'ScientificName'")->fetch_assoc();
-
-    // Extend scientific name with additional information
-    $scientificName = $row['ScientificName'];
-    if( $withDT ) {
-        $sql = "SELECT `tg`.`DallaTorreIDs`, `tg`.`DallaTorreZusatzIDs`
-                FROM `tbl_tax_species` `ts`
-                LEFT JOIN `tbl_tax_genera` `tg`
-                ON `tg`.`genID` = `ts`.`genID`
-                WHERE `ts`.`taxonID` = '$taxon_id'";
-
-        $row = dbi_query($sql)->fetch_assoc();
-
-        $scientificName .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
-
-    }
-    if( $withID ) {
-        $scientificName .= " <$taxon_id>";
-    }
-
-    return $scientificName;
-}
+//function getScientificName (int|string|null $taxon_id, bool $withDT = false, bool $withID = true, bool $p_bAvoidHybridFormula = false): string
+//{
+//    // wrong call with empty taxon-ID
+//    if (empty($taxon_id)) {
+//        return '';
+//    }
+//
+//    // Translation between mysql boolean (tinyint) and php boolean
+//    if( $p_bAvoidHybridFormula ) {
+//        $p_bAvoidHybridFormula = 1;
+//    } else {
+//        $p_bAvoidHybridFormula = 0;
+//    }
+//
+//    // Use stored procedure in order to fetch the scientific name
+//    $row = dbi_query("SELECT `herbar_view`.GetScientificName( $taxon_id, $p_bAvoidHybridFormula ) AS 'ScientificName'")->fetch_assoc();
+//
+//    // Extend scientific name with additional information
+//    $scientificName = $row['ScientificName'];
+//    if( $withDT ) {
+//        $sql = "SELECT `tg`.`DallaTorreIDs`, `tg`.`DallaTorreZusatzIDs`
+//                FROM `tbl_tax_species` `ts`
+//                LEFT JOIN `tbl_tax_genera` `tg`
+//                ON `tg`.`genID` = `ts`.`genID`
+//                WHERE `ts`.`taxonID` = '$taxon_id'";
+//
+//        $row = dbi_query($sql)->fetch_assoc();
+//
+//        $scientificName .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
+//
+//    }
+//    if( $withID ) {
+//        $scientificName .= " <$taxon_id>";
+//    }
+//
+//    return $scientificName;
+//}
 
 /**
  * constructs the link to the image on an IIIF-Server for a specimen, if iiif for this source is activated
@@ -257,28 +257,28 @@ function subTaxonItem($row)
  * @param $lock
  * @return int the id of the created genus or 0 in case of an error
  */
-function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks,
-                     $lock = '', $external = 0, $externalID = NULL)
-{
-    $sql = "INSERT INTO tbl_tax_genera SET
-                         genus = "               . quoteString($genus_name) . ",
-                         authorID = "            . makeInt($authorID) . ",
-                         DallaTorreIDs = "       . quoteString($dtid) . ",
-                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
-                         hybrid = "              . (($is_hybrid) ? "'X'" : "NULL") . ",
-                         accepted = "            . (($is_accepted) ? "'1'" : "'0'") . ",
-                         familyID = "            . makeInt($familyID) . ",".
-                         (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .
-                         "external = "           . quoteString($external) . ",
-                         externalID = "          . quoteString($externalID) . ",
-                         remarks = "             . quoteString($remarks) . "
-                         $lock";
-    $result = dbi_query($sql);
-    if ($result) {
-        $id = dbi_insert_id();
-        Log::genera($id, 0);
-    } else {
-        $id = 0;
-    }
-    return $id;
-}
+//function insertGenus($genus_name, $authorID, $dtid, $dtzid, $is_hybrid, $is_accepted, $familyID, $taxonID, $remarks,
+//                     $lock = '', $external = 0, $externalID = NULL)
+//{
+//    $sql = "INSERT INTO tbl_tax_genera SET
+//                         genus = "               . quoteString($genus_name) . ",
+//                         authorID = "            . makeInt($authorID) . ",
+//                         DallaTorreIDs = "       . quoteString($dtid) . ",
+//                         DallaTorreZusatzIDs = " . quoteString($dtzid) . ",
+//                         hybrid = "              . (($is_hybrid) ? "'X'" : "NULL") . ",
+//                         accepted = "            . (($is_accepted) ? "'1'" : "'0'") . ",
+//                         familyID = "            . makeInt($familyID) . ",".
+//                         (is_numeric($taxonID) ?  "fk_taxonID = " . makeInt($taxonID) . ",":"") .
+//                         "external = "           . quoteString($external) . ",
+//                         externalID = "          . quoteString($externalID) . ",
+//                         remarks = "             . quoteString($remarks) . "
+//                         $lock";
+//    $result = dbi_query($sql);
+//    if ($result) {
+//        $id = dbi_insert_id();
+//        Log::genera($id, 0);
+//    } else {
+//        $id = 0;
+//    }
+//    return $id;
+//}

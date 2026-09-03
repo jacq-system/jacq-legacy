@@ -399,9 +399,7 @@ public function citation(array $value): array
             if ($value['id'] == '' || $value['id'] == '0' || $value['id'] == 0) {
                 return array();
             }
-            $display = Display::Load();
-
-            $label = $display->protolog($value['id'], true);
+            $label = Display::protolog($value['id'], true);
             $results[] = array(
                 'id' => $value['id'],
                 'label' => $label,
@@ -454,12 +452,11 @@ public function citation(array $value): array
 
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
-                $display = Display::Load();
                 foreach ($rows as $row) {
                     $results[] = array(
                         'id' => $row['citationID'],
-                        'label' => $display->protolog($row['citationID'], true),
-                        'value' => $display->protolog($row['citationID'], true),
+                        'label' => Display::protolog($row['citationID'], true),
+                        'value' => Display::protolog($row['citationID'], true),
                         'color' => ''
                     );
                 }
@@ -879,11 +876,10 @@ public function taxon(array $value, bool $noExternals = false, bool $withDT = fa
 
         $rows = $dbst->fetchAll();
         if (count($rows) > 0) {
-            $display = Display::Load();
             foreach ($rows as $row) {
                 $results[] = array('id' => $row['taxonID'],
-                    'label' => $display->taxon($row['taxonID'], true, $withDT, true),
-                    'value' => $display->taxon($row['taxonID'], true, $withDT, $withID),
+                    'label' => Display::taxon($row['taxonID'], true, $withDT, true),
+                    'value' => Display::taxon($row['taxonID'], true, $withDT, $withID),
                     'color' => ($row['external']) ? 'red' : '');
             }
             foreach ($results as $k => $v) {   // eliminate multiple whitespaces within the result
@@ -937,7 +933,6 @@ public function taxonWithHybrids(array $value, bool $noExternals = false): array
 {
     $results = array();
     try {
-        $display = Display::Load();
         $db = PdoAccess::ConnectTo('INPUT');
 
         $sql = "SELECT taxonID, ts.synID, ts.external
@@ -1002,8 +997,8 @@ public function taxonWithHybrids(array $value, bool $noExternals = false): array
 
                 $results[] = array(
                     'id' => $row['taxonID'],
-                    'label' => $display->taxon($row['taxonID'], true, false, true),
-                    'value' => $display->taxon($row['taxonID'], true, false, true),
+                    'label' => Display::taxon($row['taxonID'], true, false, true),
+                    'value' => Display::taxon($row['taxonID'], true, false, true),
                     'color' => $color,
                 );
             }
@@ -1054,8 +1049,8 @@ public function taxonWithHybrids(array $value, bool $noExternals = false): array
                 foreach ($rows as $row) {
                     $results[] = array(
                         'id' => $row['taxonID'],
-                        'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
-                        'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                        'label' => Display::taxonWithHybrids($row['taxonID'], true, true),
+                        'value' => Display::taxonWithHybrids($row['taxonID'], true, true),
                         'color' => ($row['synID']) ? 'red' : ''
                     );
                 }
@@ -1086,7 +1081,6 @@ public function taxonWithHybridsNew(array $value, bool $noExternals = false): ar
 {
     $results = array();
     try {
-        $display = Display::Load();
         $db = PdoAccess::ConnectTo('INPUT');
 
         if ($value['type'] == 'id') {
@@ -1104,8 +1098,8 @@ public function taxonWithHybridsNew(array $value, bool $noExternals = false): ar
                 }
                 $results[] = array(
                     'id'    => $rows[0]['taxonID'],
-                    'label' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
-                    'value' => $display->taxonWithHybrids($rows[0]['taxonID'], true, true),
+                    'label' => Display::taxonWithHybrids($rows[0]['taxonID'], true, true),
+                    'value' => Display::taxonWithHybrids($rows[0]['taxonID'], true, true),
                     'color' => $color,
                 );
             }
@@ -1175,8 +1169,8 @@ public function taxonWithHybridsNew(array $value, bool $noExternals = false): ar
 
                     $results[] = array(
                         'id'    => $row['taxonID'],
-                        'label' => $display->taxon($row['taxonID'], true, false, true),
-                        'value' => $display->taxon($row['taxonID'], true, false, true),
+                        'label' => Display::taxon($row['taxonID'], true, false, true),
+                        'value' => Display::taxon($row['taxonID'], true, false, true),
                         'color' => $color
                     );
                 }
@@ -1223,8 +1217,8 @@ public function taxonWithHybridsNew(array $value, bool $noExternals = false): ar
 
                 $results[] = array(
                     'id' => $row['taxonID'],
-                    'label' => $display->taxonWithHybrids($row['taxonID'], true, true),
-                    'value' => $display->taxonWithHybrids($row['taxonID'], true, true),
+                    'label' => Display::taxonWithHybrids($row['taxonID'], true, true),
+                    'value' => Display::taxonWithHybrids($row['taxonID'], true, true),
                     'color' => $color
                 );
             }

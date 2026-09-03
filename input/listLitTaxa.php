@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -149,7 +150,7 @@ if (mysqli_num_rows($result) > 0) {
         echo "<td class=\"out\">"
            . "<a href=\"javascript:editLitTaxa('<" . $row['lit_tax_ID'] . ">',0)\">edit</a>"
            . "</td>";
-        echo "<td class=\"out\">" . getScientificName($row['taxonID']) . "</td>";
+        echo "<td class=\"out\">" . Tools::getScientificName($row['taxonID']) . "</td>";
         echo "<td class=\"out\">" . taxonAccepted($row) . "</td>";
         echo "<td class=\"out\">" . $row['annotations'] . "</td>";
         echo "</tr>\n";

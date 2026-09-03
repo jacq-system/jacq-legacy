@@ -52,9 +52,9 @@ class Cssf
     public int $yrel = 0;
 
     /****************************************************************************
-     *                                                                            *
-     *    Public methods                                                             *
-     *                                                                            *
+     *                                                                          *
+     *    Public methods                                                        *
+     *                                                                          *
      ****************************************************************************/
     public function __construct()
     {
@@ -404,7 +404,6 @@ class Cssf
         if ($bgcol) {
             print " background-color: $bgcol;";
         }
-        /** @var TYPE_NAME $name */
         print "' type='text' name='$name' id='ajax_$name' value='" . htmlspecialchars($value, ENT_QUOTES) . "'";
         if ($maxsize) {
             print " maxlength='$maxsize'";
@@ -787,18 +786,20 @@ EOF;
     }
 
     /****************************************************************************
-     *                                                                            *
-     *    Private methods                                                            *
-     *                                                                            *
+     *                                                                          *
+     *    Private methods                                                       *
+     *                                                                          *
      ****************************************************************************/
     private function _divclass($x, $y, $class, $id = ""): void
     {
         $idtext = (empty($id)) ? "" : 'id="' . $id . '"';
 
-        if ($this->yrelative) {
-            $y += $this->yrel;
+        if ($y !== NULL) {
+            if ($this->yrelative) {
+                $y += $this->yrel;
+            }
+            $this->yrel = $y;
         }
-        $this->yrel = $y;
 
         $fixed_position = "";
         if ($x !== NULL && $y !== NULL) {

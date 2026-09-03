@@ -266,7 +266,7 @@ function makeLinktext($specimenID)
                          AND s.specimen_ID = '$foundID'";
                 $row2 = mysqli_fetch_array(dbi_query($sql));
                 $ret .= "<li><a href=\"editSpecimens.php?sel=" . htmlentities("<$foundID>") . "&ptid=0\">"
-                      . $row2['source_code'] . $row2['HerbNummer'] . ": " . getScientificName($row2['taxonID'], false, false) . "</a></li>";
+                      . $row2['source_code'] . $row2['HerbNummer'] . ": " . Tools::getScientificName($row2['taxonID'], false, false) . "</a></li>";
             }
             $ret .= "</ul>";
 
@@ -627,7 +627,7 @@ function displayMultiTaxa($specimenID)
     $rows = dbi_query("SELECT taxonID FROM tbl_specimens_taxa WHERE specimen_ID = '" . intval($specimenID) . "'")->fetch_all(MYSQLI_ASSOC);
     if (!empty($rows)) {
         if (count($rows) == 1) {
-            $response->assign('multiTaxaText', 'innerHTML', getScientificName($rows[0]['taxonID']));
+            $response->assign('multiTaxaText', 'innerHTML', Tools::getScientificName($rows[0]['taxonID']));
         } else {
             $response->assign('multiTaxaText', 'innerHTML', "+" . count($rows));
         }
@@ -779,7 +779,7 @@ function updateNomService($taxonID)
                                    . "</a>";
     }
 
-    $sciname = getScientificName($taxonID, false, false, false);
+    $sciname = Tools::getScientificName($taxonID, false, false);
     $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     $curl_response = curl_exec($curl);

@@ -554,7 +554,7 @@ function getHybrids($taxonID)
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
         $taxon_ID_fk = $row['taxon_ID_fk'];
-        $text .= getScientificName($taxon_ID_fk) . "<br />\n";
+        $text .= Tools::getScientificName($taxon_ID_fk) . "<br />\n";
     }
 
     return $text;
@@ -723,35 +723,35 @@ function selectTaxon(taxonID){
     <!-- BP: additional field for MDLD-search -->
 <tr>
     <td align="right" >&nbsp;<b>MDLD-Search:</b></td>
-    <td colspan="6"><input type="text" name="mdld" id="mdld" size="89" value="<?php echoSpecial('taxMDLD', 'SESSION'); ?>"></td>
+    <td colspan="6"><input type="text" name="mdld" id="mdld" size="89" value="<?php echo htmlspecialchars($_SESSION['taxMDLD'] ?? ''); ?>"></td>
 </tr>
 <!-- BP: END -->
 
 <!-- BP: added ids to all elements I need to manipulate with jQuery -->
 <tr>
   <td align="right" id="familyLabel">&nbsp;<b>Family:</b></td>
-    <td><input type="text" name="family" id="family" value="<?php echoSpecial('taxFamily', 'SESSION'); ?>"<?php if ($_SESSION['editFamily']) echo "disabled"; ?>></td>
+    <td><input type="text" name="family" id="family" value="<?php echo htmlspecialchars($_SESSION['taxFamily'] ?? ''); ?>"<?php if ($_SESSION['editFamily']) echo "disabled"; ?>></td>
   <td align="right" id="genusLabel">&nbsp;<b>Genus:</b></td>
-    <td><input type="text" name="genus" id="genus" value="<?php echoSpecial('taxGenus', 'SESSION'); ?>"></td>
+    <td><input type="text" name="genus" id="genus" value="<?php echo htmlspecialchars($_SESSION['taxGenus'] ?? ''); ?>"></td>
   <td align="right" id="speciesLabel">&nbsp;<b>Species:</b></td>
-    <td><input type="text" name="species" id="species" value="<?php echoSpecial('taxSpecies', 'SESSION'); ?>"></td>
+    <td><input type="text" name="species" id="species" value="<?php echo htmlspecialchars($_SESSION['taxSpecies'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right" id="statusLabel">&nbsp;<b>Status:</b></td>
     <td><?php makeDropdown("status",$_SESSION['taxStatus'],$status,$status); ?></td>
   <td align="right" id="rankLabel">&nbsp;<b>Rank:</b></td>
     <td><?php makeDropdown("rank",$_SESSION['taxRank'],$rank,$rank); ?></td>
   <td align="right" id="authorLabel">&nbsp;<b>Author:</b></td>
-    <td><input type="text" name="author" id="author" value="<?php echoSpecial('taxAuthor', 'SESSION'); ?>"></td>
+    <td><input type="text" name="author" id="author" value="<?php echo htmlspecialchars($_SESSION['taxAuthor'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right"id="collectorLabel">&nbsp;<b>Typecollection:</b></td>
-    <td><input type="text" name="collector" id="collector" value="<?php echoSpecial('taxCollector', 'SESSION'); ?>"></td>
+    <td><input type="text" name="collector" id="collector" value="<?php echo htmlspecialchars($_SESSION['taxCollector'] ?? ''); ?>"></td>
   <td align="right" id="numberLabel">&nbsp;<b>Number:</b></td>
-    <td><input type="text" name="number" id="number" value="<?php echoSpecial('taxNumber', 'SESSION'); ?>"></td>
+    <td><input type="text" name="number" id="number" value="<?php echo htmlspecialchars($_SESSION['taxNumber'] ?? ''); ?>"></td>
   <td align="right" id="dateLabel">&nbsp;<b>Date:</b></td>
-    <td><input type="text" name="date" id="date" value="<?php echoSpecial('taxDate', 'SESSION'); ?>"></td>
+    <td><input type="text" name="date" id="date" value="<?php echo htmlspecialchars($_SESSION['taxDate'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right" id="annotationLabel">&nbsp;<b>Annotation:</b></td>
-    <td colspan="5"><input type="text" name="annotation" id="annotation" size="89" value="<?php echoSpecial('taxAnnotation', 'SESSION'); ?>"></td>
+    <td colspan="5"><input type="text" name="annotation" id="annotation" size="89" value="<?php echo htmlspecialchars($_SESSION['taxAnnotation'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="left" colspan="3"><input class="button" type="submit" name="search" value=" search "></td>
   <td align="right" id="externalLabel" colspan="2">&nbsp;<b>external:</b></td>
@@ -771,7 +771,7 @@ function selectTaxon(taxonID){
 <td>
   <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST">
       <!-- BP: added id for Javascript -->
-    <b>taxonID:</b> <input type="text" name="taxon" id="taxon" value="<?php echoSpecial('taxon', 'POST'); ?>">
+    <b>taxonID:</b> <input type="text" name="taxon" id="taxon" value="<?php echo htmlspecialchars($_POST['taxon'] ?? ""); ?>">
     <input class="button" type="submit" name="select" value=" Edit ">
   </form>
 </td></tr></table>

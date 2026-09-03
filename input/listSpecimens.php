@@ -588,30 +588,30 @@ jaxon_checkTypeLabelMapPdfButton();
     <span id="multiHerbCount" style="font-size: 90%; color: #555;"></span>
   </td>
     <td>
-      <input type="text" name="number" value="<?php echoSpecial('sNumber', 'SESSION'); ?>" placeholder="number or range (.... - ....)">
-      <input type="hidden" name="number_list" id="number_list" value="<?php echoSpecial('sNumberList', 'SESSION'); ?>">
+      <input type="text" name="number" value="<?php echo htmlspecialchars($_SESSION['sNumber'] ?? ''); ?>" placeholder="number or range (.... - ....)">
+      <input type="hidden" name="number_list" id="number_list" value="<?php echo htmlspecialchars($_SESSION['sNumberList'] ?? ''); ?>">
     </td>
   <td align="right">&nbsp;<b>Series&nbsp;</b></td>
-    <td><input type="text" name="series" value="<?php echoSpecial('sSeries', 'SESSION'); ?>"></td>
+    <td><input type="text" name="series" value="<?php echo htmlspecialchars($_SESSION['sSeries'] ?? ''); ?>"></td>
   <td></td><td></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Family&nbsp;</b></td>
-    <td><input type="text" name="family" value="<?php echoSpecial('sFamily', 'SESSION'); ?>"></td>
+    <td><input type="text" name="family" value="<?php echo htmlspecialchars($_SESSION['sFamily'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Taxon&nbsp;</b></td>
-    <td><input type="text" name="taxon" value="<?php echoSpecial('sTaxon', 'SESSION'); ?>"></td>
+    <td><input type="text" name="taxon" value="<?php echo htmlspecialchars($_SESSION['sTaxon'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>ident. history</b></td>
-    <td><input type="text" name="taxon_alt" value="<?php echoSpecial('sTaxonAlt', 'SESSION'); ?>"></td>
+    <td><input type="text" name="taxon_alt" value="<?php echo htmlspecialchars($_SESSION['sTaxonAlt'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>internal notes</b></td>
-    <td><input type="text" name="notes_internal" value="<?php echoSpecial('sNotesInternal', 'SESSION'); ?>"></td>
+    <td><input type="text" name="notes_internal" value="<?php echo htmlspecialchars($_SESSION['sNotesInternal'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Collector&nbsp;</b></td>
-    <td><input type="text" name="collector" value="<?php echoSpecial('sCollector', 'SESSION'); ?>"></td>
+    <td><input type="text" name="collector" value="<?php echo htmlspecialchars($_SESSION['sCollector'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Collector #&nbsp;</b></td>
-    <td><input type="text" name="numberCollector" value="<?php echoSpecial('sNumberCollector', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
+    <td><input type="text" name="numberCollector" value="<?php echo htmlspecialchars($_SESSION['sNumberCollector'] ?? ''); ?>" placeholder="number or range (.... - ....)"></td>
   <td align="right">&nbsp;<b>Date&nbsp;</b></td>
-    <td><input type="text" name="date" value="<?php echoSpecial('sDate', 'SESSION'); ?>" placeholder="single date or range (.... - ....)"></td>
+    <td><input type="text" name="date" value="<?php echo htmlspecialchars($_SESSION['sDate'] ?? ''); ?>" placeholder="single date or range (.... - ....)"></td>
   <td align="right">&nbsp;<b>Collection #&nbsp;</b></td>
-    <td><input type="text" name="numberCollection" value="<?php echoSpecial('sNumberCollection', 'SESSION'); ?>" placeholder="number or range (.... - ....)"></td>
+    <td><input type="text" name="numberCollection" value="<?php echo htmlspecialchars($_SESSION['sNumberCollection'] ?? ''); ?>" placeholder="number or range (.... - ....)"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Continent&nbsp;</b></td>
     <td>
@@ -646,18 +646,18 @@ jaxon_checkTypeLabelMapPdfButton();
       </select>
     </td>
   <td align="right">&nbsp;<b>Loc.&nbsp;</b></td>
-    <td><input type="text" name="loc" value="<?php echoSpecial('sLoc', 'SESSION'); ?>"></td>
+    <td><input type="text" name="loc" value="<?php echo htmlspecialchars($_SESSION['sLoc'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Habitat&nbsp;</b></td>
-    <td><input type="text" name="habitat" value="<?php echoSpecial('sHabitat', 'SESSION'); ?>"></td>
+    <td><input type="text" name="habitat" value="<?php echo htmlspecialchars($_SESSION['sHabitat'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Country&nbsp;</b></td>
-    <td><input type="text" name="country" value="<?php echoSpecial('sCountry', 'SESSION'); ?>"></td>
+    <td><input type="text" name="country" value="<?php echo htmlspecialchars($_SESSION['sCountry'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>State/Province&nbsp;</b></td>
-    <td><input type="text" name="province" value="<?php echoSpecial('sProvince', 'SESSION'); ?>"></td>
+    <td><input type="text" name="province" value="<?php echo htmlspecialchars($_SESSION['sProvince'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
-    <td><input type="text" name="annotations" value="<?php echoSpecial('sBemerkungen', 'SESSION'); ?>"></td>
+    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>" placeholder="use % as Joker"></td>
   <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
-    <td><input type="text" name="habitus" value="<?php echoSpecial('sHabitus', 'SESSION'); ?>"></td>
+    <td><input type="text" name="habitus" value="<?php echo htmlspecialchars($_SESSION['sHabitus'] ?? ''); ?>"></td>
 </tr><tr>
   <td colspan="2">
     <input type="radio" name="typ" value="all"<?php if(!$_SESSION['sTyp']) echo " checked"; ?>>
@@ -723,7 +723,7 @@ jaxon_checkTypeLabelMapPdfButton();
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="POST" name="fm2">
 <table cellspacing="0" cellpadding="0"><tr>
 <td>
-  <b>SpecimenID&nbsp;</b> <input type="text" name="specimen" value="<?php echoSpecial('specimen', 'POST'); ?>">
+  <b>SpecimenID&nbsp;</b> <input type="text" name="specimen" value="<?php echo htmlspecialchars($_POST['specimen'] ?? ""); ?>">
   <input class="button" type="submit" name="select" value=" Edit ">
 </td><td style="width: 2em">&nbsp;</td><td>
   <?php makeDropdownDate(true); ?>

@@ -299,11 +299,11 @@ function getCssProperty(string $property)
  * @param string $name name of variable
  * @param string $type type of variable (GET, POST, SESSION)
  */
-function echoSpecial($name, $type)
-{
-    switch ($type) {
-        case 'GET':     echo htmlspecialchars(filter_input(INPUT_GET, $name));                    break;
-        case 'POST':    echo htmlspecialchars(filter_input(INPUT_POST, $name));                   break;
-        case 'SESSION': echo (isset($_SESSION[$name])) ? htmlspecialchars($_SESSION[$name]) : ''; break;
-    }
-}
+//function echoSpecial($name, $type)
+//{
+//    switch ($type) {
+//        case 'GET':     echo htmlspecialchars(filter_input(INPUT_GET, $name));                    break;
+//        case 'POST':    echo htmlspecialchars(filter_input(INPUT_POST, $name));                   break;
+//        case 'SESSION': echo (isset($_SESSION[$name])) ? htmlspecialchars($_SESSION[$name]) : ''; break;
+//    }
+//}

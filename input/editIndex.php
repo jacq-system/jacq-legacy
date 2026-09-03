@@ -49,7 +49,7 @@ if (isset($_GET['new'])) {
     if (intval($_GET['t']) == 1) {
         $p_type = 1;  // taxonID ist die Führungs-ID
         $p_taxonIndex = intval(Tools::extractID($_GET['ID'], true));
-        $p_taxon = getScientificName($p_taxonIndex);
+        $p_taxon = Tools::getScientificName($p_taxonIndex);
         $p_citation = "";
         $p_citationIndex = 0;
     } else {
@@ -86,7 +86,7 @@ if (isset($_GET['new'])) {
         $p_annotations = $row['annotations'];
         $p_taxindID    = $row['taxindID'];
 
-        $p_taxon = getScientificName($row['taxonID']);
+        $p_taxon = Tools::getScientificName($row['taxonID']);
         $p_taxonIndex = intval($row['taxonID']);
 
         $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor,

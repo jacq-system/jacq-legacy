@@ -70,13 +70,13 @@ require("../inc/connect.php");
             </select>
         </td>
     </tr><tr>
-        <td>Family: <input type="text" name="family" value="<?php echoSpecial('family', 'POST'); ?>"></td>
+        <td>Family: <input type="text" name="family" value="<?php echo htmlspecialchars($_POST['family'] ?? ""); ?>"></td>
         <td width="10">&nbsp;</td>
-        <td>Genus: <input type="text" name="genus" value="<?php echoSpecial('genus', 'POST'); ?>"></td>
+        <td>Genus: <input type="text" name="genus" value="<?php echo htmlspecialchars($_POST['genus'] ?? ""); ?>"></td>
         <td width="10">&nbsp;</td>
-        <td>Author: <input type="text" name="author" value="<?php echoSpecial('author', 'POST'); ?>"></td>
+        <td>Author: <input type="text" name="author" value="<?php echo htmlspecialchars($_POST['author'] ?? ""); ?>"></td>
         <td width="10">&nbsp;</td>
-        <td>Collector: <input type="text" name="collector" value="<?php echoSpecial('collector', 'POST'); ?>"></td>
+        <td>Collector: <input type="text" name="collector" value="<?php echo htmlspecialchars($_POST['collector'] ?? ""); ?>"></td>
         <td width="10">&nbsp;</td>
         <td><input type="submit" name="btnCheck" value="check"></td>
     </tr>

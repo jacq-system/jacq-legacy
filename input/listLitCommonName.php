@@ -282,23 +282,23 @@ function selectCitationID(citationID){
 <table cellspacing="5" cellpadding="0">
 <tr>
   <td align="right">&nbsp;<b>Title:</b></td>
-    <td><input type="text" name="titel" value="<?php echoSpecial('litTitel', 'SESSION'); ?>"></td>
+    <td><input type="text" name="titel" value="<?php echo htmlspecialchars($_SESSION['litTitel'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Periodical:</b></td>
-    <td><input type="text" name="periodical" value="<?php echoSpecial('litPeriod', 'SESSION'); ?>"></td>
+    <td><input type="text" name="periodical" value="<?php echo htmlspecialchars($_SESSION['litPeriod'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Volume:</b></td>
-    <td><input type="text" name="vol" value="<?php echoSpecial('litVol', 'SESSION'); ?>"></td>
+    <td><input type="text" name="vol" value="<?php echo htmlspecialchars($_SESSION['litVol'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Author:</b></td>
-    <td><input type="text" name="autor" value="<?php echoSpecial('litAutor', 'SESSION'); ?>"></td>
+    <td><input type="text" name="autor" value="<?php echo htmlspecialchars($_SESSION['litAutor'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Year:</b></td>
-    <td><input type="text" name="jahr" value="<?php echoSpecial('litJahr', 'SESSION'); ?>"></td>
+    <td><input type="text" name="jahr" value="<?php echo htmlspecialchars($_SESSION['litJahr'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Page:</b></td>
-    <td><input type="text" name="pp" value="<?php echoSpecial('litPp', 'SESSION'); ?>"></td>
+    <td><input type="text" name="pp" value="<?php echo htmlspecialchars($_SESSION['litPp'] ?? ''); ?>"></td>
 </tr><tr>
   <td align="right">&nbsp;<b>Listing:</b></td>
     <td><?php makeDropdown("bestand",$_SESSION['litBestand'],$bestand,$bestand); ?></td>
   <td align="right">&nbsp;<b>Keywords:</b></td>
-    <td><input type="text" name="keywords" value="<?php echoSpecial('litKeywords', 'SESSION'); ?>"></td>
+    <td><input type="text" name="keywords" value="<?php echo htmlspecialchars($_SESSION['litKeywords'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Categories:</b></td>
     <td><?php makeDropdown("category",$_SESSION['litCategory'],$category,$category); ?></td>
 </tr><tr>
@@ -319,7 +319,7 @@ function selectCitationID(citationID){
 <?php endif; ?>
 <td>
   <form Action="<?php echo $_SERVER['PHP_SELF']; ?>" Method="POST">
-    <b>CitationID:</b> <input type="text" name="citation" value="<?php echoSpecial('citation', 'POST'); ?>">
+    <b>CitationID:</b> <input type="text" name="citation" value="<?php echo htmlspecialchars($_POST['citation'] ?? ""); ?>">
     <input class="button" type="submit" name="select" value=" Select ">
   </form>
 </td></tr></table>

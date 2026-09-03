@@ -8,6 +8,7 @@ require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/variables.php');
 
 use Jacq\Permission;
+use Jacq\Tools;
 use Jaxon\Response\Response;
 
 /**
@@ -190,7 +191,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql_restrict_specimen .= " AND s.habitus LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitus'])) . "%'";
         }
         if (trim($_SESSION['sBemerkungen'])) {
-            $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+            $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
         }
         if (trim($_SESSION['sNotesInternal'])) {
             $sql_restrict_specimen .= " AND s.notes_internal LIKE '%" . dbi_escape_string(trim($_SESSION['sNotesInternal'])) . "%'";
@@ -455,7 +456,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 $rows_multi = dbi_query("SELECT taxonID FROM tbl_specimens_taxa WHERE specimen_ID = {$row['specimen_ID']}")->fetch_all(MYSQLI_ASSOC);
                 $multiTaxa = array();
                 foreach ($rows_multi as $row_multi) {
-                    $multiTaxa[] = getScientificName($row_multi['taxonID'], false, false, false);
+                    $multiTaxa[] = Tools::getScientificName($row_multi['taxonID'], false, false);
                 }
 
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">"

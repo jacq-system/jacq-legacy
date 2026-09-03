@@ -126,7 +126,7 @@ if (isset($_GET['new'])) {
         $p_typified_date = $row['typified_Date'];
 
         $p_taxonIndex = $row['taxonID'];
-        $p_taxon = getScientificName( $p_taxonIndex );
+        $p_taxon = Tools::getScientificName( $p_taxonIndex );
 
         $sql = "SELECT c.Sammler, c2.Sammler_2, ss.series, wg.series_number,
                  wg.Nummer, wg.alt_number, wg.Datum, wg.HerbNummer, wg.specimen_ID
