@@ -192,23 +192,23 @@ function taxonAccepted($row)
     return $text . " <" . $row['taxonID_a'] . ">";
 }
 
-function protolog($row)
-{
-    $text = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
-    if ($row['suptitel']) {
-        $text .= " in " . $row['editor'] . ": " . $row['suptitel'];
-    }
-    if ($row['periodicalID']) {
-        $text .= " " . $row['periodical'];
-    }
-    $text .= " " . $row['vol'];
-    if ($row['part']) {
-        $text .= " (" . $row['part'] . ")";
-    }
-    $text .= ": " . $row['pp'] . ".";
-
-    return $text . " <" . $row['citationID'] . ">";
-}
+//function protolog($row)
+//{
+//    $text = $row['autor'] . " (" . substr($row['jahr'], 0, 4) . ")";
+//    if ($row['suptitel']) {
+//        $text .= " in " . $row['editor'] . ": " . $row['suptitel'];
+//    }
+//    if ($row['periodicalID']) {
+//        $text .= " " . $row['periodical'];
+//    }
+//    $text .= " " . $row['vol'];
+//    if ($row['part']) {
+//        $text .= " (" . $row['part'] . ")";
+//    }
+//    $text .= ": " . $row['pp'] . ".";
+//
+//    return $text . " <" . $row['citationID'] . ">";
+//}   // Display::protolog($row['citationID'], true)
 
 function sortItem($typ,$id)
 {

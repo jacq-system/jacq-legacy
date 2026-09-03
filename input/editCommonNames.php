@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\NaturalID;
 use Jacq\Permission;
@@ -1129,7 +1130,8 @@ FROM
 WHERE
  citationID = '" . $literatur_id . "'";
 	$result = dbi_query($sql);
-	return protolog(mysqli_fetch_assoc($result));
+    $row = mysqli_fetch_assoc($result);
+	return Display::protolog($row['citationID'], true);
 }
 
 // $mode=1 => from Post to escaped mysql

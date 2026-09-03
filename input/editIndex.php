@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -62,7 +63,7 @@ if (isset($_GET['new'])) {
                LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = " . Tools::extractID($_GET['ID']);
         $row = dbi_query($sql)->fetch_array();
-        $p_citation = protolog($row);
+        $p_citation = Display::protolog($row['citationID'], true);
         $p_citationIndex = intval($row['citationID']);
         $p_taxon = "";
         $p_taxonIndex = 0;
@@ -97,7 +98,7 @@ if (isset($_GET['new'])) {
                 LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = '" . $row['citationID'] . "'";
         $row2 = dbi_query($sql)->fetch_array();
-        $p_citation = protolog($row2);
+        $p_citation = Display::protolog($row2['citationID'], true);
         $p_citationIndex = intval($row2['citationID']);
     } else {
         $p_taxonID = $p_citationID = $p_paginae = $p_figures = $p_annotations = "";

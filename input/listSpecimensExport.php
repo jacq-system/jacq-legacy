@@ -5,6 +5,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\StableIdentifier;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -129,7 +130,7 @@ function makeTypus($ID)
 
         $text .= $row['typus_lat'] . " for " . $row['scientificName'] . " ";
         while ($row2 = mysqli_fetch_array($result2)) {
-            $text .= protolog($row2) . " ";
+            $text .= Display::protolog($row2['citationID'], true) . " ";
         }
         if (strlen($accName) > 0) {
             $text .= "Current Name: $accName ";

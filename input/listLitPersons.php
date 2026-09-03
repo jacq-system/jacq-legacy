@@ -4,6 +4,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 
 $id = intval($_GET['ID']);
@@ -41,7 +42,7 @@ $sql = "SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalI
          LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
         WHERE citationID = '$id'";
 $row = dbi_query($sql)->fetch_array();
-echo "<b>protolog:</b> " . protolog($row) . "\n<p>\n";
+echo "<b>protolog:</b> " . Display::protolog($row['citationID'], true) . "\n<p>\n";
 $sql = "SELECT lp.lit_persons_ID, lp.annotations, p.person_ID, p.p_firstname, p.p_familyname, p.p_birthdate, p.p_death
         FROM tbl_lit_persons lp, tbl_person p
         WHERE lp.personID_fk = p.person_ID

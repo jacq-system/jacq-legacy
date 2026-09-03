@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -17,7 +18,8 @@ if (isset($_GET['new'])) {
             LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
            WHERE citationID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
-    $p_citation = protolog(mysqli_fetch_array($result));
+    $row = mysqli_fetch_array($result);
+    $p_citation = Display::protolog($row['citationID'], true);
     $p_citationIndex = Tools::extractID($_GET['ID'], true);
     $p_person = $p_annotations = $p_lit_persons_ID = $p_personIndex = "";
     $p_timestamp = "";
@@ -42,7 +44,8 @@ if (isset($_GET['new'])) {
                 LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                WHERE citationID = '" . $row['citationID_fk'] . "'";
         $result = dbi_query($sql);
-        $p_citation = protolog(mysqli_fetch_array($result));
+        $row2 = mysqli_fetch_array($result);
+        $p_citation = Display::protolog($row2['citationID'], true);
         $p_citationIndex = $row['citationID_fk'];
 
         $sql = "SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death

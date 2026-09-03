@@ -3,6 +3,9 @@ error_reporting(0);
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Display;
 
 function formatCell($value) {
 
@@ -125,7 +128,7 @@ function makeTypus($ID) {
 //    $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
     $text .= $row['typus_lat'] . " for " . makeTaxon($row['taxonID']) . " ";
     while ($row2=mysqli_fetch_array($result2))
-      $text .= protolog($row2)." ";
+      $text .= Display::protolog($row2['citationID'], true)." ";
     if (strlen($accName)>0)
       $text .= "Current Name: $accName ";
   }

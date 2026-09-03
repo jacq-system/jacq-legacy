@@ -6,6 +6,7 @@ require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\PdoAccess;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -30,7 +31,7 @@ function makeProtologFromID($citationID)
     $result = dbi_query($sql);
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_array($result);
-        return protolog($row);
+        return Display::protolog($row['citationID'], true);
     } else {
         return '';
     }

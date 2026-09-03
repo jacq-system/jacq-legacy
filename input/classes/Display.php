@@ -16,7 +16,7 @@ class Display
      * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
      * @return string formatted taxon-string
      */
-    public static function taxon (int|string $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
+    public static function taxon(int|string $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -117,7 +117,7 @@ class Display
      * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
      * @return string formatted taxon-string
      */
-    public static function taxonWithHybrids (int|string $taxonID, bool $withSeperator = false, bool $withID = false): string
+    public static function taxonWithHybrids(int|string $taxonID, bool $withSeperator = false, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -146,7 +146,7 @@ class Display
      * @param bool $withID adds the citationID between brackets at the end (default no)
      * @return string formatted protolog-string
      */
-    public static function protolog (int|string $citationID, bool $withID = false): string
+    public static function protolog(int|string $citationID, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -193,7 +193,7 @@ class Display
      * @param int|string $synonymID synonym-ID
      * @return string formatted synonymy-reference-string
      */
-    public static function SynonymyReference (int|string $synonymID): string
+    public static function SynonymyReference(int|string $synonymID): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');

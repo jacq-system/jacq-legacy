@@ -4,6 +4,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -139,7 +140,7 @@ if ($type == 1) {
                . "<a href=\"javascript:editIndex($type,'<" . $row['taxindID'] . ">',0)\">edit</a>"
                . "</td>";
             echo "<td class=\"out\"><a href=listIndex.php?c=1&ID=" . $row['citationID'] . ">"
-               . protolog($row) . "</td>";
+               . Display::protolog($row['citationID'], true) . "</td>";
             echo "<td class=\"out\">" . $row['paginae'] . "</td>";
             echo "<td class=\"out\">" . $row['figures'] . "</td>";
             echo "<td class=\"out\">" . $row['annotations'] . "</td>";
@@ -158,7 +159,7 @@ if ($type == 1) {
            WHERE citationID = '$id'";
     $result = dbi_query($sql);
     $row = mysqli_fetch_array($result);
-    echo "<b>protolog:</b> " . protolog($row) . "\n<p>\n";
+    echo "<b>protolog:</b> " . Display::protolog($row['citationID'], true) . "\n<p>\n";
 
     displayButtons($type, $id);
     echo "<p>\n";

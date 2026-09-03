@@ -64,7 +64,8 @@ if (isset($_GET['new'])) {
                      LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                      LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                     WHERE citationID = '" . $row['source_citationID'] . "'";
-            $p_sourceLit = protolog(dbi_query($sql)->fetch_array());
+            $row2 = dbi_query($sql)->fetch_array();
+            $p_sourceLit = Display::protolog($row2['citationID'], true);
             $p_sourceLitIndex = $row['source_citationID'];
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = $p_sourceService = "";
         } elseif ($p_source == "service") {
