@@ -97,7 +97,7 @@ function makeSammler($search, $x, $y, $nr)
 
 <?php
 if (isset($_GET['new'])) {
-    $p_taxon = getScientificName(Tools::extractID($_GET['ID'], true));
+    $p_taxon = Tools::getScientificName(Tools::extractID($_GET['ID'], true));
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;
@@ -124,7 +124,7 @@ if (isset($_GET['new'])) {
         $p_sammler2      = ($row['Sammler_2']) ? $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">" : "";
         $p_sammler2Index = $row['Sammler_2ID'];
 
-        $p_taxon = getScientificName($row['taxonID']);
+        $p_taxon = Tools::getScientificName($row['taxonID']);
     } else {
         $p_taxon = $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
         $p_typecollID = $p_sammler = $p_sammler2 ="";

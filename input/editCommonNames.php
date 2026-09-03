@@ -977,7 +977,7 @@ function doSearch($_dvar, $strict=false){
 
 		doQuotes($row,3);
 
-		$taxon=getScientificName($row['taxonID']);
+		$taxon = Tools::getScientificName($row['taxonID']);
 
 		$literature='';
 		if($row['sourcevalueIndex']!=''){

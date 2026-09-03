@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 
 $id = intval($_GET['ID']);
 
@@ -35,7 +36,7 @@ $id = intval($_GET['ID']);
 <body>
 
 <?php
-echo "<b>taxon:</b> ".getScientificName($id)."\n<p>\n";
+echo "<b>taxon:</b> ". Tools::getScientificName($id)."\n<p>\n";
 $sql ="SELECT typecollID, series, leg_nr, alternate_number, date, duplicates, annotation, ".
        "Sammler ".
       "FROM tbl_tax_typecollections tt ".

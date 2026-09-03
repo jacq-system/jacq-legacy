@@ -146,7 +146,7 @@ if (isset($_GET['sel'])) {
 
         if ($row['synID']) {
             $p_synIndex = $row['synID'];
-            $p_syn = getScientificName( $p_synIndex, true, false );
+            $p_syn = Tools::getScientificName($p_synIndex, true, false);
         } else {
             $p_syn = "";
             $p_synIndex = 0;
@@ -154,7 +154,7 @@ if (isset($_GET['sel'])) {
 
         if ($row['basID']) {
             $p_basIndex = $row['basID'];
-            $p_bas = getScientificName($p_basIndex, true, false);
+            $p_bas = Tools::getScientificName($p_basIndex, true, false);
         } else {
             $p_bas = "";
             $p_basIndex = 0;
@@ -612,7 +612,7 @@ $sql = "SELECT ts.taxonID, tst.status
 $result = dbi_query($sql);
 if (mysqli_num_rows($result) > 0) {
     $row = mysqli_fetch_array($result);
-    $display_head1 = $row['status'] . "&nbsp;&nbsp;" . getScientificName($row['taxonID'], false, false);
+    $display_head1 = $row['status'] . "&nbsp;&nbsp;" . Tools::getScientificName($row['taxonID'], false, false);
 } else {
     $display_head1 = "";
 }

@@ -276,7 +276,7 @@ if ($get_new) {
         $p_familyIndex = $row['familyID'];
         if ($row['fk_taxonID']) {
             $p_taxonIndex = $row['fk_taxonID'];
-            $p_taxon      = getScientificName($p_taxonIndex, false, false);
+            $p_taxon      = Tools::getScientificName($p_taxonIndex, false, false);
         } else {
             $p_taxon      = "";
             $p_taxonIndex = 0;

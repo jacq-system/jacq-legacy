@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Permission;
+use Jacq\Tools;
 
 function displayButtons($type, $id)
 {
@@ -108,7 +109,7 @@ if ($type == 2) {
 
 <?php
 if ($type == 1) {
-    echo "<b>taxon:</b> " . getScientificName($id) . "\n<p>\n";
+    echo "<b>taxon:</b> " . Tools::getScientificName($id) . "\n<p>\n";
 
     displayButtons($type, $id);
     echo "<p>\n";

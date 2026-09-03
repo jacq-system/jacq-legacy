@@ -53,7 +53,7 @@ function makeTaxon2($search)
         if ($result = dbi_query($sql)) {
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_array($result)) {
-                    $results[] = (($row['synID']) ? '-' : '') . getScientificName($row['taxonID']);
+                    $results[] = (($row['synID']) ? '-' : '') . Tools::getScientificName($row['taxonID']);
                 }
             }
         }
@@ -239,7 +239,7 @@ if (isset($_GET['sel'])) {
                     WHERE ts.taxonID = '" . dbi_escape_string($row['taxonID']) . "'";
             $result2 = dbi_query($sql);
             $row2 = mysqli_fetch_array($result2);
-            $p_taxon  = getScientificName($row['taxonID']);
+            $p_taxon  = Tools::getScientificName($row['taxonID']);
             $p_external = $row2['external'];
         } else {
             $p_taxon = "";

@@ -4,6 +4,7 @@ require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 
@@ -34,7 +35,7 @@ function updateNomService($taxonID)
                           WHERE taxonID = $taxonID")->fetch_assoc();
     // only continue if the taxon is a hybrid and the parents are set or if the taxon is not hybrid at all
     if ((($row['statusID'] ?? 0) == 1 && !empty($row['parent_1_ID']) && !empty($row['parent_2_ID'])) || ($row['statusID'] ?? 0) != 1) {
-        $sciname = getScientificName($taxonID, false, false, false);
+        $sciname = Tools::getScientificName($taxonID, false, false);
         $curl = curl_init($_CONFIG['JACQ_SERVICES'] . "externalScinames/find/" . rawurlencode($sciname));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         $curl_response = curl_exec($curl);

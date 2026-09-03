@@ -554,7 +554,7 @@ function getHybrids($taxonID)
     $result = dbi_query($sql);
     while ($row = mysqli_fetch_array($result)) {
         $taxon_ID_fk = $row['taxon_ID_fk'];
-        $text .= getScientificName($taxon_ID_fk) . "<br />\n";
+        $text .= Tools::getScientificName($taxon_ID_fk) . "<br />\n";
     }
 
     return $text;

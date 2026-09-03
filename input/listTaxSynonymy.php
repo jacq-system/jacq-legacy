@@ -8,6 +8,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\Display;
 use Jacq\PdoAccess;
 use Jacq\Permission;
+use Jacq\Tools;
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {
@@ -58,7 +59,7 @@ try {
 
 	$row = $dbst1->fetch();
 
-	echo "<b>protolog:</b> " . getScientificName($row['taxonID'], true, false) . "\n<p>\n";
+	echo "<b>protolog:</b> " . Tools::getScientificName($row['taxonID'], true, false) . "\n<p>\n";
 
 	$dbst2 = $db->prepare("SELECT taxon.taxonID, preferred_taxonomy, tax_syn_ID, annotations, tts.source, tts.source_citationID, tts.source_person_ID, tts.source_serviceID
                            FROM {$_CONFIG['DATABASE']['INPUT']['name']}.tbl_tax_synonymy tts
@@ -113,12 +114,11 @@ echo<<<EOF
 EOF;
 
 if(count($rows)>0){
-    $display=Display::Load();
 	foreach($rows  as $row){
-		$radic=(($row['preferred_taxonomy']) ? "&radic;" : "") ;
-		$taxon=getScientificName($row['taxonID']);
+		$radic = (($row['preferred_taxonomy']) ? "&radic;" : "") ;
+		$taxon = Tools::getScientificName($row['taxonID']);
 
-		$ref=$display->SynonymyReference($row['tax_syn_ID']);
+		$ref=Display::SynonymyReference($row['tax_syn_ID']);
 
 		echo<<<EOF
 <tr class="out">

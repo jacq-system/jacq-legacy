@@ -118,7 +118,7 @@ if (mysqli_num_rows($result)>0) {
   }
 
   if ($row['taxonID']) {
-    $p_taxon  = getScientificName($row['taxonID']);
+    $p_taxon  = Tools::getScientificName($row['taxonID']);
   } else
     $p_taxon = "";
   $_SESSION['labelSpecimen_ID'] = $db_specimen_ID;
