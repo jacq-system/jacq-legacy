@@ -4,6 +4,7 @@ require("../inc/connect.php");
 require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Jaxon;
@@ -547,7 +548,7 @@ function editMultiTaxa ($specimenID)
                 $id = $row['specimens_tax_ID'];
                 $ret .= "<tr><td>"
                       . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_$id' id='multiTaxaData_$id' "
-                      . "value='" . taxon($row) . "'>"
+                      . "value='" . Display::taxon($row['taxonID'], true, false, true) . "'>"
                       . "</td><td align='center'>";
                 if (Permission::has('specim')) {
                     $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteMultiTaxa('" . $row['specimens_tax_ID'] . "', '$specimenID');\">";

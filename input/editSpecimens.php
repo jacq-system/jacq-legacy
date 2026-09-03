@@ -44,113 +44,6 @@ $swBatch = Permission::has('batch');
 $p_gbif_id = $p_dissco_id = "";
 $p_notes_internal = "";
 
-
-function makeTaxon2($search)
-{
-    global $cf;
-
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $pieces = explode(chr(194) . chr(183), $search);
-        $pieces = explode(" ", $pieces[0]);
-
-        $sql = "SELECT taxonID, ts.synID
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE ts.external = 0
-                 AND tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'\n";
-                 //AND ts.statusID != 1
-        if (!empty($pieces[1])) {
-            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'\n";
-        }
-        $sql .= "ORDER BY tg.genus, te.epithet";
-        $result = dbi_query($sql);
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_array($result)) {
-                $results[] = (($row['synID']) ? '-' : '') . Tools::getScientificName($row['taxonID']);
-            }
-        }
-
-        $sql = "SELECT ts.taxonID, ts.synID, tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5,
-                 th.parent_1_ID, th.parent_2_ID
-                FROM (tbl_tax_species ts, tbl_tax_hybrids th)
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                 LEFT JOIN tbl_tax_species tsp1 ON tsp1.taxonID = th.parent_1_ID
-                 LEFT JOIN tbl_tax_epithets tep1 ON tep1.epithetID = tsp1.speciesID
-                 LEFT JOIN tbl_tax_genera tgp1 ON tgp1.genID = tsp1.genID
-                 LEFT JOIN tbl_tax_species tsp2 ON tsp2.taxonID = th.parent_2_ID
-                 LEFT JOIN tbl_tax_epithets tep2 ON tep2.epithetID = tsp2.speciesID
-                 LEFT JOIN tbl_tax_genera tgp2 ON tgp2.genID = tsp2.genID
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID = ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID = ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID = ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID = ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID = ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID = ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID = ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID = ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID = ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID = ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID = ts.subformaID
-                WHERE th.taxon_ID_fk = ts.taxonID
-                 AND (tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
-                  OR tgp1.genus LIKE '" . dbi_escape_string($pieces[0]) . "%'
-                  OR tgp2.genus LIKE '" . dbi_escape_string($pieces[0]) . "%')\n";
-        if (!empty($pieces[1])) {
-            $sql .= "AND (tep1.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%'
-                      OR tep2.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%')\n";
-        }
-        $sql .= "ORDER BY tg.genus, tep1.epithet, tgp2.genus, tep2.epithet";
-        $result = dbi_query($sql);
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_array($result)) {
-                $results[] = (($row['synID']) ? '-' : '') . taxonWithHybrids($row);
-            }
-        }
-        //sort($results);
-    }
-    return $results;
-}
-
-function makeSammler2($search, $nr)
-{
-    global $cf;
-
-    $pieces = explode(" <", $search);
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        if ($nr == 2) {
-            $sql = "SELECT Sammler_2, Sammler_2ID
-                    FROM tbl_collector_2
-                    WHERE Sammler_2 LIKE '" . dbi_escape_string($pieces[0]) . "%'
-                    ORDER BY Sammler_2";
-        } else {
-            $sql = "SELECT Sammler, SammlerID
-                    FROM tbl_collector
-                    WHERE Sammler LIKE '".dbi_escape_string($pieces[0])."%'
-                    ORDER BY Sammler";
-        }
-        $result = dbi_query($sql);
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row=mysqli_fetch_array($result)) {
-                if ($nr == 2) {
-                    $res = $row['Sammler_2'] . " <" . $row['Sammler_2ID'] . ">";
-                } else {
-                    $res = $row['Sammler'] . " <" . $row['SammlerID'] . ">";
-                }
-                $results[] = $res;
-            }
-        }
-    }
-    return $results;
-}
-
 function getSpecifiedHerbNummerLength(int $source_id)
 {
     $result = dbi_query("SELECT HerbNummerNrDigits FROM tbl_img_definition WHERE source_id_fk = '$source_id'");
@@ -955,7 +848,6 @@ if (Permission::has('species') || Permission::has('linkTaxon')) {
 } else {
     $cf->labelMandatory(11, $y, 9, "taxon");
 }
-//$cf->editDropdown(9, $y, 46, "taxon", $p_taxon, makeTaxon2($p_taxon), 520, 0, ($p_external) ? 'red' : '');
 $cf->inputJqAutocomplete(11, $y, 54, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonWithHybridsNew", 520, 2, ($p_external) ? 'red' : '');
 echo "<input type=\"hidden\" name=\"external\" value=\"$p_external\">\n";
 $cf->label(11, $y + 1.5, "multi", "#\" onclick=\"jaxon_editMultiTaxa('$p_specimen_ID');");
@@ -989,7 +881,6 @@ $cf->inputText(58.5, $y, 6.5, "series_number", $p_series_number, 50);
 
 $y += 2;
 $cf->labelMandatory(11, $y, 9, "first collector", "javascript:editCollector(document.f.sammler)");
-//$cf->editDropdown(9, $y, 46, "sammler", $p_sammler, makeSammler2($p_sammler, 1), 270);
 $cf->inputJqAutocomplete(11, $y, 46, "sammler", $p_sammler, $p_sammlerIndex, "index_jq_autocomplete.php?field=collector", 520, 2);
 $displayCollectorLinksTop = $y; // same row as collector field, aligned to ser.Nr. column
 echo "<div style='position: absolute; left: 58.5em; top: {$displayCollectorLinksTop}em; width: 6.5em; text-align: right; white-space: nowrap;' id='displayCollectorLinks'></div>\n";
@@ -1007,7 +898,6 @@ $cf->inputText(58.5, $y, 6.5, "Datum2", $p_Datum2, 25);
 
 $y += 2;
 $cf->label(11, $y, "add. collector(s)", "javascript:editCollector2(document.f.sammler2)");
-//$cf->editDropdown(9, $y, 46, "sammler2", $p_sammler2, makeSammler2($p_sammler2, 2), 270);
 $cf->inputJqAutocomplete(11, $y, 54, "sammler2", $p_sammler2, $p_sammler2Index, "index_jq_autocomplete.php?field=collector2", 520, 2);
 $cf->label(11, $y + 1.7, "search", "javascript:searchCollector2()");
 

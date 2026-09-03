@@ -114,12 +114,6 @@ if ($type == 1) {
     displayButtons($type, $id);
     echo "<p>\n";
 
-    /*
-    $text = taxon($row);
-    for ($i=0;$i<strlen($text);$i++)
-      echo substr($text,$i,1)." - ".ord(substr($text,$i,1))."\n";
-    */
-
     $sql ="SELECT l.citationID, taxindID, paginae, figures, annotations,
             l.suptitel, le.autor as editor, la.autor, l.periodicalID, lp.periodical,
             l.vol, l.part, l.jahr, l.pp

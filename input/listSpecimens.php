@@ -655,7 +655,7 @@ jaxon_checkTypeLabelMapPdfButton();
   <td align="right">&nbsp;<b>State/Province&nbsp;</b></td>
     <td><input type="text" name="province" value="<?php echo htmlspecialchars($_SESSION['sProvince'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
-    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>" placeholder="use % as Joker"></td>
+    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
     <td><input type="text" name="habitus" value="<?php echo htmlspecialchars($_SESSION['sHabitus'] ?? ''); ?>"></td>
 </tr><tr>

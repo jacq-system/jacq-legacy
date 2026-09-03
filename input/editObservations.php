@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -100,7 +101,8 @@ function makeTaxon2($search)
         if ($result = dbi_query($sql)) {
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_array($result)) {
-                    $results[] = taxonWithHybrids($row);
+//                    $results[] = taxonWithHybrids($row);
+                    $results[] = Display::taxonWithHybrids($row['taxonID'], true, true);
                 }
             }
         }

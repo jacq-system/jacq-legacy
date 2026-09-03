@@ -18,7 +18,7 @@ if (isset($_GET['new'])) {
            WHERE citationID = " . Tools::extractID($_GET['ID']);
     $result = dbi_query($sql);
     $p_citation = protolog(mysqli_fetch_array($result));
-    $p_citationIndex = Tools::extractID($_GET['ID']);
+    $p_citationIndex = Tools::extractID($_GET['ID'], true);
     $p_person = $p_annotations = $p_lit_persons_ID = $p_personIndex = "";
     $p_timestamp = "";
     $p_user = "";

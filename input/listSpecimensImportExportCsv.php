@@ -107,7 +107,8 @@ function makeTypus($ID) {
                WHERE taxonID=".$row['synID'];
       $result3 = dbi_query($sql3);
       $row3 = mysqli_fetch_array($result3);
-      $accName = taxonWithHybrids($row3);
+//      $accName = taxonWithHybrids($row3);
+      $accName = makeTaxon($row['synID']);
     }
     else
       $accName = "";
@@ -121,7 +122,8 @@ function makeTypus($ID) {
              WHERE ti.taxonID='".$row['taxonID']."'";
     $result2 = dbi_query($sql2);
 
-    $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
+//    $text .= $row['typus_lat']." for ".taxonWithHybrids($row)." ";
+    $text .= $row['typus_lat'] . " for " . makeTaxon($row['taxonID']) . " ";
     while ($row2=mysqli_fetch_array($result2))
       $text .= protolog($row2)." ";
     if (strlen($accName)>0)

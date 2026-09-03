@@ -91,89 +91,89 @@ function getIiifLink(int $specimenID): string
     }
 }
 
-function taxon($row, $withDT = false, $withID = true)
-{
-    $text = $row['genus'] ?? "";
-    if (!empty($row['epithet'])) {
-        $text .= " ".$row['epithet'].chr(194).chr(183)." ".$row['author'];
-    } else {
-        $text .= chr(194).chr(183);
-    }
-    if (!empty($row['epithet1'])) { $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1']; }
-    if (!empty($row['epithet2'])) { $text .= " var. "     . $row['epithet2'] . " " . $row['author2']; }
-    if (!empty($row['epithet3'])) { $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3']; }
-    if (!empty($row['epithet4'])) { $text .= " forma "    . $row['epithet4'] . " " . $row['author4']; }
-    if (!empty($row['epithet5'])) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
+//function taxon($row, $withDT = false, $withID = true)
+//{
+//    $text = $row['genus'] ?? "";
+//    if (!empty($row['epithet'])) {
+//        $text .= " ".$row['epithet'].chr(194).chr(183)." ".$row['author'];
+//    } else {
+//        $text .= chr(194).chr(183);
+//    }
+//    if (!empty($row['epithet1'])) { $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1']; }
+//    if (!empty($row['epithet2'])) { $text .= " var. "     . $row['epithet2'] . " " . $row['author2']; }
+//    if (!empty($row['epithet3'])) { $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3']; }
+//    if (!empty($row['epithet4'])) { $text .= " forma "    . $row['epithet4'] . " " . $row['author4']; }
+//    if (!empty($row['epithet5'])) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
+//
+//    if ($withDT && !empty($row['DallaTorreIDs']) && !empty($row['DallaTorreZusatzIDs'])) {
+//        $text .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
+//    }
+//
+//    if ($withID && !empty($row['taxonID'])) {
+//        $text .= " <" . $row['taxonID'] . ">";
+//    }
+//
+//    return $text;
+//} // Display::taxon ($row['taxonID'], true, false, true)
 
-    if ($withDT && !empty($row['DallaTorreIDs']) && !empty($row['DallaTorreZusatzIDs'])) {
-        $text .= " " . $row['DallaTorreIDs'] . $row['DallaTorreZusatzIDs'];
-    }
-
-    if ($withID && !empty($row['taxonID'])) {
-        $text .= " <" . $row['taxonID'] . ">";
-    }
-
-    return $text;
-}
-
-function taxonWithHybrids($row)
-{
-    if ($row['parent_1_ID'] && $row['parent_2_ID']) {
-        $sql = "SELECT tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                WHERE taxonID='".$row['parent_1_ID']."'";
-        $row1 = dbi_query($sql)->fetch_array();
-        $sql = "SELECT tg.genus,
-                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
-                 ta4.author author4, ta5.author author5,
-                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
-                 te4.epithet epithet4, te5.epithet epithet5
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
-                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
-                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
-                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
-                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
-                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
-                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
-                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
-                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
-                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
-                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
-                WHERE taxonID='".$row['parent_2_ID']."'";
-        $row2 = dbi_query($sql)->fetch_array();
-
-        $text = $row1['genus'];
-        if ($row1['epithet']) {
-            $text .= " " . $row1['epithet'] . chr(194) . chr(183) . " " . $row1['author'];
-        } else {
-            $text .= chr(194).chr(183);
-        }
-        $text .= subTaxonItem($row1) . " x " . taxonItem($row2) . " <" . $row['taxonID'].">";
-        return $text;
-    } else {
-        return taxon($row);
-    }
-}
+//function taxonWithHybrids($row)
+//{
+//    if ($row['parent_1_ID'] && $row['parent_2_ID']) {
+//        $sql = "SELECT tg.genus,
+//                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+//                 ta4.author author4, ta5.author author5,
+//                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+//                 te4.epithet epithet4, te5.epithet epithet5
+//                FROM tbl_tax_species ts
+//                 LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+//                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+//                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+//                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+//                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+//                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+//                 LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+//                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+//                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+//                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+//                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+//                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+//                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+//                WHERE taxonID='".$row['parent_1_ID']."'";
+//        $row1 = dbi_query($sql)->fetch_array();
+//        $sql = "SELECT tg.genus,
+//                 ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
+//                 ta4.author author4, ta5.author author5,
+//                 te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
+//                 te4.epithet epithet4, te5.epithet epithet5
+//                FROM tbl_tax_species ts
+//                 LEFT JOIN tbl_tax_authors ta ON ta.authorID=ts.authorID
+//                 LEFT JOIN tbl_tax_authors ta1 ON ta1.authorID=ts.subspecies_authorID
+//                 LEFT JOIN tbl_tax_authors ta2 ON ta2.authorID=ts.variety_authorID
+//                 LEFT JOIN tbl_tax_authors ta3 ON ta3.authorID=ts.subvariety_authorID
+//                 LEFT JOIN tbl_tax_authors ta4 ON ta4.authorID=ts.forma_authorID
+//                 LEFT JOIN tbl_tax_authors ta5 ON ta5.authorID=ts.subforma_authorID
+//                 LEFT JOIN tbl_tax_epithets te ON te.epithetID=ts.speciesID
+//                 LEFT JOIN tbl_tax_epithets te1 ON te1.epithetID=ts.subspeciesID
+//                 LEFT JOIN tbl_tax_epithets te2 ON te2.epithetID=ts.varietyID
+//                 LEFT JOIN tbl_tax_epithets te3 ON te3.epithetID=ts.subvarietyID
+//                 LEFT JOIN tbl_tax_epithets te4 ON te4.epithetID=ts.formaID
+//                 LEFT JOIN tbl_tax_epithets te5 ON te5.epithetID=ts.subformaID
+//                 LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
+//                WHERE taxonID='".$row['parent_2_ID']."'";
+//        $row2 = dbi_query($sql)->fetch_array();
+//
+//        $text = $row1['genus'];
+//        if ($row1['epithet']) {
+//            $text .= " " . $row1['epithet'] . chr(194) . chr(183) . " " . $row1['author'];
+//        } else {
+//            $text .= chr(194).chr(183);
+//        }
+//        $text .= subTaxonItem($row1) . " x " . taxonItem($row2) . " <" . $row['taxonID'].">";
+//        return $text;
+//    } else {
+//        return taxon($row);
+//    }
+//}  // Display::taxonWithHybrids ($row['taxonID'], true, true)
 
 function taxonAccepted($row)
 {
