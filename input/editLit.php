@@ -508,8 +508,7 @@ if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
 <?PHP
 $cf = new Cssf();
 
-$display = Display::Load();
-$title="Taxon Synonymy<br>".$display->protolog($p_citationID);
+$title = "Taxon Synonymy<br>" . Display::protolog($p_citationID);
 $serverParams="&citationID={$p_citationID}";
 
 $searchjs=<<<EOF

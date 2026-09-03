@@ -222,8 +222,6 @@ if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
 
 $db = DbAccess::ConnectTo('INPUT');
 
-$display = Display::Load();
-
 ?><!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
        "http://www.w3.org/TR/html4/transitional.dtd">
 <html lang="en">
@@ -520,16 +518,16 @@ if ($_SESSION['obsType']==1) {
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . $display->sortItem($_SESSION['obsOrTyp'], 1) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . Display::sortItem($_SESSION['obsOrTyp'], 1) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . $display->sortItem($_SESSION['obsOrTyp'], 2) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . Display::sortItem($_SESSION['obsOrTyp'], 2) . "</th>";
         echo "<th class=\"out\">Date</th>";
         echo "<th class=\"out\">X/Y</th>";
         echo "<th class=\"out\">Location</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . $display->sortItem($_SESSION['obsOrTyp'], 4) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . Display::sortItem($_SESSION['obsOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . $display->sortItem($_SESSION['obsOrTyp'], 5) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . Display::sortItem($_SESSION['obsOrTyp'], 5) . "</th>";
         if ($swBatch) echo "<th class=\"out\">Batch</th>";
         echo "</tr>\n";
         $nr = 1;
@@ -582,7 +580,7 @@ if ($_SESSION['obsType']==1) {
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out\">"
                .  "<a href=\"editObservations.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr\">"
-               .  htmlspecialchars($display->taxon($row['taxonID'])) . "</a></td>"
+               .  htmlspecialchars(Display::taxon($row['taxonID'])) . "</a></td>"
                . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                . $textLatLon

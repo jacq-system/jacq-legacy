@@ -654,7 +654,6 @@ function taxonWithFamily($row): string
 } // end taxonWithFamily
 
 $db = DbAccess::ConnectTo('INPUT');
-$display = Display::Load();
 
 unset($status);
 $status[] = "";
@@ -859,9 +858,9 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=ac\">Category</a>" . $display->sortItem($_SESSION['taxOrTyp'], 11) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=ac\">Category</a>" . Display::sortItem($_SESSION['taxOrTyp'], 11) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=af\">Family</a>" . $display->sortItem($_SESSION['taxOrTyp'], 12) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=af\">Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 12) . "</th>";
         echo "</tr>\n";
         while ($row = $result->fetch_array()) {
             echo "<tr class=\"out\"><td class=\"out\">";
@@ -916,11 +915,11 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bg\">Genus</a>" . $display->sortItem($_SESSION['taxOrTyp'], 21) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bg\">Genus</a>" . Display::sortItem($_SESSION['taxOrTyp'], 21) . "</th>";
         echo "<th class=\"out\">Author</th>";
         echo "<th class=\"out\">RefNo</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bf\">Family</a>" . $display->sortItem($_SESSION['taxOrTyp'], 22) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bf\">Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 22) . "</th>";
         echo "<th class=\"out\">Category</th></tr>\n";
         while ($row = $result->fetch_array()) {
             echo "<tr class=\"out\"><td class=\"out\">";
@@ -1027,12 +1026,12 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
         echo "<b>Total: {$result->num_rows}</b><br><table class='out' cellspacing='0'>\n"
            . "<tr class='out'>"
            . "<th class='out'>ID</th>"
-           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cr'>Tax.Rank</a>" . $display->sortItem($_SESSION['taxOrTyp'], 34) . "</th>"
-           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cf'>Family</a>" . $display->sortItem($_SESSION['taxOrTyp'], 32) . "</th>"
+           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cr'>Tax.Rank</a>" . Display::sortItem($_SESSION['taxOrTyp'], 34) . "</th>"
+           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cf'>Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 32) . "</th>"
            . "<th class='out'>acc.</th>"
-           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cg'>Genus</a>" . $display->sortItem($_SESSION['taxOrTyp'], 31) . "</th>"
+           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cg'>Genus</a>" . Display::sortItem($_SESSION['taxOrTyp'], 31) . "</th>"
            . "<th class='out'>Author</th>"
-           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cs'>Species</a>" . $display->sortItem($_SESSION['taxOrTyp'], 33) . "</th>"
+           . "<th class='out'><a href='" . $_SERVER['PHP_SELF'] . "?order=cs'>Species</a>" . Display::sortItem($_SESSION['taxOrTyp'], 33) . "</th>"
            . "<th class='out'>Author</th>"
            . "<th class='out'>infraspecific Taxon</th>"
            . "<th class='out'>Label</th>"
@@ -1145,9 +1144,9 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
         echo "<table class=\"out\" cellspacing=\"0\">\n";
         echo "<tr class=\"out\">";
         echo "<th class=\"out\">".
-             "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=da\">Type</a>" . $display->sortItem($_SESSION['taxOrTyp'], 41) . "</th>";
+             "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=da\">Type</a>" . Display::sortItem($_SESSION['taxOrTyp'], 41) . "</th>";
         echo "<th class=\"out\">".
-             "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=db\">Taxon</a>" . $display->sortItem($_SESSION['taxOrTyp'], 42) . "</th>";
+             "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=db\">Taxon</a>" . Display::sortItem($_SESSION['taxOrTyp'], 42) . "</th>";
         echo "</tr>\n";
         $nr = 1;
         while ($row = $result->fetch_array()) {
@@ -1181,10 +1180,10 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
             $out = $matches['error'];
         } else */{
 
-            $s[0] = $display->sortItem($_SESSION['taxOrTyp'], 51);
-            $s[1] = $display->sortItem($_SESSION['taxOrTyp'], 52);
-            $s[2] = $display->sortItem($_SESSION['taxOrTyp'], 53);
-            $s[3] = $display->sortItem($_SESSION['taxOrTyp'], 54);
+            $s[0] = Display::sortItem($_SESSION['taxOrTyp'], 51);
+            $s[1] = Display::sortItem($_SESSION['taxOrTyp'], 52);
+            $s[2] = Display::sortItem($_SESSION['taxOrTyp'], 53);
+            $s[3] = Display::sortItem($_SESSION['taxOrTyp'], 54);
 
             /*echo<<<EOF
 <table class="out" cellspacing="0">
