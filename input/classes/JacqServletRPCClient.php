@@ -46,7 +46,7 @@ class JacqServletRPCClient extends JsonRPCClient
     {
         $this->db_input = PdoAccess::ConnectTo('INPUT');
 
-        $dbst = $this->db_input->query('SELECT source_id_fk, imgserver_type, iiif_capable, imgserver_url, key 
+        $dbst = $this->db_input->query('SELECT source_id_fk, imgserver_type, iiif_capable, imgserver_url, `key` 
                                         FROM `tbl_img_definition` 
                                         WHERE `imgserver_IP` = ' . $this->db_input->quote($imgserver_IP));
         $row = $dbst->fetch();

@@ -1,11 +1,10 @@
 <?php
 //ini_set('memory_limit', '32M');
-
 session_start();
 require("inc/connect.php");
-require("inc/pdf_functions.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
+use Jacq\PdfPrint;
 use Jacq\Permission;
 
 /**
@@ -24,6 +23,18 @@ function in_array_multi($needle, $haystack)
         }
     }
     return $found;
+}
+
+function formatLabelDateRange($dateStart, $dateEnd)
+{
+    $dateStart = trim((string)$dateStart);
+    $dateEnd = trim((string)$dateEnd);
+
+    if ($dateStart && $dateEnd && $dateStart !== $dateEnd) {
+        return $dateStart . " - " . $dateEnd;
+    }
+
+    return $dateStart ?: $dateEnd;
 }
 
 function generateSynonymsList($id)
@@ -151,7 +162,7 @@ function makeText($id, $sub)
         $row = mysqli_fetch_array($result);
 
         $text['typus_lat']  = $row['typus_lat'];
-        $text['taxon']      = taxonWithHybrids($row, true);
+        $text['taxon']      = PdfPrint::taxonWithHybrids($row, true);
         $text['coll_short'] = mb_strtoupper($row['coll_short_prj'], 'UTF-8');
         $text['HerbNummer'] = $row['HerbNummer'];
 
@@ -189,7 +200,7 @@ function makeText($id, $sub)
                       LEFT JOIN tbl_tax_genera tg ON tg.genID=ts.genID
                      WHERE taxonID = '$synID'";
             $row3 = dbi_query($sql3)->fetch_array();
-            $text['accName'] = " = " . taxonWithHybrids($row3);
+            $text['accName'] = " = " . PdfPrint::taxonWithHybrids($row3);
         } else {
             $text['accName'] = "";
         }
@@ -204,7 +215,7 @@ function makeText($id, $sub)
         $result2 = dbi_query($sql2);
         $text['protolog'] = "";
         while ($row2 = mysqli_fetch_array($result2)) {
-            $text['protolog'] .= protolog($row2) . "\n";
+            $text['protolog'] .= PdfPrint::protolog($row2) . "\n";
         }
         $text['protolog'] = substr($text['protolog'],0,-1);
 

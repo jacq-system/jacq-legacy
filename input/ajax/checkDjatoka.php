@@ -2,9 +2,9 @@
 session_start();
 require("../inc/gatekeeper.php");
 //require_once("../inc/variables.php");
-require_once('../inc/jacqServletJsonRPCClient.php');
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\JacqServletRPCClient;
 use Jacq\PdoAccess;
 
 //$_POST=$_GET;
@@ -82,7 +82,7 @@ class checkDjatoka {
 
     private function getService($serverIP) {
         if (!$this->service) {
-            $this->service = new jacqServletJsonRPCClient($serverIP);
+            $this->service = new JacqServletRPCClient($serverIP);
         }
         return $this->service;
     }
