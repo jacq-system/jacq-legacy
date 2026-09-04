@@ -7,6 +7,7 @@
 require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/variables.php');
 
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Response\Response;
@@ -191,7 +192,16 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql_restrict_specimen .= " AND s.habitus LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitus'])) . "%'";
         }
         if (trim($_SESSION['sBemerkungen'])) {
-            $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+            if (str_contains($_SESSION['sBemerkungen'], '%')) {
+                $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
+            } elseif (str_contains($_SESSION['sBemerkungen'], '"')) {
+                $filtered = str_replace('\\"', '"', dbi_escape_string(trim($_SESSION['sBemerkungen'])));
+                $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('$filtered' IN BOOLEAN MODE)";
+            } elseif (str_contains($_SESSION['sBemerkungen'], '+') || str_contains($_SESSION['sBemerkungen'], '-') || str_contains($_SESSION['sBemerkungen'], '*')) {
+                $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "' IN BOOLEAN MODE)";
+            } else {
+                $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+            }
         }
         if (trim($_SESSION['sNotesInternal'])) {
             $sql_restrict_specimen .= " AND s.notes_internal LIKE '%" . dbi_escape_string(trim($_SESSION['sNotesInternal'])) . "%'";
@@ -383,17 +393,17 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                . "<tr class=\"out\">"
                . "<th class=\"out\"></th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>"
+               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . Display::sortItem($_SESSION['sOrTyp'], 1) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>"
+               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . Display::sortItem($_SESSION['sOrTyp'], 2) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=c\">Date</a>" . sortItem($_SESSION['sOrTyp'], 3) . "</th>"
+               . "<a href=\"listSpecimens.php?order=c\">Date</a>" . Display::sortItem($_SESSION['sOrTyp'], 3) . "</th>"
                . "<th class=\"out\">X/Y</th>"
                . "<th class=\"out\">Location</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>"
+               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . Display::sortItem($_SESSION['sOrTyp'], 4) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . Display::sortItem($_SESSION['sOrTyp'], 5) . "</th>";
             if ($swBatch) {
                 echo "<th class=\"out\">Batch</th>";
             }
