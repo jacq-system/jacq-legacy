@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
@@ -422,7 +421,7 @@ function collectionItem($coll)
 <p>
 <?php
 if ($_SESSION['labelType'] == 1) {
-    $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.typusID, l.label,
+    $sql = "SELECT s.specimen_ID, s.taxonID, tg.genus, s.digital_image, s.typusID, l.label,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.Datum2, s.HerbNummer,
              n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -593,7 +592,7 @@ if ($_SESSION['labelType'] == 1) {
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out\">"
                .  "<a href=\"editLabel.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr\">"
-               .  htmlspecialchars(taxonItem($row)) . "</a></td>"
+               .  htmlspecialchars(Display::taxon($row['taxonID'])) . "</a></td>"
                . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                . $textLatLon

@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
@@ -924,7 +923,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
         echo "<p>\n";
 
         $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
-        $sql = "SELECT ls.specimenID, s.typusID, l.label,
+        $sql = "SELECT ls.specimenID, s.typusID, s.taxonID, l.label,
                  tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -981,7 +980,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $id = $row['specimenID'];
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">\n";
-                echo "<td class=\"out\"><a href=\"editSpecimens.php?sel=" . htmlentities("<$id>") . "&nr=$nr\">" . htmlspecialchars(taxonItem($row)) . "</a></td>\n";
+                echo "<td class=\"out\"><a href=\"editSpecimens.php?sel=" . htmlentities("<$id>") . "&nr=$nr\">" . htmlspecialchars(Display::taxon($row['taxonID'])) . "</a></td>\n";
                 echo "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>\n";
                 echo "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                    . htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>\n";

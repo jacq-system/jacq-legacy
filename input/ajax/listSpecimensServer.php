@@ -4,7 +4,6 @@
  * This file is included from listWUServer.php
  * function is separated for cleaner code only
  */
-require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/variables.php');
 
 use Jacq\Display;
@@ -37,7 +36,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $swBatch = Permission::has('batch'); // only user with the permission "batch" may add batches
     $nrSel = (isset($_SESSION['sNr'])) ? intval($_SESSION['sNr']) : 0;
 
-    $sql_names =  " s.specimen_ID, tg.genus, s.digital_image,
+    $sql_names =  " s.specimen_ID, s.taxonID, tg.genus, s.digital_image,
                     c.Sammler, c2.Sammler_2, ss.series, s.series_number,
                     s.Nummer, s.alt_number,
                     IF(s.Datum2 IS NULL OR s.Datum2 = '' OR s.Datum2 = s.Datum, s.Datum,
@@ -477,7 +476,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                    . "<td class=\"out\">$digitalImage</td>"
                    . "<td class=\"out\">"
                    .   "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
-                   .   htmlspecialchars(taxonItem($row)) . "</a>" . ((!empty($multiTaxa)) ? "<br />" . implode("<br />", $multiTaxa) : "") . "</td>"
+                   .   htmlspecialchars(Display::taxon($row['taxonID'])) . "</a>" . ((!empty($multiTaxa)) ? "<br />" . implode("<br />", $multiTaxa) : "") . "</td>"
                    . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                    . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                    . $textLatLon

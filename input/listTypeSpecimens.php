@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
@@ -141,9 +140,9 @@ $sql = "SELECT tg.genus,
          AND tg.genID=ts.genID";
 $result = dbi_query($sql);
 $row=mysqli_fetch_array($result);
-echo htmlspecialchars(taxonItem($row)) . "</div>\n<p>\n";
+echo htmlspecialchars(Display::taxon($id)) . "</div>\n<p>\n";
 
-$sql = "SELECT s.specimen_ID, tg.genus, s.digital_image,
+$sql = "SELECT s.specimen_ID, s.taxonID, tg.genus, s.digital_image,
          c.Sammler, c2.Sammler_2, ss.series, s.series_number,
          s.Nummer, s.alt_number, s.Datum, s.HerbNummer,
          n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -234,7 +233,7 @@ if (mysqli_num_rows($result)>0) {
          "<td class=\"out\">$digitalImage</td>".
          "<td class=\"out\">".
           "<a href=\"editSpecimens.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=$id\" target=\"Specimens\">".
-          htmlspecialchars(taxonItem($row))."</a></td>".
+          htmlspecialchars(Display::taxon($row['taxonID']))."</a></td>".
          "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>".
          "<td class=\"outNobreak\">".htmlspecialchars($row['Datum'])."</td>".
          $textLatLon.

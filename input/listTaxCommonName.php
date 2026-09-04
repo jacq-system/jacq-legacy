@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
@@ -596,6 +595,19 @@ function taxonWithFamily($row)
 
     return $text;
 } // end taxonWithFamily
+
+
+function subTaxonItem($row)
+{
+    $text = "";
+    if ($row['epithet1']) { $text .= " subsp. "   . $row['epithet1'] . " " . $row['author1']; }
+    if ($row['epithet2']) { $text .= " var. "     . $row['epithet2'] . " " . $row['author2']; }
+    if ($row['epithet3']) { $text .= " subvar. "  . $row['epithet3'] . " " . $row['author3']; }
+    if ($row['epithet4']) { $text .= " forma "    . $row['epithet4'] . " " . $row['author4']; }
+    if ($row['epithet5']) { $text .= " subforma " . $row['epithet5'] . " " . $row['author5']; }
+
+    return $text;
+}
 
 
 unset($status);

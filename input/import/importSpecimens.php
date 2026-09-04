@@ -5,7 +5,6 @@ const INCERTAE_SEDIS_IMPORT = 3449;
 session_start();
 set_time_limit(0);
 require("../inc/connect.php");
-require_once("../inc/herbardb_input_functions.php");
 require_once('../inc/jsonRPCClient.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 

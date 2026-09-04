@@ -43,7 +43,6 @@ Die Datei sollte intern klar in Funktionsbloecke getrennt werden:
 
 - `session_start()`
 - `require("../inc/connect.php")`
-- `require_once("../inc/herbardb_input_functions.php")`
 - `require_once("../inc/jsonRPCClient.php")`
 
 ### 2. Run-Erkennung

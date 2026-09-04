@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
@@ -68,8 +67,8 @@ $sql ="SELECT citationID, suptitel, le.autor as editor, la.autor, l.periodicalID
        WHERE citationID = '$id'";
 $row = dbi_query($sql)->fetch_array();
 echo "<b>protolog:</b> " . Display::protolog($row['citationID'], true) . "\n<p>\n";
-$sql = "SELECT lit_tax_ID, annotations,
-         ts.taxonID, tg.genus, ta.author, ta1.author author1, ta2.author author2,
+$sql = "SELECT tlt.lit_tax_ID, tlt.annotations, tlt.taxonID, tlt.acc_taxon_ID,
+         tg.genus, ta.author, ta1.author author1, ta2.author author2,
          ta3.author author3, ta4.author author4, ta5.author author5,
          te.epithet, te1.epithet epithet1, te2.epithet epithet2, te3.epithet epithet3,
          te4.epithet epithet4, te5.epithet epithet5,
@@ -152,7 +151,7 @@ if (mysqli_num_rows($result) > 0) {
            . "<a href=\"javascript:editLitTaxa('<" . $row['lit_tax_ID'] . ">',0)\">edit</a>"
            . "</td>";
         echo "<td class=\"out\">" . Tools::getScientificName($row['taxonID']) . "</td>";
-        echo "<td class=\"out\">" . taxonAccepted($row) . "</td>";
+        echo "<td class=\"out\">" . Display::taxon($row['acc_taxon_ID'], true, false, true) . "</td>";
         echo "<td class=\"out\">" . $row['annotations'] . "</td>";
         echo "</tr>\n";
     }

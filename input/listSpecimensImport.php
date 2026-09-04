@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
@@ -552,7 +551,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <hr />
   <?php
   if ($_SESSION['siType'] == 1) {
-    $sql = "SELECT distinct si.specimen_ID, tg.genus, si.digital_image,
+    $sql = "SELECT distinct si.specimen_ID, si.taxonID, tg.genus, si.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, si.series_number,
              si.Nummer, si.alt_number, si.Datum, si.HerbNummer,
              n.nation_engl, p.provinz, si.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -734,7 +733,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out$taxon_class_attribute\" title=\"$taxon_class_attribute\">"
                .  "<a href=\"editSpecimensImport.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=0\">"
-               .  htmlspecialchars(taxonItem($row))."</a></td>"
+               .  htmlspecialchars(Display::taxon($row['taxonID']))."</a></td>"
                . "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>"
                . "<td class=\"outNobreak\">".htmlspecialchars($row['Datum'])."</td>"
                . $textLatLon

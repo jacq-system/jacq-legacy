@@ -1,7 +1,6 @@
 <?php
 session_start();
 require('inc/connect.php');
-require_once('inc/herbardb_input_functions.php');
 require_once('inc/jsonRPCClient.php');
 require __DIR__ . '/vendor/autoload.php';
 

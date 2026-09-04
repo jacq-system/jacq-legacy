@@ -1,7 +1,7 @@
 <?php
 session_start();
 require("inc/connect.php");
-require_once("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
 function dms2sec ($degN, $minN, $secN, $degP, $minP, $secP)
 {
