@@ -4,6 +4,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 
@@ -872,9 +873,9 @@ FROM
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=ac\">Category</a>" . sortItem($_SESSION['taxOrTyp'], 11) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=ac\">Category</a>" . Display::sortItem($_SESSION['taxOrTyp'], 11) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=af\">Family</a>" . sortItem($_SESSION['taxOrTyp'], 12) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=af\">Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 12) . "</th>";
             echo "</tr>\n";
             while ($row = mysqli_fetch_array($result)) {
                 echo "<tr class=\"out\"><td class=\"out\">";
@@ -912,11 +913,11 @@ FROM
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bg\">Genus</a>" . sortItem($_SESSION['taxOrTyp'], 21) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bg\">Genus</a>" . Display::sortItem($_SESSION['taxOrTyp'], 21) . "</th>";
             echo "<th class=\"out\">Author</th>";
             echo "<th class=\"out\">RefNo</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bf\">Family</a>" . sortItem($_SESSION['taxOrTyp'], 22) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=bf\">Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 22) . "</th>";
             echo "<th class=\"out\">Category</th></tr>\n";
             while ($row = mysqli_fetch_array($result)) {
                 echo "<tr class=\"out\"><td class=\"out\">";
@@ -1007,13 +1008,13 @@ FROM
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">ID</th>";
             echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cf\">Family</a>" . sortItem($_SESSION['taxOrTyp'], 32) . "</th>";
+                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cf\">Family</a>" . Display::sortItem($_SESSION['taxOrTyp'], 32) . "</th>";
             echo "<th class=\"out\">acc.</th>";
             echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cg\">Genus</a>" . sortItem($_SESSION['taxOrTyp'], 31) . "</th>";
+                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cg\">Genus</a>" . Display::sortItem($_SESSION['taxOrTyp'], 31) . "</th>";
             echo "<th class=\"out\">Author</th>";
             echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cs\">Species</a>" . sortItem($_SESSION['taxOrTyp'], 33) . "</th>";
+                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=cs\">Species</a>" . Display::sortItem($_SESSION['taxOrTyp'], 33) . "</th>";
             echo "<th class=\"out\">Author</th>";
             echo "<th class=\"out\">infraspecific Taxon</th>";
             echo "</tr>\n";
@@ -1127,9 +1128,9 @@ FROM
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=da\">Type</a>" . sortItem($_SESSION['taxOrTyp'], 41) . "</th>";
+                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=da\">Type</a>" . Display::sortItem($_SESSION['taxOrTyp'], 41) . "</th>";
             echo "<th class=\"out\">".
-                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=db\">Taxon</a>" . sortItem($_SESSION['taxOrTyp'], 42) . "</th>";
+                 "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=db\">Taxon</a>" . Display::sortItem($_SESSION['taxOrTyp'], 42) . "</th>";
             echo "</tr>\n";
             $nr = 1;
             while ($row = mysqli_fetch_array($result)) {

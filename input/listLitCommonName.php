@@ -4,6 +4,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
@@ -393,14 +394,14 @@ if ($_SESSION['litType']) {
         echo "<tr class=\"out\">";
         if ($_SESSION['litType'] != 4) {
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=t\">Title</a>" . sortItem($_SESSION['litOrTyp'], 1) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=t\">Title</a>" . Display::sortItem($_SESSION['litOrTyp'], 1) . "</th>";
         }
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=p\">Periodical/Monograph</a>" . sortItem($_SESSION['litOrTyp'], 4) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=p\">Periodical/Monograph</a>" . Display::sortItem($_SESSION['litOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Author</a>" . sortItem($_SESSION['litOrTyp'], 2) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Author</a>" . Display::sortItem($_SESSION['litOrTyp'], 2) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=y\">&nbsp;Date&nbsp;</a>" . sortItem($_SESSION['litOrTyp'], 3) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=y\">&nbsp;Date&nbsp;</a>" . Display::sortItem($_SESSION['litOrTyp'], 3) . "</th>";
         echo "</tr>\n";
         $nr = 1;
         if (!$_SESSION['litContainer']) {

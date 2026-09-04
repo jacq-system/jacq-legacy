@@ -4,6 +4,8 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
+
 $nrSel = intval(filter_input(INPUT_GET, 'nr', FILTER_SANITIZE_NUMBER_INT));
 $id    = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));
 
@@ -182,16 +184,16 @@ if (mysqli_num_rows($result)>0) {
   echo "<tr class=\"out\">";
   echo "<th class=\"out\"></th>";
   echo "<th class=\"out\">".
-       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=a\">filed Name</a>".sortItem($_SESSION['ltsOrTyp'],1)."</th>";
+       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=a\">filed Name</a>" . Display::sortItem($_SESSION['ltsOrTyp'],1)."</th>";
   echo "<th class=\"out\">".
-       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=b\">Collector</a>".sortItem($_SESSION['ltsOrTyp'],2)."</th>";
+       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=b\">Collector</a>" . Display::sortItem($_SESSION['ltsOrTyp'],2)."</th>";
   echo "<th class=\"out\">Date</th>";
   echo "<th class=\"out\">X/Y</th>";
   echo "<th class=\"out\">Location</th>";
   echo "<th class=\"out\">".
-       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=d\">Typus</a>".sortItem($_SESSION['ltsOrTyp'],4)."</th>";
+       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=d\">Typus</a>" . Display::sortItem($_SESSION['ltsOrTyp'],4)."</th>";
   echo "<th class=\"out\">".
-       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=e\">Coll.</a>".sortItem($_SESSION['ltsOrTyp'],5)."</th>";
+       "<a href=\"".$_SERVER['PHP_SELF']."?ID=$id&order=e\">Coll.</a>" . Display::sortItem($_SESSION['ltsOrTyp'],5)."</th>";
   echo "</tr>\n";
   $nr = 1;
   while ($row=mysqli_fetch_array($result)) {

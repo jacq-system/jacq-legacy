@@ -4,6 +4,7 @@ require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -526,16 +527,16 @@ if ($_SESSION['labelType'] == 1) {
            . "<tr class='out'>"
            . "<th class='out'></th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=a'>Taxon</a>" . sortItem($_SESSION['labelOrTyp'], 1) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=a'>Taxon</a>" . Display::sortItem($_SESSION['labelOrTyp'], 1) . "</th>"
            . "<th class='out'>"
-           . "<a href'" . $_SERVER['PHP_SELF'] . "?order=b'>Collector</a>" . sortItem($_SESSION['labelOrTyp'], 2) . "</th>"
+           . "<a href'" . $_SERVER['PHP_SELF'] . "?order=b'>Collector</a>" . Display::sortItem($_SESSION['labelOrTyp'], 2) . "</th>"
            . "<th class='out'>Date</th>"
            . "<th class='out'>X/Y</th>"
            . "<th class='out'>Location</th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=d'>Typus</a>" . sortItem($_SESSION['labelOrTyp'], 4) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=d'>Typus</a>" . Display::sortItem($_SESSION['labelOrTyp'], 4) . "</th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=e'>Coll.</a>" . sortItem($_SESSION['labelOrTyp'], 5) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=e'>Coll.</a>" . Display::sortItem($_SESSION['labelOrTyp'], 5) . "</th>"
            . "<th class='out'>Type map Label</th>"
            . "<th class='out'>Type spec Label</th>"
            . "<th class='out'>Barcode Label</th>"

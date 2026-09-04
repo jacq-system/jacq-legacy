@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
+use Jacq\Display;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -966,11 +967,11 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . Display::sortItem($_SESSION['sOrTyp'], 1) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . Display::sortItem($_SESSION['sOrTyp'], 2) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . Display::sortItem($_SESSION['sOrTyp'], 5) . "</th>";
             echo "<th class=\"out\">Type map Label</th>";
             echo "<th class=\"out\">Type spec Label</th>";
             echo "<th class=\"out\">Barcode Label</th>";

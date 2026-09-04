@@ -2,6 +2,9 @@
 session_start();
 require("inc/connect.php");
 require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
+
+use Jacq\Display;
 
 if (isset($_GET['order'])) {
     if ($_GET['order'] == "b") {
@@ -50,9 +53,9 @@ if (isset($_GET['order'])) {
 
 <table class="out" cellspacing="0">
 <tr class="out">
-  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=a">User</a> <?php echo sortItem($_SESSION['userOrTyp'],1); ?></th>
-  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=b">Group</a> <?php echo sortItem($_SESSION['userOrTyp'],2); ?></th>
-  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=c">Name</a> <?php echo sortItem($_SESSION['userOrTyp'],3); ?></th>
+  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=a">User</a> <?php echo Display::sortItem($_SESSION['userOrTyp'],1); ?></th>
+  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=b">Group</a> <?php echo Display::sortItem($_SESSION['userOrTyp'],2); ?></th>
+  <th class="out"><a href="<?php echo $_SERVER['PHP_SELF']; ?>?order=c">Name</a> <?php echo Display::sortItem($_SESSION['userOrTyp'],3); ?></th>
   <th class="out">First Name</th>
   <th class="out">email</th>
   <th class="out">edit family</th>

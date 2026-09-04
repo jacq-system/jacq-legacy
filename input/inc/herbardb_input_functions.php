@@ -210,14 +210,14 @@ function taxonAccepted($row)
 //    return $text . " <" . $row['citationID'] . ">";
 //}   // Display::protolog($row['citationID'], true)
 
-function sortItem($typ,$id)
-{
-    if ($typ == $id) {
-        return "&nbsp;&nbsp;v";
-    } else if ($typ == -$id) {
-        return "&nbsp;&nbsp;^";
-    }
-}
+//function sortItem($typ,$id)
+//{
+//    if ($typ == $id) {
+//        return "&nbsp;&nbsp;v";
+//    } else if ($typ == -$id) {
+//        return "&nbsp;&nbsp;^";
+//    }
+//}
 
 function taxonItem($row)
 {

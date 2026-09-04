@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
@@ -672,16 +673,16 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['siOrTyp'], 1) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . Display::sortItem($_SESSION['siOrTyp'], 1) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['siOrTyp'], 2) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . Display::sortItem($_SESSION['siOrTyp'], 2) . "</th>";
         echo "<th class=\"out\">Date</th>";
         echo "<th class=\"out\">X/Y</th>";
         echo "<th class=\"out\">Location</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['siOrTyp'], 4) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . Display::sortItem($_SESSION['siOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['siOrTyp'], 5) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . Display::sortItem($_SESSION['siOrTyp'], 5) . "</th>";
         echo "<th class=\"out\">Owner</th>";
         echo "<th class=\"out\">Editors</th>";
         echo "<th class=\"out\"><input id=\"check_all\" type=\"checkbox\" name=\"check_all\" value=\"op\" /></th>";
