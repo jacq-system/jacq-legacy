@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once('inc/variables.php');
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
 use Jacq\Permission;
+use Jacq\Settings;
 use Jacq\Tools;
 use org\jsonrpcphp\JsonRPCClient;
 
@@ -216,12 +216,12 @@ function prettyPrintSynonymLinks()
 // BP: for testing only!
 function dumpMatchJsonRPC($searchtext)
 {
-    global $_OPTIONS;
+    $settings = Settings::Load();
 
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
+    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
 
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
@@ -247,14 +247,14 @@ function dumpMatchJsonRPC($searchtext)
 // BP: returns formatted HTML-string containing MDLD-result and content for field "taxonID"
 function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=false)
 {
-    global $_OPTIONS;
+    $settings = Settings::Load();
 
     $start = microtime(true);
 
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
+    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if ($useNearMatch) {

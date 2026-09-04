@@ -4,8 +4,6 @@
  * This file is included from listWUServer.php
  * function is separated for cleaner code only
  */
-require_once('../inc/variables.php');
-
 use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;

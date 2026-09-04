@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("../inc/gatekeeper.php");
-//require_once("../inc/variables.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\JacqServletRPCClient;
