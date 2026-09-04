@@ -75,6 +75,7 @@ if (isset($_POST['resetFilters'])) {
     $_SESSION['sHabitat']          = '';
     $_SESSION['sHabitus']          = '';
     $_SESSION['sBemerkungen']      = '';
+    $_SESSION['sBemerkungenFull']  = 0;
     $_SESSION['sNotesInternal']    = '';
     $_SESSION['sTyp']              = '';
     $_SESSION['sSynonyms']         = '';
@@ -112,6 +113,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = '';  // = $_POST['habitat'];
         $_SESSION['sHabitus']          = '';  // = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = '';  // = $_POST['annotations'];
+        $_SESSION['sBemerkungenFull']  = 0;
         $_SESSION['sNotesInternal']    = '';
 		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
         $_SESSION['sSynonyms']         = '';
@@ -139,6 +141,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = $_POST['habitat'];
         $_SESSION['sHabitus']          = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = $_POST['annotations'];
+        $_SESSION['sBemerkungenFull']  = (isset($_POST['annotationsFull']) ? 1 : 0);
         $_SESSION['sNotesInternal']    = $_POST['notes_internal'];
 
 		$_SESSION['sTyp']         = (($_POST['typ']=="only") ? true : false);
@@ -162,6 +165,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sBemerkungenFull'] = 0;
     $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sUserID'] = (Permission::has('specimensHistory')) ? $_POST['userID'] : (($_POST['userID'] != $_SESSION['uid']) ? -1 : $_SESSION['uid']);
@@ -175,6 +179,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sBemerkungenFull'] = 0;
     $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sLabelDate'] = $_POST['label_date'];
@@ -655,7 +660,10 @@ jaxon_checkTypeLabelMapPdfButton();
   <td align="right">&nbsp;<b>State/Province&nbsp;</b></td>
     <td><input type="text" name="province" value="<?php echo htmlspecialchars($_SESSION['sProvince'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
-    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>"></td>
+    <td style="white-space: nowrap;">
+      <input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>">
+      <input type="checkbox" name="annotationsFull" title="Fulltext search"<?php if($_SESSION['sBemerkungenFull']) echo " checked"; ?>>
+    </td>
   <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
     <td><input type="text" name="habitus" value="<?php echo htmlspecialchars($_SESSION['sHabitus'] ?? ''); ?>"></td>
 </tr><tr>

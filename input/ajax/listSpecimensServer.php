@@ -192,15 +192,19 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql_restrict_specimen .= " AND s.habitus LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitus'])) . "%'";
         }
         if (trim($_SESSION['sBemerkungen'])) {
-            if (str_contains($_SESSION['sBemerkungen'], '%')) {
-                $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
-            } elseif (str_contains($_SESSION['sBemerkungen'], '"')) {
-                $filtered = str_replace('\\"', '"', dbi_escape_string(trim($_SESSION['sBemerkungen'])));
-                $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('$filtered' IN BOOLEAN MODE)";
-            } elseif (str_contains($_SESSION['sBemerkungen'], '+') || str_contains($_SESSION['sBemerkungen'], '-') || str_contains($_SESSION['sBemerkungen'], '*')) {
-                $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "' IN BOOLEAN MODE)";
+            if (!empty($_SESSION['sBemerkungenFull'])) {
+                if (str_contains($_SESSION['sBemerkungen'], '"')) {
+                    $filtered = str_replace('\\"', '"', dbi_escape_string(trim($_SESSION['sBemerkungen'])));
+                    $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('$filtered' IN BOOLEAN MODE)";
+                } else {
+                    $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "' IN BOOLEAN MODE)";
+                }
             } else {
-                $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+                if (str_contains($_SESSION['sBemerkungen'], '%')) {
+                    $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
+                } else {
+                    $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+                }
             }
         }
         if (trim($_SESSION['sNotesInternal'])) {
