@@ -770,7 +770,7 @@ $cf->label(9, 0.5, "specimen_ID");
 $cf->text(9, 0.5, "&nbsp;" . $text);
 
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $target = getIiifLink($p_specimen_ID);
+    $target = Tools::getIiifLink($p_specimen_ID);
     if ($target) {
         $cf->label(33.5, 0, "digital image", "javascript:showIiif('$target')");
     } else {

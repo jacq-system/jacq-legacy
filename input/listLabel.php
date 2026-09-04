@@ -5,6 +5,7 @@ require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -547,7 +548,7 @@ if ($_SESSION['labelType'] == 1) {
             $linkList[$nr] = $id = $row['specimen_ID'];
 
             if ($row['digital_image']) {
-                $target = getIiifLink($row['specimen_ID']);
+                $target = Tools::getIiifLink($row['specimen_ID']);
                 if ($target) {
                     $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
                         . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"

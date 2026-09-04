@@ -417,7 +417,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 $linkList[$nr] = $row['specimen_ID'];
 
                 if ($row['digital_image']) {
-                    $target = getIiifLink($row['specimen_ID']);
+                    $target = Tools::getIiifLink($row['specimen_ID']);
                     if ($target) {
                         $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
                                       . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"

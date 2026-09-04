@@ -60,36 +60,36 @@ use Jacq\Settings;
  * @return string link to the image
  * @throws Exception
  */
-function getIiifLink(int $specimenID): string
-{
-    $specimenID_filtered = intval($specimenID);
-
-    $dbLink = DbAccess::ConnectTo('INPUT');
-    $image = $dbLink->query("SELECT tid.iiif_capable, tid.iiif_url, ph.specimenID AS phaidraID
-                             FROM tbl_specimens s
-                              LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
-                              LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
-                              LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
-                             WHERE s.specimen_ID = '$specimenID_filtered'")
-                    ->fetch_assoc();
-    if ($image['iiif_capable'] || $image['phaidraID']) {
-        $config = Settings::Load();
-        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/$specimenID_filtered");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        $curl_response = curl_exec($ch);
-        if ($curl_response !== false) {
-            $curl_result = json_decode($curl_response, true);
-            $manifest = $curl_result['uri'] ?? "";
-        } else {
-            $manifest = "";
-        }
-        curl_close($ch);
-
-        return $image['iiif_url'] . "?manifest=$manifest";
-    } else {
-        return '';
-    }
-}
+//function getIiifLink(int $specimenID): string
+//{
+//    $specimenID_filtered = intval($specimenID);
+//
+//    $dbLink = DbAccess::ConnectTo('INPUT');
+//    $image = $dbLink->query("SELECT tid.iiif_capable, tid.iiif_url, ph.specimenID AS phaidraID
+//                             FROM tbl_specimens s
+//                              LEFT JOIN herbar_pictures.phaidra_cache ph ON ph.specimenID = s.specimen_ID
+//                              LEFT JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID
+//                              LEFT JOIN tbl_img_definition tid ON tid.source_id_fk = mc.source_id
+//                             WHERE s.specimen_ID = '$specimenID_filtered'")
+//                    ->fetch_assoc();
+//    if ($image['iiif_capable'] || $image['phaidraID']) {
+//        $config = Settings::Load();
+//        $ch = curl_init($config->get('JACQ_SERVICES') . "iiif/manifestUri/$specimenID_filtered");
+//        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+//        $curl_response = curl_exec($ch);
+//        if ($curl_response !== false) {
+//            $curl_result = json_decode($curl_response, true);
+//            $manifest = $curl_result['uri'] ?? "";
+//        } else {
+//            $manifest = "";
+//        }
+//        curl_close($ch);
+//
+//        return $image['iiif_url'] . "?manifest=$manifest";
+//    } else {
+//        return '';
+//    }
+//}
 
 //function taxon($row, $withDT = false, $withID = true)
 //{

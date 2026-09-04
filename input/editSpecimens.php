@@ -727,7 +727,7 @@ if ($swBatch) {
 }
 
 // if specimen-ID is valid and there are any pictures, check if they are on an iiif-server
-$target = (($p_digital_image || $p_digital_image_obs) && $p_specimen_ID) ? getIiifLink($p_specimen_ID) : '';
+$target = (($p_digital_image || $p_digital_image_obs) && $p_specimen_ID) ? Tools::getIiifLink($p_specimen_ID) : '';
 if ($p_digital_image && $p_specimen_ID) {
     if ($target) {
         $cf->label(32, $y, "dig.image", "javascript:showIiif('$target')");
