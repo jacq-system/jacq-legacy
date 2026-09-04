@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("../inc/connect.php");
-require_once('../inc/jsonRPCClient.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Log;
+use org\jsonrpcphp\JsonRPCClient;
 
 $authorMayBeEmpty = !empty($_POST['authorEmpty']);
 
@@ -391,7 +391,7 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                         .      $import[$i][1] . ' '
                         .      (trim($import[$i][3]) == 'f.' ? 'forma' : $import[$i][3])
                         .      $import[$i][4]);
-            $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+            $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
                 $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
                 foreach ($matches['result'][0]['searchresult'] as $key => $val) {

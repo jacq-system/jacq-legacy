@@ -1,19 +1,15 @@
 <?php
 session_start();
+require_once('inc/variables.php');
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
-
-// BP: for MDLD-JSON service
-require_once('inc/variables.php');
-require_once('inc/jsonRPCClient.php');
+use org\jsonrpcphp\JsonRPCClient;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
-
-_logger("---- listTax.php (nrSel = " . $nrSel . " ---");
 
 if (!isset($_SESSION['taxStatus'])) $_SESSION['taxStatus'] = "";
 if (!isset($_SESSION['taxRank']))   $_SESSION['taxRank'] = "";
@@ -205,15 +201,6 @@ selectTaxon('{$_POST['taxon']}');
 EOF;
 }
 
-// BP: logger: only log if set in variables.php
-function _logger($message, $message_type = 0)
-{
-    global $_OPTIONS;
-
-    if ($_OPTIONS['debug'])
-        error_log($message, $message_type);
-}
-
 // BP: placed into a function because needed at various locations now
 function prettyPrintSynonymLinks()
 {
@@ -234,8 +221,7 @@ function dumpMatchJsonRPC($searchtext)
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
-    _logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
+    $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
 
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
@@ -261,8 +247,6 @@ function dumpMatchJsonRPC($searchtext)
 // BP: returns formatted HTML-string containing MDLD-result and content for field "taxonID"
 function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=false)
 {
-    _logger("listTax - showMatchJsonRPCClickable(selectedRow=" . $selectedRow . ")");
-
     global $_OPTIONS;
 
     $start = microtime(true);
@@ -270,8 +254,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
-    _logger("URL = " . $_OPTIONS['serviceTaxamatch'],0);
+    $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if ($useNearMatch) {
