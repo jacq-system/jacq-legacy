@@ -63,7 +63,7 @@ class UuidMinter
                         // create new entry in minter database as we didn't find one
                         $db->query("INSERT INTO `jacq_input`.`srvc_uuid_minter` SET `uuid_minter_type_id` = $typeID, `internal_id` = '$internal_id', `uuid` = UUID()");
                         $uuid = $db->query("SELECT uuid
-                                            FROM `jacq_Input`.`srvc_uuid_minter`
+                                            FROM `jacq_input`.`srvc_uuid_minter`
                                             WHERE uuid_minter_type_id = $typeID
                                              AND internal_id = $internal_id")
                                    ->fetch_assoc()['uuid'];

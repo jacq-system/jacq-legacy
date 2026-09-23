@@ -121,7 +121,7 @@ if (isset($_GET['new'])) {
     $p_annotations        = $_POST['annotations'];
     $p_specimens_types_ID = $_POST['specimens_types_ID'];
 
-    if ($_POST['submitUpdate'] && Permission::has('specimensTypes')) {
+    if (!empty($_POST['submitUpdate']) && Permission::has('specimensTypes')) {
         if (Tools::extractID($p_taxon) != "NULL" && Tools::extractID($p_specimen) != "NULL") {
             $sql_data = "taxonID = " . Tools::extractID($p_taxon) . ",
                          specimenID = " . Tools::extractID($p_specimen) . ",
@@ -140,13 +140,14 @@ if (isset($_GET['new'])) {
             }
             $result = dbi_query($sql);
             if ($result) {
-                $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
+                $id = (intval($p_specimens_types_ID)) ?: dbi_insert_id();
                 Log::specimensTypes($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"
                    . "</script>\n";
             } else {
+                error_log("SQL-ERROR in editSpecimensTypes has been shown to the user.");
                 echo "<script language=\"JavaScript\">\n"
                         . "  alert(\"" . $dbLink->error . "\");\n"
                         . "</script>\n";
