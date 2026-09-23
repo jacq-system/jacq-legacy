@@ -454,6 +454,8 @@ foreach ($tbls as $tbl) {
                                        FROM tbl_specimens s
                                         JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID 
                                        WHERE mc.source_id = {$tbl['source_id']}
+                                        AND s.accessible > 0
+                                        AND s.HerbNummer IS NOT NULL
                                        )")
                         ->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as $row) {

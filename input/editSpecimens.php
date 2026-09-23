@@ -783,11 +783,15 @@ if (!empty($p_gbif_id)) {
         $response = json_decode($curl_response, true);
         if (!empty($response['issues'])) {
             echo "<div style='position:absolute; left: 67em; top: 13em; width: 35em; background-color: white; max-height: 25em; overflow: scroll;'>"
-               . "<b><i>Issues and flags</i></b><br>";
+               . "<b><i>GBIF Issues and flags</i></b><br>";
             foreach ($response['issues'] as $issue) {
                 $row = dbi_query("SELECT * FROM gbif_issues WHERE ID = '$issue'")->fetch_assoc();
-                echo "<b>{$row['Flag_name']}</b><br>\n";
-                echo $row['Definition'] . "<br>\n";
+                if (!empty($row['Flag_name'])) {
+                    echo "<b>{$row['Flag_name']}</b><br>\n"
+                       . "{$row['Definition']}<br>\n";
+                } else {
+                    echo "<b>$issue</b><br>\n";
+                }
             }
             echo "</div>\n";
         }
