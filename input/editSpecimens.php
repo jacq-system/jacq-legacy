@@ -775,6 +775,22 @@ if (!empty($p_gbif_id)) {
     $identifierIcons[] = "<a href='{$gbifValue}' target='_blank' rel='noopener' title='GBIF'>"
                        . "<img src='https://jacq.org/logo/services/serviceID51_logo.png' alt='GBIF' height='30px'>"
                        . "</a>";
+    $curl = curl_init("https://api.gbif.org/v1/occurrence/" . basename($gbifValue));
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    $curl_response = curl_exec($curl);
+    curl_close($curl);
+    if ($curl_response !== false) {
+        $response = json_decode($curl_response, true);
+        if (!empty($response['issues'])) {
+            echo "<div style='position:absolute; left: 67em; top: 13em; width: 35em; background-color: white'><b><i>Issues and flags</i></b><br>";
+            foreach ($response['issues'] as $issue) {
+                $row = dbi_query("SELECT * FROM gbif_issues WHERE ID = '$issue'")->fetch_assoc();
+                echo "<b>{$row['Flag_name']}</b><br>\n";
+                echo $row['Definition'] . "<br>\n";
+            }
+            echo "</div>\n";
+        }
+    }
 }
 if (!empty($p_dissco_id)) {
     $disscoValue = htmlspecialchars($p_dissco_id, ENT_QUOTES, 'UTF-8');
