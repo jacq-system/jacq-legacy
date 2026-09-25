@@ -662,7 +662,7 @@ jaxon_checkTypeLabelMapPdfButton();
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
     <td style="white-space: nowrap;">
       <input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>">
-      <input type="checkbox" name="annotationsFull" title="Fulltext search"<?php if($_SESSION['sBemerkungenFull']) echo " checked"; ?>>
+      <input type="checkbox" name="annotationsFull" title="Fulltext search"<?php if (!empty($_SESSION['sBemerkungenFull'])) { echo " checked"; } ?>>
     </td>
   <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
     <td><input type="text" name="habitus" value="<?php echo htmlspecialchars($_SESSION['sHabitus'] ?? ''); ?>"></td>

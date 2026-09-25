@@ -410,7 +410,7 @@ foreach ($tbls as $tbl) {
                  PrimaryCollector_ORCID         = " . ((str_starts_with($row['ORCID'], 'http')) ? $dbLink2->quoteString($row['ORCID']) : "NULL") . ",
                  PrimaryCollector_Bloodhound_ID = " . ((str_starts_with($row['Bloodhound_ID'], 'http')) ? $dbLink2->quoteString($row['Bloodhound_ID']) : "NULL") . ",
                  CollectorTeam            = '" . $dbLink2->real_escape_string($CollectorTeam) . "',
-                 IdentificationHistory    = " . $dbLink2->quoteString(substr($row['taxon_alt'], 0, 255)) . ",
+                 IdentificationHistory    = " . $dbLink2->quoteString(mb_substr($row['taxon_alt'], 0, 255)) . ",
                  IdentificationDate       = " . $dbLink2->quoteString($IdentificationDate) . ",
                  NamedCollection          = " . $dbLink2->quoteString($row['coll_gbif_pilot']) . ",
                  KindOfUnit               = " . $dbLink2->quoteString($row['KindOfUnit']) . ",
@@ -455,7 +455,6 @@ foreach ($tbls as $tbl) {
                                         JOIN tbl_management_collections mc ON mc.collectionID = s.collectionID 
                                        WHERE mc.source_id = {$tbl['source_id']}
                                         AND s.accessible > 0
-                                        AND s.HerbNummer IS NOT NULL
                                        )")
                         ->fetch_all(MYSQLI_ASSOC);
         foreach ($rows as $row) {

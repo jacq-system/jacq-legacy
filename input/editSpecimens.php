@@ -26,6 +26,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGbifIssues");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 
@@ -775,27 +776,6 @@ if (!empty($p_gbif_id)) {
     $identifierIcons[] = "<a href='{$gbifValue}' target='_blank' rel='noopener' title='GBIF'>"
                        . "<img src='https://jacq.org/logo/services/serviceID51_logo.png' alt='GBIF' height='30px'>"
                        . "</a>";
-    $curl = curl_init("https://api.gbif.org/v1/occurrence/" . basename($gbifValue));
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $curl_response = curl_exec($curl);
-    curl_close($curl);
-    if ($curl_response !== false) {
-        $response = json_decode($curl_response, true);
-        if (!empty($response['issues'])) {
-            echo "<div style='position:absolute; left: 67em; top: 13em; width: 35em; background-color: white; max-height: 25em; overflow: scroll;'>"
-               . "<b><i>GBIF Issues and flags</i></b><br>";
-            foreach ($response['issues'] as $issue) {
-                $row = dbi_query("SELECT * FROM gbif_issues WHERE ID = '$issue'")->fetch_assoc();
-                if (!empty($row['Flag_name'])) {
-                    echo "<b>{$row['Flag_name']}</b><br>\n"
-                       . "{$row['Definition']}<br>\n";
-                } else {
-                    echo "<b>$issue</b><br>\n";
-                }
-            }
-            echo "</div>\n";
-        }
-    }
 }
 if (!empty($p_dissco_id)) {
     $disscoValue = htmlspecialchars($p_dissco_id, ENT_QUOTES, 'UTF-8');
@@ -878,6 +858,9 @@ $cf->text(67, $y + 0.3, "", "nomService");  // will be filled asynchronously by 
 $y += 4;
 $cf->labelMandatory(11, $y, 9, "det / rev / conf");
 $cf->inputText(11, $y, 54, "det", $p_det, 255);
+
+// will be filled asynchronously by jaxon_updateGbifIssues
+echo "<div id='gbifIssues' style='position:absolute; left: 67em; top: {$y}em; width: 35em; max-height: 25em; background-color: white; overflow: scroll;'></div>";
 
 $y += 2;
 $cf->labelMandatory(11, $y, 9, "ident. history");
