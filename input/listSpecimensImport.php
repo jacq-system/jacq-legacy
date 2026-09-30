@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jaxon\Jaxon;
@@ -551,7 +551,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
   <hr />
   <?php
   if ($_SESSION['siType'] == 1) {
-    $sql = "SELECT distinct si.specimen_ID, tg.genus, si.digital_image,
+    $sql = "SELECT distinct si.specimen_ID, si.taxonID, tg.genus, si.digital_image,
              c.Sammler, c2.Sammler_2, ss.series, si.series_number,
              si.Nummer, si.alt_number, si.Datum, si.HerbNummer,
              n.nation_engl, p.provinz, si.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -672,16 +672,16 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
         echo "<tr class=\"out\">";
         echo "<th class=\"out\"></th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['siOrTyp'], 1) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . Display::sortItem($_SESSION['siOrTyp'], 1) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['siOrTyp'], 2) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . Display::sortItem($_SESSION['siOrTyp'], 2) . "</th>";
         echo "<th class=\"out\">Date</th>";
         echo "<th class=\"out\">X/Y</th>";
         echo "<th class=\"out\">Location</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . sortItem($_SESSION['siOrTyp'], 4) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=d\">Typus</a>" . Display::sortItem($_SESSION['siOrTyp'], 4) . "</th>";
         echo "<th class=\"out\">"
-           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['siOrTyp'], 5) . "</th>";
+           . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . Display::sortItem($_SESSION['siOrTyp'], 5) . "</th>";
         echo "<th class=\"out\">Owner</th>";
         echo "<th class=\"out\">Editors</th>";
         echo "<th class=\"out\"><input id=\"check_all\" type=\"checkbox\" name=\"check_all\" value=\"op\" /></th>";
@@ -733,7 +733,7 @@ if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && 
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out$taxon_class_attribute\" title=\"$taxon_class_attribute\">"
                .  "<a href=\"editSpecimensImport.php?sel=".htmlentities("<".$row['specimen_ID'].">")."&nr=$nr&ptid=0\">"
-               .  htmlspecialchars(taxonItem($row))."</a></td>"
+               .  htmlspecialchars(Display::taxon($row['taxonID']))."</a></td>"
                . "<td class=\"out\">".htmlspecialchars(collectorItem($row))."</td>"
                . "<td class=\"outNobreak\">".htmlspecialchars($row['Datum'])."</td>"
                . $textLatLon

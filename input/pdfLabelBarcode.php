@@ -1,9 +1,7 @@
 <?php
 //ini_set('memory_limit', '32M');
-
 session_start();
 require("inc/connect.php");
-require("inc/pdf_functions.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Tools;

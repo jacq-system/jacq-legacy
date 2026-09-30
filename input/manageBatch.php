@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/jacqServletJsonRPCClient.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
+use Jacq\JacqServletRPCClient;
 use Jacq\PdoAccess;
 use Jacq\Permission;
 
@@ -230,7 +230,7 @@ if( $type == 5 && $batchID ) {
 
         // Create a service instance and send requests to jacq-servlet
         try {
-            $service = new jacqServletJsonRPCClient( $serverInfo['imgserver_IP'] );
+            $service = new JacqServletRPCClient($serverInfo['imgserver_IP']);
 
             // Create a list of objects which hold all the specimens to look for
             $exportSpecimens = array();

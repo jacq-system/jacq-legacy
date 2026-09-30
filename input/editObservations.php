@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -100,7 +100,8 @@ function makeTaxon2($search)
         if ($result = dbi_query($sql)) {
             if (mysqli_num_rows($result) > 0) {
                 while ($row = mysqli_fetch_array($result)) {
-                    $results[] = taxonWithHybrids($row);
+//                    $results[] = taxonWithHybrids($row);
+                    $results[] = Display::taxonWithHybrids($row['taxonID'], true, true);
                 }
             }
         }
@@ -768,7 +769,7 @@ $cf->label(9, 0.5, "specimen_ID");
 $cf->text(9, 0.5, "&nbsp;" . $text);
 
 if ($p_digital_image_obs && $p_specimen_ID) {
-    $target = getIiifLink($p_specimen_ID);
+    $target = Tools::getIiifLink($p_specimen_ID);
     if ($target) {
         $cf->label(33.5, 0, "digital image", "javascript:showIiif('$target')");
     } else {

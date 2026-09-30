@@ -1,9 +1,10 @@
 <?php
 session_start();
 require("../inc/connect.php");
-require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\DbAccess;
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Jaxon;
@@ -547,7 +548,7 @@ function editMultiTaxa ($specimenID)
                 $id = $row['specimens_tax_ID'];
                 $ret .= "<tr><td>"
                       . "<input class='cssftextAutocomplete' style='width: 35em;' type='text' name='multiTaxaData_$id' id='multiTaxaData_$id' "
-                      . "value='" . taxon($row) . "'>"
+                      . "value='" . Display::taxon($row['taxonID'], true, false, true) . "'>"
                       . "</td><td align='center'>";
                 if (Permission::has('specim')) {
                     $ret .= "<img src='webimages/remove.png' title='delete entry' onclick=\"jaxon_deleteMultiTaxa('" . $row['specimens_tax_ID'] . "', '$specimenID');\">";
@@ -762,6 +763,49 @@ function updateGgbnIdentifier($specimenID)
     return $response;
 }
 
+function updateGbifIssues($specimenID)
+{
+    global $response;
+
+    $specimenID = intval($specimenID);
+    if ($specimenID <= 0) {
+        $response->assign('gbifIssues', 'innerHTML', '');
+        return $response;
+    }
+
+    $db = DbAccess::ConnectTo('INPUT');
+
+    $issues = "";
+    $row = $db->queryCatch("SELECT GBIF_ID FROM tbl_specimens WHERE specimen_ID = $specimenID")->fetch_assoc();
+    if (!empty($row['GBIF_ID'])) {
+        $curl = curl_init("https://api.gbif.org/v1/occurrence/" . basename($row['GBIF_ID']));
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        $curl_response = curl_exec($curl);
+        curl_close($curl);
+        if ($curl_response !== false) {
+            $answer = json_decode($curl_response, true);
+            if (!empty($answer['issues'])) {
+                $issues .= "<b><i>GBIF Issues and flags</i></b><br>";
+                foreach ($answer['issues'] as $issue) {
+                    $row = dbi_query("SELECT * FROM gbif_issues WHERE ID = '$issue'")->fetch_assoc();
+                    if (!empty($row['Flag_name'])) {
+                        if ($row['visible']) {
+                            $issues .= "<b>{$row['Flag_name']}</b><br>\n"
+                                     . "{$row['Definition']}<br>\n";
+                        }
+                    } else {
+                        $issues .= "<b>$issue</b><br>\n";
+                    }
+                }
+            }
+        }
+    }
+
+    $response->assign('gbifIssues', 'innerHTML', $issues);
+
+    return $response;
+}
+
 function updateNomService($taxonID)
 {
     global $response, $_CONFIG;
@@ -836,6 +880,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "deleteMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayMultiTaxa");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "displayCollectorLinks");
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGbifIssues");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateNomService");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "updateGgbnIdentifier");
 $jaxon->processRequest();

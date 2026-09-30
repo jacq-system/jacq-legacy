@@ -1,43 +1,12 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
-
-function makeTaxon($search,$x,$y)
-{
-    global $cf;
-
-    $results[] = "";
-    if ($search && strlen($search) > 1) {
-        $pieces = explode(chr(194) . chr(183), $search);
-        $pieces = explode(" ", $pieces[0]);
-        $sql = "SELECT taxonID
-                FROM tbl_tax_species ts
-                 LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
-                 LEFT JOIN tbl_tax_genera tg ON tg.genID = ts.genID
-                WHERE ts.external = 0
-                 AND tg.genus LIKE '" . dbi_escape_string($pieces[0]) . "%' ";
-        if ($pieces[1]) {
-            $sql .= "AND te.epithet LIKE '" . dbi_escape_string($pieces[1]) . "%' ";
-        }
-        $sql .= "ORDER BY tg.genus, te.epithet";
-        if ($result = dbi_query($sql)) {
-            $cf->text($x, $y, "<b>" . mysqli_num_rows($result) . " records found</b>");
-            if (mysqli_num_rows($result) > 0) {
-                while ($row = mysqli_fetch_array($result)) {
-                    $results[] = taxon($row['taxonID']);
-                }
-            }
-        }
-    }
-    return $results;
-}
 
 function makeCollector($row)
 {
@@ -152,7 +121,7 @@ if (isset($_GET['new'])) {
     $p_annotations        = $_POST['annotations'];
     $p_specimens_types_ID = $_POST['specimens_types_ID'];
 
-    if ($_POST['submitUpdate'] && Permission::has('specimensTypes')) {
+    if (!empty($_POST['submitUpdate']) && Permission::has('specimensTypes')) {
         if (Tools::extractID($p_taxon) != "NULL" && Tools::extractID($p_specimen) != "NULL") {
             $sql_data = "taxonID = " . Tools::extractID($p_taxon) . ",
                          specimenID = " . Tools::extractID($p_specimen) . ",
@@ -171,13 +140,14 @@ if (isset($_GET['new'])) {
             }
             $result = dbi_query($sql);
             if ($result) {
-                $id = (intval($p_specimens_types_ID)) ? intval($p_specimens_types_ID) : dbi_insert_id();
+                $id = (intval($p_specimens_types_ID)) ?: dbi_insert_id();
                 Log::specimensTypes($id, $updated);
                 echo "<script language=\"JavaScript\">\n"
                    . "  window.opener.document.f.reload.click()\n"
                    . "  self.close()\n"
                    . "</script>\n";
             } else {
+                error_log("SQL-ERROR in editSpecimensTypes has been shown to the user.");
                 echo "<script language=\"JavaScript\">\n"
                         . "  alert(\"" . $dbLink->error . "\");\n"
                         . "</script>\n";
@@ -215,7 +185,6 @@ $cf->text(7, 2.5, "&nbsp;" . $p_specimen);
 echo "<input type=\"hidden\" name=\"specimen\" value=\"" . htmlspecialchars($p_specimen) . "\">\n";
 
 $cf->label(7, 4.5, "taxon");
-//$cf->editDropdown(7, 5.5, 28, "taxon", $p_taxon, makeTaxon($p_taxon, 7, 4), 520);
 $cf->inputJqAutocomplete(7, 4.5, 28, "taxon", $p_taxon, $p_taxonIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 520, 2);
 
 $cf->labelMandatory(7, 7, 3, "type");

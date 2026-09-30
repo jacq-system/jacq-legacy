@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
@@ -214,7 +213,7 @@ $cf->label(9,0.5,"specimen_ID");
 $cf->text(9,0.5,"&nbsp;".$p_specimen_ID);
 
 if ($p_digital_image && $p_specimen_ID) {
-    $target = getIiifLink($p_specimen_ID);
+    $target = Tools::getIiifLink($p_specimen_ID);
     if ($target) {
         $cf->label(33.5, 0, "digital image", "javascript:showIiif('$target')");
     } else {

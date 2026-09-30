@@ -83,17 +83,25 @@ if (!empty($_POST['submitUpdate']) && Permission::has('litPer')) {
     $id = intval($pieces[0]);
 }
 echo "<form name=\"f\" Action=\"" . $_SERVER['PHP_SELF'] . "\" Method=\"POST\">\n";
-$sql = "SELECT periodicalID, periodical, periodical_full, tl2_number, bph_number, ipni_ID, successor_ID
-        FROM tbl_lit_periodicals
-        WHERE periodicalID = '$id'";
-$row = dbi_query($sql)->fetch_array();
+$row = dbi_query("SELECT periodicalID, periodical, periodical_full, tl2_number, bph_number, ipni_ID, successor_ID
+                  FROM tbl_lit_periodicals
+                  WHERE periodicalID = '$id'")
+        ->fetch_array();
+if (empty($row)) {
+    $row = array('periodicalID'    => 0,
+                 'periodical'      => '',
+                 'periodical_full' => '',
+                 'tl2_number'      => '',
+                 'bph_number'      => '',
+                 'ipni_ID'         => '',
+                 'successor_ID'    => 0);
+}
 
 $p_successor = $p_successorIndex = '';
 if ($row['successor_ID']) {
-    $sql = "SELECT periodical, periodicalID
-            FROM tbl_lit_periodicals
-            WHERE periodicalID  = '" . intval($row['successor_ID']) . "'";
-    $result = dbi_query($sql);
+    $result = dbi_query("SELECT periodical, periodicalID
+                         FROM tbl_lit_periodicals
+                         WHERE periodicalID  = '" . intval($row['successor_ID']) . "'");
     if (mysqli_num_rows($result) > 0) {
         $rowSuccessor = mysqli_fetch_array($result);
         $p_successor      = $rowSuccessor['periodical'] . " <" . $rowSuccessor['periodicalID'] . ">";

@@ -4,9 +4,7 @@
  * This file is included from listWUServer.php
  * function is separated for cleaner code only
  */
-require_once("../inc/herbardb_input_functions.php");
-require_once('../inc/variables.php');
-
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Response\Response;
@@ -36,7 +34,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
     $swBatch = Permission::has('batch'); // only user with the permission "batch" may add batches
     $nrSel = (isset($_SESSION['sNr'])) ? intval($_SESSION['sNr']) : 0;
 
-    $sql_names =  " s.specimen_ID, tg.genus, s.digital_image,
+    $sql_names =  " s.specimen_ID, s.taxonID, tg.genus, s.digital_image,
                     c.Sammler, c2.Sammler_2, ss.series, s.series_number,
                     s.Nummer, s.alt_number,
                     IF(s.Datum2 IS NULL OR s.Datum2 = '' OR s.Datum2 = s.Datum, s.Datum,
@@ -191,7 +189,20 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
             $sql_restrict_specimen .= " AND s.habitus LIKE '%" . dbi_escape_string(trim($_SESSION['sHabitus'])) . "%'";
         }
         if (trim($_SESSION['sBemerkungen'])) {
-            $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
+            if (!empty($_SESSION['sBemerkungenFull'])) {
+                if (str_contains($_SESSION['sBemerkungen'], '"')) {
+                    $filtered = str_replace('\\"', '"', dbi_escape_string(trim($_SESSION['sBemerkungen'])));
+                    $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('$filtered' IN BOOLEAN MODE)";
+                } else {
+                    $sql_restrict_specimen .= " AND MATCH(s.Bemerkungen) AGAINST('" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "' IN BOOLEAN MODE)";
+                }
+            } else {
+                if (str_contains($_SESSION['sBemerkungen'], '%')) {
+                    $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "'";
+                } else {
+                    $sql_restrict_specimen .= " AND s.Bemerkungen LIKE '%" . dbi_escape_string(trim($_SESSION['sBemerkungen'])) . "%'";
+                }
+            }
         }
         if (trim($_SESSION['sNotesInternal'])) {
             $sql_restrict_specimen .= " AND s.notes_internal LIKE '%" . dbi_escape_string(trim($_SESSION['sNotesInternal'])) . "%'";
@@ -383,17 +394,17 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                . "<tr class=\"out\">"
                . "<th class=\"out\"></th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>"
+               . "<a href=\"listSpecimens.php?order=a\">Taxon</a>" . Display::sortItem($_SESSION['sOrTyp'], 1) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>"
+               . "<a href=\"listSpecimens.php?order=b\">Collector</a>" . Display::sortItem($_SESSION['sOrTyp'], 2) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=c\">Date</a>" . sortItem($_SESSION['sOrTyp'], 3) . "</th>"
+               . "<a href=\"listSpecimens.php?order=c\">Date</a>" . Display::sortItem($_SESSION['sOrTyp'], 3) . "</th>"
                . "<th class=\"out\">X/Y</th>"
                . "<th class=\"out\">Location</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . sortItem($_SESSION['sOrTyp'], 4) . "</th>"
+               . "<a href=\"listSpecimens.php?order=d\">Typus</a>" . Display::sortItem($_SESSION['sOrTyp'], 4) . "</th>"
                . "<th class=\"out\">"
-               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+               . "<a href=\"listSpecimens.php?order=e\">Coll.</a>" . Display::sortItem($_SESSION['sOrTyp'], 5) . "</th>";
             if ($swBatch) {
                 echo "<th class=\"out\">Batch</th>";
             }
@@ -403,7 +414,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                 $linkList[$nr] = $row['specimen_ID'];
 
                 if ($row['digital_image']) {
-                    $target = getIiifLink($row['specimen_ID']);
+                    $target = Tools::getIiifLink($row['specimen_ID']);
                     if ($target) {
                         $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
                                       . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
@@ -463,7 +474,7 @@ function listSpecimens($page, $bInitialize = false, $itemsPerPage = 0 ) {
                    . "<td class=\"out\">$digitalImage</td>"
                    . "<td class=\"out\">"
                    .   "<a href=\"editSpecimens.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr&ptid=0\">"
-                   .   htmlspecialchars(taxonItem($row)) . "</a>" . ((!empty($multiTaxa)) ? "<br />" . implode("<br />", $multiTaxa) : "") . "</td>"
+                   .   htmlspecialchars(Display::taxon($row['taxonID'])) . "</a>" . ((!empty($multiTaxa)) ? "<br />" . implode("<br />", $multiTaxa) : "") . "</td>"
                    . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                    . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                    . $textLatLon

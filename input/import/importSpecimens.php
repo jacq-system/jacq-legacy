@@ -5,13 +5,12 @@ const INCERTAE_SEDIS_IMPORT = 3449;
 session_start();
 set_time_limit(0);
 require("../inc/connect.php");
-require_once("../inc/herbardb_input_functions.php");
-require_once('../inc/jsonRPCClient.php');
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
 use Jacq\Log;
 use Jacq\TaxonTokenizer;
+use org\jsonrpcphp\JsonRPCClient;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\Color;
@@ -1165,7 +1164,7 @@ if ($run == 2) {  // file provided
             $taxonParts = $parser->tokenize($import[$i][4]);
 
             $taxamatch[$i] = array();
-            $service = new jsonRPCClient($_OPTIONS['serviceTaxamatch']);
+            $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
             try {
                 //getMatchesService('vienna',$searchtext,array('showSyn'=>$showSynonyms,'NearMatch'=>false))
                 $matches = $service->getMatchesService('vienna',$taxonParts['genus'] . ' ' . $taxonParts['epithet'] . $ranks[$taxonParts['rank']] . $taxonParts['subepithet'],array('showSyn'=>false,'NearMatch'=>false));

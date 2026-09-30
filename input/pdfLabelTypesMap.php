@@ -1,11 +1,10 @@
 <?php
 //ini_set('memory_limit', '32M');
-
 session_start();
 require("inc/connect.php");
-require("inc/pdf_functions.php");
-
 require_once __DIR__ . '/vendor/autoload.php';
+
+use Jacq\PdfPrint;
 
 function makeText($id, $sub)  {
 
@@ -45,7 +44,7 @@ function makeText($id, $sub)  {
     $row = mysqli_fetch_array($result);
 
     $text['typus_lat'] = mb_convert_encoding($row['typus_lat'], 'ISO-8859-1', 'UTF-8');
-    $text['taxon'] = taxonWithHybrids($row, true);
+    $text['taxon'] = PdfPrint::taxonWithHybrids($row, true);
     $text['DT'] = $row['DallaTorreIDs'].$row['DallaTorreZusatzIDs'];
     $text['coll_short'] = strtoupper($row['coll_short_prj']);
 
@@ -89,7 +88,7 @@ function makeText($id, $sub)  {
       $result3 = dbi_query($sql3);
       $row3 = mysqli_fetch_array($result3);
       // BP, 08/2010: TODO: taxonWithHybrids expects $row['statusID'], but $row does not contain it. Problem???
-      $text['accName'] = "Annotationen: = ".taxonWithHybrids($row3);
+      $text['accName'] = "Annotationen: = ".PdfPrint::taxonWithHybrids($row3);
     }
     else
       $text['accName'] = "Annotationen: ";
@@ -104,7 +103,7 @@ function makeText($id, $sub)  {
     $result2 = dbi_query($sql2);
     $text['protolog'] = "";
     while ($row2=mysqli_fetch_array($result2))
-      $text['protolog'] .= protolog($row2)."\n";
+      $text['protolog'] .= PdfPrint::protolog($row2)."\n";
     $text['protolog'] = substr($text['protolog'],0,-1);
   }
   else
@@ -301,7 +300,7 @@ while ($row_ID=mysqli_fetch_array($result_ID)) {
         $pdf->SetTextColor(0);
 
         // BP, 08/2010: <ii> and <sm> should not occur when 'TCPDF' is set
-        //     so I guess I can ignore them. (see "pdf_functions.php" and search for "ii" or "sm")
+        //     so I guess I can ignore them.
         //     What I do need: when something is between <i></i> and <small></small>,
         //     it should be printed bold ==> add <b></b>!
         /* $pdf->SetStyle("p","Arial","B",14,"0,0,0",0);
@@ -324,7 +323,7 @@ while ($row_ID=mysqli_fetch_array($result_ID)) {
         $pdf->MultiCell(122.5,5,$labelText['protolog']);
 
         // BP, 08/2010: <ii> and <sm> should not occur when 'TCPDF' is set
-        //     so I guess I can ignore them. (see "pdf_functions.php" and search for "ii" or "sm")
+        //     so I guess I can ignore them.
         //     What I do need: when something is between <i></i> and <small></small>,
         //     it should be printed bold ==> add <b></b>!
         //$pdf->SetStyle("p","Arial","B",10,"0,0,0",0);

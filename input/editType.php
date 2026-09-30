@@ -1,7 +1,6 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
@@ -97,7 +96,7 @@ function makeSammler($search, $x, $y, $nr)
 
 <?php
 if (isset($_GET['new'])) {
-    $p_taxon = Tools::getScientificName(Tools::extractID($_GET['ID'], true));
+    $p_taxon = Tools::getScientificName(intval(Tools::extractID($_GET['ID'], true)));
     $p_series = $p_leg_nr = $p_alternate_number = $p_date = $p_duplicates = $p_annotation = "";
     $p_typecollID = $p_sammler = $p_sammler2 ="";
     $p_sammlerIndex = $p_sammler2Index = 0;

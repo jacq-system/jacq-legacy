@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
+use Jacq\Display;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\Tools;
@@ -17,12 +17,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "setSource");
 
 
 if (isset($_GET['new'])) {
-    $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-             author, author1, author2, author3, author4, author5,
-             epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-            FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-            WHERE taxonID = " . Tools::extractID($_GET['ID']);
-    $p_taxon = taxon(dbi_query($sql)->fetch_array());
+    $p_taxon = Display::taxon(intval(Tools::extractID($_GET['ID'], true)), true, false, true);
     $p_taxonAcc = $p_annotations = $p_tax_syn_ID = $p_taxonAccIndex = "";
     $p_preferred = 0;
     $p_source = "person";
@@ -52,27 +47,12 @@ if (isset($_GET['new'])) {
         $p_user        = $row['firstname'] . " " . $row['surname'];
         $p_ref_date    = $row['ref_date'];
 
-        $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-                 author,  author1,  author2,  author3,  author4,  author5,
-                 epithet, epithet1, epithet2, epithet3, epithet4, epithet5
-                FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-                WHERE taxonID = '" . $row['taxonID'] . "'";
-        $p_taxon = taxon(dbi_query($sql)->fetch_array());
+        $p_taxon = Display::taxon(intval($row['taxonID']), true, false, true);
 
-        $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-                 author, author1, author2, author3, author4, author5,
-                 epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-                FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-                WHERE taxonID = '" . $row['acc_taxon_ID'] . "'";
-        $p_taxonAcc = taxon(dbi_query($sql)->fetch_array());
+        $p_taxonAcc = Display::taxon(intval($row['acc_taxon_ID']), true, false, true);
         $p_taxonAccIndex = $row['acc_taxon_ID'];
 
- 	   $sql = "SELECT taxonID, genus, DallaTorreIDs, DallaTorreZusatzIDs,
-                author, author1, author2, author3, author4, author5,
-                epithet,epithet1,epithet2,epithet3,epithet4,epithet5
-               FROM {$_CONFIG['DATABASE']['VIEWS']['name']}.view_taxon
-               WHERE taxonID = '" . $row['source_specimenID'] . "'";
-        $p_source_specimen = taxon(dbi_query($sql)->fetch_array());
+        $p_source_specimen = Display::taxon(intval($row['source_specimenID']), true, false, true);
         $p_source_specimenIndex=$row['source_specimenID'];
 
         $p_source = $row['source'];
@@ -83,7 +63,8 @@ if (isset($_GET['new'])) {
                      LEFT JOIN tbl_lit_authors le ON le.autorID = l.editorsID
                      LEFT JOIN tbl_lit_authors la ON la.autorID = l.autorID
                     WHERE citationID = '" . $row['source_citationID'] . "'";
-            $p_sourceLit = protolog(dbi_query($sql)->fetch_array());
+            $row2 = dbi_query($sql)->fetch_array();
+            $p_sourceLit = Display::protolog($row2['citationID'], true);
             $p_sourceLitIndex = $row['source_citationID'];
             $p_sourcePers = $p_sourcePersIndex = $p_et_al = $p_sourceService = "";
         } elseif ($p_source == "service") {
@@ -191,6 +172,11 @@ if (isset($_GET['new'])) {
                     . "</script>\n"
                     . "</head><body></body></html>\n";
             die();
+        } else {
+            error_log("SQL-ERROR in editTaxSynonymy has been shown to the user.");
+            echo "<script language=\"JavaScript\">\n"
+                    . "  alert(\"" . $dbLink->error . "\");\n"
+                    . "</script>\n";
         }
     }
 }

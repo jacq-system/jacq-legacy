@@ -1,9 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\Display;
+use Jacq\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -420,7 +421,7 @@ function collectionItem($coll)
 <p>
 <?php
 if ($_SESSION['labelType'] == 1) {
-    $sql = "SELECT s.specimen_ID, tg.genus, s.digital_image, s.typusID, l.label,
+    $sql = "SELECT s.specimen_ID, s.taxonID, tg.genus, s.digital_image, s.typusID, l.label,
              c.Sammler, c2.Sammler_2, ss.series, s.series_number,
              s.Nummer, s.alt_number, s.Datum, s.Datum2, s.HerbNummer,
              n.nation_engl, p.provinz, s.Fundort, mc.collectionID, mc.collection, mc.coll_short, t.typus_lat,
@@ -526,16 +527,16 @@ if ($_SESSION['labelType'] == 1) {
            . "<tr class='out'>"
            . "<th class='out'></th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=a'>Taxon</a>" . sortItem($_SESSION['labelOrTyp'], 1) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=a'>Taxon</a>" . Display::sortItem($_SESSION['labelOrTyp'], 1) . "</th>"
            . "<th class='out'>"
-           . "<a href'" . $_SERVER['PHP_SELF'] . "?order=b'>Collector</a>" . sortItem($_SESSION['labelOrTyp'], 2) . "</th>"
+           . "<a href'" . $_SERVER['PHP_SELF'] . "?order=b'>Collector</a>" . Display::sortItem($_SESSION['labelOrTyp'], 2) . "</th>"
            . "<th class='out'>Date</th>"
            . "<th class='out'>X/Y</th>"
            . "<th class='out'>Location</th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=d'>Typus</a>" . sortItem($_SESSION['labelOrTyp'], 4) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=d'>Typus</a>" . Display::sortItem($_SESSION['labelOrTyp'], 4) . "</th>"
            . "<th class='out'>"
-           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=e'>Coll.</a>" . sortItem($_SESSION['labelOrTyp'], 5) . "</th>"
+           . "<a href='" . $_SERVER['PHP_SELF'] . "?order=e'>Coll.</a>" . Display::sortItem($_SESSION['labelOrTyp'], 5) . "</th>"
            . "<th class='out'>Type map Label</th>"
            . "<th class='out'>Type spec Label</th>"
            . "<th class='out'>Barcode Label</th>"
@@ -546,7 +547,7 @@ if ($_SESSION['labelType'] == 1) {
             $linkList[$nr] = $id = $row['specimen_ID'];
 
             if ($row['digital_image']) {
-                $target = getIiifLink($row['specimen_ID']);
+                $target = Tools::getIiifLink($row['specimen_ID']);
                 if ($target) {
                     $digitalImage = "<a href=\"javascript:showIiif('$target')\">"
                         . "<img border=\"0\" height=\"15\" src=\"webimages/logo-iiif.png\" width=\"15\">"
@@ -591,7 +592,7 @@ if ($_SESSION['labelType'] == 1) {
                . "<td class=\"out\">$digitalImage</td>"
                . "<td class=\"out\">"
                .  "<a href=\"editLabel.php?sel=" . htmlentities("<" . $row['specimen_ID'] . ">") . "&nr=$nr\">"
-               .  htmlspecialchars(taxonItem($row)) . "</a></td>"
+               .  htmlspecialchars(Display::taxon($row['taxonID'])) . "</a></td>"
                . "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>"
                . "<td class=\"outNobreak\">" . htmlspecialchars($row['Datum']) . "</td>"
                . $textLatLon

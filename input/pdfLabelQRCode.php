@@ -4,8 +4,6 @@ ini_set("max_execution_time","3600");
 
 session_start();
 require("inc/connect.php");
-require("inc/pdf_functions.php");
-
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Jacq\StableIdentifier;

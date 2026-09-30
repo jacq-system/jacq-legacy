@@ -16,7 +16,7 @@ class Display
      * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
      * @return string formatted taxon-string
      */
-    public static function taxon (int|string $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
+    public static function taxon(int|string $taxonID, bool $withSeperator = false, bool $withDT = false, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -27,7 +27,7 @@ class Display
                                    vt.`epithet3`, vt.`author3`, vt.`epithet4`, vt.`author4`, vt.`epithet5`, vt.`author5`, vt.`rank_abbr`
                                   FROM `herbar_view`.`view_taxon` vt
                                   WHERE vt.`taxonID` = :taxonID");
-            $dbst->execute(array(":taxonID" => $taxonID));
+            $dbst->execute(array(":taxonID" => intval($taxonID)));
             $row = $dbst->fetch();
 
             if (empty($row)) {  // unknown taxon-ID
@@ -117,7 +117,7 @@ class Display
      * @param bool $withID [optional] adds the taxonID between brackets at the end (default no)
      * @return string formatted taxon-string
      */
-    public static function taxonWithHybrids (int|string $taxonID, bool $withSeperator = false, bool $withID = false): string
+    public static function taxonWithHybrids(int|string $taxonID, bool $withSeperator = false, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -125,7 +125,7 @@ class Display
             $dbst = $db->prepare("SELECT taxon_ID_fk, parent_1_ID, parent_2_ID
                                   FROM tbl_tax_hybrids
                                   WHERE taxon_ID_fk = :taxonID");
-            $dbst->execute(array(":taxonID" => $taxonID));
+            $dbst->execute(array(":taxonID" => intval($taxonID)));
             $rows = $dbst->fetchAll();
             if (count($rows) > 0) {
                 return self::taxon($rows[0]['parent_1_ID'], $withSeperator) . " x " . self::taxon($rows[0]['parent_2_ID']) . (($withID) ? " <" . $rows[0]['taxon_ID_fk'] . ">" : "");
@@ -146,7 +146,7 @@ class Display
      * @param bool $withID adds the citationID between brackets at the end (default no)
      * @return string formatted protolog-string
      */
-    public static function protolog (int|string $citationID, bool $withID = false): string
+    public static function protolog(int|string $citationID, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -193,7 +193,7 @@ class Display
      * @param int|string $synonymID synonym-ID
      * @return string formatted synonymy-reference-string
      */
-    public static function SynonymyReference (int|string $synonymID): string
+    public static function SynonymyReference(int|string $synonymID): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');

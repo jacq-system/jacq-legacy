@@ -1,9 +1,9 @@
 <?php
 session_start();
 require("../inc/connect.php");
-require("../inc/herbardb_input_functions.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\Display;
 use Jacq\Permission;
 use Jacq\Tools;
 use Jaxon\Jaxon;
@@ -327,7 +327,7 @@ function projectChanged ($formValues)
     if ($result && mysqli_num_rows($result) > 0) {
         while ($row = mysqli_fetch_array($result)) {
             $selectSource .= "  <option value='literature_" . $row['citationID'] . "'>literature: "
-                           . htmlspecialchars(protolog($row))
+                           . htmlspecialchars(Display::protolog($row['citationID'], true))
                            . "</option>\n";
         }
     }

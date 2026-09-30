@@ -13,6 +13,11 @@ function callUpdateGgbnIdentifier()
     jaxon_updateGgbnIdentifier(currentSpecimenId);
 }
 
+function callUpdateGbifIssues()
+{
+    jaxon_updateGbifIssues(currentSpecimenId);
+}
+
 function showInstitutionChangeDialog(originalValue)
 {
     const $inst = $('[name="institution"]');
@@ -791,10 +796,11 @@ $(function()
         });
     });
 
+    setTimeout(callUpdateGbifIssues, 0);
+    setTimeout(callUpdateGgbnIdentifier, 0);
+
     $('#taxonIndex').change(function() {
         setTimeout(callUpdateNomService, 0);
     } );
     setTimeout(callUpdateNomService, 0);
-
-    setTimeout(callUpdateGgbnIdentifier, 0);
 });

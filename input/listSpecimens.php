@@ -1,10 +1,10 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Api;
+use Jacq\Display;
 use Jacq\Permission;
 use Jaxon\Jaxon;
 
@@ -75,6 +75,7 @@ if (isset($_POST['resetFilters'])) {
     $_SESSION['sHabitat']          = '';
     $_SESSION['sHabitus']          = '';
     $_SESSION['sBemerkungen']      = '';
+    $_SESSION['sBemerkungenFull']  = 0;
     $_SESSION['sNotesInternal']    = '';
     $_SESSION['sTyp']              = '';
     $_SESSION['sSynonyms']         = '';
@@ -112,6 +113,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = '';  // = $_POST['habitat'];
         $_SESSION['sHabitus']          = '';  // = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = '';  // = $_POST['annotations'];
+        $_SESSION['sBemerkungenFull']  = 0;
         $_SESSION['sNotesInternal']    = '';
 		$_SESSION['sTyp']              = '';  // = (($_POST['typ']=="only"='' ? true : false='';
         $_SESSION['sSynonyms']         = '';
@@ -139,6 +141,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
         $_SESSION['sHabitat']          = $_POST['habitat'];
         $_SESSION['sHabitus']          = $_POST['habitus'];
 		$_SESSION['sBemerkungen']      = $_POST['annotations'];
+        $_SESSION['sBemerkungenFull']  = (isset($_POST['annotationsFull']) ? 1 : 0);
         $_SESSION['sNotesInternal']    = $_POST['notes_internal'];
 
 		$_SESSION['sTyp']         = (($_POST['typ']=="only") ? true : false);
@@ -162,6 +165,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sBemerkungenFull'] = 0;
     $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sUserID'] = (Permission::has('specimensHistory')) ? $_POST['userID'] : (($_POST['userID'] != $_SESSION['uid']) ? -1 : $_SESSION['uid']);
@@ -175,6 +179,7 @@ if (isset($_POST['search']) || isset($_GET['taxonID'])  ) {
     $_SESSION['sTyp'] = $_SESSION['sSynonyms'] = $_SESSION['sImages'] = $_SESSION['sAccessible'] = $_SESSION['sCoordinates'] = $_SESSION['sGeoGeneral'] = $_SESSION['sGeoRegion'] = "";
     $_SESSION['sHabitat'] = $_SESSION['sHabitus'] = "";
     $_SESSION['sBemerkungen'] = "";
+    $_SESSION['sBemerkungenFull'] = 0;
     $_SESSION['sNotesInternal'] = "";
 
     $_SESSION['sLabelDate'] = $_POST['label_date'];
@@ -655,7 +660,10 @@ jaxon_checkTypeLabelMapPdfButton();
   <td align="right">&nbsp;<b>State/Province&nbsp;</b></td>
     <td><input type="text" name="province" value="<?php echo htmlspecialchars($_SESSION['sProvince'] ?? ''); ?>"></td>
   <td align="right">&nbsp;<b>Annotation&nbsp;</b></td>
-    <td><input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>" placeholder="use % as Joker"></td>
+    <td style="white-space: nowrap;">
+      <input type="text" name="annotations" value="<?php echo htmlspecialchars($_SESSION['sBemerkungen'] ?? ''); ?>">
+      <input type="checkbox" name="annotationsFull" title="Fulltext search"<?php if (!empty($_SESSION['sBemerkungenFull'])) { echo " checked"; } ?>>
+    </td>
   <td align="right">&nbsp;<b>Habitus&nbsp;</b></td>
     <td><input type="text" name="habitus" value="<?php echo htmlspecialchars($_SESSION['sHabitus'] ?? ''); ?>"></td>
 </tr><tr>
@@ -915,7 +923,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
         echo "<p>\n";
 
         $searchDate = dbi_escape_string(trim($_SESSION['sLabelDate']));
-        $sql = "SELECT ls.specimenID, s.typusID, l.label,
+        $sql = "SELECT ls.specimenID, s.typusID, s.taxonID, l.label,
                  tg.genus,
                  ta.author, ta1.author author1, ta2.author author2, ta3.author author3,
                  ta4.author author4, ta5.author author5,
@@ -958,11 +966,11 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             echo "<table class=\"out\" cellspacing=\"0\">\n";
             echo "<tr class=\"out\">";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . sortItem($_SESSION['sOrTyp'], 1) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=a\">Taxon</a>" . Display::sortItem($_SESSION['sOrTyp'], 1) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . sortItem($_SESSION['sOrTyp'], 2) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=b\">Collector</a>" . Display::sortItem($_SESSION['sOrTyp'], 2) . "</th>";
             echo "<th class=\"out\">"
-               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . sortItem($_SESSION['sOrTyp'], 5) . "</th>";
+               . "<a href=\"" . $_SERVER['PHP_SELF'] . "?order=e\">Coll.</a>" . Display::sortItem($_SESSION['sOrTyp'], 5) . "</th>";
             echo "<th class=\"out\">Type map Label</th>";
             echo "<th class=\"out\">Type spec Label</th>";
             echo "<th class=\"out\">Barcode Label</th>";
@@ -972,7 +980,7 @@ if ($_SESSION['sType'] == 1) {  // list specimens
             while ($row = mysqli_fetch_array($result)) {
                 $linkList[$nr] = $id = $row['specimenID'];
                 echo "<tr class=\"" . (($nrSel == $nr) ? "outMark" : "out") . "\">\n";
-                echo "<td class=\"out\"><a href=\"editSpecimens.php?sel=" . htmlentities("<$id>") . "&nr=$nr\">" . htmlspecialchars(taxonItem($row)) . "</a></td>\n";
+                echo "<td class=\"out\"><a href=\"editSpecimens.php?sel=" . htmlentities("<$id>") . "&nr=$nr\">" . htmlspecialchars(Display::taxon($row['taxonID'])) . "</a></td>\n";
                 echo "<td class=\"out\">" . htmlspecialchars(collectorItem($row)) . "</td>\n";
                 echo "<td class=\"outCenter\" title=\"" . htmlspecialchars($row['collection']) . "\">"
                    . htmlspecialchars($row['coll_short']) . " " . htmlspecialchars($row['HerbNummer']) . "</td>\n";

@@ -1,7 +1,7 @@
 <?php
 session_start();
 require("inc/connect.php");
-require("inc/herbardb_input_functions.php");
+require __DIR__ . '/vendor/autoload.php';
 
 
 function rom2arab ($r)
