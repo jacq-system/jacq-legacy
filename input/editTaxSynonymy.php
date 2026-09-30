@@ -172,6 +172,11 @@ if (isset($_GET['new'])) {
                     . "</script>\n"
                     . "</head><body></body></html>\n";
             die();
+        } else {
+            error_log("SQL-ERROR in editTaxSynonymy has been shown to the user.");
+            echo "<script language=\"JavaScript\">\n"
+                    . "  alert(\"" . $dbLink->error . "\");\n"
+                    . "</script>\n";
         }
     }
 }
