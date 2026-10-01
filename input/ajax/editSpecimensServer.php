@@ -83,6 +83,34 @@ function jsonGetGeoNames($searchtext)
 }
 
 /**
+ * jaxon-function makeProvinceDropdown
+ *
+ * changes the dropdown "Province" when a new Country was chosen
+ *
+ * @return Response
+ */
+function makeProvinceDropdown ($nation)
+{
+    global $response;
+
+    $options = "<option value=\"0\"></option>option>";
+    $result = dbi_query("SELECT provinz, provinceID, usgs_number
+                         FROM tbl_geo_province
+                         WHERE nationID = " . intval($nation) . "
+                         ORDER BY provinz");
+    if ($result && mysqli_num_rows($result) > 0) {
+        while ($row = mysqli_fetch_array($result)) {
+            $options .= "<option value=\"{$row['provinceID']}\">"
+                      . htmlspecialchars($row['provinz'] . (($row['usgs_number']) ? " ({$row['usgs_number']})" : ''), ENT_QUOTES, 'UTF-8')
+                      . "</option>";
+        }
+    }
+    $response->assign("province", "innerHTML", $options);
+
+    return $response;
+}
+
+/**
  * jaxon-function toggleLanguage
  *
  * changes the apropriate Fields from local language to english
@@ -867,6 +895,7 @@ function updateNomService($taxonID)
 /**
  * register all jaxon-functions in this file
  */
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeProvinceDropdown");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");

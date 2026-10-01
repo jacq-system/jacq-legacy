@@ -76,6 +76,10 @@ class Cssf
         $this->doEcho = $doEcho;
     }
 
+    public function setNameIsID(bool $nameIsID): void
+    {
+        $this->nameIsID = $nameIsID;
+    }
 
     /**
      * prints any necessary javascript code
@@ -258,12 +262,19 @@ class Cssf
         print "></div>\n";
     }
 
-    public function dropdown($x, $y, $name, $select, $value, $text, $bgcol = "", $disabled = ""): void
+    public function dropdown($x, $y, $name, $select, $value, $text, $width = 0, $bgcol = "", $disabled = ""): void
     {
         $this->_divclass($x, $y, "cssfinput");
         print "<select tabindex=\"$this->tabindex\" class=\"cssf\"";
+        $style = "";
         if ($bgcol) {
-            print " style=\"background-color: $bgcol;\"";
+            $style .= "background-color: $bgcol;";
+        }
+        if ($width) {
+            $style .= "width: {$width}em;max-width: {$width}em;";
+        }
+        if ($style) {
+            print " style=\"$style\"";
         }
         if ($this->nameIsID) {
             print " id=\"$name\"";

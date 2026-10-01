@@ -13,6 +13,7 @@ use Jacq\Settings;
 $jaxon = jaxon();
 $jaxon->setOption('core.request.uri', 'ajax/editSpecimensServer.php');
 
+$jaxon->register(Jaxon::CALLABLE_FUNCTION, "makeProvinceDropdown");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "toggleLanguage");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonames");
 $jaxon->register(Jaxon::CALLABLE_FUNCTION, "searchGeonamesService");   // search for label **
@@ -910,21 +911,23 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 $y += 1.25;
 $cf->label(11, $y, "Country");
 if (Permission::has('specim')) {
-    $cf->dropdown(11, $y, "nation\" onchange=\"reload=true; self.document.f.submit();", $p_nation, $nation[0], $nation[1]);
+    $cf->dropdown(11, $y, "nation\" onchange=\"jaxon_makeProvinceDropdown(document.f.nation.value);", $p_nation, $nation[0], $nation[1]);
 } else {
     $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
 }
 $cf->label(49, $y, "Province");
-$provinceOptions = '';
-for ($i = 0; $i < count($province[0]); $i++) {
-    $value = htmlspecialchars($province[0][$i], ENT_QUOTES, 'UTF-8');
-    $label = htmlspecialchars($province[1][$i], ENT_QUOTES, 'UTF-8');
-    $selected = ($province[0][$i] == $p_province) ? ' selected' : '';
-    $provinceOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
-}
-echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; text-align: right; white-space: nowrap;'>"
-   . "<select name=\"province\" id=\"province\" style=\"width: 100%; max-width: 16.5em;\">{$provinceOptions}</select>"
-   . "</div>\n";
+//$provinceOptions = '';
+//for ($i = 0; $i < count($province[0]); $i++) {
+//    $value = htmlspecialchars($province[0][$i], ENT_QUOTES, 'UTF-8');
+//    $label = htmlspecialchars($province[1][$i], ENT_QUOTES, 'UTF-8');
+//    $selected = ($province[0][$i] == $p_province) ? ' selected' : '';
+//    $provinceOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
+//}
+//echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; text-align: right; white-space: nowrap;'>"
+//   . "<select name=\"province\" id=\"province\" style=\"width: 100%; max-width: 16.5em;\">{$provinceOptions}</select>"
+//   . "</div>\n";
+$cf->setNameIsID(true);
+$cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1], "16.5");
 
 $y += 2;
 $cf->label(11, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
