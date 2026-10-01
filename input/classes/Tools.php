@@ -207,7 +207,7 @@ class Tools
         $unitID = $rowSpecimen['source_code'];
         if (!empty($rowSpecimen['HerbNummer'])) {
             // first check on collectionID and presence of a replace char
-            $result = $db->queryCatch("SELECT digits, replace_char
+            $result = $db->queryCatch("SELECT digits, replace_char, replace_with
                                        FROM tbl_labels_numbering
                                        WHERE replace_char IS NOT NULL
                                         AND collectionID_fk = {$rowSpecimen['collectionID']}");
@@ -233,7 +233,7 @@ class Tools
                     $row = $result->fetch_array();
                 } else {
                     // now check on sourceID and presence of a replace char
-                    $result = $db->queryCatch("SELECT digits, replace_char
+                    $result = $db->queryCatch("SELECT digits, replace_char, replace_with
                                                FROM tbl_labels_numbering
                                                WHERE collectionID_fk IS NULL
                                                 AND replace_char IS NOT NULL
@@ -267,10 +267,12 @@ class Tools
             }
             $digits  = $row['digits'];
             $replace = $row['replace_char'];
+            $replace_with = $row['replace_with'] ?? '';
 
             if ($replace) {
-                $parts = explode($replace, $rowSpecimen['HerbNummer'], 2);
-                $unitID .= $parts[0] . sprintf("%0{$digits}d", $parts[1]);
+                $parts = explode($replace, $rowSpecimen['HerbNummer']);
+                $last = array_pop($parts);
+                $unitID .= implode($replace_with, $parts) . $replace_with . sprintf("%0{$digits}d", $last);
             } else {
                 $unitID .= sprintf("%0{$digits}d", $rowSpecimen['HerbNummer']);
             }
