@@ -4,10 +4,10 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Display;
+use Jacq\JsonRPCClient_v1;
 use Jacq\Permission;
 use Jacq\Settings;
 use Jacq\Tools;
-use org\jsonrpcphp\JsonRPCClient;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -221,7 +221,7 @@ function dumpMatchJsonRPC($searchtext)
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
+    $service = new JsonRPCClient_v1($settings->get('serviceTaxamatch'));
 
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
@@ -254,7 +254,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
     $searchtext = ucfirst(trim($searchtext));
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
-    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
+    $service = new JsonRPCClient_v1($settings->get('serviceTaxamatch'));
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if ($useNearMatch) {

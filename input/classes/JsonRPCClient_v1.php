@@ -21,13 +21,15 @@ along with JSON-RPC PHP; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
+namespace Jacq;
 /**
  * The object of this class are generic jsonRPC 1.0 clients
  * http://json-rpc.org/wiki/specification
  *
  * @author sergio <jsonrpcphp@inservibile.org>
  */
-class jsonRPCClient {
+class JsonRPCClient_v1
+{
 
     /**
      * Debug state
@@ -78,7 +80,8 @@ class jsonRPCClient {
      * @param string $url
      * @param boolean $debug
      */
-    public function __construct($url, $debug = false) {
+    public function __construct($url, $debug = false)
+    {
         // server URL
         $this->url = $url;
         // proxy
@@ -94,7 +97,8 @@ class jsonRPCClient {
      *
      * @param boolean $notification
      */
-    public function setRPCNotification($notification) {
+    public function setRPCNotification($notification)
+    {
         empty($notification) ?
             $this->notification = false
             :
@@ -102,17 +106,21 @@ class jsonRPCClient {
     }
 
 
-    public function setRPCTimeouts($connectTimeout, $requestTimeout) {
+    public function setRPCTimeouts($connectTimeout, $requestTimeout)
+    {
         $this->connectTimeout = max(1, intval($connectTimeout));
         $this->requestTimeout = max(1, intval($requestTimeout));
     }
-    private function isLocalEnvironment() {
+
+    private function isLocalEnvironment()
+    {
         $hostHeader = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
         $normalizedHost = strtolower(preg_replace('/:.*/', '', $hostHeader));
         return in_array($normalizedHost, array('localhost', '127.0.0.1', '::1'), true);
     }
 
-    private function requestViaCurl($request, &$transportError = null) {
+    private function requestViaCurl($request, &$transportError = null)
+    {
         if (!function_exists('curl_init')) {
             $transportError = 'cURL extension not available';
             return false;
@@ -139,7 +147,8 @@ class jsonRPCClient {
         return $response;
     }
 
-    private function requestViaStream($request, &$transportError = null) {
+    private function requestViaStream($request, &$transportError = null)
+    {
         $verifySsl = !$this->isLocalEnvironment();
         $opts = array(
             'http' => array(
@@ -186,7 +195,8 @@ class jsonRPCClient {
      * @param array $params
      * @return array
      */
-    public function __call($method, $params) {
+    public function __call($method, $params)
+    {
         $debug = '';
 
         // check

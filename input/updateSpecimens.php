@@ -3,10 +3,10 @@ session_start();
 require('inc/connect.php');
 require __DIR__ . '/vendor/autoload.php';
 
+use Jacq\JsonRPCClient_v1;
 use Jacq\Log;
 use Jacq\Permission;
 use Jacq\TaxonTokenizer;
-use \org\jsonrpcphp\JsonRPCClient;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const UPDATE_PROCESS_SESSION_KEY = 'update_specimens_process';
@@ -1125,7 +1125,7 @@ function getSimilarTaxaSuggestions($taxonText)
 
     $suggestions = array();
     $lookupCount++;
-    $service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
+    $service = new JsonRPCClient_v1($_OPTIONS['serviceTaxamatch']);
     if (method_exists($service, 'setRPCTimeouts')) {
         $service->setRPCTimeouts(1, 2);
     }

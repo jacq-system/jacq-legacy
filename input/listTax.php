@@ -8,8 +8,8 @@ use Jacq\DbAccess;
 use Jacq\Display;
 use Jacq\Tools;
 use Jacq\Permission;
+use Jacq\JsonRPCClient_v1;
 use Jaxon\Jaxon;
-use org\jsonrpcphp\JsonRPCClient;
 
 $jaxon = jaxon();
 $jaxon->app()->setup(__DIR__ . '/inc/jacqJaxonConfig.php');
@@ -306,7 +306,7 @@ function dumpMatchJsonRPC($searchtext): string
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
     $settings = Settings::Load();
-    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
+    $service = new JsonRPCClient_v1($settings->get('serviceTaxamatch'));
 
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
@@ -355,7 +355,7 @@ function showMatchJsonRPCClickable($searchtext, $selectedRow=1,$useNearMatch=fal
     if (substr($searchtext, 0, 3) == chr(0xef) . chr(0xbb) . chr(0xbf)) $searchtext = substr($searchtext, 3);
 
     $settings = Settings::Load();
-    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
+    $service = new JsonRPCClient_v1($settings->get('serviceTaxamatch'));
     try {
         $matches = $service->getMatchesService('vienna',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
         if ($useNearMatch) {
@@ -1171,7 +1171,7 @@ if ($_SESSION['taxMDLD'] != "") {   // list MDLD search results
     $searchtext = strtolower(trim($_SESSION['taxCommonname']));
 
     $settings = Settings::Load();
-    $service = new JsonRPCClient($settings->get('serviceTaxamatch'));
+    $service = new JsonRPCClient_v1($settings->get('serviceTaxamatch'));
     try {
 
         $matches = $service->getMatchesService('vienna_common',$searchtext,array('showSyn'=>false,'NearMatch'=>false));
