@@ -4,9 +4,9 @@ require_once('../inc/connect.php');
 require_once('../inc/mapLines.php');
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\JsonRPCClient_v1;
 use Jacq\Log;
 use Jacq\Tools;
-use org\jsonrpcphp\JsonRPCClient;
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;
@@ -129,7 +129,7 @@ AND(
 ";
 		//mdld
 		}else if(isset($_POST['mdldSearch']) && strlen($_POST['mdldSearch'])>0){
-			$service = new JsonRPCClient($_OPTIONS['serviceTaxamatch']);
+			$service = new JsonRPCClient_v1($_OPTIONS['serviceTaxamatch']);
 			try {
 				$matches = $service->getMatchesService('vienna',$_POST['mdldSearch'],array('showSyn'=>false,'NearMatch'=>false));
 

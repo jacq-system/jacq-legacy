@@ -2,10 +2,9 @@
 
 namespace Jacq;
 
-use org\jsonrpcphp\JsonRPCClient;
 use Exception;
 
-class JacqServletRPCClient extends JsonRPCClient
+class JacqServletRPCClient extends JsonRPCClient_v1
 {
     /********************\
     |                    |

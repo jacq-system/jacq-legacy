@@ -2,9 +2,7 @@
 
 namespace Jacq;
 
-use org\jsonrpcphp\JsonRPCClient;
-
-class InternMDLDService extends JsonRPCClient
+class InternMDLDService extends JsonRPCClient_v1
 {
     /********************\
     |                    |

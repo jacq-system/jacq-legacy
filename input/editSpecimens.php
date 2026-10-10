@@ -789,19 +789,17 @@ $cf->text(67, $y + 1.6, implode("&nbsp;", $identifierIcons));
 
 
 $y += 2;
-//$institution = mysqli_fetch_array(dbi_query("SELECT coll_short_prj FROM tbl_management_collections WHERE collectionID='$p_collection'"));
 $cf->labelMandatory(11, $y, 9, "Institution");
-//$cf->text(9,$y,"&nbsp;".strtoupper($institution['coll_short_prj']));
 $institutionDropdownAttr = (!empty($p_specimen_ID) && $edit)
     ? "institution"
     : "institution\" onchange=\"reload=true; self.document.f.submit();";
-$cf->dropdown(11, $y, $institutionDropdownAttr, $p_institution, $institution[0], $institution[1]);
+$cf->dropdown(11, $y, $institutionDropdownAttr, $p_institution, $institution[0], $institution[1], 5);
 
 $cf->labelMandatory(23, $y, 6, "HerbarNr.");
 $cf->inputText(23, $y, 10, "HerbNummer", $p_HerbNummer, 100);
 
 $cf->labelMandatory(40.5, $y, 6, "Collection");
-$cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1]);
+$cf->dropdown(40.5, $y, "collection", $p_collection, $collection[0], $collection[1], 15);
 $cf->label(59, $y, "Nr.");
 $cf->inputText(59, $y, 5.7, "CollNummer", $p_CollNummer, 25);
 
@@ -809,39 +807,22 @@ $y += 2;
 $cf->label(11, $y, "links", "#\" onclick=\"jaxon_editLink('$p_specimen_ID');\" onmouseover=\"return overlib(linktext, STICKY, CAPTION, 'Links to', MOUSEOFF, FGCOLOR, '#008000', DELAY, 500);\" onmouseout=\"return nd();");
 $cf->label(41, $y, "T", "javascript:editSpecimensTypes('$p_specimen_ID')");
 $cf->label(44, $y, "type");
-$typusOptions = '';
-for ($i = 0; $i < count($typus[0]); $i++) {
-    $value = htmlspecialchars($typus[0][$i], ENT_QUOTES, 'UTF-8');
-    $label = htmlspecialchars($typus[1][$i], ENT_QUOTES, 'UTF-8');
-    $selected = ($typus[0][$i] == $p_typus) ? ' selected' : '';
-    $typusOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
-}
-echo "<div style='position:absolute; left: 44em; top: {$y}em; width: 21.5em; text-align: right; white-space: nowrap;'>";
-echo "  <select name=\"typus\" id=\"typus\" style=\"width: 100%; max-width: 21.5em;\">{$typusOptions}</select>";
-echo "</div>\n";
+$cf->dropdown(44, $y, "typus", $p_typus, $typus[0], $typus[1], 21.5);
 
 $y += 2;
 $cf->label(11, $y,"Status");
-$cf->dropdown(11, $y, "identstatus", $p_identstatus, $identstatus[0], $identstatus[1]);
+$cf->dropdown(11, $y, "identstatus", $p_identstatus, $identstatus[0], $identstatus[1], 8);
 
 $cf->label(25, $y, "Garden");
 $cf->inputText(25, $y, 11, "garten", $p_garten, 50);
 
-echo "<img border=\"1\" height=\"16\" src=\"webimages/ncbi.gif\" width=\"14\" ".
-     "style=\"position:absolute; left:37.5em; top:" . ($y + 0.2) . "em; z-index:10;\" \"";
-if ($p_ncbi) echo " title=\"$p_ncbi\"";
-echo " onclick=\"editNCBI($p_specimen_ID)\">\n";
+echo "<img border=\"1\" height=\"16\" src=\"webimages/ncbi.gif\" width=\"14\" "
+   . "style=\"position:absolute; left:37.5em; top:" . ($y + 0.2) . "em; z-index:10;\" \""
+   . (($p_ncbi) ? " title=\"$p_ncbi\"" : '')
+   . " onclick=\"editNCBI($p_specimen_ID)\">\n";
+
 $cf->label(44, $y, "voucher","javascript:editVoucher()");
-$voucherOptions = '';
-for ($i = 0; $i < count($voucher[0]); $i++) {
-    $value = htmlspecialchars($voucher[0][$i], ENT_QUOTES, 'UTF-8');
-    $label = htmlspecialchars($voucher[1][$i], ENT_QUOTES, 'UTF-8');
-    $selected = ($voucher[0][$i] == $p_voucher) ? ' selected' : '';
-    $voucherOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
-}
-echo "<div style='position:absolute; left: 44em; top: {$y}em; width: 21.5em; text-align: right; white-space: nowrap;'>";
-echo "  <select name=\"voucher\" id=\"voucher\" style=\"width: 100%; max-width: 21.5em;\">$voucherOptions</select>";
-echo "</div>\n";
+$cf->dropdown(44, $y, "voucher", $p_voucher, $voucher[0], $voucher[1], 21.5);
 
 $y += 2;
 if (Permission::has('species') || Permission::has('linkTaxon')) {
@@ -911,23 +892,13 @@ echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\">
 $y += 1.25;
 $cf->label(11, $y, "Country");
 if (Permission::has('specim')) {
-    $cf->dropdown(11, $y, "nation\" onchange=\"jaxon_makeProvinceDropdown(document.f.nation.value);", $p_nation, $nation[0], $nation[1]);
+    $cf->dropdown(11, $y, "nation\" onchange=\"jaxon_makeProvinceDropdown(document.f.nation.value);", $p_nation, $nation[0], $nation[1], 30);
 } else {
-    $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1]);
+    $cf->dropdown(11, $y, "nation", $p_nation, $nation[0], $nation[1], 30);
 }
 $cf->label(49, $y, "Province");
-//$provinceOptions = '';
-//for ($i = 0; $i < count($province[0]); $i++) {
-//    $value = htmlspecialchars($province[0][$i], ENT_QUOTES, 'UTF-8');
-//    $label = htmlspecialchars($province[1][$i], ENT_QUOTES, 'UTF-8');
-//    $selected = ($province[0][$i] == $p_province) ? ' selected' : '';
-//    $provinceOptions .= "<option value=\"{$value}\"{$selected}>{$label}</option>";
-//}
-//echo "<div style='position:absolute; left: 49em; top: {$y}em; width: 16.5em; text-align: right; white-space: nowrap;'>"
-//   . "<select name=\"province\" id=\"province\" style=\"width: 100%; max-width: 16.5em;\">{$provinceOptions}</select>"
-//   . "</div>\n";
 $cf->setNameIsID(true);
-$cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1], "16.5");
+$cf->dropdown(49, $y, "province", $p_province, $province[0], $province[1], 16.5);
 
 $y += 2;
 $cf->label(11, $y, "geonames","#\" onclick=\"jaxon_searchGeonames(document.f.Bezirk.value);");
@@ -963,14 +934,13 @@ $cf->inputText(32.5, $y, 1.5, "lon_min", $p_lon_min, 5);
 $cf->text(35, $y - 0.3, "<span style='font-size: larger; '>&prime;</span>");
 $cf->inputText(36, $y, 1.5, "lon_sec", $p_lon_sec, 5);
 $cf->text(38.5, $y - 0.3, "<span style='font-size: larger; '>&Prime;</span>");
-$cf->dropdown(39.5, $y, "lon", $p_lon, array("W", "E"), array("W", "E"), '');
+$cf->dropdown(39.5, $y, "lon", $p_lon, array("W", "E"), array("W", "E"));
 
 echo "<div style='position:absolute; left: 43.5em; top: {$y}em'><button id='del_latLon'></button></div>";
 echo "<div style='position:absolute; left: 46.5em; top: {$y}em; z-index: 10'><button id='open_latLonQuDialog'></button></div>";
 
 $cf->label(57, $y, "exactn. (m)");
 $cf->inputText(57, $y, 8, "exactness", $p_exactness, 30);
-//$cf->dropdown(48,$y,"exactness",$p_exactness,$exactness[0],$exactness[1]);
 
 $y += 1.75;
 echo "<div style=\"position: absolute; left: 1em; top: {$y}em; width: 63.5em;\"><hr></div>\n";
@@ -997,7 +967,6 @@ $cf->textarea(11, $y, 54, 2.4, "Bemerkungen", $p_Bemerkungen);
 
 $y += 3.5; // in Summe 50.5
 if (Permission::has('specim')) {
-    //$cf->buttonSubmit(16, $y, "reload", " Reload \" onclick=\"reloadButtonPressed()");
     if ($p_specimen_ID) {
         if ($edit) {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
@@ -1007,15 +976,11 @@ if (Permission::has('specim')) {
             $cf->buttonJavaScript(16, $y, " Reset ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">'");
             $cf->buttonJavaScript(31, $y, " Edit ", "self.location.href='editSpecimens.php?sel=<" . $p_specimen_ID . ">&edit=1'");
         }
-        //$cf->buttonSubmit(47, $y, "submitNewCopy", " New &amp; Copy");
         $cf->buttonJavaScript(58.5, $y, " New &amp; Copy", "doSubmit( 'submitNewCopy' );", "", "submitNewCopy" );
     } else {
         $cf->buttonReset(22, $y, " Reset ");
-//        $cf->buttonSubmit(31, $y, "submitUpdate", " Insert ", "", "doSubmit();");
         $cf->buttonJavaScript( 31, $y, " Insert ", "doSubmit( 'submitUpdate' );", "", "submitUpdate" );
-//        $cf->buttonSubmit(37, $y, "submitUpdateCopy", " Insert &amp; Copy", "", "doSubmit();");
         $cf->buttonJavaScript(37, $y, " Insert &amp; Copy", "doSubmit( 'submitUpdateCopy' );", "", "submitUpdateCopy" );
-//        $cf->buttonSubmit(47, $y, "submitUpdateNew", " Insert &amp; New", "", "doSubmit();");
         $cf->buttonJavaScript(58.5, $y, " Insert &amp; New", "doSubmit( 'submitUpdateNew' );", "", "submitUpdateNew" );
     }
 }

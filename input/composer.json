@@ -6,7 +6,6 @@
     "guzzlehttp/guzzle": "^7.0",
     "tecnickcom/tcpdf": "^6.4.4",
     "chillerlan/php-qrcode": "^6.0",
-    "weberhofer/jsonrpcphp": "~2",
     "ext-mysqli": "*",
     "ext-curl": "*",
     "ext-json": "*",
