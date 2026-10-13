@@ -312,31 +312,33 @@ function getPicInfo($picdetails)
 
         // Create a client instance and send requests to jacq-servlet
         try {
-            $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
-                'json'   => ['method' => 'listResources',
-                             'params' => [$picdetails['key'],
-                                            [ $picdetails['filename'],
-                                              $picdetails['filename'] . "_%",
-                                              $picdetails['filename'] . "A",
-                                              $picdetails['filename'] . "B",
-                                              "tab_" . $picdetails['specimenID'],
-                                              "obs_" . $picdetails['specimenID'],
-                                              "tab_" . $picdetails['specimenID'] . "_%",
-                                              "obs_" . $picdetails['specimenID'] . "_%"
-                                            ]
-                                         ],
-                             'id'     => 1
-                            ],
-                'verify' => false
-            ]);
-            $data = json_decode($response1->getBody()->getContents(), true);
-            if (!empty($data['result'])) {
-                $return['pics'] = $data['result'];
-            }
-            if (!empty($data['error'])) {
-                throw new Exception($data['error']);
-            } elseif (empty($data['result'][0])) {
-                throw throw new Exception("FAIL: '{$picdetails['filename']}' returned empty result");
+            if (!str_starts_with($picdetails['filename'], 'w_')) {
+                $response1 = $client->request('POST', $picdetails['url'] . 'jacq-servlet/ImageServer', [
+                    'json' => ['method' => 'listResources',
+                        'params' => [$picdetails['key'],
+                            [$picdetails['filename'],
+                                $picdetails['filename'] . "_%",
+                                $picdetails['filename'] . "A",
+                                $picdetails['filename'] . "B",
+                                "tab_" . $picdetails['specimenID'],
+                                "obs_" . $picdetails['specimenID'],
+                                "tab_" . $picdetails['specimenID'] . "_%",
+                                "obs_" . $picdetails['specimenID'] . "_%"
+                            ]
+                        ],
+                        'id' => 1
+                    ],
+                    'verify' => false
+                ]);
+                $data = json_decode($response1->getBody()->getContents(), true);
+                if (!empty($data['result'])) {
+                    $return['pics'] = $data['result'];
+                }
+                if (!empty($data['error'])) {
+                    throw new Exception($data['error']);
+                } elseif (empty($data['result'][0])) {
+                    throw throw new Exception("FAIL: '{$picdetails['filename']}' returned empty result");
+                }
             }
             // since the error-response is JSON-RPC v.1 instead ov v.2.0 we can't use this client
 //            $service = new JsonRPC\Client($url);
