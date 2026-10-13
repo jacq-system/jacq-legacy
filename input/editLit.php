@@ -542,7 +542,7 @@ EOF;
 // only show edit link if we have a valid citation
 if( $p_citationID ) {
 $cf->inputMapLines(52,2.5,1,'edit TaxSynonymy',$title,'index_jq_autocomplete.php?field=taxon2',
-'index_jq_autocomplete.php?field=taxon2','ajax/MapLines_editLit.php',$serverParams,$searchjs,$searchhtml,2);
+'index_jq_autocomplete.php?field=taxon2','ajax/editLitMapLines.php',$serverParams,$searchjs,$searchhtml,2);
 }
 
 
