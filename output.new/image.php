@@ -163,7 +163,9 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
         switch ($format) {
             case 'jpeg2000':
                 $mime = 'image/jp2';  $fileExt = 'jp2'; break;
-            case'tiff':
+            case 'tiff':
+                http_response_code(404);
+                exit;
                 $mime = 'image/tiff'; $fileExt = 'tif'; break;
             default:
                 $mime = 'image/jpeg'; $fileExt = 'jpg'; break;

@@ -199,9 +199,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                 $authorID = 0;
             } else {
                 $author = $import[$i][2];
-                if ($author && ($author[0]=='(' || strpos($author, ',') !== false || strpos($author, '&') !== false || strpos($author, 'ex') !== false)) {
+                if ($author && ($author[0]=='(' || str_contains($author, ',') || str_contains($author, '&') || str_contains($author, 'ex'))) {
                     $subparts = array();
-                    if (substr($author, 0, 1) == '(') {
+                    if (str_starts_with($author, '(')) {
                         $subauthor = trim(substr($author, 1, strpos($author, ')') - 1));
                         $author = trim(substr($author, strpos($author, ')') + 1));
                         $subparts = preg_split('/, |& |ex /',$subauthor);  // split() is depricated as of PHP 5.3.0
@@ -251,9 +251,9 @@ if (isset($_FILES['userfile']) && is_uploaded_file($_FILES['userfile']['tmp_name
                 $subauthorID = 0;
             } else {
                 $author = $import[$i][5];
-                if ($author && ($author[0]=='(' || strpos($author, ',') !== false || strpos($author, '&') !== false || strpos($author, 'ex') !== false)) {
+                if ($author && ($author[0]=='(' || str_contains($author, ',') || str_contains($author, '&') || str_contains($author, 'ex'))) {
                     $subparts = array();
-                    if (substr($author,0,1) == '(') {
+                    if (str_starts_with($author, '(')) {
                         $subauthor = trim(substr($author, 1, strpos($author, ')') - 1));
                         $author = trim(substr($author, strpos($author, ')') + 1));
                         $subparts = preg_split('/, |& |ex /',$subauthor);  // split() is depricated as of PHP 5.3.0
@@ -509,8 +509,8 @@ if ($type==1 && !$blocked) {  // file uploaded
                     $sqlService = "INSERT IGNORE INTO tbl_nom_service_names SET
                                     taxonID='" . $exists[$i][0] . "',
                                     serviceID='" . intval($_POST['service']) . "',
-                                    param1=" . quoteString($import[$i][6]) . ",
-                                    param2=" . quoteString($import[$i][7]);
+                                    param1=" . quoteString($import[$i][6] ?? '') . ",
+                                    param2=" . quoteString($import[$i][7] ?? '');
                     dbi_query($sqlService);
                 }
                 if (!empty($hybrid[$i])) {

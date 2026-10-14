@@ -197,7 +197,7 @@ EOF;
 EOF;
 
 $cf->inputMapLines(12, 14, 0, 'edit CommonNames Equal', $title, 'index_jq_autocomplete_commoname.php?field=cname_name',
-                   'index_jq_autocomplete_commoname.php?field=cname_name', 'ajax/MapLines_CommonNamesEqual.php', $serverParams, $searchjs, $searchhtml, 1);
+                   'index_jq_autocomplete_commoname.php?field=cname_name', 'ajax/editCommonNameMapLines.php', $serverParams, $searchjs, $searchhtml, 1);
 
 
 ?>
