@@ -1551,21 +1551,21 @@ if ($run == 2) {  // file provided
                 echo "<td>" . $import[$i][22] . "</td>";
                 echo "<td>" . $import[$i][23] . "</td>";
                 echo "<td>" . $import[$i][24] . "</td>";
-                echo "<td>" . $import[$i][25] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][26] . "</td>";
-                echo "<td>" . $import[$i][27] . "</td>";
-                echo "<td>" . $import[$i][28] . "</td>";
-                echo "<td>" . $import[$i][29] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][30] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][31] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant_sub") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][32] . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_exactness") !== false) ? " style=\"background-color:red\"" : "") . ">" . $import[$i][33] . "</td>";
-                echo "<td>" . (isset($import[$i][34]) ? $import[$i][34] : '') . "</td>";
-                echo "<td>" . (isset($import[$i][35]) ? $import[$i][35] : '') . "</td>";
-                echo "<td>" . (isset($import[$i][36]) ? $import[$i][36] : '') . "</td>";
-                echo "<td>" . (isset($import[$i][37]) ? $import[$i][37] : '') . "</td>";
-                echo "<td>" . (isset($import[$i][38]) ? $import[$i][38] : '') . "</td>";
-                echo "<td>" . htmlspecialchars((isset($import[$i][39])) ? $import[$i][39] : '') . "</td>";
+                echo "<td>" . ($import[$i][25] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][26] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][27] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][28] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][29] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][30] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][31] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_quadrant_sub") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][32] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_exactness") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][33] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][34] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][35] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][36] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][37] ?? '') . "</td>";
+                echo "<td>" . ($import[$i][38] ?? '') . "</td>";
+                echo "<td>" . htmlspecialchars($import[$i][39] ?? '') . "</td>";
                 echo "</tr>\n";
 
                 if (strpos($status[$i], "similar_taxa") !== false) {

@@ -253,11 +253,11 @@ private function _atomizeString(string $string, string $delimiter, bool $trim = 
  * Tests every array item with the text and returns the array-key
  * if they are euqal. If no match is found it returns "false".
  *
- * @param string $text to be compared with
+ * @param string|null $text to be compared with
  * @param array $needle items to compare
  * @return mixed|bool key of found match or false
  */
-private function _isEqual(string $text, array $needle): mixed
+private function _isEqual(?string $text, array $needle): mixed
 {
     foreach ($needle as $key => $val) {
         if ($text == $val) {
