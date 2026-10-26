@@ -3,22 +3,21 @@ session_start();
 require("../inc/gatekeeper.php");
 require __DIR__ . '/../vendor/autoload.php';
 
+use Jacq\DjatokaActions;
 use Jacq\JacqServletRPCClient;
 use Jacq\PdoAccess;
 
 //$_POST=$_GET;
 ob_start();  // intercept all output
 
-$checkDjatoka = new checkDjatoka();
+$checkDjatoka = new DjatokaActions();
 $methodName = (isset($_POST['method'])) ? $_POST['method'] : "";
 
 $ret = array();
 if (method_exists($checkDjatoka, $methodName)) {
     try {
         $params = $_POST['params'];
-        $ret = array(
-            'res' => $checkDjatoka->$methodName($params)
-        );
+        $ret = array('res' => $checkDjatoka->$methodName($params));
         if (($a = $checkDjatoka->getInfo())) {
             $ret['info'] = $a;
         }
@@ -27,11 +26,8 @@ if (method_exists($checkDjatoka, $methodName)) {
             'error' => $e->getMessage() // . '<br />' . var_export($e->getTrace(), true)
         );
     }
-}
-else {
-    $ret = array(
-        'error' => "Metod: '{$methodName}' doesn't exist.",
-    );
+} else {
+    $ret = array('error' => "Method: '{$methodName}' doesn't exist.");
 }
 
 $ob = ob_get_clean();

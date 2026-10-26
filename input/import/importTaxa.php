@@ -4,7 +4,7 @@ require("../inc/connect.php");
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\JsonRPCClient_v1;
-use Jacq\Log;
+use Jacq\Services\Log;
 
 $authorMayBeEmpty = !empty($_POST['authorEmpty']);
 

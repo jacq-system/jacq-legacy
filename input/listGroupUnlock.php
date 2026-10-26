@@ -3,7 +3,7 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Permission;
+use Jacq\Services\Permission;
 
 $groupID = intval($_GET['sel']);
 $row = dbi_query("SELECT group_name FROM herbarinput_log.tbl_herbardb_groups WHERE groupID='$groupID'")->fetch_array();

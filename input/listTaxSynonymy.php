@@ -3,10 +3,10 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
+use Jacq\Services\Display;
 use Jacq\PdoAccess;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 
 $id = intval($_GET['ID']);
 if (isset($_GET['order'])) {

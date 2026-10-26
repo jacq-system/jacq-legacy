@@ -4,7 +4,7 @@ session_start();
 require("inc/connect.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Tools;
+use Jacq\Services\Tools;
 
 function makeText($id)
 {

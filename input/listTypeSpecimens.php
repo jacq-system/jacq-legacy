@@ -3,7 +3,7 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
+use Jacq\Services\Display;
 
 $nrSel = intval(filter_input(INPUT_GET, 'nr', FILTER_SANITIZE_NUMBER_INT));
 $id    = intval(filter_input(INPUT_GET, 'ID', FILTER_SANITIZE_NUMBER_INT));

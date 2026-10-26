@@ -1,6 +1,9 @@
 <?php
 
-namespace Jacq;
+namespace Jacq\Services;
+
+use Jacq\DbAccess;
+use Jacq\Exception;
 
 class Permission
 {

@@ -3,11 +3,11 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
+use Jacq\Services\Display;
 use Jacq\JsonRPCClient_v1;
-use Jacq\Permission;
+use Jacq\Services\Permission;
 use Jacq\Settings;
-use Jacq\Tools;
+use Jacq\Services\Tools;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 

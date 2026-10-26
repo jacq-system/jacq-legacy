@@ -5,9 +5,9 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Settings;
 use Jacq\DbAccess;
-use Jacq\Display;
-use Jacq\Tools;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Tools;
+use Jacq\Services\Permission;
 use Jacq\JsonRPCClient_v1;
 use Jaxon\Jaxon;
 

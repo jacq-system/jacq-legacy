@@ -3,11 +3,11 @@ session_start();
 require("inc/gatekeeper.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Api;
 use Jacq\DbAccess;
-use Jacq\Display;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
+use Jacq\Services\Api;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

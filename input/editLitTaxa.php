@@ -5,10 +5,10 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
 use Jacq\DbAccess;
-use Jacq\Display;
-use Jacq\Log;
-use Jacq\Tools;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Log;
+use Jacq\Services\Tools;
+use Jacq\Services\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

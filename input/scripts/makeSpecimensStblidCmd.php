@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../inc/variables.php';
 require __DIR__ . '/../vendor/autoload.php';
 
-use Jacq\StableIdentifier;
+use Jacq\Services\StableIdentifier;
 
 ini_set("max_execution_time","3600");
 

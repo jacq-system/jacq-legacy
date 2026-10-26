@@ -3,8 +3,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

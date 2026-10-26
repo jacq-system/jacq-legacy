@@ -5,8 +5,8 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
 use Jacq\DbAccess;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

@@ -4,10 +4,10 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Display;
-use Jacq\Log;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Log;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

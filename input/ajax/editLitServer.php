@@ -5,10 +5,10 @@ require("../inc/connect.php");
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Display;
+use Jacq\Services\Display;
 use Jacq\PdoAccess;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 

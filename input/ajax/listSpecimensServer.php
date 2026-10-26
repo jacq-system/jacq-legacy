@@ -4,9 +4,9 @@
  * This file is included from listWUServer.php
  * function is separated for cleaner code only
  */
-use Jacq\Display;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Response\Response;
 
 /**

@@ -7,9 +7,11 @@
  * @version 14.07.2010, 26.08.2026
  */
 
-namespace Jacq;
+namespace Jacq\Services;
 
 use Exception;
+use Jacq\DbAccess;
+use Jacq\Settings;
 
 class Tools
 {

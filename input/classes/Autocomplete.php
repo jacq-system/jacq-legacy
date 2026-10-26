@@ -3,6 +3,8 @@
 namespace Jacq;
 
 use Exception;
+use Jacq\Services\Display;
+use Jacq\Services\Tools;
 
 class Autocomplete
 {

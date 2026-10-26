@@ -4,8 +4,8 @@ require_once('../inc/connect.php');
 require __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\JsonRPCClient_v1;
-use Jacq\Log;
-use Jacq\Tools;
+use Jacq\Services\Log;
+use Jacq\Services\Tools;
 
 foreach($_GET as $k=>$v){
 	$_POST[$k]=$v;

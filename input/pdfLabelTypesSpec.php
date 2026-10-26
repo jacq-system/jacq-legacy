@@ -4,8 +4,8 @@ session_start();
 require("inc/connect.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Jacq\PdfPrint;
-use Jacq\Permission;
+use Jacq\Services\PdfPrint;
+use Jacq\Services\Permission;
 
 /**
  * Checks if a value exists in a multidimensional array

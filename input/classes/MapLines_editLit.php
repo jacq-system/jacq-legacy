@@ -3,6 +3,7 @@
 namespace Jacq;
 
 use Exception;
+use Jacq\Services\Log;
 
 class MapLines_editLit extends MapLines
 {

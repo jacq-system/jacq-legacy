@@ -3,9 +3,9 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Api;
-use Jacq\Display;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Permission;
+use Jacq\Services\Api;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();

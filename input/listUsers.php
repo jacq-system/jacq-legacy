@@ -3,7 +3,7 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
+use Jacq\Services\Display;
 
 if (isset($_GET['order'])) {
     if ($_GET['order'] == "b") {

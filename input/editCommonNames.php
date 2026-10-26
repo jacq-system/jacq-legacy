@@ -4,11 +4,11 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Display;
-use Jacq\Log;
+use Jacq\Services\Display;
+use Jacq\Services\Log;
 use Jacq\NaturalID;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 
 //http://docs.jquery.com/Plugins/Autocomplete/autocomplete#url_or_dataoptions
 $debuger=0;

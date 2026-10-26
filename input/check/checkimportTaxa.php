@@ -15,7 +15,7 @@ require("../inc/connect.php");
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
-    if (count($parts) >= $minNumOfParts) {
+    if ($parts && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {
         return false;

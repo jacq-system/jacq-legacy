@@ -3,7 +3,7 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Permission;
+use Jacq\Services\Permission;
 
 if (empty($_GET['sel'])) die();
 

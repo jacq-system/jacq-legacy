@@ -3,7 +3,7 @@
 namespace Jacq\Jaxon;
 
 use Jacq\DbAccess;
-use Jacq\Permission;
+use Jacq\Services\Permission;
 use Exception;
 
 class EditHybridsServer extends \Jaxon\CallableClass
