@@ -82,7 +82,7 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
     } else {
         $_SESSION['taxon_list'] = intval($buffer);
 		$location="Location: editSpecies.php?sel=<" . $_SESSION['taxon_list'] . ">";
-		if (SID != "") $location .= "?" . SID;
+//		if (SID != "") $location .= "?" . SID;
 		header($location);
 	}
 } elseif (isset($_POST['search'])) {

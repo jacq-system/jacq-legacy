@@ -62,7 +62,7 @@ function convertUpdateImportFileToUtf8($sourcePath, $sourceEncoding, &$targetPat
 }
 function parseUpdateLine($handle, $minNumOfParts = 1, $delimiter = ';', $enclosure = '"')
 {
-    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure, '\\');
     if ($parts !== false) {
         $parts = array_map('normalizeUpdateImportText', $parts);
     }

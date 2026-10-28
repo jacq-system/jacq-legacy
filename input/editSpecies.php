@@ -319,11 +319,11 @@ if (isset($_GET['sel'])) {
 
             if (!empty($_POST['submitUpdateNew'])) {
                 $location = "Location: editSpecies.php?sel=<0>&new=1";
-                if (SID) $location = $location . "&" . SID;
+//                if (SID) $location = $location . "&" . SID;
                 header($location);
             } elseif (!empty($_POST['submitUpdateCopy'])) {
                 $location = "Location: editSpecies.php?sel=<" . $p_taxonID . ">&new=1";
-                if (SID) $location = $location . "&" . SID;
+//                if (SID) $location = $location . "&" . SID;
                 header($location);
             }
             $edit = false;

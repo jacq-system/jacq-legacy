@@ -108,7 +108,7 @@ if (isset($_POST['search'])) {
 
 if (!empty($_POST['select']) && !empty($_POST['citation'])) {
     $location="Location: editLit.php?sel=<" . $_POST['citation'] . ">";
-    if (SID != "") $location .= "?" . SID;
+//    if (SID != "") $location .= "?" . SID;
     header($location);
 }
 

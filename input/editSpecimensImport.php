@@ -441,11 +441,11 @@ if (isset($_GET['sel'])) {
 
                 if (!empty($_POST['submitUpdateNew'])) {
                     $location="Location: editSpecimensImport.php?sel=<0>&new=1";
-                    if (SID) $location .= "&" . SID;
+//                    if (SID) $location .= "&" . SID;
                     header($location);
                 } elseif (!empty($_POST['submitUpdateCopy'])) {
                     $location="Location: editSpecimensImport.php?sel=<".$p_specimen_ID.">&new=1";
-                    if (SID) $location .= "&" . SID;
+//                    if (SID) $location .= "&" . SID;
                     header($location);
                 }
                 $edit = false;

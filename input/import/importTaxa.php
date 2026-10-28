@@ -19,7 +19,7 @@ $authorMayBeEmpty = !empty($_POST['authorEmpty']);
  */
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
-    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure, '\\');
     if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {

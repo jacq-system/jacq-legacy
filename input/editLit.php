@@ -239,11 +239,11 @@ if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
         }
         if (!empty($_POST['submitUpdateNew'])) {
             $location = "Location: editLit.php?sel=<0>&new=1";
-            if (SID) $location .= "&" . SID;
+//            if (SID) $location .= "&" . SID;
             header($location);
         } elseif (!empty($_POST['submitUpdateCopy'])) {
             $location = "Location: editLit.php?sel=<" . $p_citationID . ">&new=1";
-            if (SID) $location .= "&" . SID;
+//            if (SID) $location .= "&" . SID;
             header($location);
         }
         $edit = false;

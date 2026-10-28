@@ -355,11 +355,11 @@ if (isset($_GET['sel']) && Tools::extractID($_GET['sel'])!="NULL") {
             Log::specimen($p_specimen_ID, $updated);
             if ($_POST['submitUpdateNew']) {
                 $location="Location: editSpecimensSimple.php?sel=<0>&new=1";
-                if (SID) $location .= "&" . SID;
+//                if (SID) $location .= "&" . SID;
                 header($location);
             } elseif ($_POST['submitUpdateCopy']) {
                 $location="Location: editSpecimensSimple.php?sel=<" . $p_specimen_ID . ">&new=1";
-                if (SID) $location .= "&" . SID;
+//                if (SID) $location .= "&" . SID;
                 header($location);
             }
             $edit = false;
