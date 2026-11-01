@@ -5,9 +5,9 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Settings;
 use Jacq\DbAccess;
-use Jacq\Display;
-use Jacq\Tools;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Tools;
+use Jacq\Services\Permission;
 use Jacq\JsonRPCClient_v1;
 use Jaxon\Jaxon;
 
@@ -82,7 +82,7 @@ if (!empty($_POST['select']) && !empty($_POST['taxon'])) {
     } else {
         $_SESSION['taxon_list'] = intval($buffer);
 		$location="Location: editSpecies.php?sel=<" . $_SESSION['taxon_list'] . ">";
-		if (SID != "") $location .= "?" . SID;
+//		if (SID != "") $location .= "?" . SID;
 		header($location);
 	}
 } elseif (isset($_POST['search'])) {

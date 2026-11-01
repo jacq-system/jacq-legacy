@@ -3,7 +3,7 @@ session_start();
 require("inc/connect.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Jacq\StableIdentifier;
+use Jacq\Services\StableIdentifier;
 
 $stblid = "";
 $specimen_id = intval(filter_input(INPUT_POST, 'specimen_ID', FILTER_SANITIZE_NUMBER_INT));

@@ -4,7 +4,7 @@ session_start();
 require("inc/connect.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Jacq\PdfPrint;
+use Jacq\Services\PdfPrint;
 
 function makeText($id, $sub)  {
 

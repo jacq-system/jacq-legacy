@@ -4,9 +4,9 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Display;
-use Jacq\Log;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Log;
+use Jacq\Services\Permission;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -355,7 +355,7 @@ function listEditors($specimen_ID){
 
 if (isset($_POST['select']) && $_POST['select'] && isset($_POST['specimen']) && $_POST['specimen']) {
     $location = "Location: editSpecimensImport.php?sel=<" . $_POST['specimen'] . ">";
-    if (SID) $location .= "&" . SID;
+//    if (SID) $location .= "&" . SID;
     header($location);
     die();
 }

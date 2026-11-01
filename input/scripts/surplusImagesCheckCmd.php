@@ -413,7 +413,7 @@ function scanServer(int $server_id)
         foreach ($specimens as $specimen) {
             $filename = makePictureFilename($specimen['HerbNummer'], $specimen['collectionID']);  // make the correct filename
             if ($filename) {
-                // and look for any images who are not already linked to a specimen
+                // and look for any images that are not already linked to a specimen
                 $images = $dbLnk->query("SELECT id, filename
                                          FROM herbar_pictures.djatoka_images
                                          WHERE server_id = $server_id

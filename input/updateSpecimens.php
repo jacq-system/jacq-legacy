@@ -4,8 +4,8 @@ require('inc/connect.php');
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\JsonRPCClient_v1;
-use Jacq\Log;
-use Jacq\Permission;
+use Jacq\Services\Log;
+use Jacq\Services\Permission;
 use Jacq\TaxonTokenizer;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
@@ -62,7 +62,7 @@ function convertUpdateImportFileToUtf8($sourcePath, $sourceEncoding, &$targetPat
 }
 function parseUpdateLine($handle, $minNumOfParts = 1, $delimiter = ';', $enclosure = '"')
 {
-    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure, '\\');
     if ($parts !== false) {
         $parts = array_map('normalizeUpdateImportText', $parts);
     }

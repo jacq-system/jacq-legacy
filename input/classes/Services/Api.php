@@ -1,6 +1,6 @@
 <?php
 
-namespace Jacq;
+namespace Jacq\Services;
 
 use Exception;
 use mysqli_result;

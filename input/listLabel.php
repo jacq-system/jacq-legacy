@@ -3,8 +3,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -31,7 +31,7 @@ $jaxon->register(Jaxon::CALLABLE_FUNCTION, "clearAll");
 
 if (!empty($_POST['select']) && !empty($_POST['specimen'])) {
     $location = "Location: editLabel.php?sel=<" . $_POST['specimen'] . ">";
-    if (SID) $location .= "&" . SID;
+//    if (SID) $location .= "&" . SID;
     header($location);
     die();
 }

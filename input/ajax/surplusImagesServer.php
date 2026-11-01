@@ -3,7 +3,7 @@ session_start();
 require("../inc/connect.php");
 require __DIR__ . '/../vendor/autoload.php';
 
-use Jacq\Permission;
+use Jacq\Services\Permission;
 use Jaxon\Jaxon;
 use Jaxon\Response\Response;
 use GuzzleHttp\Client;

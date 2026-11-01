@@ -4,10 +4,10 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Log;
+use Jacq\Services\Log;
 use Jacq\Settings;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -319,11 +319,11 @@ if (isset($_GET['sel'])) {
 
             if (!empty($_POST['submitUpdateNew'])) {
                 $location = "Location: editSpecies.php?sel=<0>&new=1";
-                if (SID) $location = $location . "&" . SID;
+//                if (SID) $location = $location . "&" . SID;
                 header($location);
             } elseif (!empty($_POST['submitUpdateCopy'])) {
                 $location = "Location: editSpecies.php?sel=<" . $p_taxonID . ">&new=1";
-                if (SID) $location = $location . "&" . SID;
+//                if (SID) $location = $location . "&" . SID;
                 header($location);
             }
             $edit = false;

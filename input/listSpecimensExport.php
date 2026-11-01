@@ -4,8 +4,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
-use Jacq\StableIdentifier;
+use Jacq\Services\Display;
+use Jacq\Services\StableIdentifier;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 

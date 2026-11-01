@@ -10,9 +10,9 @@ header("Content-Security-Policy: frame-ancestors 'none'"); // to prevent embeddi
 
 if (!empty($_SESSION['username']) && !empty($_SESSION['uid'])) {
     $location = "Location: menu.php";
-    if (SID) {
-        $location = $location . "?" . SID;
-    }
+//    if (SID) {
+//        $location = $location . "?" . SID;
+//    }
     header($location);
 }
 
@@ -105,9 +105,9 @@ if (isset($_SERVER['SSL_PROTOCOL']) || !$secure) {
                 $_SESSION['editFamily']  = $row['editFamily'];
 
                 $location="Location: menu.php";
-                if (SID) {
-                    $location = $location."?".SID;
-                }
+//                if (SID) {
+//                    $location = $location."?".SID;
+//                }
                 header($location);
             } else {
                 show_page("Login failed!<br>\nPlease redo!");

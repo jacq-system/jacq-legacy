@@ -186,6 +186,10 @@ function doRedirectDownloadPic($picdetails, $format, $thumb = 0)
             } else {                    // Default thumbnail
                 $scale = '160,0';
             }
+        } else {
+            // switch off downloading the whole image
+            http_response_code(404);
+            exit;
         }
 
         $picinfo = getPicInfo($picdetails);

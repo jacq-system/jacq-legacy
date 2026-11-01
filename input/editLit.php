@@ -4,10 +4,10 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Display;
-use Jacq\Log;
-use Jacq\Permission;
-use Jacq\Tools;
+use Jacq\Services\Display;
+use Jacq\Services\Log;
+use Jacq\Services\Permission;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 $jaxon = jaxon();
@@ -239,11 +239,11 @@ if (isset($_GET['sel']) && Tools::extractID($_GET['sel']) != "NULL") {
         }
         if (!empty($_POST['submitUpdateNew'])) {
             $location = "Location: editLit.php?sel=<0>&new=1";
-            if (SID) $location .= "&" . SID;
+//            if (SID) $location .= "&" . SID;
             header($location);
         } elseif (!empty($_POST['submitUpdateCopy'])) {
             $location = "Location: editLit.php?sel=<" . $p_citationID . ">&new=1";
-            if (SID) $location .= "&" . SID;
+//            if (SID) $location .= "&" . SID;
             header($location);
         }
         $edit = false;

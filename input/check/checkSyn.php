@@ -6,7 +6,7 @@ session_start();
 require("../inc/gatekeeper.php");
 require __DIR__ . '/../vendor/autoload.php';
 
-use Jacq\Display;
+use Jacq\Services\Display;
 use Jacq\PdoAccess;
 
 try {

@@ -1,8 +1,9 @@
 <?php
 
-namespace Jacq;
+namespace Jacq\Services;
 
 use Exception;
+use Jacq\PdoAccess;
 
 class Display
 {

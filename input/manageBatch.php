@@ -3,10 +3,10 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Api;
 use Jacq\JacqServletRPCClient;
 use Jacq\PdoAccess;
-use Jacq\Permission;
+use Jacq\Services\Permission;
+use Jacq\Services\Api;
 
 //---------- check every input ----------
 if (!Permission::has('batch')) { // only user with right "api" can change API

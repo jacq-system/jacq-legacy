@@ -3,8 +3,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\StableIdentifier;
-use Jacq\Tools;
+use Jacq\Services\StableIdentifier;
+use Jacq\Services\Tools;
 
 $specimenIDs = array();
 

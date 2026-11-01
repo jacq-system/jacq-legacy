@@ -1,8 +1,9 @@
 <?php
 
-namespace Jacq;
+namespace Jacq\Services;
 
 use Exception;
+use Jacq\DbAccess;
 
 class PdfPrint
 {

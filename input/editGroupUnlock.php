@@ -4,7 +4,7 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Permission;
+use Jacq\Services\Permission;
 
 if (isset($_GET['id']) && isset($_GET['sel'])) {
     $p_groupID = intval($_GET['id']);

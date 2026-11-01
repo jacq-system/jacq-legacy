@@ -1,8 +1,10 @@
 <?php
 
-namespace Jacq;
+namespace Jacq\Services;
 
 use Exception;
+use Jacq\DbAccess;
+use Jacq\NaturalID;
 
 class Log
 {

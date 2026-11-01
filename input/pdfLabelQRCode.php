@@ -6,7 +6,7 @@ session_start();
 require("inc/connect.php");
 require_once __DIR__ . '/vendor/autoload.php';
 
-use Jacq\StableIdentifier;
+use Jacq\Services\StableIdentifier;
 
 /**
  * if a HerbNumber starts with the source-code of the institution, leave it there, otherwise add it

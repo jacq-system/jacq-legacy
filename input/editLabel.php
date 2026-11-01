@@ -4,7 +4,7 @@ require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
 use Jacq\Cssf;
-use Jacq\Tools;
+use Jacq\Services\Tools;
 use Jaxon\Jaxon;
 
 if (isset($_GET['sel']) && Tools::extractID($_GET['sel'])!="NULL")

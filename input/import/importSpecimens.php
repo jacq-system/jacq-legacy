@@ -9,7 +9,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
 use Jacq\JsonRPCClient_v1;
-use Jacq\Log;
+use Jacq\Services\Log;
 use Jacq\TaxonTokenizer;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -28,7 +28,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
  */
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
-    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure);
+    $parts = fgetcsv($handle, 4096, $delimiter, $enclosure, '\\');
     if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {

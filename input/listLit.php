@@ -3,8 +3,8 @@ session_start();
 require("inc/connect.php");
 require __DIR__ . '/vendor/autoload.php';
 
-use Jacq\Display;
-use Jacq\Permission;
+use Jacq\Services\Display;
+use Jacq\Services\Permission;
 
 $nrSel = (!empty($_GET['nr'])) ? intval($_GET['nr']) : 0;
 
@@ -108,7 +108,7 @@ if (isset($_POST['search'])) {
 
 if (!empty($_POST['select']) && !empty($_POST['citation'])) {
     $location="Location: editLit.php?sel=<" . $_POST['citation'] . ">";
-    if (SID != "") $location .= "?" . SID;
+//    if (SID != "") $location .= "?" . SID;
     header($location);
 }
 
