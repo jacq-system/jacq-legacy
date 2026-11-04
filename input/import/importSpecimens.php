@@ -1,6 +1,9 @@
 <?php
 
 const INCERTAE_SEDIS_IMPORT = 3449;
+const IMPORT_SPECIMENS_MAX_FILE_SIZE = 8000000;
+const IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY = 'import_specimens_pending_input';
+const IMPORT_SPECIMENS_PROCESS_SESSION_KEY = 'import_specimens_process';
 
 session_start();
 set_time_limit(0);
@@ -26,14 +29,435 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
  * @param string[optional] $enclosure sets the field enclosure character (default: ")
  * @return array|bool array of elements or "false" if too short
  */
+function normalizeImportText($value)
+{
+    $value = (string)$value;
+    if ($value === '' || mb_check_encoding($value, 'UTF-8')) {
+        return $value;
+    }
+
+    $sourceEncoding = mb_detect_encoding($value, array('Windows-1252', 'ISO-8859-1'), true);
+    return mb_convert_encoding($value, 'UTF-8', $sourceEncoding ?: 'Windows-1252');
+}
+
 function parseLine($handle, $minNumOfParts=2, $delimiter=';', $enclosure='"')
 {
     $parts = fgetcsv($handle, 4096, $delimiter, $enclosure, '\\');
+    if ($parts !== false) {
+        $parts = array_map('normalizeImportText', $parts);
+    }
     if (!empty($parts) && count($parts) >= $minNumOfParts) {
         return $parts;
     } else {
         return false;
     }
+}
+
+function detectImportEncoding($inputPath)
+{
+    $content = @file_get_contents($inputPath);
+    if ($content === false) {
+        return '';
+    }
+    if (mb_check_encoding($content, 'UTF-8')) {
+        return 'UTF-8';
+    }
+
+    return mb_detect_encoding($content, array('Windows-1252', 'ISO-8859-1'), true) ?: '';
+}
+
+function convertImportFileToUtf8($sourcePath, $sourceEncoding, &$targetPath, &$error = '')
+{
+    if (!in_array($sourceEncoding, array('Windows-1252', 'ISO-8859-1'), true)) {
+        $error = 'Only Windows-1252 and ISO-8859-1 files can be converted automatically.';
+        return false;
+    }
+
+    $content = @file_get_contents($sourcePath);
+    if ($content === false) {
+        $error = 'Could not read the file selected for conversion.';
+        return false;
+    }
+
+    $targetPath = tempnam(sys_get_temp_dir(), 'imp_utf8_');
+    if ($targetPath === false || @file_put_contents($targetPath, mb_convert_encoding($content, 'UTF-8', $sourceEncoding)) === false) {
+        if ($targetPath !== false) {
+            @unlink($targetPath);
+        }
+        $error = 'Could not create the UTF-8 converted file.';
+        return false;
+    }
+
+    return true;
+}
+
+function clearPendingImportInput()
+{
+    if (!empty($_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY]['path'])) {
+        $path = $_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY]['path'];
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
+    unset($_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY]);
+}
+
+function storePendingImportInput($sourcePath, $inputName, $encoding, $checkGeographicAssignments, &$error = '')
+{
+    $pendingPath = tempnam(sys_get_temp_dir(), 'imp_pending_');
+    if ($pendingPath === false || !@copy($sourcePath, $pendingPath)) {
+        if ($pendingPath !== false && is_file($pendingPath)) {
+            @unlink($pendingPath);
+        }
+        $error = 'Could not retain the input file for UTF-8 conversion.';
+        return false;
+    }
+
+    clearPendingImportInput();
+    $_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY] = array(
+        'path' => $pendingPath,
+        'name' => (string)$inputName,
+        'encoding' => (string)$encoding,
+        'check_geographic_assignments' => !empty($checkGeographicAssignments),
+        'created_at' => time(),
+    );
+
+    return true;
+}
+
+function getImportHeaderAliases()
+{
+    return array(
+        'herbnummer' => 'HerbNummer',
+        'collectionid' => 'collectionID',
+        'collectionnumber' => 'CollNummer',
+        'status' => 'identstatusID',
+        'taxon' => 'taxonID',
+        'sammler' => 'collector',
+        'series' => 'seriesID',
+        'seriesnumber' => 'series_number',
+        'nummer' => 'Nummer',
+        'altnumber' => 'alt_number',
+        'datum' => 'Datum',
+        'datum2' => 'Datum2',
+        'det' => 'det',
+        'typified' => 'typified',
+        'typus' => 'typusID',
+        'taxonalt' => 'taxon_alt',
+        'nationengl' => 'NationID',
+        'provinz' => 'provinceID',
+        'fundort' => 'Fundort',
+        'fundortengl' => 'Fundort_engl',
+        'habitat' => 'habitat',
+        'habitus' => 'habitus',
+        'bemerkungen' => 'Bemerkungen',
+        'coordns' => 'lat_cardinal',
+        'latdegree' => 'lat_deg',
+        'latminute' => 'lat_min',
+        'latsecond' => 'lat_sec',
+        'coordwe' => 'lon_cardinal',
+        'longdegree' => 'lon_deg',
+        'longminute' => 'lon_min',
+        'longsecond' => 'lon_sec',
+        'quadrant' => 'quadrant',
+        'quadrantsub' => 'quadrant_sub',
+        'exactness' => 'exactness',
+        'altmin' => 'altitude_min',
+        'altmax' => 'altitude_max',
+        'digitalimage' => 'digital_image',
+        'digitalimageobs' => 'digital_image_obs',
+        'observation' => 'observation',
+        'notesinternal' => 'notes_internal',
+    );
+}
+
+function normalizeImportHeaderName($header)
+{
+    $header = trim((string)$header);
+    if ($header === '') {
+        return '';
+    }
+
+    $header = mb_strtolower($header, 'UTF-8');
+    return preg_replace('/[^\p{L}\p{N}]+/u', '', $header);
+}
+
+function mapImportHeaderColumns(array $headerRow, &$error = '')
+{
+    $aliases = getImportHeaderAliases();
+    $columnMap = array();
+    $reservedHeaders = array('checked', 'accessible');
+
+    foreach ($headerRow as $index => $headerText) {
+        $normalizedHeader = normalizeImportHeaderName($headerText);
+        if ($normalizedHeader === '') {
+            $error = 'The header line contains an empty column name.';
+            return array();
+        }
+        if (in_array($normalizedHeader, $reservedHeaders, true)) {
+            $error = 'The header "' . trim((string)$headerText) . '" is not allowed. checked and accessible are set only after review in the specimen import area.';
+            return array();
+        }
+        if (!isset($aliases[$normalizedHeader])) {
+            $error = 'Unknown import header "' . trim((string)$headerText) . '".';
+            return array();
+        }
+
+        $sourceKey = $aliases[$normalizedHeader];
+        if (isset($columnMap[$sourceKey])) {
+            $error = 'Duplicate header mapping for "' . trim((string)$headerText) . '".';
+            return array();
+        }
+        $columnMap[$sourceKey] = $index;
+    }
+
+    $requiredColumns = array(
+        'HerbNummer' => 'HerbNummer',
+        'collectionID' => 'collectionID',
+        'taxonID' => 'taxon',
+        'collector' => 'Sammler',
+    );
+    foreach ($requiredColumns as $requiredColumn => $headerLabel) {
+        if (!isset($columnMap[$requiredColumn])) {
+            $error = 'The header line must contain ' . $headerLabel . '.';
+            return array();
+        }
+    }
+
+    return $columnMap;
+}
+
+function loadHeaderBasedImportRows($inputPath, &$error = '')
+{
+    $handle = @fopen($inputPath, 'r');
+    if (!$handle) {
+        $error = 'The import file could not be opened.';
+        return array();
+    }
+
+    $headerRow = fgetcsv($handle, 4096, ';', '"', '\\');
+    if ($headerRow === false) {
+        fclose($handle);
+        $error = 'The import file does not contain a readable header line.';
+        return array();
+    }
+    $headerRow = array_map('normalizeImportText', $headerRow);
+    $expectedColumnCount = count($headerRow);
+    $columnMap = mapImportHeaderColumns($headerRow, $error);
+    if ($columnMap === array()) {
+        fclose($handle);
+        return array();
+    }
+
+    $legacyColumns = array(
+        'HerbNummer', 'collectionID', 'CollNummer', 'identstatusID', 'taxonID', 'collector', 'seriesID', 'series_number', 'Nummer', 'alt_number',
+        'Datum', 'Datum2', 'det', 'typified', 'typusID', 'taxon_alt', 'NationID', 'provinceID', 'Fundort', 'Fundort_engl',
+        'habitat', 'habitus', 'Bemerkungen', 'lat_cardinal', 'lat_deg', 'lat_min', 'lat_sec', 'lon_cardinal', 'lon_deg', 'lon_min',
+        'lon_sec', 'quadrant', 'quadrant_sub', 'exactness', 'altitude_min', 'altitude_max', 'digital_image', 'digital_image_obs', 'observation', 'notes_internal',
+    );
+
+    $rows = array();
+    $lineNumber = 2;
+    while (($parts = fgetcsv($handle, 4096, ';', '"', '\\')) !== false) {
+        $currentLineNumber = $lineNumber++;
+        $parts = array_map('normalizeImportText', $parts);
+        if (count($parts) === 1 && trim((string)$parts[0]) === '') {
+            continue;
+        }
+        if (count($parts) !== $expectedColumnCount) {
+            fclose($handle);
+            $error = 'Header/data column count mismatch on line ' . $currentLineNumber . ': header has ' . $expectedColumnCount . ' column(s), row has ' . count($parts) . '. Processing was aborted.';
+            return array();
+        }
+
+        $row = array_fill(0, count($legacyColumns), '');
+        foreach ($legacyColumns as $legacyIndex => $sourceKey) {
+            if (isset($columnMap[$sourceKey])) {
+                $row[$legacyIndex] = trim((string)$parts[$columnMap[$sourceKey]]);
+            }
+        }
+        $row['linenumber'] = $currentLineNumber;
+        $rows[] = $row;
+    }
+    fclose($handle);
+
+    return $rows;
+}
+
+function getImportHerbNumber($value)
+{
+    $pieces = explode('_', (string)$value);
+    return count($pieces) > 1 ? trim($pieces[1]) : trim((string)$value);
+}
+
+/** Validate herbarium numbers, reject conflicts, and retain the first identical row. */
+function checkImportFileDuplicates(array $rows, &$duplicates, &$error)
+{
+    $duplicates = array();
+    $seen = array();
+    $uniqueRows = array();
+    $conflicts = array();
+    $missingNumbers = array();
+    foreach ($rows as $row) {
+        $herbNumber = getImportHerbNumber($row[0]);
+        if ($herbNumber === '' || preg_match('/^\s*$/u', $herbNumber)) {
+            $missingNumbers[] = $row['linenumber'];
+            continue;
+        }
+        $key = mb_strtolower($herbNumber, 'UTF-8');
+        if (!isset($seen[$key])) {
+            $seen[$key] = $row;
+            $uniqueRows[] = $row;
+            continue;
+        }
+        $first = $seen[$key];
+        $firstValues = $first;
+        $rowValues = $row;
+        unset($firstValues['linenumber'], $rowValues['linenumber']);
+        if ($firstValues === $rowValues) {
+            $duplicates[] = array('herbNumber' => $row[0], 'line' => $row['linenumber'], 'keptLine' => $first['linenumber']);
+        } else {
+            $conflicts[] = 'HerbNummer "' . $herbNumber . '" (lines ' . $first['linenumber'] . ' and ' . $row['linenumber'] . ')';
+        }
+    }
+    if ($missingNumbers || $conflicts) {
+        $messages = array();
+        if ($missingNumbers) {
+            $messages[] = 'HerbNummer is required on line(s): ' . implode(', ', $missingNumbers) . '.';
+        }
+        if ($conflicts) {
+            $messages[] = 'The same HerbNummer has different data in the file: ' . implode('; ', $conflicts) . '.';
+        }
+        $error = 'Import stopped: ' . implode(' ', $messages) . ' Correct the file and upload it again.';
+        return array();
+    }
+    return $uniqueRows;
+}
+
+function getImportDecimalCoordinates(array $rowData)
+{
+    $latitude = null;
+    $longitude = null;
+
+    if ($rowData['Coord_N'] !== '') {
+        $latitude = array($rowData['Coord_N'], $rowData['N_Min'], $rowData['N_Sec'], 1);
+    } elseif ($rowData['Coord_S'] !== '') {
+        $latitude = array($rowData['Coord_S'], $rowData['S_Min'], $rowData['S_Sec'], -1);
+    }
+    if ($rowData['Coord_E'] !== '') {
+        $longitude = array($rowData['Coord_E'], $rowData['E_Min'], $rowData['E_Sec'], 1);
+    } elseif ($rowData['Coord_W'] !== '') {
+        $longitude = array($rowData['Coord_W'], $rowData['W_Min'], $rowData['W_Sec'], -1);
+    }
+    if ($latitude === null || $longitude === null) {
+        return null;
+    }
+
+    foreach (array($latitude, $longitude) as $coordinate) {
+        if (!is_numeric($coordinate[0])
+            || ($coordinate[1] !== '' && !is_numeric($coordinate[1]))
+            || ($coordinate[2] !== '' && !is_numeric($coordinate[2]))) {
+            return null;
+        }
+    }
+
+    $lat = $latitude[3] * (abs(floatval($latitude[0])) + abs(floatval($latitude[1])) / 60 + abs(floatval($latitude[2])) / 3600);
+    $lon = $longitude[3] * (abs(floatval($longitude[0])) + abs(floatval($longitude[1])) / 60 + abs(floatval($longitude[2])) / 3600);
+    if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
+        return null;
+    }
+
+    return array('lat' => round($lat, 6), 'lon' => round($lon, 6));
+}
+
+function formatImportCoordinatesForValidation(array $rowData)
+{
+    $coordinates = getImportDecimalCoordinates($rowData);
+    if ($coordinates === null) {
+        return '';
+    }
+
+    return number_format($coordinates['lat'], 6, '.', '') . ', ' . number_format($coordinates['lon'], 6, '.', '');
+}
+
+function checkImportGeographicAssignment($nationId, $provinceId, array $rowData)
+{
+    static $cache = array();
+    static $serviceUnavailable = false;
+
+    $coordinates = getImportDecimalCoordinates($rowData);
+    if ($coordinates === null || intval($nationId) <= 0) {
+        return array();
+    }
+
+    $cacheKey = intval($nationId) . '|' . intval($provinceId) . '|' . $coordinates['lat'] . '|' . $coordinates['lon'];
+    if (isset($cache[$cacheKey])) {
+        return $cache[$cacheKey];
+    }
+
+    if ($serviceUnavailable) {
+        $cache[$cacheKey] = array('coordinate_check_unavailable');
+        return $cache[$cacheKey];
+    }
+
+    if (!function_exists('curl_init')) {
+        $serviceUnavailable = true;
+        $cache[$cacheKey] = array('coordinate_check_unavailable');
+        return $cache[$cacheKey];
+    }
+
+    $query = http_build_query(array(
+        'nationID' => intval($nationId),
+        'provinceID' => intval($provinceId),
+        'lat' => $coordinates['lat'],
+        'lon' => $coordinates['lon'],
+    ));
+    $curl = curl_init('https://services.jacq.org/jacq-services/rest/geo/checkBoundaries?' . $query);
+    if ($curl === false) {
+        $cache[$cacheKey] = array('coordinate_check_unavailable');
+        return $cache[$cacheKey];
+    }
+
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 2);
+    curl_setopt($curl, CURLOPT_TIMEOUT, 4);
+    $response = curl_exec($curl);
+    $httpCode = intval(curl_getinfo($curl, CURLINFO_HTTP_CODE));
+    curl_close($curl);
+    if ($response === false || $httpCode < 200 || $httpCode >= 300) {
+        $serviceUnavailable = true;
+        $cache[$cacheKey] = array('coordinate_check_unavailable');
+        return $cache[$cacheKey];
+    }
+
+    $result = json_decode($response, true);
+    if (!is_array($result) || !empty($result['error'])) {
+        $serviceUnavailable = true;
+        $cache[$cacheKey] = array('coordinate_check_unavailable');
+        return $cache[$cacheKey];
+    }
+
+    $warnings = array();
+    if (isset($result['nation']['nrBoundaries']) && intval($result['nation']['nrBoundaries']) > 0 && empty($result['nation']['inside'])) {
+        $warnings[] = 'coordinates_outside_nation';
+    }
+    if (intval($provinceId) > 0 && isset($result['province']['nrBoundaries']) && intval($result['province']['nrBoundaries']) > 0 && empty($result['province']['inside'])) {
+        $warnings[] = 'coordinates_outside_province';
+    }
+
+    $cache[$cacheKey] = $warnings;
+    return $cache[$cacheKey];
+}
+
+function formatImportGeographicWarning($warning)
+{
+    $messages = array(
+        'coordinates_outside_nation' => 'Coordinates appear to be outside the selected country.',
+        'coordinates_outside_province' => 'Coordinates appear to be outside the selected province.',
+        'coordinate_check_unavailable' => 'Geographic assignment could not be checked because the boundary service is unavailable.',
+    );
+
+    return isset($messages[$warning]) ? $messages[$warning] : $warning;
 }
 
 function importStatusHasFlag($status, $flag)
@@ -113,7 +537,7 @@ function normalizeImportExportList($values)
     return array_values($values);
 }
 
-function buildImportValidationExportPayload($import, $status, $taxamatch, $data, $inputName)
+function buildImportValidationExportPayload($import, $status, $taxamatch, $data, $inputName, $geoWarnings = array())
 {
     $errorColumns = array(
         'no_taxa' => 4,
@@ -128,6 +552,7 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
     $payload = array(
         'inputName' => (string)$inputName,
         'errors' => array_fill_keys(array_keys($errorColumns), array()),
+        'geoWarnings' => array_fill_keys(array('coordinates_outside_nation', 'coordinates_outside_province', 'coordinate_check_unavailable'), array()),
         'similar' => array(),
         'exists' => array(),
     );
@@ -183,10 +608,22 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
         if (importStatusHasFlag($status[$i], 'exists')) {
             addImportExportUniqueValue($payload['exists'], isset($data[$i]['HerbNummer']) ? $data[$i]['HerbNummer'] : '');
         }
+
+        if (!empty($geoWarnings[$i]) && is_array($geoWarnings[$i])) {
+            $coordinateValue = formatImportCoordinatesForValidation($data[$i]);
+            foreach ($geoWarnings[$i] as $warning) {
+                if (isset($payload['geoWarnings'][$warning])) {
+                    addImportExportUniqueValue($payload['geoWarnings'][$warning], $coordinateValue);
+                }
+            }
+        }
     }
 
     foreach ($payload['errors'] as $flag => $values) {
         $payload['errors'][$flag] = normalizeImportExportList($values);
+    }
+    foreach ($payload['geoWarnings'] as $flag => $values) {
+        $payload['geoWarnings'][$flag] = normalizeImportExportList($values);
     }
 
     if (!empty($payload['similar'])) {
@@ -234,6 +671,124 @@ function loadImportValidationExportPayload($token)
     }
 
     return $_SESSION['importSpecimensValidationExports'][$token]['payload'];
+}
+
+function clearImportProcessContext()
+{
+    $context = $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY] ?? array();
+    if (!empty($context['input_file_path']) && is_file($context['input_file_path'])) {
+        @unlink($context['input_file_path']);
+    }
+    unset($_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]);
+}
+
+function storeImportProcessInputFile($sourcePath, $inputName, &$error)
+{
+    $path = tempnam(sys_get_temp_dir(), 'imp_proc_');
+    if ($path === false || !@copy($sourcePath, $path)) {
+        if ($path !== false) {
+            @unlink($path);
+        }
+        $error = 'Could not retain the input file for the import archive.';
+        return false;
+    }
+    try {
+        $token = bin2hex(random_bytes(16));
+    } catch (Exception $e) {
+        @unlink($path);
+        $error = 'Could not start the import process.';
+        return false;
+    }
+    $parsedPath = parse_url((string)$inputName, PHP_URL_PATH);
+    $filename = basename(is_string($parsedPath) && $parsedPath !== '' ? $parsedPath : (string)$inputName);
+    $filename = trim((string)preg_replace('/[^A-Za-z0-9._-]+/', '_', $filename), '._');
+    clearImportProcessContext();
+    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY] = array(
+        'token' => $token,
+        'input_file_path' => $path,
+        'input_file_name' => $filename !== '' ? $filename : 'import_input.txt',
+    );
+    return true;
+}
+
+function isCurrentImportProcessToken($token)
+{
+    $context = $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY] ?? array();
+    return is_string($token) && $token !== '' && !empty($context['token']) && hash_equals($context['token'], $token);
+}
+
+function buildImportResultsReport(array $outcomes, array $labels, array $context)
+{
+    $lines = array('Import Specimens Report', 'Generated: ' . date('Y-m-d H:i:s'));
+    if (!empty($context['input_file_name'])) {
+        $lines[] = 'Input file: ' . $context['input_file_name'];
+    }
+    $lines[] = 'File rows: ' . array_sum(array_map('count', $outcomes));
+    foreach ($labels as $key => $label) {
+        $lines[] = $label . ': ' . count($outcomes[$key]);
+    }
+    $lines[] = '';
+    $lines[] = "Line\tHerbNummer\tResult\tReason";
+    foreach ($labels as $key => $label) {
+        foreach ($outcomes[$key] as $item) {
+            $lines[] = implode("\t", array_map(function ($value) {
+                return str_replace(array("\r", "\n", "\t"), ' ', (string)$value);
+            }, array($item['line'], $item['herbNumber'], $label, $item['reason'])));
+        }
+    }
+    return implode("\n", $lines) . "\n";
+}
+
+function createImportProcessArchive(&$zipPath, &$error)
+{
+    $context = $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY] ?? array();
+    if (empty($context['input_file_path']) || !is_file($context['input_file_path']) || empty($context['report_content'])) {
+        $error = 'The input file or completed import report is no longer available.';
+        return false;
+    }
+    if (!class_exists('ZipArchive')) {
+        $error = 'ZipArchive is not available on this PHP installation.';
+        return false;
+    }
+    $zipPath = tempnam(sys_get_temp_dir(), 'imp_zip_');
+    if ($zipPath === false) {
+        $error = 'Could not create a temporary ZIP file.';
+        return false;
+    }
+    $zip = new ZipArchive();
+    if ($zip->open($zipPath, ZipArchive::OVERWRITE) !== true) {
+        @unlink($zipPath);
+        $error = 'Could not create the import archive.';
+        return false;
+    }
+    $reportName = $context['input_file_name'] === 'import_report.txt' ? 'import_results.txt' : 'import_report.txt';
+    $added = $zip->addFile($context['input_file_path'], $context['input_file_name'])
+        && $zip->addFromString($reportName, $context['report_content']);
+    $closed = $zip->close();
+    if (!$added || !$closed) {
+        @unlink($zipPath);
+        $error = 'Could not write the import archive.';
+        return false;
+    }
+    return true;
+}
+
+if (isset($_POST['archive_import_process'])) {
+    $archiveError = '';
+    $archivePath = '';
+    if (!isCurrentImportProcessToken($_POST['import_process_token'] ?? '') || !createImportProcessArchive($archivePath, $archiveError)) {
+        http_response_code(400);
+        header('Content-Type: text/plain; charset=UTF-8');
+        echo $archiveError !== '' ? $archiveError : 'The import report is no longer available. Start a new import.';
+        exit;
+    }
+    header('Content-Type: application/zip');
+    header('Content-Disposition: attachment; filename="specimen_import_' . date('Ymd_His') . '.zip"');
+    header('Content-Length: ' . filesize($archivePath));
+    header('Cache-Control: private, must-revalidate');
+    readfile($archivePath);
+    @unlink($archivePath);
+    exit;
 }
 
 function styleImportExportHeader($sheet, $cellRange, $rgb)
@@ -290,6 +845,35 @@ function streamImportValidationExportWorkbook($payload)
     $errorSheet->freezePane('A2');
     $errorSheet->getTabColor()->setRGB('FF0000');
     autosizeImportExportColumns($errorSheet, 'G');
+
+    $geoWarningSheet = $spreadsheet->createSheet();
+    $geoWarningSheet->setTitle('geographic warnings');
+    $geoWarningHeaders = array(
+        'A1' => 'coordinates_outside_nation',
+        'B1' => 'coordinates_outside_province',
+        'C1' => 'coordinate_check_unavailable',
+    );
+    foreach ($geoWarningHeaders as $cell => $label) {
+        $geoWarningSheet->setCellValue($cell, $label);
+    }
+    styleImportExportHeader($geoWarningSheet, 'A1:C1', 'FFF1C232');
+    $geoWarningColumns = array(
+        'A' => 'coordinates_outside_nation',
+        'B' => 'coordinates_outside_province',
+        'C' => 'coordinate_check_unavailable',
+    );
+    foreach ($geoWarningColumns as $column => $flag) {
+        $row = 2;
+        if (!empty($payload['geoWarnings'][$flag])) {
+            foreach ($payload['geoWarnings'][$flag] as $value) {
+                $geoWarningSheet->setCellValue($column . $row, $value);
+                $row++;
+            }
+        }
+    }
+    $geoWarningSheet->freezePane('A2');
+    $geoWarningSheet->getTabColor()->setRGB('F1C232');
+    autosizeImportExportColumns($geoWarningSheet, 'C');
 
     $similarSheet = $spreadsheet->createSheet();
     $similarSheet->setTitle('Taxon not found but similar');
@@ -626,13 +1210,31 @@ function downloadImportInput($url, &$inputPath, &$inputName, &$error = '')
     return false;
 }
 
-function renderImportInputForm($downloadUrl = '')
+function renderImportInputForm($downloadUrl = '', $checkGeographicAssignments = false)
 {
-    echo "<input type='hidden' name='MAX_FILE_SIZE' value='8000000' />\n"
-       . "Import this file: <input name='userfile' type='file' /><br>\n"
-       . "or download URL: <input name='download_url' type='url' size='90' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' /><br>\n"
-       . "Allowed HTTPS domains: all (txt/csv only)<br>\n"
-       . "<input type='submit' value='check Import' />\n";
+    echo "<input type='hidden' name='MAX_FILE_SIZE' value='" . IMPORT_SPECIMENS_MAX_FILE_SIZE . "' />\n"
+       . "<div class='panel form-panel'>\n"
+       . "  <div class='panel-heading'>Import Source</div>\n"
+       . "  <div class='form-layout'>\n"
+       . "    <div class='form-field'><label class='form-label' for='import_userfile'>Import file</label><div class='form-control-wrap'><input id='import_userfile' name='userfile' type='file' accept='.txt,.csv,text/plain,text/csv' class='form-control form-control-file'></div></div>\n"
+       . "    <div class='form-field'><label class='form-label' for='import_download_url'>Download URL</label><div class='form-control-wrap'><input id='import_download_url' name='download_url' type='url' class='form-control' value='" . htmlspecialchars($downloadUrl, ENT_QUOTES) . "' placeholder='https://...'></div></div>\n"
+       . "    <div class='form-field'><div class='form-label'>Allowed HTTPS hosts</div><div class='form-control-wrap form-static-text'>All hosts (.txt and .csv only)</div></div>\n"
+       . "    <div class='form-field'><label class='form-label' for='import_geo_check'>Geographic validation</label><div class='form-control-wrap'><label><input id='import_geo_check' type='checkbox' name='geo_check' value='1'" . ($checkGeographicAssignments ? " checked='checked'" : '') . " /> Check geographic assignment of coordinates to country and province</label><div class='form-static-text' style='margin-top:6px;'>Uses the JACQ boundary service. Mismatches are warnings that can be reviewed before import.</div></div></div>\n"
+       . "  </div>\n"
+       . "  <div class='form-actions'><input type='submit' value='Check import' class='button-primary'></div>\n"
+       . "</div>\n"
+       . "<div class='panel info-panel'>\n"
+       . "  <div class='panel-heading'>Import Rules</div>\n"
+       . "  <div class='notice form-notice'>\n"
+       . "    <p>This tool accepts semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files with a UTF-8 header line. Files can be uploaded directly or downloaded from an HTTPS URL.</p>\n"
+       . "    <p><a href='importSpecimens_template.txt'>Download the current import template</a>. \n"
+       . "    <p><a href='tbl_import_specimens_template_v2.3_112026.xlsx'>Download the Excel field list and examples</a>.</p>\n"
+       . "    <p>Required headers: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>taxon</strong> and <strong>Sammler</strong>. Header order does not matter. <strong>checked</strong> and <strong>accessible</strong> must not be included; they are set only after review in the specimen import area.</p>\n"
+       . "    <p>Every data row must have a non-empty HerbNummer. Identical rows with the same HerbNummer are processed once. If rows with the same HerbNummer contain different values, the entire file must be corrected before import.</p>\n"
+       . "    <p>Allowed header attributes are exactly: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
+       . "    <p>UTF-8 files are processed directly. Windows-1252 and ISO-8859-1 files can be converted to UTF-8 after confirmation.</p>\n"
+       . "  </div>\n"
+       . "</div>\n";
 }
 /**
  * queries the database for a taxon with given ID
@@ -671,6 +1273,31 @@ function getTaxon($id, $withAuthors = true) {
   if ($row['epithet5']) $text .= " subf. "   . $row['epithet5'] . (($withAuthors) ? " " . $row['author5'] : '');
 
   return $text;
+}
+
+/** Describe differences between a TaxaMatch suggestion and the local taxon record. */
+function getImportTaxaMatchWarning($taxonId, $suggestedName)
+{
+    static $localTaxa = array();
+    $taxonId = intval($taxonId);
+    if ($taxonId <= 0) {
+        return 'TaxaMatch did not provide a valid taxon ID.';
+    }
+    if (!array_key_exists($taxonId, $localTaxa)) {
+        $result = dbi_query('SELECT taxonID FROM tbl_tax_species WHERE taxonID = ' . $taxonId);
+        $localTaxa[$taxonId] = mysqli_num_rows($result) ? getTaxon($taxonId) : null;
+    }
+    if ($localTaxa[$taxonId] === null) {
+        return 'TaxaMatch ID ' . $taxonId . ' is not present in the local database. The TaxaMatch and local databases may contain different taxa; do not select this suggestion until the data are synchronized.';
+    }
+    $suggestedName = html_entity_decode(strip_tags((string)$suggestedName), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $localName = html_entity_decode(strip_tags((string)$localTaxa[$taxonId]), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $suggestedName = preg_replace('/\s+/u', ' ', trim($suggestedName));
+    $localName = preg_replace('/\s+/u', ' ', trim($localName));
+    if ($suggestedName !== $localName) {
+        return 'TaxaMatch ID ' . $taxonId . ' has a different local name: ' . $localTaxa[$taxonId] . '. Check the data sources before selecting this suggestion.';
+    }
+    return '';
 }
 
 /**
@@ -900,6 +1527,38 @@ function insertTaxon($taxon, $externalID, $contentID, $insert_new_genera = FALSE
   <title>herbardb - import Specimens</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <link rel="stylesheet" type="text/css" href="../css/screen.css">
+  <style type="text/css">
+      :root { --page-bg:#cfd6d0; --panel-bg:#f7f8f5; --panel-border:#b5beb5; --panel-shadow:rgba(37,58,39,.08); --text-main:#213126; --text-muted:#5a6a60; --accent:#5b7c4d; --accent-dark:#3f5b36; --accent-soft:#dde7d6; --error-soft:#f2d2d2; --table-head:#e4eadf; }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family:Arial,sans-serif; font-size:13px; line-height:1.45; color:var(--text-main); background:linear-gradient(180deg,#bfc8c1 0%,var(--page-bg) 100%); }
+      h1,h2 { margin:0; } p { margin:0 0 10px; }
+      a:link, a:visited, a:hover, a:active, a:focus { color:#000; }
+      .page-shell { max-width:1680px; margin:0 auto; padding:28px 24px 40px; }
+      .page-header { margin-bottom:20px; padding:18px 22px; border:1px solid var(--panel-border); background:linear-gradient(135deg,#f5f7f2 0%,#e6ece1 100%); box-shadow:0 12px 24px var(--panel-shadow); }
+      .page-title { font-size:28px; line-height:1.1; color:#2f4636; }
+      .page-subtitle { margin-top:6px; color:var(--text-muted); font-size:14px; }
+      .panel { margin:0 0 18px; padding:18px 20px; border:1px solid var(--panel-border); background:var(--panel-bg); box-shadow:0 10px 24px var(--panel-shadow); }
+      .panel-heading { margin-bottom:14px; font-size:15px; font-weight:bold; letter-spacing:.02em; color:#2f4636; text-transform:uppercase; }
+      .form-panel,.info-panel { max-width:1120px; }
+      .form-layout { display:grid; grid-template-columns:minmax(170px,220px) minmax(0,1fr); gap:14px 18px; align-items:start; }
+      .form-field { display:contents; } .form-label { padding-top:10px; font-weight:bold; color:#35503d; } .form-control-wrap { min-width:0; }
+      .form-control { width:100%; min-height:38px; padding:8px 10px; border:1px solid #aeb8b1; background:#fff; color:var(--text-main); font:inherit; }
+      .form-control:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(91,124,77,.16); }
+      .form-control-file { padding:6px 8px; } .form-static-text { min-height:38px; padding:9px 10px; border:1px solid #d0d7d1; background:#eef2ec; color:#435248; }
+      .form-actions,.action-buttons { margin:18px 0; display:flex; gap:10px; flex-wrap:wrap; }
+      input[type="submit"],button { min-height:36px; padding:8px 14px; border:1px solid #889687; background:linear-gradient(180deg,#fff 0%,#ecefe8 100%); color:var(--text-main); font:inherit; cursor:pointer; }
+      input[type="submit"]:hover,button:hover { background:linear-gradient(180deg,#fff 0%,#dfe7d8 100%); }
+      .button-primary { border-color:var(--accent-dark); background:linear-gradient(180deg,#6d915d 0%,#4f7143 100%); color:#fff; font-weight:bold; }
+      .button-primary:hover { background:linear-gradient(180deg,#769c65 0%,#46663b 100%); }
+      .form-notice p:last-child { margin-bottom:0; }
+      .error,#import_errors { margin:0 0 18px; padding:12px 14px; border:1px solid #c87f7f; background:var(--error-soft); color:#8b1f1f; box-shadow:0 8px 18px rgba(128,46,46,.08); }
+      .summary,#import_tasks,#import_success { margin:0 0 18px; padding:14px 18px; border:1px solid #b8c7b2; background:var(--accent-soft); color:#2d4730; box-shadow:0 8px 18px var(--panel-shadow); }
+      .notice { margin:0; color:var(--text-main); }
+      .import-preview { overflow-x:auto; margin:0 0 18px; border:1px solid var(--panel-border); background:var(--panel-bg); box-shadow:0 10px 24px var(--panel-shadow); }
+      .import-preview table { width:max-content; min-width:100%; border-collapse:collapse; background:#fff; }
+      .import-preview th { background:var(--table-head); } .import-preview th,.import-preview td { border:1px solid #888; padding:7px 9px; vertical-align:top; }
+      @media (max-width:860px) { .page-shell { padding:18px 14px 28px; } .page-title { font-size:24px; } .form-layout { grid-template-columns:1fr; gap:8px; } .form-label { padding-top:0; } }
+  </style>
   <script src="../js/lib/jQuery/jquery.min.js" type="text/javascript"></script>
   <script type="text/javascript" language="JavaScript">
       $(document).ready(function() {
@@ -943,36 +1602,66 @@ $inputName = '';
 $inputCleanupNeeded = false;
 $inputSource = '';
 $inputError = '';
+$pageNotice = '';
+$encodingConfirmation = null;
+$hasConvertedPendingInput = false;
+$checkGeographicAssignments = !empty($_POST['geo_check']);
+$encodingAction = isset($_POST['import_encoding_action']) ? $_POST['import_encoding_action'] : '';
+
+if ($encodingAction === 'cancel') {
+    clearPendingImportInput();
+    $pageNotice = 'The import file conversion was cancelled.';
+} elseif ($encodingAction === 'convert') {
+    $pendingInput = isset($_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY]) ? $_SESSION[IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY] : null;
+    if (!is_array($pendingInput) || empty($pendingInput['path']) || !is_file($pendingInput['path'])) {
+        $inputError = 'The pending import file is no longer available. Please upload it again.';
+        clearPendingImportInput();
+    } elseif (!convertImportFileToUtf8($pendingInput['path'], isset($pendingInput['encoding']) ? $pendingInput['encoding'] : '', $inputPath, $inputError)) {
+        clearPendingImportInput();
+    } else {
+        $inputName = isset($pendingInput['name']) ? $pendingInput['name'] : 'importSpecimens.txt';
+        $checkGeographicAssignments = !empty($pendingInput['check_geographic_assignments']);
+        $inputSource = 'converted_pending_input';
+        $inputCleanupNeeded = true;
+        $hasConvertedPendingInput = true;
+        clearPendingImportInput();
+    }
+}
 ?>
-<h1>Import Specimens - <?php
-if ($hasUploadedFile || $hasDownloadUrl) {
+<?php
+if ($hasUploadedFile || $hasDownloadUrl || $hasConvertedPendingInput || $encodingAction === 'convert') {
     /**
      * a file was provided and is ready to be parsed
      */
     $run = 2; // input provided => 2nd run
-    echo "2nd run";
 } elseif (!empty($_POST['import_data'])) {
     /**
      * data is ready to be inserted into the database
      */
     $run = 3;  // insert data => 3rd run
-    echo "3rd run";
 } else {
     /**
      *  do nothing special, just show the basic form.
      */
     $run = 1; // 1st run
-    echo "1st run";
 }
-?></h1>
+?>
+<div class="page-shell">
+<div class="page-header">
+    <h1 class="page-title">Import Specimens</h1>
+    <div class="page-subtitle"><?php echo ($run === 2) ? 'Review the imported data, correct warnings and select the records to be staged for import.' : (($run === 3) ? 'Import results for the selected specimen records.' : 'Upload a header-based .txt or .csv file, or provide a download URL, to start an import run.'); ?></div>
+</div>
 
 <form enctype="multipart/form-data" Action="<?php echo htmlspecialchars($_SERVER['SCRIPT_NAME']);?>" Method="POST" name="f">
 
 <?php
 if ($run == 2) {  // file provided
     $import = array();
+    $duplicateRows = array();
 
-    if ($hasUploadedFile) {
+    if ($hasConvertedPendingInput) {
+        // Input path was restored from the UTF-8 conversion confirmation above.
+    } elseif ($hasUploadedFile) {
         $inputPath = $_FILES['userfile']['tmp_name'];
         $inputName = $_FILES['userfile']['name'];
         $inputSource = 'upload';
@@ -985,36 +1674,61 @@ if ($run == 2) {  // file provided
     }
 
     if (!$inputError && $inputPath !== '') {
-        $handle = @fopen($inputPath, "r");
-        if ($handle) {
-            $linenumber = 1;
-            while (!feof($handle)) {
-                $parts = parseLine($handle, 6);
-                if ($parts !== false) {
-                    $parts['linenumber'] = $linenumber++;
-                    array_push($import, $parts);
+        $inputEncoding = detectImportEncoding($inputPath);
+        if ($inputEncoding === '') {
+            $inputError = 'The file encoding could not be determined. Only UTF-8, Windows-1252 and ISO-8859-1 files are supported.';
+        } elseif ($inputEncoding !== 'UTF-8' && !$hasConvertedPendingInput) {
+            if (storePendingImportInput($inputPath, $inputName, $inputEncoding, $checkGeographicAssignments, $inputError)) {
+                $encodingConfirmation = array('filename' => $inputName, 'encoding' => $inputEncoding);
+                if ($inputCleanupNeeded && is_file($inputPath)) {
+                    @unlink($inputPath);
+                    $inputCleanupNeeded = false;
                 }
             }
-            fclose($handle);
-
-            $first = $second = $third = array();
-            foreach ($import as $key => $row) {
-                $first[$key]  = $row[0];
-                $second[$key] = $row[3];
-                $third[$key]  = $row[4];
-            }
-            if (!empty($first) && !empty($second) && !empty($third)) {
-                array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
-            }
+        } elseif ($inputEncoding !== 'UTF-8') {
+            $inputError = 'The converted file is still not valid UTF-8.';
         } else {
-            $inputError = 'The import file could not be opened.';
+            $import = loadHeaderBasedImportRows($inputPath, $inputError);
+            if (!$inputError) {
+                $import = checkImportFileDuplicates($import, $duplicateRows, $inputError);
+            }
+            if (!$inputError) {
+                storeImportProcessInputFile($inputPath, $inputName, $inputError);
+            }
+            if (!$inputError) {
+                $first = $second = $third = array();
+                foreach ($import as $key => $row) {
+                    $first[$key]  = $row[0];
+                    $second[$key] = $row[3];
+                    $third[$key]  = $row[4];
+                }
+                if (!empty($first) && !empty($second) && !empty($third)) {
+                    array_multisort($first, SORT_ASC, SORT_STRING, $second, SORT_ASC, SORT_STRING, $third, SORT_ASC, SORT_STRING, $import);
+                }
+            }
         }
     }
 
-    if ($inputError) {
+    if ($encodingConfirmation !== null) {
+        echo "<div class=\"panel info-panel\"><div class=\"panel-heading\">File Encoding</div><div class=\"notice form-notice\"><p>The file <strong>" . htmlspecialchars($encodingConfirmation['filename']) . "</strong> is encoded as <strong>" . htmlspecialchars($encodingConfirmation['encoding']) . "</strong>, not UTF-8.</p>";
+        echo "<p>Convert a temporary copy to UTF-8 before checking the import data, or cancel this upload.</p>";
+        echo "</div><div class=\"action-buttons\"><button type=\"submit\" name=\"import_encoding_action\" value=\"convert\" class=\"button-primary\">Convert to UTF-8 and continue</button> ";
+        echo "<button type=\"submit\" name=\"import_encoding_action\" value=\"cancel\">Cancel</button></div></div>\n";
+    } elseif ($inputError) {
         echo "<div class=\"error\">" . htmlspecialchars($inputError) . "</div>\n";
-        renderImportInputForm($downloadUrl);
+        renderImportInputForm($downloadUrl, $checkGeographicAssignments);
     } else {
+        if ($duplicateRows) {
+            echo '<div class="panel info-panel"><div class="panel-heading">Identical rows omitted</div><p>The following rows duplicate an identical row in this file. Only the first occurrence will be processed.</p><ul>';
+            foreach ($duplicateRows as $index => $duplicate) {
+                echo '<li>Line ' . intval($duplicate['line']) . ': ' . htmlspecialchars($duplicate['herbNumber'], ENT_QUOTES, 'UTF-8')
+                   . ' (same as line ' . intval($duplicate['keptLine']) . ')'
+                   . '<input type="hidden" name="duplicateRows[' . intval($index) . '][herbNumber]" value="' . htmlspecialchars($duplicate['herbNumber'], ENT_QUOTES, 'UTF-8') . '">'
+                   . '<input type="hidden" name="duplicateRows[' . intval($index) . '][line]" value="' . intval($duplicate['line']) . '">'
+                   . '<input type="hidden" name="duplicateRows[' . intval($index) . '][keptLine]" value="' . intval($duplicate['keptLine']) . '"></li>';
+            }
+            echo '</ul></div>';
+        }
         dbi_query("DELETE FROM tbl_external_import_content
                WHERE specimen_ID IS NULL
                 AND externalID IS NULL
@@ -1022,6 +1736,7 @@ if ($run == 2) {  // file provided
 
     $ranks = array('', " subsp. ", " var. ", " subvar. ", " forma ", " subforma ");
     $status = array();
+    $geoWarnings = array();
     $exists = array();
     $importable = 0;
     $importableTaxaPresent = false;
@@ -1029,6 +1744,7 @@ if ($run == 2) {  // file provided
     for ($i = 0; $i < count($import); $i++) {
         $OK = true;
         $status[$i] = "";
+        $geoWarnings[$i] = array();
 
         /**
          * check if collection-ID exists
@@ -1045,12 +1761,7 @@ if ($run == 2) {  // file provided
         /**
          * get HerbNummer and check if this number already exists for the same institution (source_id), if there is a HerbNummer
          */
-        $pieces = explode('_', $import[$i][0]);
-        if (count($pieces) > 1) {
-            $data[$i]['HerbNummer'] = trim($pieces[1]);
-        } else {
-            $data[$i]['HerbNummer'] = $import[$i][0];
-        }
+        $data[$i]['HerbNummer'] = getImportHerbNumber($import[$i][0]);
         if ($data[$i]['HerbNummer']) {
 //            $sql = "SELECT source_id
 //                    FROM tbl_management_collections
@@ -1438,6 +2149,14 @@ if ($run == 2) {  // file provided
          */
         $data[$i]['notes_internal'] = (isset($import[$i][39]) && trim($import[$i][39]) !== '') ? $import[$i][39] : '';
 
+        if ($checkGeographicAssignments) {
+            $geoWarnings[$i] = checkImportGeographicAssignment(
+                $data[$i]['NationID'],
+                isset($data[$i]['provinceID']) ? $data[$i]['provinceID'] : '',
+                $data[$i]
+            );
+        }
+
         /**
          * finished -> log the file contents and processing errors (if any)
          */
@@ -1445,7 +2164,7 @@ if ($run == 2) {  // file provided
                     filename = " . quoteString($inputName) . ",
                     linenumber = " . makeInt($import[$i]['linenumber']) . ",
                     line = " . quoteString(var_export($import[$i], true)) . ",
-                    processingError = " . quoteString($status[$i]) . ",
+                    processingError = " . quoteString(trim($status[$i] . ' ' . implode(' ', $geoWarnings[$i]))) . ",
                     userID = " . quoteString($_SESSION['uid']));
         $data[$i]['contentID'] = dbi_insert_id();
 
@@ -1474,7 +2193,7 @@ if ($run == 2) {  // file provided
     }
 
     $validationExportToken = storeImportValidationExportPayload(
-        buildImportValidationExportPayload($import, $status, $taxamatch, $data, $inputName)
+        buildImportValidationExportPayload($import, $status, $taxamatch, $data, $inputName, $geoWarnings)
     );
 
     if ($importableTaxaPresent) {
@@ -1488,9 +2207,10 @@ if ($run == 2) {  // file provided
         echo "</select><br>\n";
     }
     echo "<input type=\"hidden\" name=\"export_token\" value=\"" . htmlspecialchars($validationExportToken, ENT_QUOTES) . "\">\n";
-    echo "$importable / " . count($import) . " entries are ready to be imported&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
-       . "<input type=\"submit\" name=\"import_data\" value=\"import them now\">&nbsp;"
-       . "<input type=\"submit\" name=\"export_validation\" value=\"export errors/hints\"><br>\n";
+    echo "<input type=\"hidden\" name=\"import_process_token\" value=\"" . htmlspecialchars($_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]['token'], ENT_QUOTES, 'UTF-8') . "\">\n";
+    echo "<div class=\"summary\">$importable / " . count($import) . " entries are ready to be imported"
+       . "<div class=\"action-buttons\"><input type=\"submit\" name=\"import_data\" value=\"Import selected records\" class=\"button-primary\">"
+       . "<input type=\"submit\" name=\"export_validation\" value=\"Export errors and hints\"></div></div>\n";
     $ctr = 0;
     for ($block = 0; $block < 5; $block++) {
         switch ($block) {
@@ -1502,11 +2222,11 @@ if ($run == 2) {  // file provided
             case 3: echo "<hr>One or more errors occurred:<br>\n"; break;
             case 4: echo "<hr>HerbNummer exists already in database:<br>\n"; break;
         }
-        echo "<table border=\"1\">\n";
+        echo "<div class=\"import-preview\"><table>\n";
         for ($i = 0; $i < count($import); $i++) {
             if ($block == $position[$i]) {
                 if ($status[$i] == "OK") {
-                    echo "<tr style=\"background-color:#00FF00\">";
+                    echo !empty($geoWarnings[$i]) ? "<tr style=\"background-color:#fff3cd\">" : "<tr style=\"background-color:#00FF00\">";
                 } elseif (strpos($status[$i], "exists") !== false) {
                     echo "<tr style=\"background-color:#0000FF\">";
                 } else {
@@ -1556,7 +2276,7 @@ if ($run == 2) {  // file provided
                 echo "<td>" . ($import[$i][27] ?? '') . "</td>";
                 echo "<td>" . ($import[$i][28] ?? '') . "</td>";
                 echo "<td>" . ($import[$i][29] ?? '') . "</td>";
-                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lat") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][30] ?? '') . "</td>";
+                echo "<td" . ((strpos($status[$i], "no_numeric_sec_lon") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][30] ?? '') . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_numeric_quadrant") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][31] ?? '') . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_numeric_quadrant_sub") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][32] ?? '') . "</td>";
                 echo "<td" . ((strpos($status[$i], "no_numeric_exactness") !== false) ? " style=\"background-color:red\"" : "") . ">" . ($import[$i][33] ?? '') . "</td>";
@@ -1568,14 +2288,28 @@ if ($run == 2) {  // file provided
                 echo "<td>" . htmlspecialchars($import[$i][39] ?? '') . "</td>";
                 echo "</tr>\n";
 
+                if (!empty($geoWarnings[$i])) {
+                    $warningText = array();
+                    foreach ($geoWarnings[$i] as $warning) {
+                        $warningText[] = formatImportGeographicWarning($warning);
+                    }
+                    $coordinates = formatImportCoordinatesForValidation($data[$i]);
+                    echo "<tr><td colspan=\"40\" style=\"background-color:#fff3cd\"><strong>Geographic assignment warning:</strong> "
+                       . htmlspecialchars(implode(' ', $warningText))
+                       . (($coordinates !== '') ? ' Coordinates: ' . htmlspecialchars($coordinates) . '.' : '')
+                       . "</td></tr>\n";
+                }
+
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:yellow\">";
                     if ($block == 1) {
                         echo "<input type='hidden' name='similarTaxa_{$ctr}_orig' value='" . htmlspecialchars($import[$i][4]) . "' />";
                         echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"0\" checked>no import<br>";
                         foreach ($taxamatch[$i] as $val) {
+                            $taxonWarning = getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"" . htmlspecialchars($val['taxonID']) . "\">"
-                               . $val['taxon'] . "<br>";
+                               . $val['taxon']
+                               . ($taxonWarning !== '' ? ' <strong>Warning:</strong> ' . htmlspecialchars($taxonWarning, ENT_QUOTES, 'UTF-8') : '') . "<br>";
                         }
                         if (strpos($status[$i], "no_genus") === false) {
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"ID" . htmlspecialchars($import[$i][4]) . "\">Import \""
@@ -1584,7 +2318,9 @@ if ($run == 2) {  // file provided
                         }
                     } else {
                         foreach ($taxamatch[$i] as $val) {
-                            echo $val['taxon'] . "<br>";
+                            $taxonWarning = getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
+                            echo $val['taxon']
+                               . ($taxonWarning !== '' ? ' <strong>Warning:</strong> ' . htmlspecialchars($taxonWarning, ENT_QUOTES, 'UTF-8') : '') . "<br>";
                         }
                     }
                     echo "</td></tr>\n";
@@ -1642,19 +2378,28 @@ if ($run == 2) {  // file provided
                        . "<input type=\"hidden\" name=\"observation_$ctr\" value=\""   . htmlspecialchars($data[$i]['observation']) . "\">"
                        . "<input type=\"hidden\" name=\"notesinternal_$ctr\" value=\"" . htmlspecialchars($data[$i]['notes_internal']) . "\">"
                        . "<input type=\"hidden\" name=\"contentid_$ctr\" value=\""     . htmlspecialchars($data[$i]['contentID']) . "\">"
+                       . "<input type=\"hidden\" name=\"importline_$ctr\" value=\""     . intval($import[$i]['linenumber']) . "\">"
                        . "<input type=\"hidden\" name=\"position_$ctr\" value=\""      . htmlspecialchars($position[$i]) . "\">\n";
 
                     $ctr++;
+                } else {
+                    $excludedIndex = intval($i);
+                    echo "<input type=\"hidden\" name=\"excludedRows[$excludedIndex][herbNumber]\" value=\"" . htmlspecialchars($import[$i][0], ENT_QUOTES, 'UTF-8') . "\">"
+                       . "<input type=\"hidden\" name=\"excludedRows[$excludedIndex][line]\" value=\"" . intval($import[$i]['linenumber']) . "\">"
+                       . "<input type=\"hidden\" name=\"excludedRows[$excludedIndex][reason]\" value=\"" . htmlspecialchars(trim($status[$i]), ENT_QUOTES, 'UTF-8') . "\">\n";
                 }
             }
         }
-        echo "</table>\n";
+        echo "</table></div>\n";
     }
     }
 
     if ($inputCleanupNeeded && $inputPath && file_exists($inputPath)) {
         @unlink($inputPath);
     }
+} elseif ($run == 3 && !isCurrentImportProcessToken($_POST['import_process_token'] ?? '')) {
+    echo '<div class="error">The import preview is no longer current. Please upload and check the file again.</div>';
+    renderImportInputForm();
 } elseif ($run == 3) {  // insert data
     $data = array();
     foreach ($_POST as $k => $v) {
@@ -1715,6 +2460,8 @@ if ($run == 2) {  // file provided
             $data[intval($pieces[1])]['Fundort_engl'] = $v;
         } elseif ($pieces[0] == 'quadrantsub') {
             $data[intval($pieces[1])]['quadrant_sub'] = $v;
+        } elseif ($pieces[0] == 'importline') {
+            $data[intval($pieces[1])]['importLine'] = intval($v);
         } elseif (    $pieces[0] == 'HerbNummer'    || $pieces[0] == 'seriesID'   || $pieces[0] == 'taxonID' || $pieces[0] == 'SammlerID'
                    || $pieces[0] == 'CollNummer'
                    || $pieces[0] == 'collectionID'  || $pieces[0] == 'Nummer'     || $pieces[0] == 'Datum'   || $pieces[0] == 'Datum2'
@@ -1728,13 +2475,24 @@ if ($run == 2) {  // file provided
 
     // the real database-insert happens down below to show what the DB returns
 
-    echo '<div id="import_tasks">' . count($data) . ((count($data) > 1) ? " entries are" : " entry is") . " to be imported</div>\n";
-    echo '<div id="import_errors" class="error">' . "\n";
-
     $autocomplete = Autocomplete::Load();
-
-    $imported = 0;
-    for ($i = 0; $i < count($data); $i++) {
+    $outcomes = array('imported' => array(), 'not_selected' => array(), 'already_present' => array(), 'duplicates' => array(), 'errors' => array(), 'excluded' => array());
+    if (!empty($_POST['duplicateRows']) && is_array($_POST['duplicateRows'])) {
+        foreach ($_POST['duplicateRows'] as $duplicate) {
+            if (is_array($duplicate)) {
+                $outcomes['duplicates'][] = array('herbNumber' => $duplicate['herbNumber'] ?? '', 'line' => intval($duplicate['line'] ?? 0), 'reason' => 'Identical to line ' . intval($duplicate['keptLine'] ?? 0) . '; processed only once.');
+            }
+        }
+    }
+    if (!empty($_POST['excludedRows']) && is_array($_POST['excludedRows'])) {
+        foreach ($_POST['excludedRows'] as $excluded) {
+            if (is_array($excluded)) {
+                $outcomes['excluded'][] = array('herbNumber' => $excluded['herbNumber'] ?? '', 'line' => intval($excluded['line'] ?? 0), 'reason' => $excluded['reason'] ?? '');
+            }
+        }
+    }
+    foreach ($data as $i => $row) {
+        $outcome = array('herbNumber' => $row['HerbNummer'] ?? '', 'line' => $row['importLine'] ?? 0, 'reason' => '');
         if (   $data[$i]['position'] == 0
             || ($data[$i]['position'] == 1 && !empty($data[$i]['similarID']))
             || (!empty($data[$i]['importTaxa']) && ($data[$i]['position'] == 1 || $data[$i]['position'] == 2))) {
@@ -1746,8 +2504,8 @@ if ($run == 2) {  // file provided
                 // check again if taxon name is not existing in database
                 $results = $autocomplete->taxonWithHybrids(array('exact' => $data[$i]['importTaxa']));
                 if(count($results) > 1){
-                  echo "WARNING: " . count($results) . " identical entries of the same taxon name found in database: "
-                    . $data[$i]['importTaxa'] . " - import of specimen skipped<br>\n";
+                  $outcome['reason'] = count($results) . ' identical entries of the taxon name found: ' . $data[$i]['importTaxa'];
+                  $outcomes['errors'][] = $outcome;
                   continue;
                 } else
                 if(count($results) == 0) {
@@ -1756,7 +2514,8 @@ if ($run == 2) {  // file provided
                     $data[$i]['taxonID'] = $result['taxonID'];
                   }
                   else {
-                    echo $data[$i]['importTaxa'] . ": " . $result['error'] . "<br>\n";
+                    $outcome['reason'] = $data[$i]['importTaxa'] . ': ' . $result['error'];
+                    $outcomes['errors'][] = $outcome;
                     continue;  // abort the insertion of this taxon and the specimen because something went very wrong
                   }
                 } else {
@@ -1765,7 +2524,7 @@ if ($run == 2) {  // file provided
             }
             $sql = "SELECT specimen_ID FROM tbl_specimens_import WHERE 1 = 1";
             foreach ($data[$i] as $k => $v) {
-                if ($k != 'position' && $k != 'similarID' && $k != 'importTaxa' && $k != 'contentid') {
+                if ($k != 'position' && $k != 'similarID' && $k != 'importTaxa' && $k != 'contentid' && $k != 'importLine') {
                     if (strlen($v) > 0) {
                         $sql .= " AND $k = " . quoteString($v);
                     } else {
@@ -1828,17 +2587,59 @@ if ($run == 2) {  // file provided
                             specimen_ID = $specimen_ID,
                             pending = 1
                            WHERE contentID = " . makeInt($data[$i]['contentid']));
-                $imported++;
+                $outcomes['imported'][] = $outcome;
+            } else {
+                $outcomes['already_present'][] = $outcome;
             }
+        } else {
+            $outcome['reason'] = 'No taxon action selected.';
+            $outcomes['not_selected'][] = $outcome;
         }
     }
+    $outcomeLabels = array(
+        'imported' => 'Imported into the specimen import area',
+        'not_selected' => 'Not selected for import',
+        'already_present' => 'Already present in the specimen import area',
+        'duplicates' => 'Identical duplicate rows omitted',
+        'excluded' => 'Excluded during validation',
+        'errors' => 'Import errors',
+    );
+    $processContext = $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY];
+    $processContext['report_content'] = buildImportResultsReport($outcomes, $outcomeLabels, $processContext);
+    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY] = $processContext;
+    $totalOutcomes = array_sum(array_map('count', $outcomes));
+    echo '<div class="summary">' . $totalOutcomes . ' file row(s) accounted for. ';
+    foreach ($outcomeLabels as $key => $label) {
+        echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ': <strong>' . count($outcomes[$key]) . '</strong>. ';
+    }
     echo "</div>\n";
-    echo '<div id="import_success">' . $imported . (($imported > 1) ? " entries have" : " entry has") . " been imported </div>\n";
+    echo '<div class="action-buttons"><input type="hidden" name="import_process_token" value="'
+       . htmlspecialchars($processContext['token'], ENT_QUOTES, 'UTF-8') . '">'
+       . '<button type="submit" name="archive_import_process" value="1">Download import archive</button>'
+       . '<a href="' . htmlspecialchars($_SERVER['SCRIPT_NAME'], ENT_QUOTES, 'UTF-8') . '">Start new import process</a></div>';
+    foreach ($outcomeLabels as $key => $label) {
+        if (empty($outcomes[$key])) {
+            continue;
+        }
+        echo '<div class="panel' . ($key === 'errors' ? ' error' : '') . '"><div class="panel-heading">'
+           . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ' (' . count($outcomes[$key]) . ')</div><ul>';
+        foreach ($outcomes[$key] as $item) {
+            $herbNumber = trim((string)$item['herbNumber']);
+            echo '<li>' . (($item['line'] > 0) ? 'Line ' . intval($item['line']) . ': ' : '')
+               . (($herbNumber !== '') ? htmlspecialchars($herbNumber, ENT_QUOTES, 'UTF-8') : '(no HerbNummer)')
+               . (($item['reason'] !== '') ? ' — ' . htmlspecialchars((string)$item['reason'], ENT_QUOTES, 'UTF-8') : '') . '</li>';
+        }
+        echo "</ul></div>\n";
+    }
 } else {    // show upload form
-    renderImportInputForm($downloadUrl);
+    if ($pageNotice !== '') {
+        echo '<div class="notice">' . htmlspecialchars($pageNotice) . "</div>\n";
+    }
+    renderImportInputForm($downloadUrl, $checkGeographicAssignments);
 }
 
 ?></form>
+</div>
 
 </body>
 </html>

@@ -597,6 +597,8 @@ function getUpdateFieldDefinitions()
 
     $definitions = array(
         'CollNummer' => array('label' => 'CollNummer', 'type' => 'string'),
+        'checked' => array('label' => 'Checked', 'type' => 'bool'),
+        'accessible' => array('label' => 'Accessible', 'type' => 'bool'),
         'identstatusID' => array('label' => 'Ident Status', 'type' => 'int'),
         'taxonID' => array('label' => 'Taxon', 'type' => 'int'),
         'SammlerID' => array('label' => 'Collector 1', 'type' => 'int'),
@@ -730,6 +732,8 @@ function getUpdateImportHeaderSourceAliases()
         'herbnummer' => 'HerbNummer',
         'collectionid' => 'collectionID',
         'collectionnumber' => 'CollNummer',
+        'checked' => 'checked',
+        'accessible' => 'accessible',
         'status' => 'identstatusID',
         'taxon' => 'taxonID',
         'sammler' => 'collector',
@@ -942,7 +946,7 @@ function getTaxonText($id, $withAuthors = true)
 
 function formatDisplayValue($key, $value)
 {
-    if ($key === 'digital_image' || $key === 'digital_image_obs' || $key === 'observation') {
+    if ($key === 'checked' || $key === 'accessible' || $key === 'digital_image' || $key === 'digital_image_obs' || $key === 'observation') {
         return (!empty($value)) ? 'yes' : '';
     }
 
@@ -1177,6 +1181,10 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
     $herbNummer = splitImportHerbNummer(getImportSourceValue($rawRow, 'HerbNummer', $columnMap));
     $normalized['CollNummer'] = getImportSourceValue($rawRow, 'CollNummer', $columnMap);
     $display['CollNummer'] = $normalized['CollNummer'];
+    $normalized['checked'] = normalizeValueForType('bool', getImportSourceValue($rawRow, 'checked', $columnMap));
+    $normalized['accessible'] = normalizeValueForType('bool', getImportSourceValue($rawRow, 'accessible', $columnMap));
+    $display['checked'] = formatDisplayValue('checked', $normalized['checked']);
+    $display['accessible'] = formatDisplayValue('accessible', $normalized['accessible']);
 
     $identStatusText = getImportSourceValue($rawRow, 'identstatusID', $columnMap);
     $display['identstatusID'] = $identStatusText;
@@ -1493,7 +1501,7 @@ function findMatchingSpecimenId($specimenId)
 
 function fetchExistingSpecimenData($specimenId)
 {
-    $sql = "SELECT s.specimen_ID, s.HerbNummer, s.collectionID, s.CollNummer, s.identstatusID, sis.identification_status,
+    $sql = "SELECT s.specimen_ID, s.HerbNummer, s.collectionID, s.CollNummer, s.checked, s.accessible, s.identstatusID, sis.identification_status,
                    s.taxonID, s.SammlerID, c.Sammler, s.Sammler_2ID, c2.Sammler_2,
                    s.seriesID, ss.series, s.series_number, s.Nummer, s.alt_number,
                    s.Datum, s.Datum2, s.det, s.typified, s.typusID, ty.typus_lat,
@@ -1537,6 +1545,8 @@ function fetchExistingSpecimenData($specimenId)
     $display['typusID'] = $row['typus_lat'] ?: '';
     $display['NationID'] = $row['nation_engl'] ?: '';
     $display['provinceID'] = $row['provinz'] ?: '';
+    $display['checked'] = formatDisplayValue('checked', $normalized['checked']);
+    $display['accessible'] = formatDisplayValue('accessible', $normalized['accessible']);
     $display['digital_image'] = formatDisplayValue('digital_image', $normalized['digital_image']);
     $display['digital_image_obs'] = formatDisplayValue('digital_image_obs', $normalized['digital_image_obs']);
     $display['observation'] = formatDisplayValue('observation', $normalized['observation']);
@@ -1606,7 +1616,8 @@ function buildSpecimenUpdateAssignments(array $selectedData, array $currentData)
         $selectedComparable = normalizeComparableFieldValue($field, $definition['type'], $selectedData[$field] ?? '');
         $currentComparable = normalizeComparableFieldValue($field, $definition['type'], $currentData[$field] ?? '');
         if ($selectedComparable !== $currentComparable) {
-            $assignments[] = $field . ' = ' . buildSqlValue($definition['type'], $selectedValue);
+            $sqlField = ($field === 'accessible') ? '`accessible`' : $field;
+            $assignments[] = $sqlField . ' = ' . buildSqlValue($definition['type'], $selectedValue);
             $changedFields[] = $field;
         }
     }
@@ -1676,8 +1687,9 @@ function renderUpdateInputForm($downloadUrl = '')
        . "  <div class='panel-heading'>Update Rules</div>\n"
        . "  <div class='notice form-notice'>\n"
        . "    <p>This tool only accepts semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files with a header line. Files can be uploaded directly or downloaded from an HTTPS URL.</p>\n"
+       . "    <p><a href='updateSpecimens_template.txt'>Download the current update template</a>. The columns <strong>checked</strong> and <strong>accessible</strong> follow <strong>CollectionNumber</strong>.</p>\n"
        . "    <p>The header line must contain <strong>specimen_id</strong>. This is the central key for all updates. <strong>HerbNummer</strong> is optional; if it is present and differs from the current JACQ value for the same specimen, the row is flagged with a warning.</p>\n"
-       . "    <p>Only the provided header fields are shown in the preview and considered for update. Allowed header attributes are exactly: <strong>specimen_id</strong>, <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
+       . "    <p>Only the provided header fields are shown in the preview and considered for update. Allowed header attributes are exactly: <strong>specimen_id</strong>, <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>checked</strong>, <strong>accessible</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
        . "  </div>\n"
        . "</div>\n";
 }
