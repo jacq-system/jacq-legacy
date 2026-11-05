@@ -507,7 +507,7 @@ if ($p_taxonID) {
 }
 
 $cf->labelMandatory(9, 6.5, 6, "Genus");
-$cf->inputText(9, 6.5, 51, "gen", $p_gen, makeGen($p_gen, 9, 5), 500);
+$cf->inputText(9, 6.5, 51, "gen", $p_gen, 500);
 //$cf->editDropdown(9, 6.5, 51, "gen", $p_gen, makeGen($p_gen, 9, 5), 500);
 
 $cf->labelMandatory(9, 10.5, 6, "Rank");
@@ -520,49 +520,49 @@ if (substr(extractID($p_status), 1, -1) == 96) {
 }
 
 $cf->labelMandatory(9, 14, 6, "Species");
-$cf->inputText(9, 14, 20, "species", $p_species, makeEpithet($p_species, 9, 12.5, true), 65);
+$cf->inputText(9, 14, 20, "species", $p_species, 65);
 //$cf->editDropdown(9, 14, 20, "species", $p_species, makeEpithet($p_species, 9, 12.5, true), 65);
 $cf->labelMandatory(40, 14, 6, "Author");
-$cf->inputText(40, 14, 35, "author", $p_author, makeAuthor($p_author, 40, 12.5, true), 520);
+$cf->inputText(40, 14, 35, "author", $p_author, 520);
 //$cf->editDropdown(40, 14, 20, "author", $p_author, makeAuthor($p_author, 40, 12.5, true), 520);
 
 $cf->label(9, 18, "Subspecies");
-$cf->inputText(9, 18, 20, "subspecies", $p_subspecies, makeEpithet($p_subspecies, 9, 19.7, false), 65);
+$cf->inputText(9, 18, 20, "subspecies", $p_subspecies, 65);
 //$cf->editDropdown(9, 18, 20, "subspecies", $p_subspecies, makeEpithet($p_subspecies, 9, 19.7, false), 65);
 $cf->label(40, 18, "Author");
-$cf->inputText(40, 18, 35, "subauthor", $p_subauthor, makeAuthor($p_subauthor, 40, 19.7, false), 520);
+$cf->inputText(40, 18, 35, "subauthor", $p_subauthor, 520);
 //$cf->editDropdown(40, 18, 20, "subauthor", $p_subauthor, makeAuthor($p_subauthor, 40, 19.7, false), 520);
 
 $cf->label(9, 22, "Variety");
-$cf->inputText(9, 22, 20, "variety", $p_variety, makeEpithet($p_variety, 9, 23.7, false), 65);
+$cf->inputText(9, 22, 20, "variety", $p_variety, 65);
 //$cf->editDropdown(9, 22, 20, "variety", $p_variety, makeEpithet($p_variety, 9, 23.7, false), 65);
 $cf->label(40, 22, "Author");
-$cf->inputText(40, 22, 35, "varauthor", $p_varauthor, makeAuthor($p_varauthor, 40, 23.7, false), 520);
+$cf->inputText(40, 22, 35, "varauthor", $p_varauthor, 520);
 //$cf->editDropdown(40, 22, 20, "varauthor", $p_varauthor, makeAuthor($p_varauthor, 40, 23.7, false), 520);
 
 $cf->label(9, 26, "Subvariety");
-$cf->inputText(9, 26, 20, "subvariety", $p_subvariety, makeEpithet($p_subvariety, 9, 27.7, false), 65);
+$cf->inputText(9, 26, 20, "subvariety", $p_subvariety, 65);
 //$cf->editDropdown(9, 26, 20, "subvariety", $p_subvariety, makeEpithet($p_subvariety, 9, 27.7, false), 65);
 $cf->label(40, 26, "Author");
-$cf->inputText(40, 26, 35, "subvarauthor", $p_subvarauthor, makeAuthor($p_subvarauthor, 40, 27.7, false), 520);
+$cf->inputText(40, 26, 35, "subvarauthor", $p_subvarauthor, 520);
 //$cf->editDropdown(40, 26, 20, "subvarauthor", $p_subvarauthor, makeAuthor($p_subvarauthor, 40, 27.7, false), 520);
 
 $cf->label(9, 30, "Forma");
-$cf->inputText(9, 30, 20, "forma", $p_forma, makeEpithet($p_forma, 9, 31.7, false), 65);
+$cf->inputText(9, 30, 20, "forma", $p_forma, 65);
 //$cf->editDropdown(9, 30, 20, "forma", $p_forma, makeEpithet($p_forma, 9, 31.7, false), 65);
 $cf->label(40, 30, "Author");
-$cf->inputText(40, 30, 35, "forauthor", $p_forauthor, makeAuthor($p_forauthor, 40, 31.7, false), 520);
+$cf->inputText(40, 30, 35, "forauthor", $p_forauthor, 520);
 //$cf->editDropdown(40, 30, 20, "forauthor", $p_forauthor, makeAuthor($p_forauthor, 40, 31.7, false), 520);
 
 $cf->label(9, 34, "Subforma");
-$cf->inputText(9, 34, 20, "subforma", $p_subforma, makeEpithet($p_subforma, 9, 35.7, false), 65);
+$cf->inputText(9, 34, 20, "subforma", $p_subforma, 65);
 //$cf->editDropdown(9, 34, 20, "subforma", $p_subforma, makeEpithet($p_subforma, 9, 35.7, false), 65);
 $cf->label(40, 34, "Author");
-$cf->inputText(40, 34, 35, "subforauthor", $p_subforauthor, makeAuthor($p_subforauthor, 40, 35.7, false), 520);
+$cf->inputText(40, 34, 35, "subforauthor", $p_subforauthor, 520);
 //$cf->editDropdown(40, 34, 20, "subforauthor", $p_subforauthor, makeAuthor($p_subforauthor, 40, 35.7, false), 520);
 
 $cf->label(9, 38, "accepted Taxon");
-$cf->inputText(9, 38, 51, "syn", $p_syn, makeSyn($p_syn), 500);
+$cf->inputText(9, 38, 51, "syn", $p_syn, 500);
 //$cf->editDropdown(9, 38, 51, "syn", $p_syn, makeSyn($p_syn), 500);
 $cf->label(5, 39.2, "<font size=\"+1\"><b>&laquo;</b></font>","javascript:history.back()");
 if (extractID($p_syn) != "NULL") {
@@ -570,7 +570,7 @@ if (extractID($p_syn) != "NULL") {
 }
 
 $cf->label(9, 41.5, "Basionym");
-$cf->inputText(9, 41.5, 51, "bas", $p_bas,makeSyn($p_bas), 500);
+$cf->inputText(9, 41.5, 51, "bas", $p_bas, 500);
 //$cf->editDropdown(9, 41.5, 51, "bas", $p_bas,makeSyn($p_bas), 500);
 $cf->label(5, 42.8, "<font size=\"+1\"><b>&laquo;</b></font>", "javascript:history.back()");
 if (extractID($p_bas) != "NULL") {

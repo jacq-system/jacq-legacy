@@ -143,11 +143,11 @@ class Display
     /**
      * returns a formatted protolog-string when given a valid citation-ID
      *
-     * @param int|string $citationID citation-ID
+     * @param int|string|null $citationID citation-ID
      * @param bool $withID adds the citationID between brackets at the end (default no)
      * @return string formatted protolog-string
      */
-    public static function protolog(int|string $citationID, bool $withID = false): string
+    public static function protolog(int|string|null $citationID, bool $withID = false): string
     {
         try {
             $db = PdoAccess::ConnectTo('INPUT');
@@ -213,12 +213,12 @@ class Display
                     $dbst2->execute(array(":serviceID" => $row['source_serviceID']));
                     $row2 = $dbst2->fetch();
 
-                    return "{$row2['name']} <{$row2['serviceID']}>";
+                    return (!empty($row2)) ? "{$row2['name']} <{$row2['serviceID']}>" : "";
                 } elseif ($row['source'] == 'person'){
                     $dbst2 = $db->prepare("SELECT person_ID, p_familyname, p_firstname, p_birthdate, p_death FROM tbl_person WHERE person_ID = :person_ID");
                     $dbst2->execute(array(":person_ID" => $row['source_person_ID']));
                     $row2 = $dbst2->fetch();
-                    return "{$row2['p_familyname']}, {$row2['p_firstname']} ({$row2['p_birthdate']} - {$row2['p_death']} <{$row2['person_ID']}>";
+                    return (!empty($row2)) ? "{$row2['p_familyname']}, {$row2['p_firstname']} ({$row2['p_birthdate']} - {$row2['p_death']} <{$row2['person_ID']}>" : "";
                 }
             }
         } catch (Exception $e) {

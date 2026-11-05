@@ -300,10 +300,12 @@ $cf->label(11, 25, "source specimen", "editSpecies.php?sel=<$p_source_specimenIn
 $cf->inputJqAutocomplete(11, 25, 28, "source_specimen", $p_source_specimen, $p_source_specimenIndex, "index_jq_autocomplete.php?field=taxonNoExternals", 100, 2);
 
 if (Permission::has('lit')) {
-    $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
     $cf->buttonSubmit(2, 31, "reload", " Reload ");
     $cf->buttonReset(10, 31, " Reset ");
-    $cf->buttonSubmit(20, 31, "submitUpdate", $text);
+    if (!empty($p_taxon)) {
+        $text = ($p_tax_syn_ID) ? " Update " : " Insert ";
+        $cf->buttonSubmit(20, 31, "submitUpdate", $text);
+    }
 }
 $cf->buttonJavaScript(28, 31, " Cancel ", "self.close()");
 ?>
