@@ -3,6 +3,7 @@
 const INCERTAE_SEDIS_IMPORT = 3449;
 const IMPORT_SPECIMENS_MAX_FILE_SIZE = 8000000;
 const IMPORT_SPECIMENS_PENDING_INPUT_SESSION_KEY = 'import_specimens_pending_input';
+const IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY = 'import_specimens_pending_herb_confirmation';
 const IMPORT_SPECIMENS_PROCESS_SESSION_KEY = 'import_specimens_process';
 
 session_start();
@@ -122,6 +123,40 @@ function storePendingImportInput($sourcePath, $inputName, $encoding, $checkGeogr
         'created_at' => time(),
     );
 
+    return true;
+}
+
+function clearPendingImportHerbConfirmation()
+{
+    $pending = $_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY] ?? array();
+    if (!empty($pending['path']) && is_file($pending['path'])) {
+        @unlink($pending['path']);
+    }
+    unset($_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY]);
+}
+
+function storePendingImportHerbConfirmation($sourcePath, $inputName, $checkGeographicAssignments, &$error)
+{
+    $path = tempnam(sys_get_temp_dir(), 'imp_herb_');
+    if ($path === false || !@copy($sourcePath, $path)) {
+        if ($path !== false) @unlink($path);
+        $error = 'Could not retain the file for herbarium number confirmation.';
+        return false;
+    }
+    try {
+        $token = bin2hex(random_bytes(16));
+    } catch (Exception $e) {
+        @unlink($path);
+        $error = 'Could not start herbarium number confirmation.';
+        return false;
+    }
+    clearPendingImportHerbConfirmation();
+    $_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY] = array(
+        'path' => $path,
+        'name' => (string)$inputName,
+        'geo_check' => (bool)$checkGeographicAssignments,
+        'token' => $token,
+    );
     return true;
 }
 
@@ -287,21 +322,24 @@ function loadHeaderBasedImportRows($inputPath, &$error = '')
 function getImportHerbNumber($value)
 {
     $pieces = explode('_', (string)$value);
-    return count($pieces) > 1 ? trim($pieces[1]) : trim((string)$value);
+    $number = count($pieces) > 1 ? trim($pieces[1]) : trim((string)$value);
+    return preg_match('/^\s*$/u', $number) ? '' : $number;
 }
 
 /** Validate herbarium numbers, reject conflicts, and retain the first identical row. */
-function checkImportFileDuplicates(array $rows, &$duplicates, &$error)
+function checkImportFileDuplicates(array $rows, &$duplicates, &$error, &$allHerbNumbersMissing = null)
 {
     $duplicates = array();
     $seen = array();
     $uniqueRows = array();
     $conflicts = array();
     $missingNumbers = array();
+    $allHerbNumbersMissing = false;
     foreach ($rows as $row) {
         $herbNumber = getImportHerbNumber($row[0]);
-        if ($herbNumber === '' || preg_match('/^\s*$/u', $herbNumber)) {
+        if ($herbNumber === '') {
             $missingNumbers[] = $row['linenumber'];
+            $uniqueRows[] = $row;
             continue;
         }
         $key = mb_strtolower($herbNumber, 'UTF-8');
@@ -320,10 +358,11 @@ function checkImportFileDuplicates(array $rows, &$duplicates, &$error)
             $conflicts[] = 'HerbNummer "' . $herbNumber . '" (lines ' . $first['linenumber'] . ' and ' . $row['linenumber'] . ')';
         }
     }
-    if ($missingNumbers || $conflicts) {
+    $allHerbNumbersMissing = count($rows) > 0 && count($missingNumbers) === count($rows);
+    if (($missingNumbers && !$allHerbNumbersMissing) || $conflicts) {
         $messages = array();
-        if ($missingNumbers) {
-            $messages[] = 'HerbNummer is required on line(s): ' . implode(', ', $missingNumbers) . '.';
+        if ($missingNumbers && !$allHerbNumbersMissing) {
+            $messages[] = 'Some rows have a HerbNummer, but it is missing on line(s): ' . implode(', ', $missingNumbers) . '.';
         }
         if ($conflicts) {
             $messages[] = 'The same HerbNummer has different data in the file: ' . implode('; ', $conflicts) . '.';
@@ -722,6 +761,9 @@ function buildImportResultsReport(array $outcomes, array $labels, array $context
     $lines = array('Import Specimens Report', 'Generated: ' . date('Y-m-d H:i:s'));
     if (!empty($context['input_file_name'])) {
         $lines[] = 'Input file: ' . $context['input_file_name'];
+    }
+    if (!empty($context['without_herb_numbers'])) {
+        $lines[] = 'Import without herbarium numbers: confirmed';
     }
     $lines[] = 'File rows: ' . array_sum(array_map('count', $outcomes));
     foreach ($labels as $key => $label) {
@@ -1230,7 +1272,7 @@ function renderImportInputForm($downloadUrl = '', $checkGeographicAssignments = 
        . "    <p><a href='importSpecimens_template.txt'>Download the current import template</a>. \n"
        . "    <p><a href='tbl_import_specimens_template_v2.3_112026.xlsx'>Download the Excel field list and examples</a>.</p>\n"
        . "    <p>Required headers: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>taxon</strong> and <strong>Sammler</strong>. Header order does not matter. <strong>checked</strong> and <strong>accessible</strong> must not be included; they are set only after review in the specimen import area.</p>\n"
-       . "    <p>Every data row must have a non-empty HerbNummer. Identical rows with the same HerbNummer are processed once. If rows with the same HerbNummer contain different values, the entire file must be corrected before import.</p>\n"
+       . "    <p>The HerbNummer column is required. If any row has a HerbNummer, all rows must have one. If every HerbNummer is empty, you must confirm a warning before continuing. Identical rows with the same HerbNummer are processed once; conflicting rows with the same HerbNummer stop the import.</p>\n"
        . "    <p>Allowed header attributes are exactly: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
        . "    <p>UTF-8 files are processed directly. Windows-1252 and ISO-8859-1 files can be converted to UTF-8 after confirmation.</p>\n"
        . "  </div>\n"
@@ -1604,11 +1646,34 @@ $inputSource = '';
 $inputError = '';
 $pageNotice = '';
 $encodingConfirmation = null;
+$herbConfirmation = null;
 $hasConvertedPendingInput = false;
+$hasConfirmedHerbInput = false;
 $checkGeographicAssignments = !empty($_POST['geo_check']);
 $encodingAction = isset($_POST['import_encoding_action']) ? $_POST['import_encoding_action'] : '';
+$herbAction = isset($_POST['import_herb_action']) ? $_POST['import_herb_action'] : '';
 
-if ($encodingAction === 'cancel') {
+if ($herbAction === 'cancel') {
+    clearPendingImportHerbConfirmation();
+    $pageNotice = 'The import without herbarium numbers was cancelled.';
+} elseif ($herbAction === 'confirm') {
+    $pendingHerb = $_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY] ?? null;
+    $submittedToken = $_POST['herb_confirmation_token'] ?? '';
+    if (!is_array($pendingHerb) || empty($pendingHerb['path']) || !is_file($pendingHerb['path'])
+        || !is_string($submittedToken) || empty($pendingHerb['token']) || !hash_equals($pendingHerb['token'], $submittedToken)) {
+        $inputError = 'The pending herbarium number confirmation is no longer available. Please upload the file again.';
+    } else {
+        $inputPath = $pendingHerb['path'];
+        $inputName = $pendingHerb['name'];
+        $checkGeographicAssignments = !empty($pendingHerb['geo_check']);
+        $inputSource = 'confirmed_no_herb_numbers';
+        $inputCleanupNeeded = true;
+        $hasConfirmedHerbInput = true;
+        unset($_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY]);
+    }
+    $hasUploadedFile = false;
+    $hasDownloadUrl = false;
+} elseif ($encodingAction === 'cancel') {
     clearPendingImportInput();
     $pageNotice = 'The import file conversion was cancelled.';
 } elseif ($encodingAction === 'convert') {
@@ -1626,10 +1691,12 @@ if ($encodingAction === 'cancel') {
         $hasConvertedPendingInput = true;
         clearPendingImportInput();
     }
+} elseif ($hasUploadedFile || $hasDownloadUrl) {
+    clearPendingImportHerbConfirmation();
 }
 ?>
 <?php
-if ($hasUploadedFile || $hasDownloadUrl || $hasConvertedPendingInput || $encodingAction === 'convert') {
+if ($hasUploadedFile || $hasDownloadUrl || $hasConvertedPendingInput || $hasConfirmedHerbInput || $encodingAction === 'convert' || $herbAction === 'confirm') {
     /**
      * a file was provided and is ready to be parsed
      */
@@ -1659,8 +1726,8 @@ if ($run == 2) {  // file provided
     $import = array();
     $duplicateRows = array();
 
-    if ($hasConvertedPendingInput) {
-        // Input path was restored from the UTF-8 conversion confirmation above.
+    if ($hasConvertedPendingInput || $hasConfirmedHerbInput) {
+        // Input path was restored from a confirmation above.
     } elseif ($hasUploadedFile) {
         $inputPath = $_FILES['userfile']['tmp_name'];
         $inputName = $_FILES['userfile']['name'];
@@ -1689,13 +1756,21 @@ if ($run == 2) {  // file provided
             $inputError = 'The converted file is still not valid UTF-8.';
         } else {
             $import = loadHeaderBasedImportRows($inputPath, $inputError);
+            $allHerbNumbersMissing = false;
             if (!$inputError) {
-                $import = checkImportFileDuplicates($import, $duplicateRows, $inputError);
+                $import = checkImportFileDuplicates($import, $duplicateRows, $inputError, $allHerbNumbersMissing);
             }
-            if (!$inputError) {
-                storeImportProcessInputFile($inputPath, $inputName, $inputError);
+            if (!$inputError && $allHerbNumbersMissing && !$hasConfirmedHerbInput) {
+                if (storePendingImportHerbConfirmation($inputPath, $inputName, $checkGeographicAssignments, $inputError)) {
+                    $herbConfirmation = $_SESSION[IMPORT_SPECIMENS_PENDING_HERB_SESSION_KEY];
+                }
             }
-            if (!$inputError) {
+            if (!$inputError && $herbConfirmation === null) {
+                if (storeImportProcessInputFile($inputPath, $inputName, $inputError)) {
+                    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]['without_herb_numbers'] = $allHerbNumbersMissing && $hasConfirmedHerbInput;
+                }
+            }
+            if (!$inputError && $herbConfirmation === null) {
                 $first = $second = $third = array();
                 foreach ($import as $key => $row) {
                     $first[$key]  = $row[0];
@@ -1717,7 +1792,17 @@ if ($run == 2) {  // file provided
     } elseif ($inputError) {
         echo "<div class=\"error\">" . htmlspecialchars($inputError) . "</div>\n";
         renderImportInputForm($downloadUrl, $checkGeographicAssignments);
+    } elseif ($herbConfirmation !== null) {
+        echo '<div class="panel info-panel"><div class="panel-heading">Herbarium numbers missing</div>'
+           . '<div class="notice form-notice"><p>No data row in <strong>' . htmlspecialchars($herbConfirmation['name'], ENT_QUOTES, 'UTF-8')
+           . '</strong> has a HerbNummer. Confirm that you want to continue without herbarium numbers, or cancel and correct the file.</p></div>'
+           . '<input type="hidden" name="herb_confirmation_token" value="' . htmlspecialchars($herbConfirmation['token'], ENT_QUOTES, 'UTF-8') . '">'
+           . '<div class="action-buttons"><button type="submit" name="import_herb_action" value="confirm" class="button-primary">Continue without herbarium numbers</button>'
+           . '<button type="submit" name="import_herb_action" value="cancel">Cancel</button></div></div>';
     } else {
+        if ($hasConfirmedHerbInput) {
+            echo '<div class="summary">Import without herbarium numbers confirmed. Review the records below before importing.</div>';
+        }
         if ($duplicateRows) {
             echo '<div class="panel info-panel"><div class="panel-heading">Identical rows omitted</div><p>The following rows duplicate an identical row in this file. Only the first occurrence will be processed.</p><ul>';
             foreach ($duplicateRows as $index => $duplicate) {
