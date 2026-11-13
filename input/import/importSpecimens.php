@@ -14,6 +14,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use Jacq\Autocomplete;
 use Jacq\JsonRPCClient_v1;
 use Jacq\Services\Log;
+use Jacq\Services\SpecimenImportValidation;
 use Jacq\TaxonTokenizer;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -264,7 +265,12 @@ function mapImportHeaderColumns(array $headerRow, &$error = '')
 
 function loadHeaderBasedImportRows($inputPath, &$error = '')
 {
-    $handle = @fopen($inputPath, 'r');
+    $fileContent = @file_get_contents($inputPath);
+    if ($fileContent === false) {
+        $error = 'The import file could not be opened.';
+        return array();
+    }
+    $handle = @fopen($inputPath, 'rb');
     if (!$handle) {
         $error = 'The import file could not be opened.';
         return array();
@@ -292,9 +298,15 @@ function loadHeaderBasedImportRows($inputPath, &$error = '')
     );
 
     $rows = array();
-    $lineNumber = 2;
-    while (($parts = fgetcsv($handle, 4096, ';', '"', '\\')) !== false) {
-        $currentLineNumber = $lineNumber++;
+    $lineNumber = 1 + substr_count(substr($fileContent, 0, ftell($handle)), "\n");
+    while (true) {
+        $recordStart = ftell($handle);
+        $parts = fgetcsv($handle, 4096, ';', '"', '\\');
+        if ($parts === false) {
+            break;
+        }
+        $currentLineNumber = $lineNumber;
+        $lineNumber += substr_count(substr($fileContent, $recordStart, ftell($handle) - $recordStart), "\n");
         $parts = array_map('normalizeImportText', $parts);
         if (count($parts) === 1 && trim((string)$parts[0]) === '') {
             continue;
@@ -303,6 +315,13 @@ function loadHeaderBasedImportRows($inputPath, &$error = '')
             fclose($handle);
             $error = 'Header/data column count mismatch on line ' . $currentLineNumber . ': header has ' . $expectedColumnCount . ' column(s), row has ' . count($parts) . '. Processing was aborted.';
             return array();
+        }
+        foreach (array('digital_image', 'digital_image_obs', 'observation') as $flag) {
+            if (isset($columnMap[$flag]) && !SpecimenImportValidation::isValidFlag($parts[$columnMap[$flag]])) {
+                fclose($handle);
+                $error = 'Invalid value for ' . $flag . ' on line ' . $currentLineNumber . '. Only empty, 0 or 1 is allowed. Processing was aborted.';
+                return array();
+            }
         }
 
         $row = array_fill(0, count($legacyColumns), '');
@@ -371,132 +390,6 @@ function checkImportFileDuplicates(array $rows, &$duplicates, &$error, &$allHerb
         return array();
     }
     return $uniqueRows;
-}
-
-function getImportDecimalCoordinates(array $rowData)
-{
-    $latitude = null;
-    $longitude = null;
-
-    if ($rowData['Coord_N'] !== '') {
-        $latitude = array($rowData['Coord_N'], $rowData['N_Min'], $rowData['N_Sec'], 1);
-    } elseif ($rowData['Coord_S'] !== '') {
-        $latitude = array($rowData['Coord_S'], $rowData['S_Min'], $rowData['S_Sec'], -1);
-    }
-    if ($rowData['Coord_E'] !== '') {
-        $longitude = array($rowData['Coord_E'], $rowData['E_Min'], $rowData['E_Sec'], 1);
-    } elseif ($rowData['Coord_W'] !== '') {
-        $longitude = array($rowData['Coord_W'], $rowData['W_Min'], $rowData['W_Sec'], -1);
-    }
-    if ($latitude === null || $longitude === null) {
-        return null;
-    }
-
-    foreach (array($latitude, $longitude) as $coordinate) {
-        if (!is_numeric($coordinate[0])
-            || ($coordinate[1] !== '' && !is_numeric($coordinate[1]))
-            || ($coordinate[2] !== '' && !is_numeric($coordinate[2]))) {
-            return null;
-        }
-    }
-
-    $lat = $latitude[3] * (abs(floatval($latitude[0])) + abs(floatval($latitude[1])) / 60 + abs(floatval($latitude[2])) / 3600);
-    $lon = $longitude[3] * (abs(floatval($longitude[0])) + abs(floatval($longitude[1])) / 60 + abs(floatval($longitude[2])) / 3600);
-    if ($lat < -90 || $lat > 90 || $lon < -180 || $lon > 180) {
-        return null;
-    }
-
-    return array('lat' => round($lat, 6), 'lon' => round($lon, 6));
-}
-
-function formatImportCoordinatesForValidation(array $rowData)
-{
-    $coordinates = getImportDecimalCoordinates($rowData);
-    if ($coordinates === null) {
-        return '';
-    }
-
-    return number_format($coordinates['lat'], 6, '.', '') . ', ' . number_format($coordinates['lon'], 6, '.', '');
-}
-
-function checkImportGeographicAssignment($nationId, $provinceId, array $rowData)
-{
-    static $cache = array();
-    static $serviceUnavailable = false;
-
-    $coordinates = getImportDecimalCoordinates($rowData);
-    if ($coordinates === null || intval($nationId) <= 0) {
-        return array();
-    }
-
-    $cacheKey = intval($nationId) . '|' . intval($provinceId) . '|' . $coordinates['lat'] . '|' . $coordinates['lon'];
-    if (isset($cache[$cacheKey])) {
-        return $cache[$cacheKey];
-    }
-
-    if ($serviceUnavailable) {
-        $cache[$cacheKey] = array('coordinate_check_unavailable');
-        return $cache[$cacheKey];
-    }
-
-    if (!function_exists('curl_init')) {
-        $serviceUnavailable = true;
-        $cache[$cacheKey] = array('coordinate_check_unavailable');
-        return $cache[$cacheKey];
-    }
-
-    $query = http_build_query(array(
-        'nationID' => intval($nationId),
-        'provinceID' => intval($provinceId),
-        'lat' => $coordinates['lat'],
-        'lon' => $coordinates['lon'],
-    ));
-    $curl = curl_init('https://services.jacq.org/jacq-services/rest/geo/checkBoundaries?' . $query);
-    if ($curl === false) {
-        $cache[$cacheKey] = array('coordinate_check_unavailable');
-        return $cache[$cacheKey];
-    }
-
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 2);
-    curl_setopt($curl, CURLOPT_TIMEOUT, 4);
-    $response = curl_exec($curl);
-    $httpCode = intval(curl_getinfo($curl, CURLINFO_HTTP_CODE));
-    curl_close($curl);
-    if ($response === false || $httpCode < 200 || $httpCode >= 300) {
-        $serviceUnavailable = true;
-        $cache[$cacheKey] = array('coordinate_check_unavailable');
-        return $cache[$cacheKey];
-    }
-
-    $result = json_decode($response, true);
-    if (!is_array($result) || !empty($result['error'])) {
-        $serviceUnavailable = true;
-        $cache[$cacheKey] = array('coordinate_check_unavailable');
-        return $cache[$cacheKey];
-    }
-
-    $warnings = array();
-    if (isset($result['nation']['nrBoundaries']) && intval($result['nation']['nrBoundaries']) > 0 && empty($result['nation']['inside'])) {
-        $warnings[] = 'coordinates_outside_nation';
-    }
-    if (intval($provinceId) > 0 && isset($result['province']['nrBoundaries']) && intval($result['province']['nrBoundaries']) > 0 && empty($result['province']['inside'])) {
-        $warnings[] = 'coordinates_outside_province';
-    }
-
-    $cache[$cacheKey] = $warnings;
-    return $cache[$cacheKey];
-}
-
-function formatImportGeographicWarning($warning)
-{
-    $messages = array(
-        'coordinates_outside_nation' => 'Coordinates appear to be outside the selected country.',
-        'coordinates_outside_province' => 'Coordinates appear to be outside the selected province.',
-        'coordinate_check_unavailable' => 'Geographic assignment could not be checked because the boundary service is unavailable.',
-    );
-
-    return isset($messages[$warning]) ? $messages[$warning] : $warning;
 }
 
 function importStatusHasFlag($status, $flag)
@@ -591,7 +484,7 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
     $payload = array(
         'inputName' => (string)$inputName,
         'errors' => array_fill_keys(array_keys($errorColumns), array()),
-        'geoWarnings' => array_fill_keys(array('coordinates_outside_nation', 'coordinates_outside_province', 'coordinate_check_unavailable'), array()),
+        'geoWarnings' => array(),
         'similar' => array(),
         'exists' => array(),
     );
@@ -649,11 +542,16 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
         }
 
         if (!empty($geoWarnings[$i]) && is_array($geoWarnings[$i])) {
-            $coordinateValue = formatImportCoordinatesForValidation($data[$i]);
+            $coordinateValue = SpecimenImportValidation::formatCoordinates($data[$i]);
             foreach ($geoWarnings[$i] as $warning) {
-                if (isset($payload['geoWarnings'][$warning])) {
-                    addImportExportUniqueValue($payload['geoWarnings'][$warning], $coordinateValue);
-                }
+                $payload['geoWarnings'][] = array(
+                    'line' => intval($import[$i]['linenumber'] ?? 0),
+                    'herbNumber' => (string)($import[$i][0] ?? ''),
+                    'country' => (string)($import[$i][16] ?? ''),
+                    'province' => (string)($import[$i][17] ?? ''),
+                    'coordinates' => $coordinateValue,
+                    'warning' => (string)$warning,
+                );
             }
         }
     }
@@ -661,9 +559,7 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
     foreach ($payload['errors'] as $flag => $values) {
         $payload['errors'][$flag] = normalizeImportExportList($values);
     }
-    foreach ($payload['geoWarnings'] as $flag => $values) {
-        $payload['geoWarnings'][$flag] = normalizeImportExportList($values);
-    }
+    usort($payload['geoWarnings'], function ($left, $right) { return $left['line'] <=> $right['line']; });
 
     if (!empty($payload['similar'])) {
         uksort($payload['similar'], 'strnatcasecmp');
@@ -756,6 +652,31 @@ function isCurrentImportProcessToken($token)
     return is_string($token) && $token !== '' && !empty($context['token']) && hash_equals($context['token'], $token);
 }
 
+function collectImportGeographicResults(array $outcomes, array $labels, array $context)
+{
+    $results = array();
+    foreach ($labels as $key => $label) {
+        foreach ($outcomes[$key] as $item) {
+            $line = $item['line'];
+            $warning = $context['geo_warnings'][$line] ?? '';
+            if ($warning === '') {
+                continue;
+            }
+            $input = $context['input_geo'][$line] ?? array();
+            $results[] = array(
+                'line' => $line,
+                'herbNumber' => $input['herbNumber'] ?? $item['herbNumber'],
+                'country' => $input['country'] ?? '',
+                'province' => $input['province'] ?? '',
+                'result' => $label,
+                'warning' => $warning,
+            );
+        }
+    }
+    usort($results, function ($left, $right) { return intval($left['line']) <=> intval($right['line']); });
+    return $results;
+}
+
 function buildImportResultsReport(array $outcomes, array $labels, array $context)
 {
     $lines = array('Import Specimens Report', 'Generated: ' . date('Y-m-d H:i:s'));
@@ -769,13 +690,30 @@ function buildImportResultsReport(array $outcomes, array $labels, array $context
     foreach ($labels as $key => $label) {
         $lines[] = $label . ': ' . count($outcomes[$key]);
     }
-    $lines[] = '';
-    $lines[] = "Line\tHerbNummer\tResult\tReason";
-    foreach ($labels as $key => $label) {
-        foreach ($outcomes[$key] as $item) {
+    $geoResults = collectImportGeographicResults($outcomes, $labels, $context);
+    $lines[] = 'Geographic warning rows: ' . count($geoResults);
+    if (array_key_exists('geo_check_requested', $context) && !$context['geo_check_requested']) {
+        $lines[] = 'Geographic assignment check: not selected';
+    }
+    if ($geoResults) {
+        $lines[] = '';
+        $lines[] = 'Geographic assignment warnings';
+        $lines[] = "Line\tHerbNummer (input)\tCountry (input)\tProvince (input)\tResult\tWarning";
+        foreach ($geoResults as $entry) {
             $lines[] = implode("\t", array_map(function ($value) {
                 return str_replace(array("\r", "\n", "\t"), ' ', (string)$value);
-            }, array($item['line'], $item['herbNumber'], $label, $item['reason'])));
+            }, array($entry['line'], $entry['herbNumber'], $entry['country'], $entry['province'], $entry['result'], $entry['warning'])));
+        }
+    }
+    $lines[] = '';
+    $lines[] = 'All file rows';
+    $lines[] = "Line\tHerbNummer (input)\tCountry (input)\tProvince (input)\tResult\tReason\tGeographic warnings";
+    foreach ($labels as $key => $label) {
+        foreach ($outcomes[$key] as $item) {
+            $inputGeo = $context['input_geo'][$item['line']] ?? array();
+            $lines[] = implode("\t", array_map(function ($value) {
+                return str_replace(array("\r", "\n", "\t"), ' ', (string)$value);
+            }, array($item['line'], $inputGeo['herbNumber'] ?? $item['herbNumber'], $inputGeo['country'] ?? '', $inputGeo['province'] ?? '', $label, $item['reason'], $context['geo_warnings'][$item['line']] ?? '')));
         }
     }
     return implode("\n", $lines) . "\n";
@@ -891,31 +829,28 @@ function streamImportValidationExportWorkbook($payload)
     $geoWarningSheet = $spreadsheet->createSheet();
     $geoWarningSheet->setTitle('geographic warnings');
     $geoWarningHeaders = array(
-        'A1' => 'coordinates_outside_nation',
-        'B1' => 'coordinates_outside_province',
-        'C1' => 'coordinate_check_unavailable',
+        'A1' => 'Line',
+        'B1' => 'HerbNummer (input)',
+        'C1' => 'Country (input)',
+        'D1' => 'Province (input)',
+        'E1' => 'Coordinates',
+        'F1' => 'Warning',
     );
     foreach ($geoWarningHeaders as $cell => $label) {
         $geoWarningSheet->setCellValue($cell, $label);
     }
-    styleImportExportHeader($geoWarningSheet, 'A1:C1', 'FFF1C232');
-    $geoWarningColumns = array(
-        'A' => 'coordinates_outside_nation',
-        'B' => 'coordinates_outside_province',
-        'C' => 'coordinate_check_unavailable',
-    );
-    foreach ($geoWarningColumns as $column => $flag) {
-        $row = 2;
-        if (!empty($payload['geoWarnings'][$flag])) {
-            foreach ($payload['geoWarnings'][$flag] as $value) {
-                $geoWarningSheet->setCellValue($column . $row, $value);
-                $row++;
-            }
+    styleImportExportHeader($geoWarningSheet, 'A1:F1', 'FFEF8200');
+    $row = 2;
+    foreach ($payload['geoWarnings'] as $entry) {
+        $geoWarningSheet->setCellValue('A' . $row, $entry['line']);
+        foreach (array('B' => 'herbNumber', 'C' => 'country', 'D' => 'province', 'E' => 'coordinates', 'F' => 'warning') as $column => $key) {
+            $geoWarningSheet->setCellValueExplicit($column . $row, (string)$entry[$key], \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
         }
+        $row++;
     }
     $geoWarningSheet->freezePane('A2');
-    $geoWarningSheet->getTabColor()->setRGB('F1C232');
-    autosizeImportExportColumns($geoWarningSheet, 'C');
+    $geoWarningSheet->getTabColor()->setRGB('EF8200');
+    autosizeImportExportColumns($geoWarningSheet, 'F');
 
     $similarSheet = $spreadsheet->createSheet();
     $similarSheet->setTitle('Taxon not found but similar');
@@ -1272,7 +1207,8 @@ function renderImportInputForm($downloadUrl = '', $checkGeographicAssignments = 
        . "    <p><a href='importSpecimens_template.txt'>Download the current import template</a>. \n"
        . "    <p><a href='tbl_import_specimens_template_v2.3_112026.xlsx'>Download the Excel field list and examples</a>.</p>\n"
        . "    <p>Required headers: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>taxon</strong> and <strong>Sammler</strong>. Header order does not matter. <strong>checked</strong> and <strong>accessible</strong> must not be included; they are set only after review in the specimen import area.</p>\n"
-       . "    <p>The HerbNummer column is required. If any row has a HerbNummer, all rows must have one. If every HerbNummer is empty, you must confirm a warning before continuing. Identical rows with the same HerbNummer are processed once; conflicting rows with the same HerbNummer stop the import.</p>\n"
+       . "    <p>The HerbNummer column is required. Identical rows with the same HerbNummer are processed once; conflicting rows with the same HerbNummer stop the import.</p>\n"
+       . "    <p>Flag fields accept only an empty value, 0 or 1.</p>\n"
        . "    <p>Allowed header attributes are exactly: <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
        . "    <p>UTF-8 files are processed directly. Windows-1252 and ISO-8859-1 files can be converted to UTF-8 after confirmation.</p>\n"
        . "  </div>\n"
@@ -2235,7 +2171,7 @@ if ($run == 2) {  // file provided
         $data[$i]['notes_internal'] = (isset($import[$i][39]) && trim($import[$i][39]) !== '') ? $import[$i][39] : '';
 
         if ($checkGeographicAssignments) {
-            $geoWarnings[$i] = checkImportGeographicAssignment(
+            $geoWarnings[$i] = SpecimenImportValidation::checkGeographicAssignment(
                 $data[$i]['NationID'],
                 isset($data[$i]['provinceID']) ? $data[$i]['provinceID'] : '',
                 $data[$i]
@@ -2277,6 +2213,23 @@ if ($run == 2) {  // file provided
         }
     }
 
+    $reportGeoWarnings = array();
+    $reportInputGeo = array();
+    foreach ($import as $index => $importRow) {
+        $reportInputGeo[$importRow['linenumber']] = array(
+            'herbNumber' => (string)($importRow[0] ?? ''),
+            'country' => (string)($importRow[16] ?? ''),
+            'province' => (string)($importRow[17] ?? ''),
+        );
+        if (!empty($geoWarnings[$index])) {
+            $messages = array_map([SpecimenImportValidation::class, 'formatGeographicWarning'], $geoWarnings[$index]);
+            $coordinates = SpecimenImportValidation::formatCoordinates($data[$index]);
+            $reportGeoWarnings[$importRow['linenumber']] = implode(' ', $messages) . ($coordinates !== '' ? ' Coordinates: ' . $coordinates . '.' : '');
+        }
+    }
+    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]['geo_warnings'] = $reportGeoWarnings;
+    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]['input_geo'] = $reportInputGeo;
+    $_SESSION[IMPORT_SPECIMENS_PROCESS_SESSION_KEY]['geo_check_requested'] = $checkGeographicAssignments;
     $validationExportToken = storeImportValidationExportPayload(
         buildImportValidationExportPayload($import, $status, $taxamatch, $data, $inputName, $geoWarnings)
     );
@@ -2311,7 +2264,7 @@ if ($run == 2) {  // file provided
         for ($i = 0; $i < count($import); $i++) {
             if ($block == $position[$i]) {
                 if ($status[$i] == "OK") {
-                    echo !empty($geoWarnings[$i]) ? "<tr style=\"background-color:#fff3cd\">" : "<tr style=\"background-color:#00FF00\">";
+                    echo !empty($geoWarnings[$i]) ? "<tr style=\"background-color:#ffae42;color:#000\">" : "<tr style=\"background-color:#00FF00\">";
                 } elseif (strpos($status[$i], "exists") !== false) {
                     echo "<tr style=\"background-color:#0000FF\">";
                 } else {
@@ -2376,10 +2329,10 @@ if ($run == 2) {  // file provided
                 if (!empty($geoWarnings[$i])) {
                     $warningText = array();
                     foreach ($geoWarnings[$i] as $warning) {
-                        $warningText[] = formatImportGeographicWarning($warning);
+                        $warningText[] = SpecimenImportValidation::formatGeographicWarning($warning);
                     }
-                    $coordinates = formatImportCoordinatesForValidation($data[$i]);
-                    echo "<tr><td colspan=\"40\" style=\"background-color:#fff3cd\"><strong>Geographic assignment warning:</strong> "
+                    $coordinates = SpecimenImportValidation::formatCoordinates($data[$i]);
+                    echo "<tr><td colspan=\"40\" style=\"background-color:#ffae42;color:#000\"><strong>Geographic assignment warning:</strong> "
                        . htmlspecialchars(implode(' ', $warningText))
                        . (($coordinates !== '') ? ' Coordinates: ' . htmlspecialchars($coordinates) . '.' : '')
                        . "</td></tr>\n";
@@ -2558,8 +2511,19 @@ if ($run == 2) {  // file provided
         }
     }
 
-    // the real database-insert happens down below to show what the DB returns
-
+    // Validate the submitted values again before any database changes.
+    $flagError = '';
+    foreach ($data as $row) {
+        foreach (array('digital_image', 'digital_image_obs', 'observation') as $flag) {
+            if (array_key_exists($flag, $row) && !SpecimenImportValidation::isValidFlag($row[$flag])) {
+                $flagError = 'Invalid value for ' . $flag . '. Only empty, 0 or 1 is allowed; no records were imported.';
+                break 2;
+            }
+        }
+    }
+    if ($flagError !== '') {
+        echo '<div class="error">' . htmlspecialchars($flagError, ENT_QUOTES, 'UTF-8') . '</div>';
+    } else {
     $autocomplete = Autocomplete::Load();
     $outcomes = array('imported' => array(), 'not_selected' => array(), 'already_present' => array(), 'duplicates' => array(), 'errors' => array(), 'excluded' => array());
     if (!empty($_POST['duplicateRows']) && is_array($_POST['duplicateRows'])) {
@@ -2697,11 +2661,27 @@ if ($run == 2) {  // file provided
     foreach ($outcomeLabels as $key => $label) {
         echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ': <strong>' . count($outcomes[$key]) . '</strong>. ';
     }
+    $geographicResults = collectImportGeographicResults($outcomes, $outcomeLabels, $processContext);
+    echo 'Geographic warning rows: <strong>' . count($geographicResults) . '</strong>.';
     echo "</div>\n";
     echo '<div class="action-buttons"><input type="hidden" name="import_process_token" value="'
        . htmlspecialchars($processContext['token'], ENT_QUOTES, 'UTF-8') . '">'
        . '<button type="submit" name="archive_import_process" value="1">Download import archive</button>'
        . '<a href="' . htmlspecialchars($_SERVER['SCRIPT_NAME'], ENT_QUOTES, 'UTF-8') . '">Start new import process</a></div>';
+    if ($geographicResults) {
+        echo '<div class="panel" style="background:#ffae42;color:#241400;border-color:#bd6200"><div class="panel-heading">Geographic assignment warnings (' . count($geographicResults) . ')</div><p>Warnings are shown for all affected rows, including imported records.</p><ul>';
+        foreach ($geographicResults as $entry) {
+            $location = trim($entry['country'] . (($entry['country'] !== '' && $entry['province'] !== '') ? ', ' : '') . $entry['province']);
+            echo '<li>Line ' . intval($entry['line']) . ': '
+               . htmlspecialchars($entry['herbNumber'] !== '' ? $entry['herbNumber'] : '(no HerbNummer)', ENT_QUOTES, 'UTF-8')
+               . ($location !== '' ? ' — ' . htmlspecialchars($location, ENT_QUOTES, 'UTF-8') : '')
+               . ' — ' . htmlspecialchars($entry['result'], ENT_QUOTES, 'UTF-8') . ' — '
+               . htmlspecialchars($entry['warning'], ENT_QUOTES, 'UTF-8') . '</li>';
+        }
+        echo '</ul></div>';
+    } elseif (array_key_exists('geo_check_requested', $processContext) && !$processContext['geo_check_requested']) {
+        echo '<div class="panel info-panel">Geographic assignment check was not selected.</div>';
+    }
     foreach ($outcomeLabels as $key => $label) {
         if (empty($outcomes[$key])) {
             continue;
@@ -2715,6 +2695,7 @@ if ($run == 2) {  // file provided
                . (($item['reason'] !== '') ? ' — ' . htmlspecialchars((string)$item['reason'], ENT_QUOTES, 'UTF-8') : '') . '</li>';
         }
         echo "</ul></div>\n";
+    }
     }
 } else {    // show upload form
     if ($pageNotice !== '') {

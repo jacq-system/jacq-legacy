@@ -6,6 +6,7 @@ require __DIR__ . '/vendor/autoload.php';
 use Jacq\JsonRPCClient_v1;
 use Jacq\Services\Log;
 use Jacq\Services\Permission;
+use Jacq\Services\SpecimenImportValidation;
 use Jacq\TaxonTokenizer;
 
 const UPDATE_SPECIMENS_MAX_FILE_SIZE = 8000000;
@@ -498,15 +499,22 @@ function buildUpdateResultsReport(array $updateResults, array $context = array()
     $lines[] = 'Successful rows: ' . $successCount;
     $lines[] = 'Failed rows: ' . $errorCount;
     $lines[] = '';
-    $lines[] = "Row\tSpecimen\tSuccess\tMessage\tChanged Fields";
+    $lines[] = 'Input country and province are values from the update file; the check can also use selected database values.';
+    $lines[] = "Line\tHerbNummer (input)\tCountry (input)\tProvince (input)\tSpecimen\tSuccess\tMessage\tChanged Fields\tSelected checked\tSelected accessible\tGeographic warnings";
 
     foreach ($updateResults as $result) {
         $lines[] = implode("\t", array(
-            (string)$result['rowKey'],
+            (string)($result['lineNumber'] ?? $result['rowKey']),
+            str_replace(array("\r", "\n", "\t"), ' ', (string)($result['inputHerbNummer'] ?? '')),
+            str_replace(array("\r", "\n", "\t"), ' ', (string)($result['inputCountry'] ?? '')),
+            str_replace(array("\r", "\n", "\t"), ' ', (string)($result['inputProvince'] ?? '')),
             (string)$result['specimen_ID'],
             !empty($result['success']) ? 'yes' : 'no',
             str_replace(array("\r", "\n", "\t"), ' ', (string)$result['message']),
             implode(', ', $result['changedFields']),
+            (string)($result['checked'] ?? ''),
+            (string)($result['accessible'] ?? ''),
+            str_replace(array("\r", "\n", "\t"), ' ', implode(' ', $result['geoWarnings'] ?? array())),
         ));
     }
 
@@ -1412,6 +1420,9 @@ function buildParsedUpdateRow(array $rawRow, $lineNumber, array $columnMap)
         'specimen_ID' => $specimenId,
         'collectionID' => $collectionId,
         'HerbNummer' => $herbNummer,
+        'inputHerbNummer' => getImportSourceValue($rawRow, 'HerbNummer', $columnMap),
+        'inputCountry' => getImportSourceValue($rawRow, 'NationID', $columnMap),
+        'inputProvince' => getImportSourceValue($rawRow, 'provinceID', $columnMap),
         'raw' => $rawRow,
         'normalized' => $normalized,
         'display' => $display,
@@ -1428,8 +1439,10 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
         return $rows;
     }
 
-    $handle = @fopen($tmpPath, 'r');
-    if (!$handle) {
+    $fileContent = @file_get_contents($tmpPath);
+    $handle = @fopen($tmpPath, 'rb');
+    if ($fileContent === false || !$handle) {
+        if ($handle) fclose($handle);
         return $rows;
     }
 
@@ -1447,10 +1460,11 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
         fclose($handle);
         return array();
     }
-    $lineNumber = 2;
+    $lineNumber = 1 + substr_count(substr($fileContent, 0, ftell($handle)), "\n");
     $visibleFields = getVisibleUpdateFields($columnMap, $hasHeaderLine);
 
     while (!feof($handle)) {
+        $recordStart = ftell($handle);
         $parts = parseUpdateLine($handle, 1);
         if ($parts !== false) {
             if ($hasHeaderLine && count($parts) !== $expectedColumnCount) {
@@ -1458,9 +1472,16 @@ function loadUploadedUpdateRows($tmpPath, $hasHeaderLine = false, &$visibleField
                 $error = 'Header/data column count mismatch on line ' . $lineNumber . ': header has ' . $expectedColumnCount . ' column(s), row has ' . count($parts) . '. Processing was aborted.';
                 return array();
             }
+            foreach (array('checked', 'accessible', 'digital_image', 'digital_image_obs', 'observation') as $flag) {
+                if (isset($columnMap[$flag]) && !SpecimenImportValidation::isValidFlag($parts[$columnMap[$flag]])) {
+                    fclose($handle);
+                    $error = 'Invalid value for ' . $flag . ' on line ' . $lineNumber . '. Only empty, 0 or 1 is allowed. Processing was aborted.';
+                    return array();
+                }
+            }
             $rows[] = buildParsedUpdateRow($parts, $lineNumber, $columnMap);
-            $lineNumber++;
         }
+        $lineNumber += substr_count(substr($fileContent, $recordStart, ftell($handle) - $recordStart), "\n");
     }
     fclose($handle);
 
@@ -1689,6 +1710,7 @@ function renderUpdateInputForm($downloadUrl = '')
        . "    <p>This tool only accepts semicolon-separated <strong>.txt</strong> or <strong>.csv</strong> files with a header line. Files can be uploaded directly or downloaded from an HTTPS URL.</p>\n"
        . "    <p><a href='updateSpecimens_template.txt'>Download the current update template</a>. The columns <strong>checked</strong> and <strong>accessible</strong> follow <strong>CollectionNumber</strong>.</p>\n"
        . "    <p>The header line must contain <strong>specimen_id</strong>. This is the central key for all updates. <strong>HerbNummer</strong> is optional; if it is present and differs from the current JACQ value for the same specimen, the row is flagged with a warning.</p>\n"
+       . "    <p>Flag fields accept only an empty value, 0 or 1. Where coordinate columns are supplied, available coordinates are checked against the country and province; discrepancies are warnings.</p>\n"
        . "    <p>Only the provided header fields are shown in the preview and considered for update. Allowed header attributes are exactly: <strong>specimen_id</strong>, <strong>HerbNummer</strong>, <strong>collectionID</strong>, <strong>CollectionNumber</strong>, <strong>checked</strong>, <strong>accessible</strong>, <strong>status</strong>, <strong>taxon</strong>, <strong>Sammler</strong>, <strong>series</strong>, <strong>series_number</strong>, <strong>Nummer</strong>, <strong>alt_number</strong>, <strong>Datum</strong>, <strong>Datum2</strong>, <strong>det</strong>, <strong>typified</strong>, <strong>typus</strong>, <strong>taxon_alt</strong>, <strong>nation_engl</strong>, <strong>provinz</strong>, <strong>Fundort</strong>, <strong>Fundort_engl</strong>, <strong>Habitat</strong>, <strong>Habitus</strong>, <strong>Bemerkungen</strong>, <strong>coord_NS</strong>, <strong>lat_degree</strong>, <strong>lat_minute</strong>, <strong>lat_second</strong>, <strong>coord_WE</strong>, <strong>long_degree</strong>, <strong>long_minute</strong>, <strong>long_second</strong>, <strong>quadrant</strong>, <strong>quadrant_sub</strong>, <strong>exactness</strong>, <strong>alt_min</strong>, <strong>alt_max</strong>, <strong>digital_image</strong>, <strong>digital_image_obs</strong>, <strong>observation</strong> and <strong>notes_internal</strong>.</p>\n"
        . "  </div>\n"
        . "</div>\n";
@@ -1821,6 +1843,32 @@ function getDifferingFields(array $importNormalized, array $databaseNormalized)
     return $differingFields;
 }
 
+function getUpdateGeographicWarnings(array $values, array $activeFields, array $databaseValues = array())
+{
+    $coordinateFields = array('Coord_N', 'N_Min', 'N_Sec', 'Coord_S', 'S_Min', 'S_Sec', 'Coord_W', 'W_Min', 'W_Sec', 'Coord_E', 'E_Min', 'E_Sec');
+    if (!array_intersect($coordinateFields, $activeFields)) {
+        return array();
+    }
+    foreach ($coordinateFields as $field) {
+        $values[$field] = isset($values[$field]) ? (string)$values[$field] : '';
+    }
+    $nationId = intval($values['NationID'] ?? 0);
+    $provinceId = intval($values['provinceID'] ?? 0);
+    if (!in_array('provinceID', $activeFields, true) && $nationId !== intval($databaseValues['NationID'] ?? $nationId)) {
+        $provinceId = 0;
+    }
+    $warnings = SpecimenImportValidation::checkGeographicAssignment($nationId, $provinceId, $values);
+    if (!$warnings) {
+        return array();
+    }
+    $messages = array_map([SpecimenImportValidation::class, 'formatGeographicWarning'], $warnings);
+    $coordinates = SpecimenImportValidation::formatCoordinates($values);
+    if ($coordinates !== '') {
+        $messages[] = 'Coordinates: ' . $coordinates . '.';
+    }
+    return $messages;
+}
+
 $preRunPageError = '';
 if (isset($_POST['reset_update_process']) || isset($_POST['cancel_update_input_encoding'])) {
     clearUpdateProcessContext();
@@ -1949,6 +1997,9 @@ if ($run === 2) {
                     'fileSpecimenID' => $row['specimen_ID'],
                     'collectionID' => $row['collectionID'],
                     'HerbNummer' => $row['HerbNummer'],
+                    'inputHerbNummer' => $row['inputHerbNummer'],
+                    'inputCountry' => $row['inputCountry'],
+                    'inputProvince' => $row['inputProvince'],
                     'specimen_ID' => $specimenId,
                     'statusText' => buildStatusText($statusCodes),
                     'warningStatusText' => buildStatusText($warningStatusCodes),
@@ -1981,6 +2032,7 @@ if ($run === 2) {
                 }
                 $rowSummary['warningStatusText'] = buildStatusText($warningStatusCodes);
                 $rowSummary['selectedNormalized'] = buildDefaultSelectedData($maskedImportNormalized, $databaseRow['normalized'], $warningStatusCodes);
+                $rowSummary['geoWarnings'] = getUpdateGeographicWarnings($rowSummary['selectedNormalized'], $displayFields, $databaseRow['normalized']);
                 $rowSummary['lockedImportFields'] = buildLockedImportFields($warningStatusCodes);
                 $rowSummary['warningFieldStyles'] = buildWarningFieldStyles($warningStatusCodes);
                 $rowSummary['differingFields'] = getDifferingFields($maskedImportNormalized, $databaseRow['normalized']);
@@ -1989,6 +2041,19 @@ if ($run === 2) {
                 }
                 $readyRows[] = $rowSummary;
             }
+            $updateContext = getUpdateProcessContext();
+            $updateContext['geo_check_rows'] = array();
+            $updateContext['input_geo_rows'] = array();
+            foreach ($readyRows as $readyRow) {
+                $updateContext['geo_check_rows'][$readyRow['rowKey']] = $displayFields;
+                $updateContext['input_geo_rows'][$readyRow['rowKey']] = array(
+                    'lineNumber' => $readyRow['lineNumber'],
+                    'inputHerbNummer' => $readyRow['inputHerbNummer'],
+                    'inputCountry' => $readyRow['inputCountry'],
+                    'inputProvince' => $readyRow['inputProvince'],
+                );
+            }
+            $_SESSION[UPDATE_PROCESS_SESSION_KEY] = $updateContext;
         }
         }
 
@@ -2007,16 +2072,39 @@ if ($run === 2) {
         if (empty($payload)) {
             $pageError = 'The submitted selection payload is empty or invalid.';
         } else {
+            foreach ($payload as $rowData) {
+                $selected = (isset($rowData['selected']) && is_array($rowData['selected'])) ? $rowData['selected'] : array();
+                foreach (array('checked', 'accessible', 'digital_image', 'digital_image_obs', 'observation') as $flag) {
+                    if (array_key_exists($flag, $selected) && !SpecimenImportValidation::isValidFlag($selected[$flag])) {
+                        $pageError = 'Invalid value for ' . $flag . '. Only empty, 0 or 1 is allowed; no records were updated.';
+                        break 2;
+                    }
+                }
+            }
+        }
+        if ($pageError === '' && !empty($payload)) {
+            $updateContext = getUpdateProcessContext();
             foreach ($payload as $rowKey => $rowData) {
                 $specimenId = isset($rowData['specimen_ID']) ? intval($rowData['specimen_ID']) : 0;
                 $selected = (isset($rowData['selected']) && is_array($rowData['selected'])) ? $rowData['selected'] : array();
+                $currentRow = fetchExistingSpecimenData($specimenId);
+                $activeGeoFields = $updateContext['geo_check_rows'][$rowKey] ?? array();
+                $inputGeo = $updateContext['input_geo_rows'][$rowKey] ?? array();
+                $geoWarnings = $currentRow === null ? array() : getUpdateGeographicWarnings($selected, $activeGeoFields, $currentRow['normalized']);
                 $result = updateSpecimenRow($specimenId, $selected);
                 $updateResults[] = array(
                     'rowKey' => $rowKey,
+                    'lineNumber' => $inputGeo['lineNumber'] ?? $rowKey,
+                    'inputHerbNummer' => $inputGeo['inputHerbNummer'] ?? '',
+                    'inputCountry' => $inputGeo['inputCountry'] ?? '',
+                    'inputProvince' => $inputGeo['inputProvince'] ?? '',
                     'specimen_ID' => $specimenId,
                     'success' => $result['success'],
                     'message' => $result['message'],
                     'changedFields' => $result['changedFields'],
+                    'checked' => $selected['checked'] ?? '',
+                    'accessible' => $selected['accessible'] ?? '',
+                    'geoWarnings' => $geoWarnings,
                 );
             }
             storeUpdateProcessResults($updateResults);
@@ -2246,6 +2334,8 @@ if ($run === 2) {
         .taxon-suggestion { width: 100%; margin-top: 4px; }
         .result-ok { color: #1a5e20; }
         .result-error { color: #a40000; }
+        .geo-warning { background: #ffae42; color: #241400; border: 1px solid #bd6200; padding: 12px 16px; margin: 0 0 18px; }
+        td.geo-warning { margin: 0; }
         @media (max-width: 860px) {
             .page-shell {
                 padding: 18px 14px 28px;
@@ -2305,6 +2395,19 @@ if ($run === 2) {
             <input type="submit" name="reset_update_process" value="Start new update process">
         </form>
     </div>
+
+    <?php $geoWarningRows = array_filter($readyRows, function ($row) { return !empty($row['geoWarnings']); }); ?>
+    <?php if ($geoWarningRows) { ?>
+        <div class="geo-warning">
+            <strong>Geographic assignment warnings</strong>
+            <p>These warnings refer to the initially selected values. The final selection is checked again when the update is submitted.</p>
+            <ul>
+                <?php foreach ($geoWarningRows as $row) { ?>
+                    <li>Line <?php echo intval($row['lineNumber']); ?>, specimen <?php echo intval($row['specimen_ID']); ?>: <?php echo htmlspecialchars(implode(' ', $row['geoWarnings']), ENT_QUOTES, 'UTF-8'); ?></li>
+                <?php } ?>
+            </ul>
+        </div>
+    <?php } ?>
 
     <?php if (!empty($readyRows)) {
         $payloadSeed = array();
@@ -2764,6 +2867,7 @@ if ($run === 2) {
                 <th>Specimen</th>
                 <th>Result</th>
                 <th>Changed Fields</th>
+                <th>Geographic warnings</th>
             </tr>
             <?php foreach ($updateResults as $result) { ?>
                 <tr>
@@ -2771,6 +2875,7 @@ if ($run === 2) {
                     <td><?php echo intval($result['specimen_ID']); ?></td>
                     <td class="<?php echo $result['success'] ? 'result-ok' : 'result-error'; ?>"><?php echo htmlspecialchars($result['message']); ?></td>
                     <td><?php echo htmlspecialchars(implode(', ', $result['changedFields'])); ?></td>
+                    <td<?php echo !empty($result['geoWarnings']) ? ' class="geo-warning"' : ''; ?>><?php echo htmlspecialchars(implode(' ', $result['geoWarnings'] ?? array()), ENT_QUOTES, 'UTF-8'); ?></td>
                 </tr>
             <?php } ?>
         </table>
