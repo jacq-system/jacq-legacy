@@ -13,6 +13,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use Jacq\Autocomplete;
 use Jacq\JsonRPCClient_v1;
+use Jacq\Services\Display;
 use Jacq\Services\Log;
 use Jacq\Services\SpecimenImportValidation;
 use Jacq\TaxonTokenizer;
@@ -521,7 +522,7 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
             }
         }
 
-        if (importStatusHasFlag($status[$i], 'no_taxa') && importStatusHasFlag($status[$i], 'similar_taxa')) {
+        if (importStatusHasFlag($status[$i], 'similar_taxa') && (importStatusHasFlag($status[$i], 'no_taxa') || importStatusHasFlag($status[$i], 'ambiguous_taxa'))) {
             $searchedTaxon = trim((string)$import[$i][4]);
             if ($searchedTaxon !== '') {
                 if (!isset($payload['similar'][$searchedTaxon])) {
@@ -530,7 +531,11 @@ function buildImportValidationExportPayload($import, $status, $taxamatch, $data,
                 if (!empty($taxamatch[$i]) && is_array($taxamatch[$i])) {
                     foreach ($taxamatch[$i] as $match) {
                         if (!empty($match['taxon'])) {
-                            addImportExportUniqueValue($payload['similar'][$searchedTaxon], $match['taxon']);
+                            $label = $match['taxon'];
+                            if (importStatusHasFlag($status[$i], 'ambiguous_taxa') && !empty($match['taxonID'])) {
+                                $label .= ' <' . intval($match['taxonID']) . '>';
+                            }
+                            addImportExportUniqueValue($payload['similar'][$searchedTaxon], $label);
                         }
                     }
                 }
@@ -1253,6 +1258,59 @@ function getTaxon($id, $withAuthors = true) {
   return $text;
 }
 
+/** Return every local candidate matching the displayed JACQ name or a legacy spelling. */
+function matchImportTaxonCandidates(array $candidateIds, $inputName, $genusOnly = false)
+{
+    $inputName = trim((string)$inputName);
+    $matches = array();
+    foreach (array_unique($candidateIds) as $candidateId) {
+        $candidateId = intval($candidateId);
+        $displayName = trim(Display::taxon($candidateId, false, false, false));
+        if ($genusOnly || ($displayName !== '' && strcmp($displayName, $inputName) === 0)
+            || strcmp(trim(getTaxon($candidateId, true)), $inputName) === 0
+            || strcmp(trim(getTaxon($candidateId, false)), $inputName) === 0) {
+            $matches[] = array('taxonID' => $candidateId, 'taxon' => $displayName);
+        }
+    }
+    return $matches;
+}
+
+function findImportTaxonMatches($inputName, &$genusFound)
+{
+    static $cache = array();
+    $inputName = trim((string)$inputName);
+    if (isset($cache[$inputName])) {
+        $genusFound = $cache[$inputName]['genusFound'];
+        return $cache[$inputName]['matches'];
+    }
+    $genusFound = false;
+    $pieces = explode(' ', $inputName, 3);
+    $result = dbi_query('SELECT genID FROM tbl_tax_genera WHERE genus = ' . quoteString($pieces[0]));
+    if (mysqli_num_rows($result) === 0) {
+        $cache[$inputName] = array('genusFound' => false, 'matches' => array());
+        return array();
+    }
+    $genusFound = true;
+    $sql = 'SELECT ts.taxonID FROM tbl_tax_species ts
+            INNER JOIN tbl_tax_genera tg ON tg.genID = ts.genID
+            LEFT JOIN tbl_tax_epithets te ON te.epithetID = ts.speciesID
+            WHERE tg.genus = ' . quoteString($pieces[0]);
+    if (count($pieces) > 1) {
+        $sql .= ' AND te.epithet = ' . quoteString($pieces[1]);
+    } else {
+        $sql .= ' AND ts.speciesID IS NULL AND ts.subspeciesID IS NULL AND ts.varietyID IS NULL
+                  AND ts.subvarietyID IS NULL AND ts.formaID IS NULL AND ts.subformaID IS NULL';
+    }
+    $candidateIds = array();
+    $result = dbi_query($sql);
+    while ($row = mysqli_fetch_array($result)) {
+        $candidateIds[] = $row['taxonID'];
+    }
+    $matches = matchImportTaxonCandidates($candidateIds, $inputName, count($pieces) === 1);
+    $cache[$inputName] = array('genusFound' => true, 'matches' => $matches);
+    return $matches;
+}
+
 /** Describe differences between a TaxaMatch suggestion and the local taxon record. */
 function getImportTaxaMatchWarning($taxonId, $suggestedName)
 {
@@ -1834,57 +1892,22 @@ if ($run == 2) {  // file provided
          */
         $taxonOK = false;
         $genusOK = false;
-        $pieces = explode(' ', $import[$i][4], 3);
-        $result = dbi_query("SELECT genID FROM tbl_tax_genera WHERE genus = " . quoteString($pieces[0]));
-        if (mysqli_num_rows($result) > 0) {
-            $genusOK = true;
-            $row = mysqli_fetch_array($result);
-            $genID = $row['genID'];
-            if (count($pieces) > 1) {
-                $result = dbi_query("SELECT epithetID FROM tbl_tax_epithets WHERE epithet = " . quoteString($pieces[1]));
-                if (mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_array($result);
-                    $epithetID = $row['epithetID'];
-                    $result = dbi_query("SELECT taxonID FROM tbl_tax_species WHERE genID = '$genID' AND speciesID = '$epithetID'");
-                    if (mysqli_num_rows($result) > 0) {
-                        while ($row = mysqli_fetch_array($result)) {
-                          if (strcmp(trim(getTaxon($row['taxonID'])), trim($import[$i][4])) == 0) {
-                              $taxonOK = true;
-                              $data[$i]['taxonID'] = $row['taxonID'];
-                              break;
-                          } else if (strcmp(trim(getTaxon($row['taxonID'], false)), trim($import[$i][4])) == 0) {
-                              $taxonOK = true;
-                              $data[$i]['taxonID'] = $row['taxonID'];
-                              break;
-                          }
-                        }
-                    }
-                }
-            } else {
-                $sql = "SELECT taxonID
-                        FROM tbl_tax_species
-                        WHERE genID = '$genID'
-                         AND speciesID IS NULL
-                         AND subspeciesID IS NULL
-                         AND varietyID IS NULL
-                         AND subvarietyID IS NULL
-                         AND formaID IS NULL
-                         AND subformaID IS NULL";
-                $result = dbi_query($sql);
-                if (mysqli_num_rows($result) > 0) {
-                    $row = mysqli_fetch_array($result);
-                    $taxonOK = true;
-                    $data[$i]['taxonID'] = $row['taxonID'];
-                    //break;
-                }
-            }
+        $taxamatch[$i] = array();
+        $localMatches = findImportTaxonMatches($import[$i][4], $genusOK);
+        if (count($localMatches) === 1) {
+            $taxonOK = true;
+            $data[$i]['taxonID'] = $localMatches[0]['taxonID'];
+        } elseif (count($localMatches) > 1) {
+            $OK = false;
+            $data[$i]['taxonID'] = 0;
+            $taxamatch[$i] = $localMatches;
+            $status[$i] .= "similar_taxa ambiguous_taxa ";
         }
-//        error_log("check");
 
        /**
         * obtain suggestions for a taxon name by TaxaMatch
         */
-        if (!$taxonOK) {
+        if (!$taxonOK && !importStatusHasFlag($status[$i], 'ambiguous_taxa')) {
 //            if(!$_OPTIONS['staging_area']){
 //              // when using the staging area it is ok if the taxon names are not matching
 //            }
@@ -2196,9 +2219,11 @@ if ($run == 2) {  // file provided
 
         if ($status[$i] == "OK") {                              // everything is OK -> data can be imported
             $position[$i] = 0;
-        } elseif ($status[$i] == "no_taxa similar_taxa ") {     // taxon not found but similar taxon found
+        } elseif ($status[$i] == "no_taxa similar_taxa " || $status[$i] == "similar_taxa ambiguous_taxa ") { // choose a taxon
             $position[$i] = 1;
-            $importableTaxaPresent = true;
+            if (importStatusHasFlag($status[$i], 'no_taxa')) {
+                $importableTaxaPresent = true;
+            }
         } elseif ($status[$i] == "no_taxa ") {                  // taxon not found at all, but genus is in database
             $position[$i] = 2;
             $importableTaxaPresent = TRUE;
@@ -2253,7 +2278,7 @@ if ($run == 2) {  // file provided
     for ($block = 0; $block < 5; $block++) {
         switch ($block) {
             case 0: echo "<hr>Ready to be imported:<br>\n"; break;
-            case 1: echo "<hr>Taxon not found but similar taxon found: (choose action)<br>\n"; break;
+            case 1: echo "<hr>Taxon requires selection (similar or multiple exact matches):<br>\n"; break;
             case 2: echo "<hr>Taxon not found: (choose action)&nbsp;&nbsp;&nbsp;&nbsp;"
                        . "<button onclick=\"$('.importTaxaOn').attr('checked','checked'); return false;\">select all new taxa</button>"
                        . "<br>\n"; break;
@@ -2340,24 +2365,30 @@ if ($run == 2) {  // file provided
 
                 if (strpos($status[$i], "similar_taxa") !== false) {
                     echo "<tr><td></td><td></td><td></td><td colspan=\"28\" style=\"background-color:yellow\">";
+                    $ambiguousTaxa = importStatusHasFlag($status[$i], 'ambiguous_taxa');
+                    if ($ambiguousTaxa) {
+                        echo '<strong>Multiple local taxa match this name. Choose the correct taxon ID:</strong><br>';
+                    }
                     if ($block == 1) {
                         echo "<input type='hidden' name='similarTaxa_{$ctr}_orig' value='" . htmlspecialchars($import[$i][4]) . "' />";
                         echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"0\" checked>no import<br>";
                         foreach ($taxamatch[$i] as $val) {
-                            $taxonWarning = getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
+                            $taxonWarning = $ambiguousTaxa ? '' : getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
+                            $taxonLabel = $ambiguousTaxa ? htmlspecialchars($val['taxon'] . ' <' . $val['taxonID'] . '>', ENT_QUOTES, 'UTF-8') : $val['taxon'];
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"" . htmlspecialchars($val['taxonID']) . "\">"
-                               . $val['taxon']
+                               . $taxonLabel
                                . ($taxonWarning !== '' ? ' <strong>Warning:</strong> ' . htmlspecialchars($taxonWarning, ENT_QUOTES, 'UTF-8') : '') . "<br>";
                         }
-                        if (strpos($status[$i], "no_genus") === false) {
+                        if (!$ambiguousTaxa && strpos($status[$i], "no_genus") === false) {
                             echo "<input type=\"radio\" name=\"similarTaxa_$ctr\" value=\"ID" . htmlspecialchars($import[$i][4]) . "\">Import \""
                                . htmlspecialchars($import[$i][4])
                                . "\" first<br>";
                         }
                     } else {
                         foreach ($taxamatch[$i] as $val) {
-                            $taxonWarning = getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
-                            echo $val['taxon']
+                            $taxonWarning = $ambiguousTaxa ? '' : getImportTaxaMatchWarning($val['taxonID'] ?? 0, $val['taxon'] ?? '');
+                            $taxonLabel = $ambiguousTaxa ? htmlspecialchars($val['taxon'] . ' <' . $val['taxonID'] . '>', ENT_QUOTES, 'UTF-8') : $val['taxon'];
+                            echo $taxonLabel
                                . ($taxonWarning !== '' ? ' <strong>Warning:</strong> ' . htmlspecialchars($taxonWarning, ENT_QUOTES, 'UTF-8') : '') . "<br>";
                         }
                     }
